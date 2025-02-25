@@ -75,8 +75,8 @@ WSGI_APPLICATION = 'educcorp0.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',#cambio de la base de datos a mysql
+        'NAME': BASE_DIR / 'db.mysql',
     }
 }
 
