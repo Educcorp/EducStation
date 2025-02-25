@@ -3,7 +3,7 @@ mydb = mysql.connector.connect( #conexion de la base de datos
  #nombre del host 
   host="localhost", 
   #nombre del usuario 
-  user="yourusername",
+  user="Educcorp",
   #contraseña del usuario
   password="yourpassword" 
 )
