@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
 const EducStation = () => {
+  // Estado para la categoría activa
   const [activeCategory, setActiveCategory] = useState('Todos');
+  // Estado para la categoría sobre la que se está haciendo hover
   const [hoveredCategory, setHoveredCategory] = useState(null);
+  // Estado para el valor de búsqueda
   const [searchValue, setSearchValue] = useState('');
+  // Estado para detectar si la página ha sido scrolleada
   const [isScrolled, setIsScrolled] = useState(false);
   
   // Detectar scroll para efectos de navegación
@@ -16,6 +20,7 @@ const EducStation = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
+  // Categorías de los artículos
   const categories = [
     'Todos',
     'Noticias',
@@ -27,6 +32,7 @@ const EducStation = () => {
     'Comunidad'
   ];
   
+  // Artículo destacado
   const featuredPost = {
     title: 'Innovación Educativa: Transformando el Aprendizaje en la Era Digital',
     image: '/api/placeholder/600/350',
@@ -36,6 +42,7 @@ const EducStation = () => {
     excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
   };
   
+  // Lista de artículos
   const posts = [
     {
       id: 1,
