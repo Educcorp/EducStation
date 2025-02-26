@@ -1,22 +1,36 @@
 {
-    "name": "web-blog",
-    "version": "1.0.0",
-    "description": "A web blog application",
-    "main": "src/index.js",
-    "scripts": {
-      "start": "node server/server.js",
-      "build": "react-scripts build",
-      "test": "react-scripts test",
-      "eject": "react-scripts eject"
-    },
-    "dependencies": {
-      "express": "^4.17.1",
-      "mongoose": "^5.10.9",
-      "react": "^17.0.2",
-      "react-dom": "^17.0.2",
-      "react-scripts": "4.0.3"
-    },
-    "devDependencies": {},
-    "author": "",
-    "license": "ISC"
+  "name": "web-blog",
+  "version": "1.0.0",
+  "description": "A web blog application",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider && react-scripts start",
+    "build": "react-scripts build",
+    "serve": "node server/server.js",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.10.9",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-scripts": "4.0.3"
+  },
+  "proxy": "http://localhost:3000",
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
+}

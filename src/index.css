@@ -1,0 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+body {
+  font-family: 'Roboto', sans-serif;
+}
+
+.header {
+  text-align: center;
+  animation: fadeIn 1s ease-in-out;
+}
+
+.header-title {
+  font-size: 3rem;
+  color: white;
+  margin-bottom: 0.5rem;
+  animation: slideIn 1s ease-in-out;
+}
+
+.header-subtitle {
+  font-size: 1.25rem;
+  color: #f0f0f0;
+  max-width: 600px;
+  margin: 0 auto;
+  animation: fadeInUp 1s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
