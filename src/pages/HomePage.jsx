@@ -1,6 +1,7 @@
 // src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
+import Footer from '../components/layout/Footer';
 import FeaturedPost from '../components/blog/FeaturedPost';
 import PostCard from '../components/blog/PostCard';
 import { colors, spacing, typography, transitions, applyHoverStyles } from '../styles/theme';
@@ -372,7 +373,8 @@ const HomePage = () => {
         </div>
       </main>
       
-      {/* Add Footer component here once created */}
+      {/* Footer */}
+      <Footer />
     </div>
   );
 };
