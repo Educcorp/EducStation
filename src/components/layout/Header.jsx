@@ -1,8 +1,9 @@
 // src/components/layout/Header.jsx
 import React, { useState, useEffect } from 'react';
+import { Link, withRouter } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
 
-const Header = () => {
+const Header = ({ location }) => {
   // Estado para detectar si la página ha sido scrolleada
   const [isScrolled, setIsScrolled] = useState(false);
   // Estado para el hover
@@ -17,6 +18,14 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  // Verificar si la ruta está activa
+  const isActive = (path) => {
+    if (path === '/') {
+      return location.pathname === '/';
+    }
+    return location.pathname.startsWith(path);
+  };
 
   // Estilos del header
   const styles = {
@@ -69,8 +78,8 @@ const Header = () => {
       display: "flex",
       gap: spacing.xl
     },
-    navLink: (isActive) => ({
-      color: isActive ? colors.primary : colors.textPrimary,
+    navLink: (isActivePath) => ({
+      color: isActivePath ? colors.primary : colors.textPrimary,
       textDecoration: "none",
       fontWeight: typography.fontWeight.medium,
       position: "relative",
@@ -102,11 +111,18 @@ const Header = () => {
     },
   };
 
+  const navItems = [
+    { path: '/', label: 'Inicio' },
+    { path: '/blog', label: 'Blog' },
+    { path: '/about', label: 'Acerca de' },
+    { path: '/contact', label: 'Contacto' }
+  ];
+
   return (
     <header style={styles.header}>
       <div style={styles.container}>
-        <a 
-          href="/" 
+        <Link
+          to="/" 
           style={hoveredItem === 'logo' ? applyHoverStyles(styles.logo) : styles.logo}
           onMouseEnter={() => setHoveredItem('logo')}
           onMouseLeave={() => setHoveredItem(null)}
@@ -116,22 +132,22 @@ const Header = () => {
             transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)'
           }}>E</div>
           EducStation
-        </a>
+        </Link>
         
         <nav style={styles.navLinks}>
-          {['Inicio', 'Tendencias', 'Popular', 'Acerca de'].map((link, index) => (
-            <a 
+          {navItems.map((item, index) => (
+            <Link
               key={index} 
-              href={index === 0 ? "/" : `/${link.toLowerCase()}`}
-              style={styles.navLink(index === 0)}
+              to={item.path}
+              style={styles.navLink(isActive(item.path))}
               onMouseEnter={() => setHoveredItem(`nav-${index}`)}
               onMouseLeave={() => setHoveredItem(null)}
             >
-              {link}
+              {item.label}
               <span 
                 style={{
                   position: 'absolute',
-                  width: index === 0 || hoveredItem === `nav-${index}` ? '100%' : '0%',
+                  width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
                   height: '2px',
                   bottom: 0,
                   left: 0,
@@ -139,7 +155,7 @@ const Header = () => {
                   transition: transitions.default
                 }}
               ></span>
-            </a>
+            </Link>
           ))}
         </nav>
         
@@ -155,4 +171,4 @@ const Header = () => {
   );
 };
 
-export default Header;
+export default withRouter(Header);
