@@ -1,7 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  --primary: #0b4444;
+  --primary-light: #4c7977;
+  --primary-dark: #043333;
+  --secondary: #d2b99a;
+  --background: #91a8a4;
+  --white: #f0f8f7;
+  --text-primary: #0b4444;
+  --text-secondary: #4c7977;
+}
 
 body {
-  font-family: 'Roboto', sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--background);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
 }
 
 .header {
@@ -11,19 +26,43 @@ body {
 
 .header-title {
   font-size: 3rem;
-  color: white;
+  color: var(--primary);
   margin-bottom: 0.5rem;
   animation: slideIn 1s ease-in-out;
 }
 
 .header-subtitle {
   font-size: 1.25rem;
-  color: #f0f0f0;
+  color: var(--text-secondary);
   max-width: 600px;
   margin: 0 auto;
   animation: fadeInUp 1s ease-in-out;
 }
 
+/* Estilos para botones */
+button {
+  background-color: var(--secondary);
+  color: var(--primary);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background-color: var(--white);
+}
+
+/* Enlaces */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--secondary);
+}
+
+/* Animaciones */
 @keyframes fadeIn {
   from {
     opacity: 0;

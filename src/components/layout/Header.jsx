@@ -30,7 +30,7 @@ const Header = ({ location }) => {
   // Estilos del header
   const styles = {
     header: {
-      backgroundColor: isScrolled ? "rgba(255,255,255,0.95)" : colors.white,
+      backgroundColor: isScrolled ? "rgba(240, 248, 247, 0.95)" : colors.white,
       padding: `${spacing.md} 0`,
       boxShadow: isScrolled ? shadows.md : shadows.sm,
       position: "sticky",
@@ -60,8 +60,8 @@ const Header = ({ location }) => {
     },
     logoIcon: {
       marginRight: spacing.sm,
-      width: "32px",
-      height: "32px",
+      width: "42px",
+      height: "42px",
       backgroundColor: colors.primary,
       display: "inline-flex",
       alignItems: "center",
@@ -70,8 +70,22 @@ const Header = ({ location }) => {
       borderRadius: borderRadius.md,
       boxShadow: shadows.primary,
       transition: transitions.default,
+      backgroundImage: `linear-gradient(135deg, ${colors.primary} 60%, ${colors.secondary} 40%)`,
+      position: "relative",
+      overflow: "hidden",
       '&:hover': {
         transform: "scale(1.1) rotate(5deg)"
+      },
+      '&:before': {
+        content: '""',
+        position: "absolute",
+        top: "15%",
+        right: "15%",
+        width: "35%",
+        height: "35%",
+        backgroundColor: colors.white,
+        borderRadius: "50%",
+        opacity: 0.5
       }
     },
     navLinks: {
@@ -79,7 +93,7 @@ const Header = ({ location }) => {
       gap: spacing.xl
     },
     navLink: (isActivePath) => ({
-      color: isActivePath ? colors.primary : colors.textPrimary,
+      color: isActivePath ? colors.primary : colors.textSecondary,
       textDecoration: "none",
       fontWeight: typography.fontWeight.medium,
       position: "relative",
@@ -93,7 +107,7 @@ const Header = ({ location }) => {
       width: "40px",
       height: "40px",
       borderRadius: borderRadius.circle,
-      backgroundColor: colors.gray100,
+      backgroundColor: colors.primaryLight,
       overflow: "hidden",
       boxShadow: shadows.sm,
       border: `2px solid ${colors.white}`,

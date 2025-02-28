@@ -15,7 +15,7 @@ const FeaturedPost = ({ post }) => {
       transition: transitions.default,
       '&:hover': {
         transform: "translateY(-5px)",
-        boxShadow: "0 15px 40px rgba(0,0,0,0.15)"
+        boxShadow: "0 15px 40px rgba(11, 68, 68, 0.15)"
       }
     },
     featuredImg: {
@@ -32,7 +32,7 @@ const FeaturedPost = ({ post }) => {
       bottom: "0",
       left: "0",
       width: "100%",
-      background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
+      background: "linear-gradient(to top, rgba(11, 68, 68, 0.9), transparent)",
       padding: `${spacing.xl} ${spacing.lg} ${spacing.lg}`,
       color: colors.white
     },
@@ -52,18 +52,19 @@ const FeaturedPost = ({ post }) => {
       position: "absolute",
       left: spacing.lg,
       top: spacing.lg,
-      backgroundColor: "rgba(255,255,255,0.9)",
+      backgroundColor: colors.secondary,
       padding: `${spacing.xs} ${spacing.md}`,
       borderRadius: borderRadius.round,
       fontWeight: typography.fontWeight.bold,
       fontSize: typography.fontSize.sm,
-      color: colors.textPrimary,
+      color: colors.primary,
       boxShadow: shadows.sm,
       zIndex: 1
     },
     featuredNumberSpan: {
       color: colors.primary,
-      marginRight: spacing.xs
+      marginRight: spacing.xs,
+      fontWeight: typography.fontWeight.bold
     },
     featuredMeta: {
       display: "flex",
@@ -78,8 +79,8 @@ const FeaturedPost = ({ post }) => {
       fontSize: typography.fontSize.sm
     },
     button: {
-      backgroundColor: colors.primary,
-      color: colors.white,
+      backgroundColor: colors.secondary,
+      color: colors.primary,
       border: "none",
       borderRadius: borderRadius.round,
       padding: `${spacing.sm} ${spacing.md}`,
@@ -89,12 +90,12 @@ const FeaturedPost = ({ post }) => {
       display: "inline-flex",
       alignItems: "center",
       gap: spacing.xs,
-      boxShadow: shadows.primary,
+      boxShadow: "0 4px 12px rgba(210, 185, 154, 0.3)",
       transition: transitions.default,
       '&:hover': {
-        backgroundColor: colors.primaryDark,
+        backgroundColor: colors.white,
         transform: "translateY(-2px)",
-        boxShadow: "0 6px 15px rgba(124, 77, 255, 0.4)"
+        boxShadow: "0 6px 15px rgba(210, 185, 154, 0.4)"
       }
     }
   };
@@ -116,10 +117,10 @@ const FeaturedPost = ({ post }) => {
       <div style={styles.featuredContent}>
         <div style={styles.featuredMeta}>
           <div style={styles.metaItem}>
-            <span style={{color: colors.primary}}>◆</span> {post.category}
+            <span style={{color: colors.secondary}}>◆</span> {post.category}
           </div>
           <div style={styles.metaItem}>
-            <span style={{color: colors.gray300}}>⏱</span> {post.time}
+            <span style={{color: colors.gray200}}>⏱</span> {post.time}
           </div>
         </div>
         <h2 style={styles.featuredTitle}>{post.title}</h2>

@@ -126,6 +126,18 @@ const ContactPage = () => {
     }
   ];
 
+  // Estado para gestionar las FAQ abiertas
+  const [openFaq, setOpenFaq] = useState(null);
+  
+  // Manejar apertura de FAQ
+  const toggleFaq = (index) => {
+    if (openFaq === index) {
+      setOpenFaq(null);
+    } else {
+      setOpenFaq(index);
+    }
+  };
+
   // Estilos CSS
   const styles = {
     container: {
@@ -136,7 +148,7 @@ const ContactPage = () => {
     hero: {
       textAlign: "center",
       padding: `${spacing.xxl} 0`,
-      background: `linear-gradient(135deg, ${colors.primary}15 0%, ${colors.secondary}15 100%)`,
+      background: `linear-gradient(135deg, ${colors.white}20 0%, ${colors.secondary}20 100%)`,
       borderRadius: borderRadius.lg,
       marginBottom: spacing.xxl,
       marginTop: spacing.xl
@@ -145,10 +157,7 @@ const ContactPage = () => {
       fontSize: typography.fontSize.xxxl,
       fontWeight: typography.fontWeight.bold,
       marginBottom: spacing.md,
-      background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
-      backgroundClip: "text",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent"
+      color: colors.primary
     },
     subtitle: {
       fontSize: typography.fontSize.lg,
@@ -184,10 +193,10 @@ const ContactPage = () => {
     contactCard: {
       padding: spacing.lg,
       borderRadius: borderRadius.md,
-      backgroundColor: colors.gray100,
+      backgroundColor: "rgba(11, 68, 68, 0.05)",
       transition: transitions.default,
       '&:hover': {
-        backgroundColor: colors.primary + '15',
+        backgroundColor: "rgba(210, 185, 154, 0.15)",
         transform: "translateY(-5px)"
       }
     },
@@ -199,7 +208,7 @@ const ContactPage = () => {
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.semiBold,
       marginBottom: spacing.xs,
-      color: colors.textPrimary
+      color: colors.primary
     },
     contactContent: {
       fontSize: typography.fontSize.sm,
@@ -228,6 +237,7 @@ const ContactPage = () => {
       marginBottom: spacing.xl,
       position: "relative",
       paddingBottom: spacing.sm,
+      color: colors.primary,
       '&:after': {
         content: '""',
         position: "absolute",
@@ -235,7 +245,7 @@ const ContactPage = () => {
         left: 0,
         width: "60px",
         height: "3px",
-        backgroundColor: colors.primary
+        backgroundColor: colors.secondary
       }
     },
     form: {
@@ -259,7 +269,7 @@ const ContactPage = () => {
     label: {
       fontSize: typography.fontSize.sm,
       fontWeight: typography.fontWeight.medium,
-      color: colors.textPrimary
+      color: colors.primary
     },
     input: {
       padding: spacing.md,
@@ -270,7 +280,7 @@ const ContactPage = () => {
       '&:focus': {
         outline: "none",
         borderColor: colors.primary,
-        boxShadow: `0 0 0 2px ${colors.primary}30`
+        boxShadow: `0 0 0 2px rgba(11, 68, 68, 0.1)`
       }
     },
     select: {
@@ -282,7 +292,7 @@ const ContactPage = () => {
       '&:focus': {
         outline: "none",
         borderColor: colors.primary,
-        boxShadow: `0 0 0 2px ${colors.primary}30`
+        boxShadow: `0 0 0 2px rgba(11, 68, 68, 0.1)`
       }
     },
     textarea: {
@@ -296,13 +306,13 @@ const ContactPage = () => {
       '&:focus': {
         outline: "none",
         borderColor: colors.primary,
-        boxShadow: `0 0 0 2px ${colors.primary}30`
+        boxShadow: `0 0 0 2px rgba(11, 68, 68, 0.1)`
       }
     },
     submitButton: {
       padding: `${spacing.md} ${spacing.xl}`,
-      backgroundColor: colors.primary,
-      color: colors.white,
+      backgroundColor: colors.secondary,
+      color: colors.primary,
       border: "none",
       borderRadius: borderRadius.md,
       fontSize: typography.fontSize.md,
@@ -311,7 +321,8 @@ const ContactPage = () => {
       transition: transitions.default,
       alignSelf: "flex-start",
       '&:hover': {
-        backgroundColor: colors.primaryDark
+        backgroundColor: colors.primary,
+        color: colors.white
       },
       '&:disabled': {
         backgroundColor: colors.gray300,
@@ -325,18 +336,18 @@ const ContactPage = () => {
       marginTop: spacing.md
     },
     successMessage: {
-      backgroundColor: "#E8F5E9",
-      color: "#2E7D32",
-      border: "1px solid #A5D6A7",
+      backgroundColor: "rgba(76, 121, 119, 0.1)",
+      color: colors.primary,
+      border: `1px solid ${colors.primaryLight}`,
       padding: spacing.md,
       borderRadius: borderRadius.md,
       fontSize: typography.fontSize.sm,
       marginTop: spacing.md
     },
     errorMessage: {
-      backgroundColor: "#FFEBEE",
-      color: "#C62828",
-      border: "1px solid #EF9A9A",
+      backgroundColor: "rgba(210, 185, 154, 0.1)",
+      color: colors.secondary,
+      border: `1px solid ${colors.secondary}`,
       padding: spacing.md,
       borderRadius: borderRadius.md,
       fontSize: typography.fontSize.sm,
@@ -364,7 +375,7 @@ const ContactPage = () => {
     faqQuestion: {
       fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.semiBold,
-      color: colors.textPrimary,
+      color: colors.primary,
       marginBottom: spacing.md,
       display: "flex",
       alignItems: "center",
@@ -385,20 +396,8 @@ const ContactPage = () => {
       border: "none"
     },
     required: {
-      color: colors.error,
+      color: colors.secondary,
       marginLeft: spacing.xs
-    }
-  };
-
-  // Estado para gestionar las FAQ abiertas
-  const [openFaq, setOpenFaq] = useState(null);
-  
-  // Manejar apertura de FAQ
-  const toggleFaq = (index) => {
-    if (openFaq === index) {
-      setOpenFaq(null);
-    } else {
-      setOpenFaq(index);
     }
   };
 
@@ -432,7 +431,7 @@ const ContactPage = () => {
                   left: 0,
                   width: "60px",
                   height: "3px",
-                  backgroundColor: colors.primary
+                  backgroundColor: colors.secondary
                 }}></span>
               </h2>
               
@@ -442,11 +441,11 @@ const ContactPage = () => {
                     key={index} 
                     style={styles.contactCard}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.primary + '15';
+                      e.currentTarget.style.backgroundColor = "rgba(210, 185, 154, 0.15)";
                       e.currentTarget.style.transform = "translateY(-5px)";
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.gray100;
+                      e.currentTarget.style.backgroundColor = "rgba(11, 68, 68, 0.05)";
                       e.currentTarget.style.transform = "translateY(0)";
                     }}
                   >
@@ -479,7 +478,7 @@ const ContactPage = () => {
                   left: 0,
                   width: "60px",
                   height: "3px",
-                  backgroundColor: colors.primary
+                  backgroundColor: colors.secondary
                 }}></span>
               </h2>
               
@@ -559,12 +558,14 @@ const ContactPage = () => {
                   disabled={formStatus.submitting}
                   onMouseEnter={(e) => {
                     if (!formStatus.submitting) {
-                      e.currentTarget.style.backgroundColor = colors.primaryDark;
+                      e.currentTarget.style.backgroundColor = colors.primary;
+                      e.currentTarget.style.color = colors.white;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!formStatus.submitting) {
-                      e.currentTarget.style.backgroundColor = colors.primary;
+                      e.currentTarget.style.backgroundColor = colors.secondary;
+                      e.currentTarget.style.color = colors.primary;
                     }
                   }}
                 >
@@ -596,7 +597,7 @@ const ContactPage = () => {
                 left: 0,
                 width: "60px",
                 height: "3px",
-                backgroundColor: colors.primary
+                backgroundColor: colors.secondary
               }}></span>
             </h2>
             

@@ -98,14 +98,14 @@ const HomePage = () => {
     },
     breadcrumb: {
       margin: `${spacing.lg} 0`,
-      color: colors.textSecondary,
+      color: colors.primary,
       fontSize: typography.fontSize.sm,
       display: "flex",
       alignItems: "center",
       gap: spacing.sm
     },
     breadcrumbLink: {
-      color: colors.textSecondary,
+      color: colors.primaryLight,
       textDecoration: "none",
       transition: transitions.default,
       '&:hover': {
@@ -114,17 +114,16 @@ const HomePage = () => {
     },
     hero: {
       margin: `${spacing.xl} 0 ${spacing.xxl}`,
-      position: "relative"
+      position: "relative",
+      background: `linear-gradient(135deg, ${colors.white}20 0%, ${colors.secondary}20 100%)`,
+      padding: `${spacing.xl} ${spacing.md}`,
+      borderRadius: '12px'
     },
     heroTitle: {
       fontSize: typography.fontSize.xxxl,
-      color: colors.textPrimary,
+      color: colors.primary,
       marginBottom: spacing.md,
       lineHeight: "1.2",
-      background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
-      backgroundClip: "text",
-      WebkitBackgroundClip: "text",
-      WebkitTextFillColor: "transparent",
       animation: "fadeInUp 0.8s ease-out"
     },
     heroText: {
@@ -142,18 +141,18 @@ const HomePage = () => {
       justifyContent: "center",
       width: "90px",
       height: "90px",
-      background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)`,
+      background: `linear-gradient(135deg, ${colors.primary} 60%, ${colors.secondary} 40%)`,
       borderRadius: "50%",
       color: colors.white,
       textDecoration: "none",
       marginLeft: "auto",
       marginTop: "-40px",
-      boxShadow: "0 6px 20px rgba(124, 77, 255, 0.4)",
+      boxShadow: "0 6px 20px rgba(11, 68, 68, 0.3)",
       cursor: "pointer",
       transition: transitions.default,
       '&:hover': {
         transform: "scale(1.05) rotate(5deg)",
-        boxShadow: "0 8px 25px rgba(124, 77, 255, 0.5)"
+        boxShadow: "0 8px 25px rgba(11, 68, 68, 0.4)"
       }
     },
     circleText: {
@@ -161,7 +160,7 @@ const HomePage = () => {
       width: "100%",
       height: "100%",
       fontSize: "10px",
-      color: "rgba(255, 255, 255, 0.8)"
+      color: "rgba(240, 248, 247, 0.9)"
     },
     circleIcon: {
       fontSize: "28px",
@@ -177,7 +176,7 @@ const HomePage = () => {
       background: colors.white,
       padding: `${spacing.md} ${spacing.xl}`,
       borderRadius: "50px",
-      boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+      boxShadow: "0 4px 15px rgba(11, 68, 68, 0.08)",
       marginBottom: spacing.xxl,
       position: "relative",
       zIndex: 1,
@@ -186,8 +185,8 @@ const HomePage = () => {
     category: (isActive, isHovered) => ({
       padding: `${spacing.sm} ${spacing.lg}`,
       background: isActive 
-        ? `linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%)` 
-        : isHovered ? "rgba(124, 77, 255, 0.1)" : "none",
+        ? `linear-gradient(135deg, ${colors.primary} 60%, ${colors.primaryLight} 100%)` 
+        : isHovered ? "rgba(11, 68, 68, 0.05)" : "none",
       border: "none",
       borderRadius: "24px",
       cursor: "pointer",
@@ -195,7 +194,7 @@ const HomePage = () => {
       fontWeight: typography.fontWeight.medium,
       color: isActive ? colors.white : isHovered ? colors.primary : colors.textPrimary,
       transition: transitions.default,
-      boxShadow: isActive ? "0 4px 12px rgba(124, 77, 255, 0.3)" : "none",
+      boxShadow: isActive ? "0 4px 12px rgba(11, 68, 68, 0.15)" : "none",
       transform: isHovered && !isActive ? "translateY(-2px)" : "translateY(0)"
     }),
     searchBox: {
@@ -209,13 +208,13 @@ const HomePage = () => {
       padding: `${spacing.sm} ${spacing.md} ${spacing.sm} ${spacing.xxl}`,
       border: "none",
       borderRadius: "24px",
-      backgroundColor: colors.gray100,
+      backgroundColor: "rgba(11, 68, 68, 0.05)",
       fontSize: typography.fontSize.sm,
       transition: transitions.default,
-      boxShadow: "inset 0 2px 5px rgba(0,0,0,0.05)",
+      boxShadow: "inset 0 2px 5px rgba(11, 68, 68, 0.05)",
       '&:focus': {
         backgroundColor: colors.white,
-        boxShadow: `0 0 0 2px rgba(124, 77, 255, 0.2), inset 0 2px 5px rgba(0,0,0,0.05)`,
+        boxShadow: `0 0 0 2px rgba(11, 68, 68, 0.1), inset 0 2px 5px rgba(11, 68, 68, 0.05)`,
         outline: "none"
       }
     },
@@ -298,9 +297,9 @@ const HomePage = () => {
             href="#" 
             style={styles.breadcrumbLink}
             onMouseEnter={(e) => e.target.style.color = colors.primary} 
-            onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
+            onMouseLeave={(e) => e.target.style.color = colors.primaryLight}
           >Inicio</a> 
-          <span style={{color: colors.gray300, fontSize: '10px'}}>►</span> 
+          <span style={{color: colors.secondary, fontSize: '10px'}}>►</span> 
           <span>Blogs y Artículos</span>
         </div>
         
@@ -351,8 +350,8 @@ const HomePage = () => {
               style={searchValue !== '' ? applyHoverStyles(styles.searchInput) : styles.searchInput}
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
-              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px rgba(124, 77, 255, 0.2), inset 0 2px 5px rgba(0,0,0,0.05)'}
-              onBlur={(e) => e.target.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.05)'}
+              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px rgba(11, 68, 68, 0.1), inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
+              onBlur={(e) => e.target.style.boxShadow = 'inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
             />
           </div>
         </div>

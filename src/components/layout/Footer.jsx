@@ -26,7 +26,7 @@ const Footer = () => {
   
   const styles = {
     footer: {
-      backgroundColor: colors.textPrimary,
+      backgroundColor: colors.primary,
       color: colors.white,
       padding: `${spacing.xxl} 0 ${spacing.xl}`,
       marginTop: spacing.xxl
@@ -53,14 +53,15 @@ const Footer = () => {
       marginRight: spacing.sm,
       width: "32px",
       height: "32px",
-      backgroundColor: colors.primary,
+      backgroundColor: colors.primaryLight,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
+      backgroundImage: `linear-gradient(135deg, ${colors.primaryLight} 60%, ${colors.secondary} 40%)`,
       borderRadius: "8px"
     },
     description: {
-      color: colors.gray300,
+      color: colors.gray200,
       marginBottom: spacing.xl,
       lineHeight: "1.6",
       fontSize: typography.fontSize.sm
@@ -73,7 +74,7 @@ const Footer = () => {
       width: "36px",
       height: "36px",
       borderRadius: "50%",
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      backgroundColor: "rgba(240, 248, 247, 0.1)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -81,7 +82,8 @@ const Footer = () => {
       cursor: "pointer",
       fontSize: "18px",
       '&:hover': {
-        backgroundColor: colors.primary
+        backgroundColor: colors.secondary,
+        color: colors.primary
       }
     },
     title: {
@@ -101,22 +103,22 @@ const Footer = () => {
       paddingLeft: spacing.md,
       transition: transitions.default,
       '&:hover': {
-        color: colors.primary,
+        color: colors.secondary,
         paddingLeft: spacing.lg
       },
       '&:before': {
         content: '"›"',
         position: "absolute",
         left: 0,
-        color: colors.primary
+        color: colors.secondary
       }
     },
     linkAnchor: {
-      color: colors.gray300,
+      color: colors.gray200,
       textDecoration: "none",
       transition: transitions.default,
       '&:hover': {
-        color: colors.primary
+        color: colors.secondary
       }
     },
     newsletter: {
@@ -131,26 +133,26 @@ const Footer = () => {
       padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: "4px 0 0 4px",
       border: "none",
-      backgroundColor: "rgba(255, 255, 255, 0.1)",
+      backgroundColor: "rgba(240, 248, 247, 0.1)",
       color: colors.white,
       '&::placeholder': {
-        color: colors.gray300
+        color: colors.gray200
       },
       '&:focus': {
         outline: "none",
-        backgroundColor: "rgba(255, 255, 255, 0.2)"
+        backgroundColor: "rgba(240, 248, 247, 0.2)"
       }
     },
     button: {
       padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.primary,
-      color: colors.white,
+      backgroundColor: colors.secondary,
+      color: colors.primary,
       border: "none",
       borderRadius: "0 4px 4px 0",
       cursor: "pointer",
       transition: transitions.default,
       '&:hover': {
-        backgroundColor: colors.primaryDark
+        backgroundColor: colors.white
       },
       '&:disabled': {
         backgroundColor: colors.gray300,
@@ -160,12 +162,12 @@ const Footer = () => {
     message: {
       fontSize: typography.fontSize.sm,
       marginTop: spacing.sm,
-      color: '#4CAF50'
+      color: colors.secondary
     },
     bottom: {
       marginTop: spacing.xxl,
       paddingTop: spacing.md,
-      borderTop: `1px solid rgba(255, 255, 255, 0.1)`,
+      borderTop: `1px solid rgba(240, 248, 247, 0.1)`,
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -173,7 +175,7 @@ const Footer = () => {
       gap: spacing.md
     },
     copyright: {
-      color: colors.gray300,
+      color: colors.gray200,
       fontSize: typography.fontSize.sm
     },
     bottomLinks: {
@@ -181,12 +183,12 @@ const Footer = () => {
       gap: spacing.md
     },
     bottomLink: {
-      color: colors.gray300,
+      color: colors.gray200,
       fontSize: typography.fontSize.sm,
       textDecoration: "none",
       transition: transitions.default,
       '&:hover': {
-        color: colors.primary
+        color: colors.secondary
       }
     }
   };
@@ -209,23 +211,23 @@ const Footer = () => {
             <div style={styles.social}>
               <div 
                 style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.primary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)"}
+                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >f</div>
               <div 
                 style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.primary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)"}
+                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >t</div>
               <div 
                 style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.primary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)"}
+                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >in</div>
               <div 
                 style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.primary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(255, 255, 255, 0.1)"}
+                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >ig</div>
             </div>
           </div>
@@ -239,19 +241,19 @@ const Footer = () => {
                   key={index} 
                   style={{...styles.link}}
                   onMouseEnter={(e) => {
-                    e.target.style.color = colors.primary;
+                    e.target.style.color = colors.secondary;
                     e.target.style.paddingLeft = spacing.lg;
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.color = colors.gray300;
+                    e.target.style.color = colors.gray200;
                     e.target.style.paddingLeft = spacing.md;
                   }}
                 >
                   <a 
                     href="#"
                     style={{...styles.linkAnchor}}
-                    onMouseEnter={(e) => e.target.style.color = colors.primary}
-                    onMouseLeave={(e) => e.target.style.color = colors.gray300}
+                    onMouseEnter={(e) => e.target.style.color = colors.secondary}
+                    onMouseLeave={(e) => e.target.style.color = colors.gray200}
                   >{link}</a>
                 </li>
               ))}
@@ -267,19 +269,19 @@ const Footer = () => {
                   key={index} 
                   style={{...styles.link}}
                   onMouseEnter={(e) => {
-                    e.target.style.color = colors.primary;
+                    e.target.style.color = colors.secondary;
                     e.target.style.paddingLeft = spacing.lg;
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.color = colors.gray300;
+                    e.target.style.color = colors.gray200;
                     e.target.style.paddingLeft = spacing.md;
                   }}
                 >
                   <a 
                     href="#"
                     style={{...styles.linkAnchor}}
-                    onMouseEnter={(e) => e.target.style.color = colors.primary}
-                    onMouseLeave={(e) => e.target.style.color = colors.gray300}
+                    onMouseEnter={(e) => e.target.style.color = colors.secondary}
+                    onMouseLeave={(e) => e.target.style.color = colors.gray200}
                   >{link}</a>
                 </li>
               ))}
@@ -306,10 +308,10 @@ const Footer = () => {
                 style={{...styles.button}}
                 disabled={isSubmitting}
                 onMouseEnter={(e) => {
-                  if (!isSubmitting) e.target.style.backgroundColor = colors.primaryDark;
+                  if (!isSubmitting) e.target.style.backgroundColor = colors.white;
                 }}
                 onMouseLeave={(e) => {
-                  if (!isSubmitting) e.target.style.backgroundColor = colors.primary;
+                  if (!isSubmitting) e.target.style.backgroundColor = colors.secondary;
                 }}
               >
                 {isSubmitting ? 'Enviando...' : 'Enviar'}
@@ -332,8 +334,8 @@ const Footer = () => {
                 key={index} 
                 href="#" 
                 style={{...styles.bottomLink}}
-                onMouseEnter={(e) => e.target.style.color = colors.primary}
-                onMouseLeave={(e) => e.target.style.color = colors.gray300}
+                onMouseEnter={(e) => e.target.style.color = colors.secondary}
+                onMouseLeave={(e) => e.target.style.color = colors.gray200}
               >
                 {link}
               </a>

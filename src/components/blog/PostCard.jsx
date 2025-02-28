@@ -107,7 +107,7 @@ const PostCard = ({ post }) => {
             <span style={{fontSize: '10px', marginRight: '2px'}}>⏱</span> {post.time}
           </div>
           <div style={styles.postLikes}>
-            <span style={{fontSize: '10px', marginRight: '2px', color: colors.error}}>♥</span> {post.likes}
+            <span style={{fontSize: '10px', marginRight: '2px', color: colors.secondary}}>♥</span> {post.likes}
           </div>
         </div>
         <h3 
