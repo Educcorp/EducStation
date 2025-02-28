@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
+import Logo from '../common/Logo';
 
 const Header = ({ location }) => {
   // Estado para detectar si la página ha sido scrolleada
@@ -18,6 +19,7 @@ const Header = ({ location }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
 
   // Verificar si la ruta está activa
   const isActive = (path) => {
@@ -135,19 +137,50 @@ const Header = ({ location }) => {
   return (
     <header style={styles.header}>
       <div style={styles.container}>
-        <Link
-          to="/" 
-          style={hoveredItem === 'logo' ? applyHoverStyles(styles.logo) : styles.logo}
-          onMouseEnter={() => setHoveredItem('logo')}
-          onMouseLeave={() => setHoveredItem(null)}
-        >
-          <div style={{
-            ...styles.logoIcon, 
-            transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)'
-          }}>E</div>
-          EducStation
-        </Link>
-        
+<Link
+  to="/" 
+  style={hoveredItem === 'logo' ? applyHoverStyles(styles.logo) : styles.logo}
+  onMouseEnter={() => setHoveredItem('logo')}
+  onMouseLeave={() => setHoveredItem(null)}
+>
+  <div style={{
+    display: "flex",
+    alignItems: "center",
+  }}>
+    <div style={{
+      backgroundColor: colors.background, // Cambiamos a color de fondo igual al del logo (#91a8a4)
+      borderRadius: borderRadius.md,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: spacing.sm,
+      transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)',
+      transition: transitions.default,
+      width: "42px",
+      height: "42px",
+      overflow: "hidden"
+    }}>
+      <img 
+        src="/assets/images/educstation-logo.png" 
+        alt="EducStation Logo" 
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain"
+        }} 
+      />
+    </div>
+    <span style={{
+      color: colors.primary,
+      fontWeight: typography.fontWeight.bold
+    }}>
+      EducStation
+    </span>
+  </div>
+</Link>
+
+
+
         <nav style={styles.navLinks}>
           {navItems.map((item, index) => (
             <Link
