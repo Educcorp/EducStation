@@ -191,6 +191,24 @@ const AboutPage = () => {
       role: 'Desarrollador Web',
       image: '/api/placeholder/250/250',
       bio: 'Ingeniero informático con pasión por la educación digital.'
+    },
+    {
+      name: 'Roberto Sánchez',
+      role: 'Desarrollador Web',
+      image: '/api/placeholder/250/250',
+      bio: 'Ingeniero informático con pasión por la educación digital.'
+    },
+    {
+      name: 'Roberto Sánchez',
+      role: 'Desarrollador Web',
+      image: '/api/placeholder/250/250',
+      bio: 'Ingeniero informático con pasión por la educación digital.'
+    },
+    {
+      name: 'Roberto Sánchez',
+      role: 'Desarrollador Web',
+      image: '/api/placeholder/250/250',
+      bio: 'Ingeniero informático con pasión por la educación digital.'
     }
   ];
 
@@ -206,19 +224,19 @@ const AboutPage = () => {
   return (
     <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
       <Header />
-      
+
       <main>
         <section style={styles.hero}>
           <div style={styles.container}>
             <h1 style={styles.title}>Sobre EducStation</h1>
             <p style={styles.subtitle}>
-              Somos una plataforma dedicada a potenciar el desarrollo profesional de educadores 
+              Somos una plataforma dedicada a potenciar el desarrollo profesional de educadores
               mediante la creación, curación y compartición de recursos educativos de calidad.
               Nuestra misión es transformar la educación a través de la innovación y la colaboración.
             </p>
           </div>
         </section>
-        
+
         <div style={styles.container}>
           {/* Stats Section */}
           <section style={styles.stats}>
@@ -239,10 +257,10 @@ const AboutPage = () => {
               <div style={styles.statLabel}>Años</div>
             </div>
           </section>
-          
+
           {/* Historia Section */}
           <section style={styles.section}>
-            <h2 style={{...styles.sectionTitle}}>
+            <h2 style={{ ...styles.sectionTitle }}>
               Nuestra Historia
               <span style={{
                 position: "absolute",
@@ -253,7 +271,7 @@ const AboutPage = () => {
                 backgroundColor: colors.secondary
               }}></span>
             </h2>
-            
+
             <div style={styles.timeline}>
               {timelineEvents.map((event, index) => (
                 <div key={index} style={styles.timelineItem}>
@@ -264,10 +282,10 @@ const AboutPage = () => {
               ))}
             </div>
           </section>
-          
+
           {/* Equipo Section */}
           <section style={styles.section}>
-            <h2 style={{...styles.sectionTitle}}>
+            <h2 style={{ ...styles.sectionTitle }}>
               Nuestro Equipo
               <span style={{
                 position: "absolute",
@@ -278,17 +296,17 @@ const AboutPage = () => {
                 backgroundColor: colors.secondary
               }}></span>
             </h2>
-            
-            <p style={{...styles.content, marginBottom: spacing.xl}}>
-              Contamos con un equipo diverso y apasionado de profesionales dedicados a la mejora 
-              continua de la experiencia educativa. Cada miembro aporta una perspectiva única y 
+
+            <p style={{ ...styles.content, marginBottom: spacing.xl }}>
+              Contamos con un equipo diverso y apasionado de profesionales dedicados a la mejora
+              continua de la experiencia educativa. Cada miembro aporta una perspectiva única y
               valiosa a nuestra misión.
             </p>
-            
+
             <div style={styles.team}>
               {teamMembers.map((member, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   style={styles.teamMember}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-10px)";
@@ -309,10 +327,10 @@ const AboutPage = () => {
               ))}
             </div>
           </section>
-          
+
           {/* Valores Section */}
           <section style={styles.section}>
-            <h2 style={{...styles.sectionTitle}}>
+            <h2 style={{ ...styles.sectionTitle }}>
               Nuestros Valores
               <span style={{
                 position: "absolute",
@@ -323,32 +341,32 @@ const AboutPage = () => {
                 backgroundColor: colors.secondary
               }}></span>
             </h2>
-            
-            <div style={{display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: spacing.xl}}>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: spacing.xl }}>
               {[
-                { 
-                  title: 'Innovación', 
-                  icon: '💡', 
-                  description: 'Buscamos constantemente nuevas formas de mejorar la experiencia educativa mediante la tecnología y metodologías innovadoras.' 
+                {
+                  title: 'Innovación',
+                  icon: '💡',
+                  description: 'Buscamos constantemente nuevas formas de mejorar la experiencia educativa mediante la tecnología y metodologías innovadoras.'
                 },
-                { 
-                  title: 'Colaboración', 
-                  icon: '🤝', 
-                  description: 'Creemos en el poder del trabajo en equipo y la sinergia que surge al compartir conocimientos y experiencias entre educadores.' 
+                {
+                  title: 'Colaboración',
+                  icon: '🤝',
+                  description: 'Creemos en el poder del trabajo en equipo y la sinergia que surge al compartir conocimientos y experiencias entre educadores.'
                 },
-                { 
-                  title: 'Inclusión', 
-                  icon: '🌈', 
-                  description: 'Promovemos un entorno educativo donde todas las voces son escuchadas y valoradas, independientemente de su origen o condición.' 
+                {
+                  title: 'Inclusión',
+                  icon: '🌈',
+                  description: 'Promovemos un entorno educativo donde todas las voces son escuchadas y valoradas, independientemente de su origen o condición.'
                 },
-                { 
-                  title: 'Excelencia', 
-                  icon: '🏆', 
-                  description: 'Nos esforzamos por ofrecer contenido y herramientas de la más alta calidad para potenciar el desarrollo profesional de los educadores.' 
+                {
+                  title: 'Excelencia',
+                  icon: '🏆',
+                  description: 'Nos esforzamos por ofrecer contenido y herramientas de la más alta calidad para potenciar el desarrollo profesional de los educadores.'
                 }
               ].map((value, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   style={{
                     backgroundColor: colors.white,
                     padding: spacing.lg,
@@ -365,16 +383,16 @@ const AboutPage = () => {
                     e.currentTarget.style.boxShadow = shadows.sm;
                   }}
                 >
-                  <div style={{fontSize: "36px", marginBottom: spacing.sm}}>{value.icon}</div>
-                  <h3 style={{color: colors.primary, marginBottom: spacing.sm, fontSize: typography.fontSize.lg}}>{value.title}</h3>
-                  <p style={{color: colors.textSecondary, fontSize: typography.fontSize.sm, lineHeight: 1.6}}>{value.description}</p>
+                  <div style={{ fontSize: "36px", marginBottom: spacing.sm }}>{value.icon}</div>
+                  <h3 style={{ color: colors.primary, marginBottom: spacing.sm, fontSize: typography.fontSize.lg }}>{value.title}</h3>
+                  <p style={{ color: colors.textSecondary, fontSize: typography.fontSize.sm, lineHeight: 1.6 }}>{value.description}</p>
                 </div>
               ))}
             </div>
           </section>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
