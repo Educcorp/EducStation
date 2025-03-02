@@ -22,26 +22,34 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 
 ##
 
-## <img src="https://media.giphy.com/media/trN83pDD8yRDHBGfl3/giphy.gif" width="40" /> Tecnologías Utilizadas
 
+  
+## <p align="left"><img src="https://media.giphy.com/media/trN83pDD8yRDHBGfl3/giphy.gif" width="40" /> Tecnologías Utilizadas</p>
+
+
+### <p align="center">Frontend</p>
 <p align="center">
   <a href="">
-    <img src="https://skillicons.dev/icons?i=react,python,django,mysql,html,css,js" />
+    <img src="https://skillicons.dev/icons?i=react,html,css,js" />
   </a>
 </p>
 
-- **Frontend:** 
-  - [![React](https://img.shields.io/badge/React-61DAFB?style=plastic&logo=react&logoColor=black)](https://reactjs.org/)
-  - [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=plastic&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-  - [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=plastic&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
-  - [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=plastic&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 
-- **Backend:** 
-  - [![Python](https://img.shields.io/badge/Python-3776AB?style=plastic&logo=python&logoColor=white)](https://www.python.org/)
-  - [![Django](https://img.shields.io/badge/Django-092E20?style=plastic&logo=django&logoColor=white)](https://www.djangoproject.com/)
+### <p align="center">Backend</p>
+<p align="center">
+  <a href="">
+    <img src="https://skillicons.dev/icons?i=python,django,nodejs" />
+  </a>
+</p>
 
-- **Base de Datos:** 
-  - [![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=plastic&logo=mysql&logoColor=white)](https://www.mysql.com/)
+### <p align="center">Base de Datos</p>
+<p align="center">
+  <a href="">
+    <img src="https://skillicons.dev/icons?i=mysql" />
+  </a>
+</p>
+
+
 
 ## 🌟 Características Principales
 
@@ -53,6 +61,8 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 | 💬 **Comentarios y Discusiones** | Espacio para debates constructivos sobre temas educativos |
 | 📊 **Análisis de Tendencias** | Métricas sobre temas de interés en la comunidad educativa |
 | 📱 **Diseño Responsive** | Experiencia optimizada en todos los dispositivos |
+
+##
 
 ## <img src="https://media.giphy.com/media/iY8CRBdQXODJSCERIr/giphy.gif" width="30"> Capturas de Pantalla
 
@@ -68,35 +78,35 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 </table>
 
 
-<a href="https://github.com/Educcorp/EducStation/issues">
-  <img src="https://img.shields.io/github/issues/Educcorp/EducStation?style=for-the-badge&logo=github&color=0b4444" alt="GitHub issues" />
-</a>
-<a href="https://github.com/Educcorp/EducStation/pulls">
-  <img src="https://img.shields.io/github/issues-pr/Educcorp/EducStation?style=for-the-badge&logo=github&color=0b4444" alt="GitHub pull requests" />
-</a>
 
 ## <img src="https://media.giphy.com/media/TdjQAgDIkRsYm1HUbt/giphy.gif" width="35">  Cómo Empezar
 
 ```bash
-# Clonar el repositorio:
+# Clona el repositorio:
 git clone https://github.com/Educcorp/EducStation.git
 
-# Navegar al directorio:
+# Navega al directorio del repositorio:
 cd EducStation
-# Entrar al repositorio:
+
+# Abre el repositorio en tu editor de código:
 code .
+
+# Visita el siguiente enlace para descargar Node.js:
 ```
-Visita [![Node.js](https://img.shields.io/badge/Node.js-Download-0b4444?style=plastic&logo=star&color=0b4444&labelColor=91a8a4)](https://nodejs.org/en/download) y descarga la versión adecuada de Node.js para tu sistema operativo. Luego, reinicia tu equipo.
-```
-# Comando para correr el blog en local:
+[![Node.js](https://img.shields.io/badge/Node.js-Download-0b4444?style=plastic&logo=star&color=0b4444&labelColor=91a8a4)](https://nodejs.org/en/download)
+
+```python 
+# Descarga la versión adecuada de Node.js para tu sistema operativo y luego reinicia tu equipo.
+ 
+# Comando para ejecutar el blog en local:
 npm start
 ```
 
 
 ## <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXd4OWw1MnZta2l0ajdsbng1OGVxbHRzZmE5MnU1cXczaW5kNzY2bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/dZnMEGqbJcXYEjcJwr/giphy.gif" width="30">  Licencia
+ [![License](https://img.shields.io/github/license/Educcorp/EducStation?style=plastic&logo=license&color=0b4444&labelColor=91a8a4)](https://github.com/Educcorp/EducStation/blob/main/LICENSE)
 
 ##
-
 
 ## <img src="https://media.giphy.com/media/UVG0BN8TOMKkPOJS6e/giphy.gif" width="30"> 👨‍💻 Equipo EducCorp
 <table>
@@ -117,10 +127,8 @@ npm start
 
 ##
 
-## <img src="public/assets/images/Animation - 1739245728068.gif" alt="Animation GIF" style="width: 50px;"> **Contact Us**
-📢 Let's Connect! Whether it's video games, web design, or cutting-edge software, I'm excited to collaborate and create something extraordinary. 🤝📫
-
-
+## <img src="public/assets/images/Animation - 1739245728068.gif" alt="Animation GIF" style="width: 50px;">  Contáctanos
+📢 ¡Conectemos! Si eres educador, investigador o entusiasta de la innovación pedagógica, estamos entusiasmados por colaborar y crear experiencias educativas extraordinarias juntos. ¿Tienes ideas para mejorar la educación digital? ¡Conversemos! 🤝📫
 <p align="center">
   
 [![GitHub](https://img.shields.io/badge/-GitHub-010409?style=plastic&logo=github&logoColor=white)](https://github.com/Dami-Val)  [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0a66c2?style=plastic&logo=in&logoColor=white)](https://linkedin.com/in/damian-valencia)  [![Email](https://img.shields.io/badge/-Email-c4211f?style=plastic&logo=gmail&logoColor=white)](mailto:damival.32@gmail.com)  [![My contact](https://img.shields.io/badge/-WhatsApp-36be49?style=plastic&logo=whatsapp&logoColor=white)](https://wa.me/523141741239)[![Instagram](https://img.shields.io/badge/-Instagram-e52765?style=plastic&logo=instagram&logoColor=white)](https://www.instagram.com/damival_/)  [![X/Twitter](https://img.shields.io/badge/-000000?style=plastic&logo=x&logoColor=white)](https://x.com/damival_) 
@@ -146,4 +154,4 @@ npm start
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=91a8a4&height=120&section=footer&text=EducStation&fontSize=30&fontColor=0b4444" />
 </div>
-```
+
