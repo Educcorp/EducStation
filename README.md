@@ -23,7 +23,6 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 ##
 
 
-  
 ## <p align="left"><img src="https://media.giphy.com/media/trN83pDD8yRDHBGfl3/giphy.gif" width="40" /> Tecnologías Utilizadas</p>
 
 
