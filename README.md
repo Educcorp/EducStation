@@ -5,18 +5,6 @@
 ![EducStation Banner](public/assets/images/Cartula_Blog.png)
 # <img src="https://raw.githubusercontent.com/MartinHeinz/MartinHeinz/master/wave.gif" width="35" /> EducStation by EducCorp
 
-<p align="center">
-  <a href="https://github.com/Educcorp/EducStation/stargazers">
-    <img src="https://img.shields.io/github/stars/Educcorp/EducStation?style=plastic&logo=star&color=0b4444&labelColor=91a8a4" alt="Stars" />
-  </a>
-  <a href="https://github.com/Educcorp/EducStation/network/members">
-    <img src="https://img.shields.io/github/forks/Educcorp/EducStation?style=plastic&logo=fork&color=0b4444&labelColor=91a8a4" alt="Forks" />
-  </a>
-  <a href="https://github.com/Educcorp/EducStation/issues">
-    <img src="https://img.shields.io/github/issues/Educcorp/EducStation?style=plastic&logo=issue&color=0b4444&labelColor=91a8a4" alt="Issues" />
-  </a>
-  <img src="https://img.shields.io/github/license/Educcorp/EducStation?style=plastic&logo=license&color=0b4444&labelColor=91a8a4" alt="License" />
-</p>
 
 EducStation es una plataforma de blog educativo que conecta educadores y estudiantes para compartir experiencias e innovación pedagógica en un entorno digital colaborativo.
 
@@ -24,7 +12,7 @@ EducStation es una plataforma de blog educativo que conecta educadores y estudia
 
 ## <img src="https://media.giphy.com/media/VgCDAzcKvsR6OM0uWg/giphy.gif" width="40"> Acerca del Proyecto
 
-EducStation nace de la visión de EducCorp para transformar la educación mediante la colaboración y el acceso a recursos de calidad. Nuestra plataforma ofrece un espacio donde educadores, estudiantes y profesionales pueden:
+EducStation nace de la visión de EducCorp para transformar la educación mediante la colaboración y el acceso a Educación de Calidad, según el ODS 4. Nuestra plataforma ofrece un espacio donde educadores, estudiantes y profesionales pueden:
 
 - 📚 Compartir recursos educativos innovadores
 - 🧠 Explorar nuevas metodologías pedagógicas
@@ -61,7 +49,7 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 | --- | --- |
 | 📝 **Blog Educativo** | Artículos de alta calidad sobre innovación pedagógica y mejores prácticas |
 | 👥 **Perfiles de Educadores** | Plataforma para que los profesionales muestren su experiencia y recursos |
-| 🗂️ **Categorización Inteligente** | Sistema de navegación por temas, niveles educativos y metodologías |
+| 🗂️ **Categorización Inteligente** | Sistema de navegación por categorías |
 | 💬 **Comentarios y Discusiones** | Espacio para debates constructivos sobre temas educativos |
 | 📊 **Análisis de Tendencias** | Métricas sobre temas de interés en la comunidad educativa |
 | 📱 **Diseño Responsive** | Experiencia optimizada en todos los dispositivos |
@@ -129,13 +117,29 @@ npm start
 
 ##
 
-## <img src="public/assets/images/Animation - 1739245728068.gif" alt="Animation GIF" style="width: 50px;"> **Contact Me**
+## <img src="public/assets/images/Animation - 1739245728068.gif" alt="Animation GIF" style="width: 50px;"> **Contact Us**
 📢 Let’s Connect! Whether it’s video games, web design, or cutting-edge software, I’m excited to collaborate and create something extraordinary. 🤝📫
 
 
 <p align="center">
   
 [![GitHub](https://img.shields.io/badge/-GitHub-010409?style=plastic&logo=github&logoColor=white)](https://github.com/Dami-Val)  [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0a66c2?style=plastic&logo=in&logoColor=white)](https://linkedin.com/in/damian-valencia)  [![Email](https://img.shields.io/badge/-Email-c4211f?style=plastic&logo=gmail&logoColor=white)](mailto:damival.32@gmail.com)  [![My contact](https://img.shields.io/badge/-WhatsApp-36be49?style=plastic&logo=whatsapp&logoColor=white)](https://wa.me/523141741239)[![Instagram](https://img.shields.io/badge/-Instagram-e52765?style=plastic&logo=instagram&logoColor=white)](https://www.instagram.com/damival_/)  [![X/Twitter](https://img.shields.io/badge/-000000?style=plastic&logo=x&logoColor=white)](https://x.com/damival_) 
+
+##
+
+<p align="center">
+  <a href="https://github.com/Educcorp/EducStation/stargazers">
+    <img src="https://img.shields.io/github/stars/Educcorp/EducStation?style=plastic&logo=star&color=0b4444&labelColor=91a8a4" alt="Stars" />
+  </a>
+  <a href="https://github.com/Educcorp/EducStation/network/members">
+    <img src="https://img.shields.io/github/forks/Educcorp/EducStation?style=plastic&logo=fork&color=0b4444&labelColor=91a8a4" alt="Forks" />
+  </a>
+  <a href="https://github.com/Educcorp/EducStation/issues">
+    <img src="https://img.shields.io/github/issues/Educcorp/EducStation?style=plastic&logo=issue&color=0b4444&labelColor=91a8a4" alt="Issues" />
+  </a>
+  <img src="https://img.shields.io/github/license/Educcorp/EducStation?style=plastic&logo=license&color=0b4444&labelColor=91a8a4" alt="License" />
+</p>
+
 
 </p>
 
