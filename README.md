@@ -20,6 +20,8 @@
 
 EducStation es una plataforma de blog educativo que conecta educadores y estudiantes para compartir experiencias e innovación pedagógica en un entorno digital colaborativo.
 
+##
+
 ## <img src="https://media.giphy.com/media/VgCDAzcKvsR6OM0uWg/giphy.gif" width="40"> Acerca del Proyecto
 
 EducStation nace de la visión de EducCorp para transformar la educación mediante la colaboración y el acceso a recursos de calidad. Nuestra plataforma ofrece un espacio donde educadores, estudiantes y profesionales pueden:
@@ -29,6 +31,8 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 - 🌱 Participar en una comunidad de aprendizaje colaborativo
 - 📊 Acceder a análisis y tendencias en educación
 - 🚀 Potenciar el desarrollo profesional docente
+
+##
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -53,7 +57,7 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 
 ## 🌟 Características Principales
 
-| <img src="https://media.giphy.com/media/dWesBcTLavkZuG35MI/giphy.gif" width="40"> Funcionalidades  | Descripción |
+|  <img src="https://media.giphy.com/media/trN83pDD8yRDHBGfl3/giphy.gif" width="40" /> Funcionalidades  | Descripción |
 | --- | --- |
 | 📝 **Blog Educativo** | Artículos de alta calidad sobre innovación pedagógica y mejores prácticas |
 | 👥 **Perfiles de Educadores** | Plataforma para que los profesionales muestren su experiencia y recursos |
@@ -75,9 +79,6 @@ EducStation nace de la visión de EducCorp para transformar la educación median
   </tr>
 </table>
 
-## 📊 Estado del Proyecto
-
-[![GitHub Streak](https://github-readme-streak-stats.herokuapp.com?user=Educcorp&theme=transparent&hide_border=true&date_format=j%20M%5B%20Y%5D&ring=0B4444&fire=D2B99A&currStreakLabel=0B4444)](https://git.io/streak-stats)
 
 <a href="https://github.com/Educcorp/EducStation/issues">
   <img src="https://img.shields.io/github/issues/Educcorp/EducStation?style=for-the-badge&logo=github&color=0b4444" alt="GitHub issues" />
@@ -103,10 +104,13 @@ Visita [![Node.js](https://img.shields.io/badge/Node.js-Download-0b4444?style=pl
 npm start
 ```
 
-📝 Licencia
+
+## 📝 Licencia
+
+##
 
 
-👨‍💻 Equipo EducCorp
+## 👨‍💻 Equipo EducCorp
 <table>
   <tr>
     <td align="center">
@@ -123,22 +127,18 @@ npm start
   </tr>
 </table>
 
-### <img src="Animation - 1739245728068.gif" alt="Animation GIF" style="width: 50px;"> **Contact Me**
+##
+
+## <img src="public/assets/images/Animation - 1739245728068.gif" alt="Animation GIF" style="width: 50px;"> **Contact Me**
 📢 Let’s Connect! Whether it’s video games, web design, or cutting-edge software, I’m excited to collaborate and create something extraordinary. 🤝📫
 
 
-📬 Contacto
 <p align="center">
-  <a href="mailto:educcorp3@gmail.com">
-    <img src="https://img.shields.io/badge/Email-educcorp3%40gmail.com-d2b99a?style=for-the-badge&logo=gmail" alt="Email" />
-  </a>
-  <a href="https://twitter.com/EducStation">
-    <img src="https://img.shields.io/badge/Twitter-@EducStation-0b4444?style=for-the-badge&logo=twitter" alt="Twitter" />
-  </a>
-  <a href="https://www.linkedin.com/company/educstation">
-    <img src="https://img.shields.io/badge/LinkedIn-EducStation-0b4444?style=for-the-badge&logo=linkedin" alt="LinkedIn" />
-  </a>
+  
+[![GitHub](https://img.shields.io/badge/-GitHub-010409?style=plastic&logo=github&logoColor=white)](https://github.com/Dami-Val)  [![LinkedIn](https://img.shields.io/badge/-LinkedIn-0a66c2?style=plastic&logo=in&logoColor=white)](https://linkedin.com/in/damian-valencia)  [![Email](https://img.shields.io/badge/-Email-c4211f?style=plastic&logo=gmail&logoColor=white)](mailto:damival.32@gmail.com)  [![My contact](https://img.shields.io/badge/-WhatsApp-36be49?style=plastic&logo=whatsapp&logoColor=white)](https://wa.me/523141741239)[![Instagram](https://img.shields.io/badge/-Instagram-e52765?style=plastic&logo=instagram&logoColor=white)](https://www.instagram.com/damival_/)  [![X/Twitter](https://img.shields.io/badge/-000000?style=plastic&logo=x&logoColor=white)](https://x.com/damival_) 
+
 </p>
+
 <div align="center">
   <img src="https://capsule-render.vercel.app/api?type=waving&color=91a8a4&height=120&section=footer&text=EducStation&fontSize=30&fontColor=0b4444" />
 </div>
