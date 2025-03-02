@@ -22,7 +22,7 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 
 ##
 
-## 🛠️ Tecnologías Utilizadas
+## <img src="https://media.giphy.com/media/trN83pDD8yRDHBGfl3/giphy.gif" width="40" /> Tecnologías Utilizadas
 
 <p align="center">
   <a href="">
@@ -45,7 +45,7 @@ EducStation nace de la visión de EducCorp para transformar la educación median
 
 ## 🌟 Características Principales
 
-|  <img src="https://media.giphy.com/media/trN83pDD8yRDHBGfl3/giphy.gif" width="40" /> Funcionalidades  | Descripción |
+|  Funcionalidades  | Descripción |
 | --- | --- |
 | 📝 **Blog Educativo** | Artículos de alta calidad sobre innovación pedagógica y mejores prácticas |
 | 👥 **Perfiles de Educadores** | Plataforma para que los profesionales muestren su experiencia y recursos |
@@ -75,7 +75,7 @@ EducStation nace de la visión de EducCorp para transformar la educación median
   <img src="https://img.shields.io/github/issues-pr/Educcorp/EducStation?style=for-the-badge&logo=github&color=0b4444" alt="GitHub pull requests" />
 </a>
 
-## 🚀 Cómo Empezar
+## <img src="https://media.giphy.com/media/TdjQAgDIkRsYm1HUbt/giphy.gif" width="35">  Cómo Empezar
 
 ```bash
 # Clonar el repositorio:
@@ -93,12 +93,12 @@ npm start
 ```
 
 
-## 📝 Licencia
+## <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXd4OWw1MnZta2l0ajdsbng1OGVxbHRzZmE5MnU1cXczaW5kNzY2bSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/dZnMEGqbJcXYEjcJwr/giphy.gif" width="30">  Licencia
 
 ##
 
 
-## 👨‍💻 Equipo EducCorp
+## <img src="https://media.giphy.com/media/UVG0BN8TOMKkPOJS6e/giphy.gif" width="30"> 👨‍💻 Equipo EducCorp
 <table>
   <tr>
     <td align="center">
@@ -118,7 +118,7 @@ npm start
 ##
 
 ## <img src="public/assets/images/Animation - 1739245728068.gif" alt="Animation GIF" style="width: 50px;"> **Contact Us**
-📢 Let’s Connect! Whether it’s video games, web design, or cutting-edge software, I’m excited to collaborate and create something extraordinary. 🤝📫
+📢 Let's Connect! Whether it's video games, web design, or cutting-edge software, I'm excited to collaborate and create something extraordinary. 🤝📫
 
 
 <p align="center">
