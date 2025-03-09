@@ -1,3 +1,4 @@
+
 // src/components/admin/HTMLPreview.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
@@ -25,8 +26,10 @@ const HTMLPreview = ({ htmlContent }) => {
         const adjustHeight = () => {
           try {
             const height = doc.documentElement.scrollHeight;
-            if (height) {
+            if (height && height < 580) { // Mantenemos una altura mínima
               iframe.style.height = `${height}px`;
+            } else {
+              iframe.style.height = '580px'; // Altura consistente con textarea
             }
           } catch (error) {
             console.error("Error adjusting iframe height:", error);
@@ -55,6 +58,7 @@ const HTMLPreview = ({ htmlContent }) => {
               padding: 0;
               max-width: 100%;
               overflow-x: hidden;
+              background-color: #f9fafb; /* Concordancia con el fondo del textarea */
             }
             
             /* Para cuando el HTML no incluye estilos propios */
@@ -133,10 +137,10 @@ const HTMLPreview = ({ htmlContent }) => {
     },
     previewContainer: {
       width: "100%",
-      minHeight: "500px",
+      minHeight: "580px", // Misma altura que textarea
       border: "none",
       overflow: "auto",
-      backgroundColor: colors.white,
+      backgroundColor: "#f9fafb", // Concordancia con el fondo del textarea
       borderRadius: borderRadius.md
     },
     errorMessage: {
@@ -160,42 +164,19 @@ const HTMLPreview = ({ htmlContent }) => {
       zIndex: 10,
       borderRadius: borderRadius.md
     },
-    previewHeader: {
-      backgroundColor: colors.gray100,
-      borderRadius: `${borderRadius.md} ${borderRadius.md} 0 0`,
-      padding: `${spacing.xs} ${spacing.md}`,
+    infoBox: {
+      backgroundColor: 'rgba(11, 68, 68, 0.05)',
+      borderRadius: borderRadius.md,
+      padding: spacing.sm,
+      marginTop: spacing.md,
       fontSize: typography.fontSize.sm,
       color: colors.textSecondary,
-      borderBottom: `1px solid ${colors.gray200}`,
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center"
-    },
-    infoIcon: {
-      marginRight: spacing.xs,
-      color: colors.primary
-    },
-    instructions: {
-      fontSize: typography.fontSize.xs,
-      padding: spacing.sm,
-      backgroundColor: colors.white,
-      borderTop: `1px solid ${colors.gray200}`,
-      color: colors.textSecondary,
-      borderRadius: `0 0 ${borderRadius.md} ${borderRadius.md}`,
       textAlign: "center"
     }
   };
 
   return (
     <div style={styles.container}>
-      <div style={styles.previewHeader}>
-        <span>
-          <span style={styles.infoIcon}>ℹ️</span>
-          Vista previa HTML
-        </span>
-        <span>Vista segura (sandbox)</span>
-      </div>
-      
       {error && (
         <div style={styles.errorMessage}>
           {error}
@@ -215,8 +196,8 @@ const HTMLPreview = ({ htmlContent }) => {
         </div>
       )}
       
-      <div style={styles.instructions}>
-        Nota: Esta es solo una vista previa. Los enlaces se abrirán en una nueva pestaña y algunas funcionalidades pueden estar limitadas.
+      <div style={styles.infoBox}>
+        Vista previa segura (sandbox) • Los enlaces se abrirán en una nueva pestaña
       </div>
     </div>
   );

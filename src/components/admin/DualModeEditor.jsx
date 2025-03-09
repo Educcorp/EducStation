@@ -100,13 +100,27 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
     }
   };
 
+  const commonContentStyles = {
+    width: '100%',
+    height: '600px', // Mayor altura
+    padding: spacing.md,
+    borderRadius: borderRadius.md,
+    backgroundColor: '#f9fafb', // Fondo suave, consistente entre code y preview
+    border: `1px solid ${colors.gray200}`,
+    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)',
+    overflow: 'auto',
+    transition: 'all 0.2s ease-in-out'
+  };
+
   const styles = {
     editorContainer: {
       position: 'relative',
       border: `1px solid ${colors.gray200}`,
       borderRadius: borderRadius.md,
       overflow: 'hidden',
-      boxShadow: shadows.sm
+      boxShadow: shadows.sm,
+      maxWidth: '960px', // Ancho máximo más generoso
+      margin: '0 auto', // Centrado horizontal
     },
     editorHeader: {
       display: 'flex',
@@ -156,10 +170,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       borderBottom: `2px solid ${mode === 'markdown' ? '#0095FF' : '#E34C26'}`
     },
     textarea: {
-      width: '100%',
-      height: '500px',
-      padding: spacing.md,
-      fontSize: typography.fontSize.md,
+      ...commonContentStyles,
       fontFamily: 'monospace',
       resize: 'vertical',
       lineHeight: 1.5,
@@ -170,10 +181,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       whiteSpace: 'pre-wrap'
     },
     previewContainer: {
-      height: '500px',
-      padding: spacing.md,
-      overflow: 'auto',
-      backgroundColor: colors.white
+      ...commonContentStyles
     },
     autoSaveIndicator: {
       position: 'absolute',
@@ -200,6 +208,12 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       marginLeft: spacing.sm,
       fontWeight: typography.fontWeight.medium,
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+    },
+    editorContent: {
+      backgroundColor: '#f9fafb',
+      borderRadius: `0 0 ${borderRadius.md} ${borderRadius.md}`,
+      padding: spacing.sm,
+      border: 'none'
     }
   };
 
@@ -267,42 +281,44 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
         </div>
       </div>
 
-      {activeTab === 'code' && (
-        <>
-          <EditorToolbar 
-            onInsertMarkdown={handleToolbarAction} 
-            mode={mode}
-          />
-          
-          <textarea
-            ref={textAreaRef}
-            value={internalContent}
-            onChange={handleTextAreaChange}
-            style={styles.textarea}
-            placeholder={mode === 'markdown' 
-              ? "Escribe tu post en formato Markdown..." 
-              : "Escribe código HTML aquí..."
-            }
-            spellCheck="false"
-          />
-        </>
-      )}
+      <div style={styles.editorContent}>
+        {activeTab === 'code' && (
+          <>
+            <EditorToolbar 
+              onInsertMarkdown={handleToolbarAction} 
+              mode={mode}
+            />
+            
+            <textarea
+              ref={textAreaRef}
+              value={internalContent}
+              onChange={handleTextAreaChange}
+              style={styles.textarea}
+              placeholder={mode === 'markdown' 
+                ? "Escribe tu post en formato Markdown..." 
+                : "Escribe código HTML aquí..."
+              }
+              spellCheck="false"
+            />
+          </>
+        )}
 
-      {activeTab === 'preview' && (
-        <div style={styles.previewContainer}>
-          {mode === 'markdown' ? (
-            <MarkdownPreview content={internalContent} />
-          ) : (
-            <HTMLPreview htmlContent={internalContent} />
-          )}
-        </div>
-      )}
+        {activeTab === 'preview' && (
+          <div style={styles.previewContainer}>
+            {mode === 'markdown' ? (
+              <MarkdownPreview content={internalContent} />
+            ) : (
+              <HTMLPreview htmlContent={internalContent} />
+            )}
+          </div>
+        )}
 
-      {internalContent.length > 0 && (
-        <div style={styles.autoSaveIndicator}>
-          Guardado automático...
-        </div>
-      )}
+        {internalContent.length > 0 && (
+          <div style={styles.autoSaveIndicator}>
+            Guardado automático...
+          </div>
+        )}
+      </div>
     </div>
   );
 };
