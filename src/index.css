@@ -11,6 +11,16 @@
   --text-secondary: #4c7977;
 }
 
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background-color: var(--background);
@@ -19,24 +29,20 @@ body {
   padding: 0;
 }
 
-.header {
-  text-align: center;
-  animation: fadeIn 1s ease-in-out;
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.header-title {
-  font-size: 3rem;
-  color: var(--primary);
-  margin-bottom: 0.5rem;
-  animation: slideIn 1s ease-in-out;
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.header-subtitle {
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-  max-width: 600px;
-  margin: 0 auto;
-  animation: fadeInUp 1s ease-in-out;
+main {
+  flex: 1;
 }
 
 /* Estilos para botones */
@@ -45,6 +51,7 @@ button {
   color: var(--primary);
   border: none;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 button:hover {
@@ -92,4 +99,14 @@ a:hover {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
