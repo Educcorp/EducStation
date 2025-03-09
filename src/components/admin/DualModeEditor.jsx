@@ -74,6 +74,32 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
     onChange(e);
   };
 
+  // Colores oficiales para los modos
+  const modeColors = {
+    markdown: {
+      background: '#2C3E50',
+      text: '#FFFFFF',
+      hoverBg: '#34495E',
+      activeBg: '#0095FF', // Color azul del logo de Markdown
+      activeText: '#FFFFFF',
+      badge: {
+        background: '#0095FF', // Color azul del logo de Markdown
+        text: '#FFFFFF'
+      }
+    },
+    html: {
+      background: '#2C3E50',
+      text: '#FFFFFF',
+      hoverBg: '#34495E',
+      activeBg: '#E34C26',
+      activeText: '#FFFFFF',
+      badge: {
+        background: '#E34C26',
+        text: '#FFFFFF'
+      }
+    }
+  };
+
   const styles = {
     editorContainer: {
       position: 'relative',
@@ -86,7 +112,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       display: 'flex',
       justifyContent: 'space-between',
       borderBottom: `1px solid ${colors.gray200}`,
-      backgroundColor: colors.gray100
+      backgroundColor: '#F8F9FA'
     },
     modeToggle: {
       display: 'flex',
@@ -95,20 +121,23 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       fontSize: typography.fontSize.sm,
       gap: spacing.sm
     },
-    modeButton: {
+    modeButton: (isActive, modeType) => ({
       padding: `${spacing.xs} ${spacing.md}`,
-      backgroundColor: 'transparent',
+      backgroundColor: isActive ? 
+        modeColors[modeType].activeBg : 
+        modeColors[modeType].background,
       border: 'none',
       borderRadius: borderRadius.sm,
       cursor: 'pointer',
       fontSize: typography.fontSize.sm,
       transition: 'all 0.2s ease',
-      color: colors.textSecondary
-    },
-    activeModeButton: {
-      backgroundColor: colors.primary,
-      color: colors.white
-    },
+      color: isActive ? 
+        modeColors[modeType].activeText : 
+        modeColors[modeType].text,
+      fontWeight: isActive ? typography.fontWeight.medium : typography.fontWeight.regular,
+      boxShadow: isActive ? `0 2px 4px rgba(0,0,0,0.1)` : 'none',
+      transform: isActive ? 'translateY(-2px)' : 'translateY(0)'
+    }),
     tabsContainer: {
       display: 'flex'
     },
@@ -123,8 +152,8 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       borderBottom: '2px solid transparent'
     },
     activeTab: {
-      color: colors.primary,
-      borderBottom: `2px solid ${colors.primary}`
+      color: mode === 'markdown' ? '#0095FF' : '#E34C26',
+      borderBottom: `2px solid ${mode === 'markdown' ? '#0095FF' : '#E34C26'}`
     },
     textarea: {
       width: '100%',
@@ -150,7 +179,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       position: 'absolute',
       bottom: '10px',
       right: '10px',
-      backgroundColor: colors.primary,
+      backgroundColor: mode === 'markdown' ? '#0095FF' : '#E34C26',
       color: colors.white,
       padding: `${spacing.xs} ${spacing.sm}`,
       borderRadius: borderRadius.sm,
@@ -162,9 +191,15 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       padding: `${spacing.xs} ${spacing.sm}`,
       borderRadius: borderRadius.round,
       fontSize: typography.fontSize.xs,
-      backgroundColor: mode === 'html' ? colors.secondary : colors.primaryLight,
-      color: mode === 'html' ? colors.primary : colors.white,
-      marginLeft: spacing.sm
+      backgroundColor: mode === 'html' ? 
+        modeColors.html.badge.background : 
+        modeColors.markdown.badge.background,
+      color: mode === 'html' ? 
+        modeColors.html.badge.text : 
+        modeColors.markdown.badge.text,
+      marginLeft: spacing.sm,
+      fontWeight: typography.fontWeight.medium,
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
     }
   };
 
@@ -195,20 +230,34 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
         <div style={styles.modeToggle}>
           <span>Modo:</span>
           <button
-            style={{
-              ...styles.modeButton,
-              ...(mode === 'markdown' ? styles.activeModeButton : {})
-            }}
+            style={styles.modeButton(mode === 'markdown', 'markdown')}
             onClick={() => handleModeToggle('markdown')}
+            onMouseEnter={(e) => {
+              if (mode !== 'markdown') {
+                e.target.style.backgroundColor = modeColors.markdown.hoverBg;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (mode !== 'markdown') {
+                e.target.style.backgroundColor = modeColors.markdown.background;
+              }
+            }}
           >
             Markdown
           </button>
           <button
-            style={{
-              ...styles.modeButton,
-              ...(mode === 'html' ? styles.activeModeButton : {})
-            }}
+            style={styles.modeButton(mode === 'html', 'html')}
             onClick={() => handleModeToggle('html')}
+            onMouseEnter={(e) => {
+              if (mode !== 'html') {
+                e.target.style.backgroundColor = modeColors.html.hoverBg;
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (mode !== 'html') {
+                e.target.style.backgroundColor = modeColors.html.background;
+              }
+            }}
           >
             HTML
           </button>
