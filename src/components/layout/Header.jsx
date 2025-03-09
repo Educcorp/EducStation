@@ -1,13 +1,16 @@
 // src/components/layout/Header.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, withRouter } from 'react-router-dom';
-import { colors, spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
+import { Link, useLocation } from 'react-router-dom';
+import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 
-const Header = ({ location }) => {
+const Header = () => {
   // Estado para detectar si la página ha sido scrolleada
   const [isScrolled, setIsScrolled] = useState(false);
   // Estado para el hover
   const [hoveredItem, setHoveredItem] = useState(null);
+  
+  // Usar useLocation en lugar de withRouter (que está obsoleto en React Router v6)
+  const location = useLocation();
   
   // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
   const userRole = 'admin'; // Opciones: 'admin', 'user', etc.
@@ -56,40 +59,19 @@ const Header = ({ location }) => {
       textDecoration: "none",
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.bold,
-      transition: transitions.default,
-      '&:hover': {
-        transform: "translateY(-2px)"
-      }
+      transition: transitions.default
     },
     logoIcon: {
-      marginRight: spacing.sm,
-      width: "42px",
-      height: "42px",
-      backgroundColor: colors.primary,
-      display: "inline-flex",
+      backgroundColor: colors.background,
+      borderRadius: borderRadius.md,
+      display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      color: colors.white,
-      borderRadius: borderRadius.md,
-      boxShadow: shadows.primary,
+      marginRight: spacing.sm,
       transition: transitions.default,
-      backgroundImage: `linear-gradient(135deg, ${colors.primary} 60%, ${colors.secondary} 40%)`,
-      position: "relative",
-      overflow: "hidden",
-      '&:hover': {
-        transform: "scale(1.1) rotate(5deg)"
-      },
-      '&:before': {
-        content: '""',
-        position: "absolute",
-        top: "15%",
-        right: "15%",
-        width: "35%",
-        height: "35%",
-        backgroundColor: colors.white,
-        borderRadius: "50%",
-        opacity: 0.5
-      }
+      width: "42px",
+      height: "42px",
+      overflow: "hidden"
     },
     navLinks: {
       display: "flex",
@@ -101,10 +83,7 @@ const Header = ({ location }) => {
       fontWeight: typography.fontWeight.medium,
       position: "relative",
       padding: `${spacing.xs} 0`,
-      transition: transitions.default,
-      '&:hover': {
-        color: colors.primary
-      }
+      transition: transitions.default
     }),
     profileIcon: {
       width: "40px",
@@ -115,11 +94,7 @@ const Header = ({ location }) => {
       boxShadow: shadows.sm,
       border: `2px solid ${colors.white}`,
       transition: transitions.default,
-      cursor: "pointer",
-      '&:hover': {
-        transform: "translateY(-2px)",
-        boxShadow: shadows.md
-      }
+      cursor: "pointer"
     },
     profileImg: {
       width: "100%",
@@ -141,44 +116,30 @@ const Header = ({ location }) => {
       <div style={styles.container}>
         <Link
           to="/" 
-          style={hoveredItem === 'logo' ? applyHoverStyles(styles.logo) : styles.logo}
+          style={styles.logo}
           onMouseEnter={() => setHoveredItem('logo')}
           onMouseLeave={() => setHoveredItem(null)}
         >
           <div style={{
-            display: "flex",
-            alignItems: "center",
+            ...styles.logoIcon,
+            transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)'
           }}>
-            <div style={{
-              backgroundColor: colors.background,
-              borderRadius: borderRadius.md,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: spacing.sm,
-              transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)',
-              transition: transitions.default,
-              width: "42px",
-              height: "42px",
-              overflow: "hidden"
-            }}>
-              <img 
-                src="/assets/images/educstation-logo.png" 
-                alt="EducStation Logo" 
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain"
-                }} 
-              />
-            </div>
-            <span style={{
-              color: colors.primary,
-              fontWeight: typography.fontWeight.bold
-            }}>
-              EducStation
-            </span>
+            <img 
+              src="/assets/images/educstation-logo.png" 
+              alt="EducStation Logo" 
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain"
+              }} 
+            />
           </div>
+          <span style={{
+            color: colors.primary,
+            fontWeight: typography.fontWeight.bold
+          }}>
+            EducStation
+          </span>
         </Link>
 
         <nav style={styles.navLinks}>
@@ -210,7 +171,11 @@ const Header = ({ location }) => {
         </nav>
         
         <div 
-          style={hoveredItem === 'profile' ? applyHoverStyles(styles.profileIcon) : styles.profileIcon}
+          style={{
+            ...styles.profileIcon,
+            transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
+            boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm
+          }}
           onMouseEnter={() => setHoveredItem('profile')}
           onMouseLeave={() => setHoveredItem(null)}
         >
@@ -221,4 +186,4 @@ const Header = ({ location }) => {
   );
 };
 
-export default withRouter(Header);
+export default Header;

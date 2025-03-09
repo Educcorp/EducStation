@@ -1,33 +1,6 @@
-import { DebugLevel } from '@typescript-eslint/types';
-import * as ts from 'typescript';
-import { CanonicalPath } from './create-program/shared';
-import { TSESTree, TSESTreeToTSNode, TSNode, TSToken } from './ts-estree';
-declare type DebugModule = 'typescript-eslint' | 'eslint' | 'typescript';
-export interface Extra {
-    code: string;
-    comment: boolean;
-    comments: TSESTree.Comment[];
-    createDefaultProgram: boolean;
-    debugLevel: Set<DebugModule>;
-    errorOnTypeScriptSyntacticAndSemanticIssues: boolean;
-    errorOnUnknownASTType: boolean;
-    EXPERIMENTAL_useSourceOfProjectReferenceRedirect: boolean;
-    extraFileExtensions: string[];
-    filePath: string;
-    jsx: boolean;
-    loc: boolean;
-    singleRun: boolean;
-    log: (message: string) => void;
-    preserveNodeMaps?: boolean;
-    programs: null | Iterable<ts.Program>;
-    projects: CanonicalPath[];
-    range: boolean;
-    strict: boolean;
-    tokens: null | TSESTree.Token[];
-    tsconfigRootDir: string;
-    useJSXTextNode: boolean;
-    moduleResolver: string;
-}
+import type { CacheDurationSeconds, DebugLevel } from '@typescript-eslint/types';
+import type * as ts from 'typescript';
+import type { TSESTree, TSESTreeToTSNode, TSNode, TSToken } from './ts-estree';
 interface ParseOptions {
     /**
      * create a top-level comments array containing all comments
@@ -57,10 +30,10 @@ interface ParseOptions {
      * Enable parsing of JSX.
      * For more details, see https://www.typescriptlang.org/docs/handbook/jsx.html
      *
-     * NOTE: this setting does not effect known file types (.js, .jsx, .ts, .tsx, .json) because the
+     * NOTE: this setting does not effect known file types (.js, .cjs, .mjs, .jsx, .ts, .mts, .cts, .tsx, .json) because the
      * TypeScript compiler has its own internal handling for known file extensions.
      *
-     * For the exact behavior, see https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/parser#parseroptionsecmafeaturesjsx
+     * For the exact behavior, see https://github.com/typescript-eslint/typescript-eslint/tree/main/packages/parser#parseroptionsecmafeaturesjsx
      */
     jsx?: boolean;
     /**
@@ -80,7 +53,6 @@ interface ParseOptions {
      * Set to true to create a top-level array containing all tokens from the file.
      */
     tokens?: boolean;
-    useJSXTextNode?: boolean;
 }
 interface ParseAndGenerateServicesOptions extends ParseOptions {
     /**
@@ -120,10 +92,11 @@ interface ParseAndGenerateServicesOptions extends ParseOptions {
      */
     preserveNodeMaps?: boolean;
     /**
-     * Absolute (or relative to `tsconfigRootDir`) paths to the tsconfig(s).
+     * Absolute (or relative to `tsconfigRootDir`) paths to the tsconfig(s),
+     * or `true` to find the nearest tsconfig.json to the file.
      * If this is provided, type information will be returned.
      */
-    project?: string | string[];
+    project?: string | string[] | true;
     /**
      * If you provide a glob (or globs) to the project option, you can use this option to ignore certain folders from
      * being matched by the globs.
@@ -165,9 +138,27 @@ interface ParseAndGenerateServicesOptions extends ParseOptions {
      * whether or not ESLint is being used as part of a single run.
      */
     allowAutomaticSingleRunInference?: boolean;
+    /**
+     * Granular control of the expiry lifetime of our internal caches.
+     * You can specify the number of seconds as an integer number, or the string
+     * 'Infinity' if you never want the cache to expire.
+     *
+     * By default cache entries will be evicted after 30 seconds, or will persist
+     * indefinitely if `allowAutomaticSingleRunInference = true` AND the parser
+     * infers that it is a single run.
+     */
+    cacheLifetime?: {
+        /**
+         * Glob resolution for `parserOptions.project` values.
+         */
+        glob?: CacheDurationSeconds;
+    };
+    /**
+     * Path to a file exporting a custom `ModuleResolver`.
+     */
     moduleResolver?: string;
 }
-export declare type TSESTreeOptions = ParseAndGenerateServicesOptions;
+export type TSESTreeOptions = ParseAndGenerateServicesOptions;
 export interface ParserWeakMap<TKey, TValueBase> {
     get<TValue extends TValueBase>(key: TKey): TValue;
     has(key: unknown): boolean;

@@ -1,3 +1,4 @@
+// src/components/ui/Tooltip.jsx
 import React from 'react';
 import { colors, spacing, borderRadius } from '../../styles/theme';
 
@@ -50,7 +51,7 @@ const Tooltip = ({
       break;
     default:
       positionStyles = {
-        bottom: '-30px',
+        bottom: '30px',
         left: '50%',
         transform: 'translateX(-50%)'
       };

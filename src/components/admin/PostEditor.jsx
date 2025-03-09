@@ -1,7 +1,8 @@
+// src/components/admin/PostEditor.jsx
 import React, { useState, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
-// Componentes creados por la refactorización
+// Componentes para el editor
 import EditorHeader from './EditorHeader';
 import MarkdownEditor from './MarkdownEditor';
 import MarkdownPreview from './MarkdownPreview';
@@ -11,8 +12,27 @@ import MarkdownGuide from './MarkdownGuide';
 import StatusMessage from './StatusMessage';
 import ImportExportActions from './ImportExportActions';
 
-// Utilidades
-import { savePostToLocalStorage, loadPostFromLocalStorage } from './utils/storageUtils';
+// Funciones para almacenamiento local
+const savePostToLocalStorage = (post) => {
+  try {
+    const postToSave = { ...post };
+    // No guardamos la imagen como tal, sino solo la URL de vista previa
+    delete postToSave.coverImage;
+    localStorage.setItem('post_draft', JSON.stringify(postToSave));
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+};
+
+const loadPostFromLocalStorage = () => {
+  try {
+    const savedPost = localStorage.getItem('post_draft');
+    return savedPost ? JSON.parse(savedPost) : null;
+  } catch (error) {
+    console.error('Error loading from localStorage:', error);
+    return null;
+  }
+};
 
 const PostEditor = () => {
   const [post, setPost] = useState({
@@ -67,7 +87,6 @@ const PostEditor = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (post.content.length > 0 || post.title.length > 0) {
-        // Aquí se implementaría la lógica de guardado automático
         console.log('Guardado automático...');
         savePostToLocalStorage(post);
       }
@@ -91,7 +110,7 @@ const PostEditor = () => {
     // Guardar en localStorage
     savePostToLocalStorage(post);
     
-    // Simulación de guardado (reemplazar con llamada a API)
+    // Simulación de guardado
     setTimeout(() => {
       setIsSaving(false);
       setSaveMessage({
@@ -121,7 +140,7 @@ const PostEditor = () => {
     
     setIsPublishing(true);
     
-    // Simulación de publicación (reemplazar con llamada a API)
+    // Simulación de publicación
     setTimeout(() => {
       setIsPublishing(false);
       setPost(prev => ({ ...prev, status: 'published' }));
@@ -247,7 +266,10 @@ status: ${post.status}
       display: "grid",
       gridTemplateColumns: "1fr 300px",
       gap: spacing.xl,
-      marginBottom: spacing.xxl
+      marginBottom: spacing.xxl,
+      '@media (max-width: 768px)': {
+        gridTemplateColumns: "1fr"
+      }
     },
     mainEditor: {
       width: "100%",
@@ -322,7 +344,15 @@ status: ${post.status}
         onPublish={publishPost}
       />
 
-      <div style={styles.editorContainer}>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 300px",
+        gap: spacing.xl,
+        marginBottom: spacing.xxl,
+        '@media (max-width: 768px)': {
+          gridTemplateColumns: "1fr"
+        }
+      }}>
         <div style={styles.mainEditor}>
           <div style={styles.formGroup}>
             <label style={{

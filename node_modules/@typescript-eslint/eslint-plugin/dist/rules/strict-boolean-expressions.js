@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -19,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const experimental_utils_1 = require("@typescript-eslint/experimental-utils");
+const utils_1 = require("@typescript-eslint/utils");
 const tsutils = __importStar(require("tsutils"));
 const ts = __importStar(require("typescript"));
 const util = __importStar(require("../util"));
@@ -28,9 +32,9 @@ exports.default = util.createRule({
     meta: {
         type: 'suggestion',
         fixable: 'code',
+        hasSuggestions: true,
         docs: {
-            description: 'Restricts the types allowed in boolean expressions',
-            category: 'Best Practices',
+            description: 'Disallow certain types in boolean expressions',
             recommended: false,
             requiresTypeChecking: true,
         },
@@ -44,6 +48,7 @@ exports.default = util.createRule({
                     allowNullableBoolean: { type: 'boolean' },
                     allowNullableString: { type: 'boolean' },
                     allowNullableNumber: { type: 'boolean' },
+                    allowNullableEnum: { type: 'boolean' },
                     allowAny: { type: 'boolean' },
                     allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: {
                         type: 'boolean',
@@ -73,6 +78,8 @@ exports.default = util.createRule({
                 'The condition is always true.',
             conditionErrorNullableObject: 'Unexpected nullable object value in conditional. ' +
                 'An explicit null check is required.',
+            conditionErrorNullableEnum: 'Unexpected nullable enum value in conditional. ' +
+                'Please handle the nullish/zero/NaN cases explicitly.',
             noStrictNullCheck: 'This rule requires the `strictNullChecks` compiler option to be turned on to function correctly.',
             conditionFixDefaultFalse: 'Explicitly treat nullish value the same as false (`value ?? false`)',
             conditionFixDefaultEmptyString: 'Explicitly treat nullish value the same as an empty string (`value ?? ""`)',
@@ -95,6 +102,7 @@ exports.default = util.createRule({
             allowNullableBoolean: false,
             allowNullableString: false,
             allowNullableNumber: false,
+            allowNullableEnum: true,
             allowAny: false,
             allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: false,
         },
@@ -115,55 +123,84 @@ exports.default = util.createRule({
                 messageId: 'noStrictNullCheck',
             });
         }
-        const checkedNodes = new Set();
+        const traversedNodes = new Set();
         return {
-            ConditionalExpression: checkTestExpression,
-            DoWhileStatement: checkTestExpression,
-            ForStatement: checkTestExpression,
-            IfStatement: checkTestExpression,
-            WhileStatement: checkTestExpression,
-            'LogicalExpression[operator!="??"]': checkNode,
-            'UnaryExpression[operator="!"]': checkUnaryLogicalExpression,
+            ConditionalExpression: traverseTestExpression,
+            DoWhileStatement: traverseTestExpression,
+            ForStatement: traverseTestExpression,
+            IfStatement: traverseTestExpression,
+            WhileStatement: traverseTestExpression,
+            'LogicalExpression[operator!="??"]': traverseLogicalExpression,
+            'UnaryExpression[operator="!"]': traverseUnaryLogicalExpression,
         };
-        function checkTestExpression(node) {
+        /**
+         * Inspects condition of a test expression. (`if`, `while`, `for`, etc.)
+         */
+        function traverseTestExpression(node) {
             if (node.test == null) {
                 return;
             }
-            checkNode(node.test, true);
-        }
-        function checkUnaryLogicalExpression(node) {
-            checkNode(node.argument, true);
+            traverseNode(node.test, true);
         }
         /**
-         * This function analyzes the type of a node and checks if it is allowed in a boolean context.
-         * It can recurse when checking nested logical operators, so that only the outermost operands are reported.
-         * The right operand of a logical expression is ignored unless it's a part of a test expression (if/while/ternary/etc).
-         * @param node The AST node to check.
-         * @param isTestExpr Whether the node is a descendant of a test expression.
+         * Inspects the argument of a unary logical expression (`!`).
          */
-        function checkNode(node, isTestExpr = false) {
+        function traverseUnaryLogicalExpression(node) {
+            traverseNode(node.argument, true);
+        }
+        /**
+         * Inspects the arguments of a logical expression (`&&`, `||`).
+         *
+         * If the logical expression is a descendant of a test expression,
+         * the `isCondition` flag should be set to true.
+         * Otherwise, if the logical expression is there on it's own,
+         * it's used for control flow and is not a condition itself.
+         */
+        function traverseLogicalExpression(node, isCondition = false) {
+            // left argument is always treated as a condition
+            traverseNode(node.left, true);
+            // if the logical expression is used for control flow,
+            // then it's right argument is used for it's side effects only
+            traverseNode(node.right, isCondition);
+        }
+        /**
+         * Inspects any node.
+         *
+         * If it's a logical expression then it recursively traverses its arguments.
+         * If it's any other kind of node then it's type is finally checked against the rule,
+         * unless `isCondition` flag is set to false, in which case
+         * it's assumed to be used for side effects only and is skipped.
+         */
+        function traverseNode(node, isCondition) {
             // prevent checking the same node multiple times
-            if (checkedNodes.has(node)) {
+            if (traversedNodes.has(node)) {
                 return;
             }
-            checkedNodes.add(node);
+            traversedNodes.add(node);
             // for logical operator, we check its operands
-            if (node.type === experimental_utils_1.AST_NODE_TYPES.LogicalExpression &&
+            if (node.type === utils_1.AST_NODE_TYPES.LogicalExpression &&
                 node.operator !== '??') {
-                checkNode(node.left, isTestExpr);
-                // we ignore the right operand when not in a context of a test expression
-                if (isTestExpr) {
-                    checkNode(node.right, isTestExpr);
-                }
+                traverseLogicalExpression(node, isCondition);
                 return;
             }
+            // skip if node is not a condition
+            if (!isCondition) {
+                return;
+            }
+            checkNode(node);
+        }
+        /**
+         * This function does the actual type check on a node.
+         * It analyzes the type of a node and checks if it is allowed in a boolean context.
+         */
+        function checkNode(node) {
             const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
             const type = util.getConstrainedTypeAtLocation(typeChecker, tsNode);
             const types = inspectVariantTypes(tsutils.unionTypeParts(type));
             const is = (...wantedTypes) => types.size === wantedTypes.length &&
                 wantedTypes.every(type => types.has(type));
             // boolean
-            if (is('boolean')) {
+            if (is('boolean') || is('truthy boolean')) {
                 // boolean is always okay
                 return;
             }
@@ -176,6 +213,10 @@ exports.default = util.createRule({
             if (is('nullish')) {
                 // condition is always false
                 context.report({ node, messageId: 'conditionErrorNullish' });
+                return;
+            }
+            // Known edge case: boolean `true` and nullish values are always valid boolean expressions
+            if (is('nullish', 'truthy boolean')) {
                 return;
             }
             // nullable boolean
@@ -604,6 +645,43 @@ exports.default = util.createRule({
                 }
                 return;
             }
+            // nullable enum
+            if (is('nullish', 'number', 'enum') ||
+                is('nullish', 'string', 'enum') ||
+                is('nullish', 'truthy number', 'enum') ||
+                is('nullish', 'truthy string', 'enum') ||
+                // mixed enums
+                is('nullish', 'truthy number', 'truthy string', 'enum') ||
+                is('nullish', 'truthy number', 'string', 'enum') ||
+                is('nullish', 'truthy string', 'number', 'enum') ||
+                is('nullish', 'number', 'string', 'enum')) {
+                if (!options.allowNullableEnum) {
+                    if (isLogicalNegationExpression(node.parent)) {
+                        context.report({
+                            node,
+                            messageId: 'conditionErrorNullableEnum',
+                            fix: util.getWrappingFixer({
+                                sourceCode,
+                                node: node.parent,
+                                innerNode: node,
+                                wrap: code => `${code} == null`,
+                            }),
+                        });
+                    }
+                    else {
+                        context.report({
+                            node,
+                            messageId: 'conditionErrorNullableEnum',
+                            fix: util.getWrappingFixer({
+                                sourceCode,
+                                node,
+                                wrap: code => `${code} != null`,
+                            }),
+                        });
+                    }
+                }
+                return;
+            }
             // any
             if (is('any')) {
                 if (!options.allowAny) {
@@ -635,12 +713,22 @@ exports.default = util.createRule({
             if (types.some(type => tsutils.isTypeFlagSet(type, ts.TypeFlags.Null | ts.TypeFlags.Undefined | ts.TypeFlags.VoidLike))) {
                 variantTypes.add('nullish');
             }
-            if (types.some(type => tsutils.isTypeFlagSet(type, ts.TypeFlags.BooleanLike))) {
+            const booleans = types.filter(type => tsutils.isTypeFlagSet(type, ts.TypeFlags.BooleanLike));
+            // If incoming type is either "true" or "false", there will be one type
+            // object with intrinsicName set accordingly
+            // If incoming type is boolean, there will be two type objects with
+            // intrinsicName set "true" and "false" each because of tsutils.unionTypeParts()
+            if (booleans.length === 1) {
+                tsutils.isBooleanLiteralType(booleans[0], true)
+                    ? variantTypes.add('truthy boolean')
+                    : variantTypes.add('boolean');
+            }
+            else if (booleans.length === 2) {
                 variantTypes.add('boolean');
             }
             const strings = types.filter(type => tsutils.isTypeFlagSet(type, ts.TypeFlags.StringLike));
             if (strings.length) {
-                if (strings.some(type => type.isStringLiteral() && type.value !== '')) {
+                if (strings.every(type => type.isStringLiteral() && type.value !== '')) {
                     variantTypes.add('truthy string');
                 }
                 else {
@@ -649,12 +737,15 @@ exports.default = util.createRule({
             }
             const numbers = types.filter(type => tsutils.isTypeFlagSet(type, ts.TypeFlags.NumberLike | ts.TypeFlags.BigIntLike));
             if (numbers.length) {
-                if (numbers.some(type => type.isNumberLiteral() && type.value !== 0)) {
+                if (numbers.every(type => type.isNumberLiteral() && type.value !== 0)) {
                     variantTypes.add('truthy number');
                 }
                 else {
                     variantTypes.add('number');
                 }
+            }
+            if (types.some(type => tsutils.isTypeFlagSet(type, ts.TypeFlags.EnumLike))) {
+                variantTypes.add('enum');
             }
             if (types.some(type => !tsutils.isTypeFlagSet(type, ts.TypeFlags.Null |
                 ts.TypeFlags.Undefined |
@@ -663,12 +754,15 @@ exports.default = util.createRule({
                 ts.TypeFlags.StringLike |
                 ts.TypeFlags.NumberLike |
                 ts.TypeFlags.BigIntLike |
+                ts.TypeFlags.TypeParameter |
                 ts.TypeFlags.Any |
                 ts.TypeFlags.Unknown |
                 ts.TypeFlags.Never))) {
                 variantTypes.add('object');
             }
-            if (types.some(type => util.isTypeAnyType(type) || util.isTypeUnknownType(type))) {
+            if (types.some(type => util.isTypeFlagSet(type, ts.TypeFlags.TypeParameter |
+                ts.TypeFlags.Any |
+                ts.TypeFlags.Unknown))) {
                 variantTypes.add('any');
             }
             if (types.some(type => tsutils.isTypeFlagSet(type, ts.TypeFlags.Never))) {
@@ -679,10 +773,10 @@ exports.default = util.createRule({
     },
 });
 function isLogicalNegationExpression(node) {
-    return node.type === experimental_utils_1.AST_NODE_TYPES.UnaryExpression && node.operator === '!';
+    return node.type === utils_1.AST_NODE_TYPES.UnaryExpression && node.operator === '!';
 }
 function isArrayLengthExpression(node, typeChecker, parserServices) {
-    if (node.type !== experimental_utils_1.AST_NODE_TYPES.MemberExpression) {
+    if (node.type !== utils_1.AST_NODE_TYPES.MemberExpression) {
         return false;
     }
     if (node.computed) {
