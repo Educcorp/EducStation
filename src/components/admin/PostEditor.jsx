@@ -17,6 +17,7 @@ const savePostToLocalStorage = (post) => {
     // No guardamos la imagen como tal, sino solo la URL de vista previa
     delete postToSave.coverImage;
     localStorage.setItem('post_draft', JSON.stringify(postToSave));
+    console.log('Saved to localStorage:', postToSave); // Debug
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }
@@ -63,6 +64,10 @@ const PostEditor = () => {
   // Manejador para cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Log para depuración
+    console.log(`Changing ${name} to ${value}`);
+    
     setPost(prev => ({
       ...prev,
       [name]: value
@@ -81,14 +86,6 @@ const PostEditor = () => {
     }
   };
 
-  // Método para actualizar el modo del editor
-  const updateEditorMode = (mode) => {
-    setPost(prev => ({
-      ...prev,
-      editorMode: mode
-    }));
-  };
-
   // Autoguardado cuando el contenido cambia
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -99,7 +96,7 @@ const PostEditor = () => {
     }, 2000);
     
     return () => clearTimeout(timer);
-  }, [post.content, post.title, post.editorMode]);
+  }, [post]);
   
   // Cargar borrador guardado al iniciar
   useEffect(() => {
@@ -112,6 +109,8 @@ const PostEditor = () => {
         ...savedPost,
         editorMode: hasHTMLStructure ? 'html' : (savedPost.editorMode || 'markdown')
       });
+      
+      console.log('Loaded post with mode:', hasHTMLStructure ? 'html' : (savedPost.editorMode || 'markdown'));
     }
   }, []);
 
@@ -329,6 +328,9 @@ status: ${post.status}
       marginBottom: spacing.lg
     }
   };
+
+  // Log para depuración
+  console.log('Current editor mode:', post.editorMode);
 
   return (
     <div style={styles.container}>
