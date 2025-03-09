@@ -1,5 +1,4 @@
 node_modules
-node_modules/.cache/.eslintcache
 
 node_modules/public-encrypt/test/test_rsa_privkey.pem
 // filepath: /c:/Users/damva/EducStation/.gitignore
