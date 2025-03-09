@@ -21,8 +21,8 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
     }
     
     // Actualizar contenido interno cuando cambia el contenido externo
-    setInternalContent(content);
-  }, [content, mode]);
+    setInternalContent(content || '');
+  }, [content]);
 
   // Cuando el modo cambia, asegurarse de que el contenido interno esté actualizado
   useEffect(() => {
@@ -55,6 +55,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
   const updateContent = (newContent) => {
     setInternalContent(newContent);
     
+    // Notificar al componente padre sobre el cambio
     const event = {
       target: {
         name: 'content',
@@ -67,6 +68,16 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
   const handleModeToggle = (newMode) => {
     // Al cambiar de modo, mantenemos el contenido pero cambiamos cómo se interpreta
     setMode(newMode);
+    
+    // También notificamos al componente padre sobre el cambio de modo
+    // Este es un paso crucial que faltaba
+    const event = {
+      target: {
+        name: 'editorMode',
+        value: newMode
+      }
+    };
+    onChange(event);
   };
 
   const handleTextAreaChange = (e) => {
@@ -217,6 +228,8 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       border: 'none'
     }
   };
+
+  console.log('Current mode:', mode); // Depuración
 
   return (
     <div style={styles.editorContainer}>

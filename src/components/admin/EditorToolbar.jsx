@@ -9,6 +9,7 @@ const EditorToolbar = ({ onInsertMarkdown, mode = 'markdown' }) => {
 
   // Detectar cambios en el modo y actualizarse
   useEffect(() => {
+    console.log('EditorToolbar received mode:', mode);
     setCurrentMode(mode);
   }, [mode]);
 
