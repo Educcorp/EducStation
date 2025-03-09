@@ -4,8 +4,7 @@ import { colors, spacing, typography, shadows, borderRadius } from '../../styles
 
 // Componentes para el editor
 import EditorHeader from './EditorHeader';
-import MarkdownEditor from './MarkdownEditor';
-import MarkdownPreview from './MarkdownPreview';
+import DualModeEditor from './DualModeEditor';
 import PostMetadata from './PostMetadata';
 import CoverImageUploader from './CoverImageUploader';
 import MarkdownGuide from './MarkdownGuide';
@@ -38,15 +37,15 @@ const PostEditor = () => {
   const [post, setPost] = useState({
     title: '',
     category: '',
-    content: '',
+    content: '', // Aseguramos que se inicie con una cadena vacía
     tags: '',
     coverImage: null,
     coverImagePreview: null,
     status: 'draft', // 'draft', 'published'
     publishDate: new Date().toISOString().slice(0, 10),
+    editorMode: 'markdown', // Iniciamos explícitamente en modo markdown
   });
 
-  const [activeTab, setActiveTab] = useState('write'); // 'write' o 'preview'
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -83,6 +82,14 @@ const PostEditor = () => {
     }
   };
 
+  // Método para actualizar el modo del editor
+  const updateEditorMode = (mode) => {
+    setPost(prev => ({
+      ...prev,
+      editorMode: mode
+    }));
+  };
+
   // Autoguardado cuando el contenido cambia
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -93,13 +100,19 @@ const PostEditor = () => {
     }, 2000);
     
     return () => clearTimeout(timer);
-  }, [post.content, post.title]);
+  }, [post.content, post.title, post.editorMode]);
   
   // Cargar borrador guardado al iniciar
   useEffect(() => {
     const savedPost = loadPostFromLocalStorage();
     if (savedPost) {
-      setPost(savedPost);
+      // Detectamos si el contenido parece ser HTML para establecer el modo
+      const hasHTMLStructure = /<(!DOCTYPE|html|head|body|div|p|h[1-6]|ul|ol|script|style)[^>]*>/i.test(savedPost.content);
+      
+      setPost({
+        ...savedPost,
+        editorMode: hasHTMLStructure ? 'html' : (savedPost.editorMode || 'markdown')
+      });
     }
   }, []);
 
@@ -158,10 +171,14 @@ const PostEditor = () => {
     }, 1500);
   };
 
-  // Exportar el post a Markdown para descargar
-  const exportToMarkdown = () => {
+  // Exportar el post a Markdown/HTML para descargar
+  const exportToFile = () => {
     // Crear un objeto de texto para descargar
-    const frontMatter = `---
+    let content = '';
+    let fileExtension = '';
+    
+    if (post.editorMode === 'markdown') {
+      const frontMatter = `---
 title: ${post.title}
 category: ${post.category}
 tags: ${post.tags}
@@ -170,15 +187,22 @@ status: ${post.status}
 ---
 
 `;
+      content = frontMatter + post.content;
+      fileExtension = 'md';
+    } else { // HTML mode
+      content = post.content;
+      fileExtension = 'html';
+    }
     
-    const markdown = frontMatter + post.content;
-    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const blob = new Blob([content], { 
+      type: post.editorMode === 'markdown' ? 'text/markdown' : 'text/html' 
+    });
     const url = URL.createObjectURL(blob);
     
     // Crear un enlace de descarga y hacer clic en él
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${post.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.md`;
+    a.download = `${post.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.${fileExtension}`;
     document.body.appendChild(a);
     a.click();
     
@@ -189,62 +213,88 @@ status: ${post.status}
     // Mostrar mensaje de éxito
     setSaveMessage({
       type: 'success',
-      text: 'Archivo Markdown descargado correctamente',
+      text: `Archivo ${post.editorMode === 'markdown' ? 'Markdown' : 'HTML'} descargado correctamente`,
       icon: '📥'
     });
     
     setTimeout(() => setSaveMessage(null), 3000);
   };
 
-  // Importar un archivo Markdown
-  const importMarkdown = (e) => {
+  // Importar un archivo Markdown o HTML
+  const importFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target.result;
+      const fileExtension = file.name.split('.').pop().toLowerCase();
       
-      // Parsear el frontmatter si existe
-      let postData = { content };
+      // Detectar si es Markdown o HTML
+      const isMarkdown = fileExtension === 'md' || fileExtension === 'markdown';
+      const isHTML = fileExtension === 'html' || fileExtension === 'htm';
       
-      const frontMatterRegex = /^---\n([\s\S]*?)\n---\n/;
-      const match = content.match(frontMatterRegex);
-      
-      if (match) {
-        const frontMatter = match[1];
-        const actualContent = content.replace(frontMatterRegex, '');
+      if (isMarkdown) {
+        // Parsear el frontmatter si existe
+        let postData = { content, editorMode: 'markdown' };
         
-        // Extraer metadatos del frontmatter
-        const titleMatch = frontMatter.match(/title:\s*(.*)/);
-        const categoryMatch = frontMatter.match(/category:\s*(.*)/);
-        const tagsMatch = frontMatter.match(/tags:\s*(.*)/);
-        const dateMatch = frontMatter.match(/date:\s*(.*)/);
-        const statusMatch = frontMatter.match(/status:\s*(.*)/);
+        const frontMatterRegex = /^---\n([\s\S]*?)\n---\n/;
+        const match = content.match(frontMatterRegex);
         
-        postData = {
-          title: titleMatch ? titleMatch[1] : '',
-          category: categoryMatch ? categoryMatch[1] : '',
-          tags: tagsMatch ? tagsMatch[1] : '',
-          publishDate: dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10),
-          status: statusMatch ? statusMatch[1] : 'draft',
-          content: actualContent.trim()
-        };
+        if (match) {
+          const frontMatter = match[1];
+          const actualContent = content.replace(frontMatterRegex, '');
+          
+          // Extraer metadatos del frontmatter
+          const titleMatch = frontMatter.match(/title:\s*(.*)/);
+          const categoryMatch = frontMatter.match(/category:\s*(.*)/);
+          const tagsMatch = frontMatter.match(/tags:\s*(.*)/);
+          const dateMatch = frontMatter.match(/date:\s*(.*)/);
+          const statusMatch = frontMatter.match(/status:\s*(.*)/);
+          
+          postData = {
+            title: titleMatch ? titleMatch[1] : '',
+            category: categoryMatch ? categoryMatch[1] : '',
+            tags: tagsMatch ? tagsMatch[1] : '',
+            publishDate: dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10),
+            status: statusMatch ? statusMatch[1] : 'draft',
+            content: actualContent.trim(),
+            editorMode: 'markdown'
+          };
+        } else {
+          // Si no hay frontmatter, usar todo como contenido
+          postData.content = content;
+        }
+        
+        // Actualizar el estado del post 
+        setPost(prevPost => ({
+          ...prevPost,
+          ...postData
+        }));
+      } else if (isHTML) {
+        // Extraer el título del documento HTML si existe
+        const titleMatch = content.match(/<title>(.*?)<\/title>/i);
+        const title = titleMatch ? titleMatch[1] : '';
+        
+        // Actualizar el estado con el contenido HTML
+        setPost(prevPost => ({
+          ...prevPost,
+          title: title || prevPost.title,
+          content: content,
+          editorMode: 'html'
+        }));
       } else {
-        // Si no hay frontmatter, usar todo como contenido
-        postData.content = content;
+        // Si no es Markdown ni HTML, tratar como texto plano
+        setPost(prevPost => ({
+          ...prevPost,
+          content: content
+        }));
       }
-      
-      // Actualizar el estado del post 
-      setPost(prevPost => ({
-        ...prevPost,
-        ...postData
-      }));
       
       // Mostrar mensaje de éxito
       setSaveMessage({
         type: 'success',
-        text: 'Archivo Markdown importado correctamente',
+        text: `Archivo ${isMarkdown ? 'Markdown' : (isHTML ? 'HTML' : 'de texto')} importado correctamente`,
         icon: '📤'
       });
       
@@ -278,31 +328,6 @@ status: ${post.status}
     sidebar: {},
     formGroup: {
       marginBottom: spacing.lg
-    },
-    tabsContainer: {
-      display: "flex",
-      marginBottom: spacing.md,
-      borderBottom: `1px solid ${colors.gray200}`,
-      position: "relative",
-      zIndex: 1
-    },
-    tab: {
-      padding: `${spacing.sm} ${spacing.xl}`,
-      cursor: "pointer",
-      border: "none",
-      background: "none",
-      fontWeight: typography.fontWeight.medium,
-      fontSize: typography.fontSize.md,
-      color: colors.textSecondary,
-      position: "relative",
-      transition: "all 0.3s ease",
-      borderRadius: `${borderRadius.md} ${borderRadius.md} 0 0`
-    },
-    activeTabStyle: {
-      color: colors.primary,
-      backgroundColor: colors.white,
-      boxShadow: `0 -2px 4px rgba(0,0,0,0.05)`,
-      position: 'relative'
     }
   };
 
@@ -395,60 +420,11 @@ status: ${post.status}
           </div>
 
           <div style={styles.formGroup}>
-            <div style={styles.tabsContainer}>
-              <button
-                style={{
-                  ...styles.tab,
-                  ...(activeTab === 'write' ? styles.activeTabStyle : {})
-                }}
-                onClick={() => setActiveTab('write')}
-              >
-                Code
-                {activeTab === 'write' && (
-                  <span style={{
-                    position: 'absolute',
-                    bottom: '-1px',
-                    left: 0,
-                    width: '100%',
-                    height: '2px',
-                    backgroundColor: 'white'
-                  }}></span>
-                )}
-              </button>
-              <button
-                style={{
-                  ...styles.tab,
-                  ...(activeTab === 'preview' ? styles.activeTabStyle : {})
-                }}
-                onClick={() => setActiveTab('preview')}
-              >
-                Preview
-                {activeTab === 'preview' && (
-                  <span style={{
-                    position: 'absolute',
-                    bottom: '-1px',
-                    left: 0,
-                    width: '100%',
-                    height: '2px',
-                    backgroundColor: 'white'
-                  }}></span>
-                )}
-              </button>
-              <div style={{
-                flex: 1,
-                borderBottom: `1px solid ${colors.gray200}`,
-                marginBottom: '-1px'
-              }}></div>
-            </div>
-            
-            {activeTab === 'write' ? (
-              <MarkdownEditor 
-                content={post.content} 
-                onChange={handleChange} 
-              />
-            ) : (
-              <MarkdownPreview content={post.content} />
-            )}
+            <DualModeEditor 
+              content={post.content}
+              onChange={handleChange}
+              initialMode={post.editorMode}
+            />
           </div>
 
           {saveMessage && (
@@ -475,8 +451,9 @@ status: ${post.status}
           <MarkdownGuide />
           
           <ImportExportActions 
-            onExport={exportToMarkdown} 
-            onImport={importMarkdown} 
+            onExport={exportToFile} 
+            onImport={importFile}
+            isHTML={post.editorMode === 'html'} 
           />
         </div>
       </div>

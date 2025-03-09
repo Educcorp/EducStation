@@ -10,33 +10,23 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
   const textAreaRef = useRef(null);
   const [mode, setMode] = useState(initialMode); // 'markdown' o 'html'
   const [activeTab, setActiveTab] = useState('code'); // 'code' o 'preview'
-  
-  // No inicializar con contenido predeterminado, solo con lo que se pasa como prop
   const [internalContent, setInternalContent] = useState(content || '');
 
-  // Sincronizar el contenido interno con las props externas
+  // Detectar si el contenido es HTML y actualizar modo si es necesario
   useEffect(() => {
-    setInternalContent(content || '');
-  }, [content]);
-
-  // Manejar detección de HTML solo cuando se carga inicialmente, no en cada cambio
-  useEffect(() => {
-    if (content && content.trim() !== '') {
-      // Detecta si el contenido parece ser HTML basado en tags comunes
-      const hasHTMLStructure = /<(!DOCTYPE|html|head|body|div|p|h[1-6]|ul|ol|script|style)[^>]*>/i.test(content);
-      if (hasHTMLStructure) {
-        setMode('html');
-      } else {
-        setMode(initialMode);
-      }
-    } else {
-      // Si no hay contenido, usar el modo inicial
-      setMode(initialMode);
+    // Detecta si el contenido parece ser HTML basado en tags comunes
+    const hasHTMLStructure = /<(!DOCTYPE|html|head|body|div|p|h[1-6]|ul|ol|script|style)[^>]*>/i.test(content);
+    if (hasHTMLStructure && mode !== 'html') {
+      setMode('html');
     }
-  }, [initialMode]); // Solo ejecutar al montar o cambiar initialMode
+    
+    // Actualizar contenido interno cuando cambia el contenido externo
+    setInternalContent(content);
+  }, [content, mode]);
 
-  // Cuando el modo cambia, asegurarse de que el editor esté en foco
+  // Cuando el modo cambia, asegurarse de que el contenido interno esté actualizado
   useEffect(() => {
+    // Cuando se cambia el modo, enfocar el editor para facilitar la edición inmediata
     if (textAreaRef.current) {
       textAreaRef.current.focus();
     }
@@ -74,18 +64,9 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
     onChange(event);
   };
 
-  // Función mejorada para alternar entre modos
   const handleModeToggle = (newMode) => {
-    if (newMode !== mode) {
-      setMode(newMode);
-      
-      // Forzar la actualización de la barra de herramientas
-      setTimeout(() => {
-        if (textAreaRef.current) {
-          textAreaRef.current.focus();
-        }
-      }, 100);
-    }
+    // Al cambiar de modo, mantenemos el contenido pero cambiamos cómo se interpreta
+    setMode(newMode);
   };
 
   const handleTextAreaChange = (e) => {

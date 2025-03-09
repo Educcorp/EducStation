@@ -1,7 +1,8 @@
+// src/components/admin/ImportExportActions.jsx
 import React from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
-const ImportExportActions = ({ onExport, onImport }) => {
+const ImportExportActions = ({ onExport, onImport, isHTML = false }) => {
   const styles = {
     container: {
       marginTop: spacing.lg,
@@ -53,7 +54,7 @@ const ImportExportActions = ({ onExport, onImport }) => {
     <div style={styles.container}>
       <div style={styles.actionColumn}>
         <label 
-          htmlFor="importMarkdown" 
+          htmlFor="importFile" 
           style={styles.button}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
@@ -64,12 +65,12 @@ const ImportExportActions = ({ onExport, onImport }) => {
             e.currentTarget.style.boxShadow = 'none';
           }}
         >
-          <span>📤</span> Importar MD
+          <span>📤</span> Importar {isHTML ? 'HTML' : 'MD'}
         </label>
         <input
-          id="importMarkdown"
+          id="importFile"
           type="file"
-          accept=".md,.markdown"
+          accept={isHTML ? ".html,.htm" : ".md,.markdown,.txt"}
           style={{ display: 'none' }}
           onChange={onImport}
         />
@@ -89,7 +90,7 @@ const ImportExportActions = ({ onExport, onImport }) => {
             e.currentTarget.style.boxShadow = 'none';
           }}
         >
-          <span>📥</span> Exportar MD
+          <span>📥</span> Exportar {isHTML ? 'HTML' : 'MD'}
         </button>
         <p style={styles.helperText}>Descargar como archivo</p>
       </div>
