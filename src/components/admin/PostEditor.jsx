@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
 // Componentes para el editor
-import EditorHeader from './EditorHeader';
 import DualModeEditor from './DualModeEditor';
 import PostMetadata from './PostMetadata';
 import CoverImageUploader from './CoverImageUploader';
@@ -361,13 +360,6 @@ status: ${post.status}
         `
       }} />
 
-      <EditorHeader 
-        postStatus={post.status}
-        isSaving={isSaving}
-        isPublishing={isPublishing}
-        onSaveDraft={saveDraft}
-        onPublish={publishPost}
-      />
 
       <div style={{
         display: "grid",
