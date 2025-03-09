@@ -5,7 +5,7 @@ import HomePage from './pages/HomePage';
 import BlogDetailPage from './pages/BlogDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
-// import CategoryPage from './pages/CategoryPage';
+import AdminPostPage from './pages/AdminPostPage'; // Nueva importación
 
 const App = () => {
   return (
@@ -15,7 +15,8 @@ const App = () => {
         <Route path="/blog/:blogId" component={BlogDetailPage} />
         <Route path="/about" component={AboutPage} />
         <Route path="/contact" component={ContactPage} />
-        {/* <Route path="/category/:categoryName" component={CategoryPage} /> */}
+        <Route path="/admin/post" component={AdminPostPage} /> {/* Nueva ruta para crear posts */}
+        <Route path="/admin/post/:postId" component={AdminPostPage} /> {/* Ruta para editar posts existentes */}
         
         {/* Ruta de respaldo */}
         <Route component={HomePage} />

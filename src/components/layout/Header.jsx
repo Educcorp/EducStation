@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { Link, withRouter } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
 
-
 const Header = ({ location }) => {
   // Estado para detectar si la página ha sido scrolleada
   const [isScrolled, setIsScrolled] = useState(false);
   // Estado para el hover
   const [hoveredItem, setHoveredItem] = useState(null);
+  
+  // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
+  const userRole = 'admin'; // Opciones: 'admin', 'user', etc.
   
   // Detectar scroll para efectos de navegación
   useEffect(() => {
@@ -19,7 +21,6 @@ const Header = ({ location }) => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
 
   // Verificar si la ruta está activa
   const isActive = (path) => {
@@ -131,81 +132,80 @@ const Header = ({ location }) => {
     { path: '/', label: 'Inicio' },
     { path: '/blog', label: 'Blog' },
     { path: '/about', label: 'Acerca de' },
-    { path: '/contact', label: 'Contacto' }
+    { path: '/contact', label: 'Contacto' },
+    { path: '/admin/post', label: 'Crear Post', admin: true }
   ];
 
   return (
     <header style={styles.header}>
       <div style={styles.container}>
-      
-            <Link
-              to="/" 
-              style={hoveredItem === 'logo' ? applyHoverStyles(styles.logo) : styles.logo}
-              onMouseEnter={() => setHoveredItem('logo')}
-              onMouseLeave={() => setHoveredItem(null)}
-            >
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-              }}>
-                <div style={{
-                  backgroundColor: colors.background,
-                  borderRadius: borderRadius.md,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  marginRight: spacing.sm,
-                  transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)',
-                  transition: transitions.default,
-                  width: "42px",
-                  height: "42px",
-                  overflow: "hidden"
-                }}>
-                  <img 
-                    src="/assets/images/educstation-logo.png" 
-                    alt="EducStation Logo" 
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain"
-                    }} 
-                  />
-                </div>
-                <span style={{
-                  color: colors.primary,
-                  fontWeight: typography.fontWeight.bold
-                }}>
-                  EducStation
-                </span>
-              </div>
-            </Link>
- 
-
- 
-
+        <Link
+          to="/" 
+          style={hoveredItem === 'logo' ? applyHoverStyles(styles.logo) : styles.logo}
+          onMouseEnter={() => setHoveredItem('logo')}
+          onMouseLeave={() => setHoveredItem(null)}
+        >
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+          }}>
+            <div style={{
+              backgroundColor: colors.background,
+              borderRadius: borderRadius.md,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: spacing.sm,
+              transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)',
+              transition: transitions.default,
+              width: "42px",
+              height: "42px",
+              overflow: "hidden"
+            }}>
+              <img 
+                src="/assets/images/educstation-logo.png" 
+                alt="EducStation Logo" 
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain"
+                }} 
+              />
+            </div>
+            <span style={{
+              color: colors.primary,
+              fontWeight: typography.fontWeight.bold
+            }}>
+              EducStation
+            </span>
+          </div>
+        </Link>
 
         <nav style={styles.navLinks}>
           {navItems.map((item, index) => (
-            <Link
-              key={index} 
-              to={item.path}
-              style={styles.navLink(isActive(item.path))}
-              onMouseEnter={() => setHoveredItem(`nav-${index}`)}
-              onMouseLeave={() => setHoveredItem(null)}
-            >
-              {item.label}
-              <span 
-                style={{
-                  position: 'absolute',
-                  width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
-                  height: '2px',
-                  bottom: 0,
-                  left: 0,
-                  backgroundColor: colors.primary,
-                  transition: transitions.default
-                }}
-              ></span>
-            </Link>
+            // Solo mostrar enlaces de admin a usuarios con rol admin
+            (!item.admin || userRole === 'admin') && (
+              <Link
+                key={index} 
+                to={item.path}
+                style={styles.navLink(isActive(item.path))}
+                onMouseEnter={() => setHoveredItem(`nav-${index}`)}
+                onMouseLeave={() => setHoveredItem(null)}
+              >
+                {item.label}
+                <span 
+                  style={{
+                    position: 'absolute',
+                    width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
+                    height: '2px',
+                    bottom: 0,
+                    left: 0,
+                    backgroundColor: colors.primary,
+                    transition: transitions.default
+                  }}
+                ></span>
+              </Link>
+            )
           ))}
         </nav>
         
