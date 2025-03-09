@@ -163,7 +163,8 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       fontWeight: typography.fontWeight.medium,
       fontSize: typography.fontSize.md,
       color: colors.textSecondary,
-      borderBottom: '2px solid transparent'
+      borderBottom: '2px solid transparent',
+      transition: 'all 0.2s ease'
     },
     activeTab: {
       color: mode === 'markdown' ? '#0095FF' : '#E34C26',
@@ -228,7 +229,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
             }}
             onClick={() => setActiveTab('code')}
           >
-            Code
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <img 
+                src="/assets/images/icons/CODE_icon.png" 
+                alt="Code" 
+                style={{ width: '16px', height: '16px', verticalAlign: 'middle' }} 
+              />
+              <span>Code</span>
+            </div>
           </button>
           <button
             style={{
@@ -237,7 +245,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
             }}
             onClick={() => setActiveTab('preview')}
           >
-            Preview
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <img 
+                src="/assets/images/icons/PREVIEW_icon.png" 
+                alt="Preview" 
+                style={{ width: '16px', height: '16px', verticalAlign: 'middle' }} 
+              />
+              <span>Preview</span>
+            </div>
           </button>
         </div>
         
