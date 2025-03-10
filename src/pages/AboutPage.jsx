@@ -137,7 +137,10 @@ const AboutPage = () => {
       '&:hover': {
         transform: "translateY(-10px)",
         boxShadow: shadows.lg
-      }
+      },
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center"
     },
     teamImage: {
       width: "100%",
@@ -145,7 +148,8 @@ const AboutPage = () => {
       objectFit: "cover"
     },
     teamInfo: {
-      padding: spacing.lg
+      padding: spacing.lg,
+      textAlign: "center"
     },
     teamName: {
       fontSize: typography.fontSize.lg,
@@ -169,28 +173,46 @@ const AboutPage = () => {
   // Datos del equipo
   const teamMembers = [
     {
-      name: 'María Rodríguez',
-      role: 'Fundadora y Directora',
-      image: '/api/placeholder/250/250',
-      bio: 'Educadora con más de 15 años de experiencia en pedagogía innovadora.'
-    },
-    {
-      name: 'Carlos Méndez',
-      role: 'Editor Principal',
-      image: '/api/placeholder/250/250',
-      bio: 'Docente universitario y escritor especializado en tecnología educativa.'
-    },
-    {
-      name: 'Ana García',
-      role: 'Especialista en Contenidos',
-      image: '/api/placeholder/250/250',
-      bio: 'Experta en creación de recursos pedagógicos digitales e inclusivos.'
-    },
-    {
-      name: 'Roberto Sánchez',
+      name: 'Damian Valencia',
       role: 'Desarrollador Web',
-      image: '/api/placeholder/250/250',
-      bio: 'Ingeniero informático con pasión por la educación digital.'
+      image: '/assets/images/educstation-logo.png', // Ruta relativa correcta
+      bio: 'Se ocupa de de metodologias y estrategias para manejar el aprendizaje y los habitos de estudio.'
+    },
+    {
+      name: 'Fernanda Zepeda',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Encargado de recopilar, redactar o presentar noticias relevantes del ODS 4.'
+    },
+    {
+      name: 'Emmanuel Palacios',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Aborda problematicas en el estudio - Analiza dificultades, obstaculos o desafios que enfrentan los estudiantes durante su proceso de aprendizaje.'
+    },
+    {
+      name: 'Priscila Lopez',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Se enfoca en Educacion de Calidad.'
+    },
+    {
+      name: 'Yoselin Reynaga',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Encargada del desarrollo profesional docente.'
+    },
+    {
+      name: 'Gregorio Sánchez',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Maneja Herramientas tecnologicas - Se especializa en recursos digitales, aplicaciones o plataformas que apoyan al proceso educativo.'
+    },
+    {
+      name: 'Ruben Lavariega',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Promueve la participacion colectiva, trabajo en equipo y construccion de redes entre diversos actores educativos.'
     }
   ];
 
