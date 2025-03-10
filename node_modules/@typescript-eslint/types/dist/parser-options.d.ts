@@ -1,8 +1,9 @@
-import { Lib } from './lib';
 import type { Program } from 'typescript';
-declare type DebugLevel = boolean | ('typescript-eslint' | 'eslint' | 'typescript')[];
-declare type EcmaVersion = 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022;
-declare type SourceType = 'script' | 'module';
+import type { Lib } from './lib';
+type DebugLevel = boolean | ('typescript-eslint' | 'eslint' | 'typescript')[];
+type CacheDurationSeconds = number | 'Infinity';
+type EcmaVersion = 3 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13 | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022;
+type SourceType = 'script' | 'module';
 interface ParserOptions {
     ecmaFeatures?: {
         globalReturn?: boolean;
@@ -12,6 +13,7 @@ interface ParserOptions {
     jsxPragma?: string | null;
     jsxFragmentName?: string | null;
     lib?: Lib[];
+    emitDecoratorMetadata?: boolean;
     comment?: boolean;
     debugLevel?: DebugLevel;
     errorOnTypeScriptSyntacticAndSemanticIssues?: boolean;
@@ -21,15 +23,18 @@ interface ParserOptions {
     filePath?: string;
     loc?: boolean;
     program?: Program;
-    project?: string | string[];
+    project?: string | string[] | true;
     projectFolderIgnoreList?: (string | RegExp)[];
     range?: boolean;
     sourceType?: SourceType;
     tokens?: boolean;
     tsconfigRootDir?: string;
-    useJSXTextNode?: boolean;
     warnOnUnsupportedTypeScriptVersion?: boolean;
     moduleResolver?: string;
+    cacheLifetime?: {
+        glob?: CacheDurationSeconds;
+    };
+    [additionalProperties: string]: unknown;
 }
-export { DebugLevel, EcmaVersion, ParserOptions, SourceType };
+export { CacheDurationSeconds, DebugLevel, EcmaVersion, ParserOptions, SourceType, };
 //# sourceMappingURL=parser-options.d.ts.map

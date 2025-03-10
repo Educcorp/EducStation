@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -19,16 +23,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const experimental_utils_1 = require("@typescript-eslint/experimental-utils");
-const ts = __importStar(require("typescript"));
+const utils_1 = require("@typescript-eslint/utils");
 const tsutils = __importStar(require("tsutils"));
+const ts = __importStar(require("typescript"));
 const util = __importStar(require("../util"));
 exports.default = util.createRule({
     name: 'no-unnecessary-qualifier',
     meta: {
         docs: {
-            category: 'Best Practices',
-            description: 'Warns when a namespace qualifier is unnecessary',
+            description: 'Disallow unnecessary namespace qualifiers',
             recommended: false,
             requiresTypeChecking: true,
         },
@@ -60,7 +63,7 @@ exports.default = util.createRule({
                 return true;
             }
             const alias = tryGetAliasedSymbol(symbol, checker);
-            return alias !== null && symbolIsNamespaceInScope(alias);
+            return alias != null && symbolIsNamespaceInScope(alias);
         }
         function getSymbolInScope(node, flags, name) {
             // TODO:PERF `getSymbolsInScope` gets a long list. Is there a better way?
@@ -74,18 +77,17 @@ exports.default = util.createRule({
             const tsQualifier = esTreeNodeToTSNodeMap.get(qualifier);
             const tsName = esTreeNodeToTSNodeMap.get(name);
             const namespaceSymbol = checker.getSymbolAtLocation(tsQualifier);
-            if (typeof namespaceSymbol === 'undefined' ||
+            if (namespaceSymbol === undefined ||
                 !symbolIsNamespaceInScope(namespaceSymbol)) {
                 return false;
             }
             const accessedSymbol = checker.getSymbolAtLocation(tsName);
-            if (typeof accessedSymbol === 'undefined') {
+            if (accessedSymbol === undefined) {
                 return false;
             }
             // If the symbol in scope is different, the qualifier is necessary.
             const fromScope = getSymbolInScope(tsQualifier, accessedSymbol.flags, sourceCode.getText(name));
-            return (typeof fromScope === 'undefined' ||
-                symbolsAreEqual(accessedSymbol, fromScope));
+            return (fromScope === undefined || symbolsAreEqual(accessedSymbol, fromScope));
         }
         function visitNamespaceAccess(node, qualifier, name) {
             // Only look for nested qualifier errors if we didn't already fail on the outer qualifier.
@@ -116,10 +118,10 @@ exports.default = util.createRule({
             }
         }
         function isPropertyAccessExpression(node) {
-            return node.type === experimental_utils_1.AST_NODE_TYPES.MemberExpression && !node.computed;
+            return node.type === utils_1.AST_NODE_TYPES.MemberExpression && !node.computed;
         }
         function isEntityNameExpression(node) {
-            return (node.type === experimental_utils_1.AST_NODE_TYPES.Identifier ||
+            return (node.type === utils_1.AST_NODE_TYPES.Identifier ||
                 (isPropertyAccessExpression(node) &&
                     isEntityNameExpression(node.object)));
         }
