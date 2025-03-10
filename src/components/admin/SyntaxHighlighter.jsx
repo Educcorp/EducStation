@@ -4,7 +4,7 @@ import { applySyntaxHighlighting, syntaxHighlightingStyles } from './utils/synta
 
 /**
  * Componente que proporciona resaltado de sintaxis para editores de código
- * con corrección para evitar elementos adicionales
+ * Versión mejorada que evita la inserción de texto HTML adicional
  * 
  * @param {Object} props - Propiedades del componente
  * @param {string} props.content - El contenido a resaltar
@@ -48,17 +48,41 @@ const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
     }
   }, [content, mode]);
 
-  // Manejar cambios en el texto
+  // Función para limpiar completamente el HTML
+  const stripHtml = (html) => {
+    // Crear un elemento div temporal
+    const temp = document.createElement("div");
+    // Establecer el HTML en el div
+    temp.innerHTML = html;
+    // Obtener el texto plano
+    return temp.textContent || temp.innerText || "";
+  };
+
+  // Manejar cambios en el texto - VERSIÓN MEJORADA
   const handleChange = (e) => {
     // Ignorar cualquier evento extraño o inserción automática
     if (e && e.target && typeof e.target.value === 'string') {
-      // Eliminar cualquier texto de marcado no deseado antes de pasar el cambio
-      const cleanValue = e.target.value.replace(/class="editor-[^"]*"/g, '');
+      let cleanValue = e.target.value;
+      
+      // Para HTML, aplicamos una limpieza completa
+      if (mode === 'html') {
+        // 1. Eliminar todas las etiquetas span y sus atributos
+        cleanValue = cleanValue.replace(/<span[^>]*>(.*?)<\/span>/g, '$1');
+        
+        // 2. Eliminar cualquier atributo data-* o class
+        cleanValue = cleanValue.replace(/\s(data-[^=]*|class)="[^"]*"/g, '');
+        
+        // 3. Si hay etiquetas HTML mal formadas, intentamos arreglarlas
+        cleanValue = cleanValue.replace(/(&lt;|<)data-[^>]*>|<\/data-[^>]*(&gt;|>)/g, '');
+        
+        // 4. Eliminar cualquier etiqueta span vacía remanente
+        cleanValue = cleanValue.replace(/<span><\/span>/g, '');
+      }
       
       // Crear un evento limpio para pasar al padre
       const cleanEvent = {
         target: {
-          name: e.target.name,
+          name: 'content',
           value: cleanValue
         }
       };
@@ -97,7 +121,7 @@ const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
           value: newValue
         }
       };
-      onChange(event);
+      handleChange(event);
     }
   };
 

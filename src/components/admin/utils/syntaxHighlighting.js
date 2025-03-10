@@ -1,16 +1,16 @@
 // src/components/admin/utils/syntaxHighlighting.js
-// Archivo completo con todas las funciones y estilos necesarios
+// Versión mejorada que evita insertar atributos en el texto y mantiene el formato de colores
 
 /**
  * Aplica resaltado de sintaxis al texto según el modo especificado (markdown o html)
- * Versión mejorada para evitar el desface entre el texto y los colores
+ * Versión mejorada que usa un enfoque completamente separado para HTML
  * 
  * @param {string} content - El contenido al que aplicar el resaltado
  * @param {string} mode - El modo de editor ('markdown' o 'html')
  * @returns {string} - HTML con etiquetas span para el resaltado
  */
 const applySyntaxHighlighting = (content, mode) => {
-  if (!content) return "<div></div>"; // Devuelve al menos una línea vacía
+  if (!content) return "<div>&nbsp;</div>"; // Devuelve al menos una línea vacía
   
   // Función para escapar HTML de forma segura
   const escapeHtml = (unsafe) => {
@@ -25,10 +25,10 @@ const applySyntaxHighlighting = (content, mode) => {
   // Crear divs para cada línea, manteniendo líneas vacías
   const createDivs = (html) => {
     const lines = html.split('\n');
-    return lines.map(line => `<div>${line || " "}</div>`).join('');
+    return lines.map(line => `<div>${line || "&nbsp;"}</div>`).join('');
   };
   
-  // Procesamiento para Markdown
+  // Procesamiento para Markdown - No modificamos esta parte
   if (mode === 'markdown') {
     const lines = content.split('\n');
     let inCodeBlock = false;
@@ -145,57 +145,47 @@ const applySyntaxHighlighting = (content, mode) => {
     return createDivs(resultLines.join('\n'));
   } 
   else if (mode === 'html') {
-    // Procesamiento para HTML
-    const htmlLines = content.split('\n');
-    const processedLines = htmlLines.map(line => {
-      let processedLine = escapeHtml(line);
+    // NUEVO ENFOQUE PARA HTML - Usar clases específicas en un nivel superior
+    
+    // Primero escapamos todo el contenido HTML
+    const escapedContent = escapeHtml(content);
+    
+    // Luego aplicamos colores a diferentes partes usando clases
+    // En lugar de envolver cada parte, usamos <span> con clases que solo afectan al color
+    
+    // Dividimos en líneas para procesar
+    const lines = escapedContent.split('\n');
+    
+    // Aplicamos colores a cada línea
+    const coloredLines = lines.map(line => {
+      // Primero identificamos qué tipo de línea es para decidir cómo colorearla
+      let colorClass = '';
       
-      // Etiquetas HTML
-      processedLine = processedLine
-        // Doctype, comments
-        .replace(/(&lt;!DOCTYPE[^&>]+&gt;|&lt;!--[\s\S]*?--&gt;)/g, '<span class="editor-doctype">$1</span>')
-        // Opening tags
-        .replace(/(&lt;)([a-zA-Z0-9]+)(\s|&gt;|\/&gt;)/g, '$1<span class="editor-tag-open">$2</span>$3')
-        // Closing tags
-        .replace(/(&lt;\/)([a-zA-Z0-9]+)(&gt;)/g, '$1<span class="editor-tag-open">$2</span>$3')
-        // Attributes
-        .replace(/(\s+)([a-zA-Z0-9_-]+)(=)/g, '$1<span class="editor-attr-name">$2</span>$3')
-        // Attribute values
-        .replace(/(=)(&quot;[^&]*&quot;|&#039;[^&]*&#039;)/g, '$1<span class="editor-attr-value">$2</span>');
-      
-      // CSS en style tags
-      if (line.includes("&lt;style") || line.includes("style=") || line.match(/\{.+?\}/)) {
-        processedLine = processedLine
-          // Properties
-          .replace(/([a-zA-Z-]+)(\s*:)/g, '<span class="editor-css-property">$1</span>$2')
-          // Values
-          .replace(/(:)(\s*)([^;{}]+)(;|$)/g, '$1$2<span class="editor-css-value">$3</span>$4');
+      // Si contiene etiquetas HTML
+      if (line.includes('&lt;') && line.includes('&gt;')) {
+        colorClass = 'html-tag-line';
+      }
+      // Si parece ser CSS
+      else if (line.includes('{') || line.includes('}') || line.includes(':') && line.includes(';')) {
+        colorClass = 'css-line';
+      }
+      // Si parece ser JS
+      else if (line.includes('function') || line.includes('var ') || line.includes('let ') || line.includes('const ')) {
+        colorClass = 'js-line';
       }
       
-      // JavaScript en script tags
-      if (line.includes("&lt;script") || line.includes("function") || line.includes("var ")) {
-        processedLine = processedLine
-          // Keywords
-          .replace(/\b(function|return|var|let|const|if|else|for|while|switch|case|break)\b/g, '<span class="editor-keyword">$1</span>')
-          // Strings
-          .replace(/(&quot;.*?&quot;|&#039;.*?&#039;)/g, '<span class="editor-string">$1</span>')
-          // Numbers
-          .replace(/\b(\d+)\b/g, '<span class="editor-number">$1</span>')
-          // Comments
-          .replace(/(\/\/.*$|\/\*[\s\S]*?\*\/)/gm, '<span class="editor-comment">$1</span>');
-      }
-      
-      return processedLine;
+      // Aplicamos la clase a la línea entera
+      return colorClass ? `<span class="${colorClass}">${line}</span>` : line;
     });
     
-    return createDivs(processedLines.join('\n'));
+    return createDivs(coloredLines.join('\n'));
   }
   
   // Para otros modos, devolver el texto escapado con divs
   return createDivs(escapeHtml(content));
 };
 
-// Los estilos CSS para el resaltado de sintaxis
+// Estilos CSS simplificados para colores (sin envolver cada elemento)
 const syntaxHighlightingStyles = `
 /* Estilos base para el editor */
 .syntax-highlight-editor {
@@ -222,6 +212,19 @@ const syntaxHighlightingStyles = `
   line-height: 1.5;
   word-spacing: normal;
   letter-spacing: normal;
+}
+
+/* Estilos para HTML con enfoque simplificado */
+.html-tag-line {
+  color: #e06c75; /* Color para líneas con etiquetas HTML */
+}
+
+.css-line {
+  color: #56b6c2; /* Color para líneas con CSS */
+}
+
+.js-line {
+  color: #98c379; /* Color para líneas con JavaScript */
 }
 
 /* Markdown general - Colores mejorados */
