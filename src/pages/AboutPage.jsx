@@ -103,8 +103,8 @@ const AboutPage = () => {
     },
     timelineYear: {
       position: "absolute",
-      left: -spacing.xxl,
-      top: spacing.lg,
+      left: "-50px",
+      top: "50px",
       width: "40px",
       height: "40px",
       backgroundColor: colors.secondary,
