@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -19,20 +23,19 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const tsutils_1 = require("tsutils");
 const ts = __importStar(require("typescript"));
 const util_1 = require("../util");
-const tsutils_1 = require("tsutils");
 exports.default = (0, util_1.createRule)({
     name: 'switch-exhaustiveness-check',
     meta: {
         type: 'suggestion',
         docs: {
-            description: 'Exhaustiveness checking in switch with union type',
-            category: 'Best Practices',
+            description: 'Require switch-case statements to be exhaustive with union type',
             recommended: false,
-            suggestion: true,
             requiresTypeChecking: true,
         },
+        hasSuggestions: true,
         schema: [],
         messages: {
             switchIsNotExhaustive: 'Switch is not exhaustive. Cases not matched: {{missingBranches}}',
@@ -101,7 +104,7 @@ exports.default = (0, util_1.createRule)({
                 const unionTypes = (0, tsutils_1.unionTypeParts)(discriminantType);
                 const caseTypes = new Set();
                 for (const switchCase of node.cases) {
-                    if (switchCase.test === null) {
+                    if (switchCase.test == null) {
                         // Switch has 'default' branch - do nothing.
                         return;
                     }

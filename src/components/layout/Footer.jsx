@@ -239,21 +239,21 @@ const Footer = () => {
               {['Inicio', 'Sobre Nosotros', 'Blog', 'Contacto', 'FAQ'].map((link, index) => (
                 <li 
                   key={index} 
-                  style={{...styles.link}}
+                  style={styles.link}
                   onMouseEnter={(e) => {
-                    e.target.style.color = colors.secondary;
-                    e.target.style.paddingLeft = spacing.lg;
+                    e.currentTarget.style.color = colors.secondary;
+                    e.currentTarget.style.paddingLeft = spacing.lg;
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.color = colors.gray200;
-                    e.target.style.paddingLeft = spacing.md;
+                    e.currentTarget.style.color = colors.gray200;
+                    e.currentTarget.style.paddingLeft = spacing.md;
                   }}
                 >
                   <a 
                     href="#"
-                    style={{...styles.linkAnchor}}
-                    onMouseEnter={(e) => e.target.style.color = colors.secondary}
-                    onMouseLeave={(e) => e.target.style.color = colors.gray200}
+                    style={styles.linkAnchor}
+                    onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
+                    onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
                   >{link}</a>
                 </li>
               ))}
@@ -267,59 +267,25 @@ const Footer = () => {
               {['Técnicas de Estudio', 'Desarrollo Profesional', 'Educación de Calidad', 'Comunidad', 'Herramientas'].map((link, index) => (
                 <li 
                   key={index} 
-                  style={{...styles.link}}
+                  style={styles.link}
                   onMouseEnter={(e) => {
-                    e.target.style.color = colors.secondary;
-                    e.target.style.paddingLeft = spacing.lg;
+                    e.currentTarget.style.color = colors.secondary;
+                    e.currentTarget.style.paddingLeft = spacing.lg;
                   }}
                   onMouseLeave={(e) => {
-                    e.target.style.color = colors.gray200;
-                    e.target.style.paddingLeft = spacing.md;
+                    e.currentTarget.style.color = colors.gray200;
+                    e.currentTarget.style.paddingLeft = spacing.md;
                   }}
                 >
                   <a 
                     href="#"
-                    style={{...styles.linkAnchor}}
-                    onMouseEnter={(e) => e.target.style.color = colors.secondary}
-                    onMouseLeave={(e) => e.target.style.color = colors.gray200}
+                    style={styles.linkAnchor}
+                    onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
+                    onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
                   >{link}</a>
                 </li>
               ))}
             </ul>
-          </div>
-          
-          {/* Newsletter */}
-          <div style={styles.newsletter}>
-            <h3 style={styles.title}>Suscríbete</h3>
-            <p style={styles.description}>
-              Recibe nuestros últimos artículos, eventos y noticias directamente en tu bandeja de entrada.
-            </p>
-            <form style={styles.form} onSubmit={handleSubmit}>
-              <input 
-                type="email" 
-                placeholder="Tu correo electrónico" 
-                style={styles.input}
-                value={emailValue}
-                onChange={(e) => setEmailValue(e.target.value)}
-                required
-              />
-              <button 
-                type="submit" 
-                style={{...styles.button}}
-                disabled={isSubmitting}
-                onMouseEnter={(e) => {
-                  if (!isSubmitting) e.target.style.backgroundColor = colors.white;
-                }}
-                onMouseLeave={(e) => {
-                  if (!isSubmitting) e.target.style.backgroundColor = colors.secondary;
-                }}
-              >
-                {isSubmitting ? 'Enviando...' : 'Enviar'}
-              </button>
-            </form>
-            {isSuccess && (
-              <div style={styles.message}>¡Gracias por suscribirte!</div>
-            )}
           </div>
         </div>
         
