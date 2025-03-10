@@ -1,5 +1,5 @@
 // src/components/admin/DualModeEditor.jsx
-// Modificación para usar una sola capa visible
+// Versión actualizada con resaltado de sintaxis
 
 import React, { useRef, useState, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
@@ -7,6 +7,7 @@ import EditorToolbar from './EditorToolbar';
 import { insertMarkdown, insertHTML } from './utils/editorUtils';
 import MarkdownPreview from './MarkdownPreview';
 import HTMLPreview from './HTMLPreview';
+import SyntaxHighlighter from './SyntaxHighlighter'; // Importamos el nuevo componente
 
 const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
   const textAreaRef = useRef(null);
@@ -406,18 +407,27 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
               mode={mode}
             />
             
-            {/* Usamos un único textarea sin las dos capas que causaban el problema de selección */}
-            <textarea
-              ref={textAreaRef}
-              value={internalContent}
-              onChange={handleTextAreaChange}
-              style={styles.plainTextarea}
-              placeholder={mode === 'markdown' 
-                ? "Escribe tu post en formato Markdown..." 
-                : "Escribe código HTML aquí..."
-              }
-              spellCheck="false"
-            />
+            {/* Usar el componente de resaltado si está habilitado, o el textarea normal si no */}
+            {isHighlightingEnabled ? (
+              <SyntaxHighlighter
+                content={internalContent}
+                mode={mode}
+                onChange={handleTextAreaChange}
+                textAreaRef={textAreaRef}
+              />
+            ) : (
+              <textarea
+                ref={textAreaRef}
+                value={internalContent}
+                onChange={handleTextAreaChange}
+                style={styles.plainTextarea}
+                placeholder={mode === 'markdown' 
+                  ? "Escribe tu post en formato Markdown..." 
+                  : "Escribe código HTML aquí..."
+                }
+                spellCheck="false"
+              />
+            )}
           </>
         )}
 
