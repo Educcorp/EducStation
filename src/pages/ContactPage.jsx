@@ -35,7 +35,7 @@ const ContactPage = () => {
     e.preventDefault();
     
     // Validación básica
-    if (!formData.name || !formData.email || !formData.message) {
+    if (!formData.name || !formData.email || !formData.message || !formData.subject) {
       setFormStatus({
         submitting: false,
         success: false,
@@ -519,7 +519,7 @@ const ContactPage = () => {
                 
                 <div style={styles.formGroup}>
                   <label style={styles.label} htmlFor="subject">
-                    Asunto
+                    Asunto<span style={styles.required}>*</span>
                   </label>
                   <select
                     id="subject"
@@ -527,6 +527,7 @@ const ContactPage = () => {
                     value={formData.subject}
                     onChange={handleChange}
                     style={styles.select}
+                    required
                   >
                     <option value="">Selecciona un asunto</option>
                     <option value="Información general">Información general</option>
