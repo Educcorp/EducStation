@@ -314,7 +314,7 @@ const HomePage = () => {
           >
             <div style={{
               ...styles.circleText, 
-              animation: 'spin 0.00001s linear infinite', // Cambiado de 20s a 10s
+              animation: 'spin 1s linear infinite', // Cambiado de 20s a 10s
               transform: hoveredCategory === 'circle' ? 'rotate(-5deg)' : 'rotate(0deg)',
             }}>
               <img 
