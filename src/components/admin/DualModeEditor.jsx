@@ -1,16 +1,20 @@
 // src/components/admin/DualModeEditor.jsx
+// Versión actualizada con resaltado de sintaxis
+
 import React, { useRef, useState, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import EditorToolbar from './EditorToolbar';
 import { insertMarkdown, insertHTML } from './utils/editorUtils';
 import MarkdownPreview from './MarkdownPreview';
 import HTMLPreview from './HTMLPreview';
+import SyntaxHighlighter from './SyntaxHighlighter'; // Importamos el nuevo componente
 
 const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
   const textAreaRef = useRef(null);
   const [mode, setMode] = useState(initialMode); // 'markdown' o 'html'
   const [activeTab, setActiveTab] = useState('code'); // 'code' o 'preview'
   const [internalContent, setInternalContent] = useState(content || '');
+  const [isHighlightingEnabled, setIsHighlightingEnabled] = useState(true);
 
   // Detectar si el contenido es HTML y actualizar modo si es necesario
   useEffect(() => {
@@ -70,7 +74,6 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
     setMode(newMode);
     
     // También notificamos al componente padre sobre el cambio de modo
-    // Este es un paso crucial que faltaba
     const event = {
       target: {
         name: 'editorMode',
@@ -83,6 +86,11 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
   const handleTextAreaChange = (e) => {
     setInternalContent(e.target.value);
     onChange(e);
+  };
+
+  // Toggle para activar/desactivar el resaltado de sintaxis
+  const toggleSyntaxHighlighting = () => {
+    setIsHighlightingEnabled(!isHighlightingEnabled);
   };
 
   // Colores oficiales para los modos
@@ -111,18 +119,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
     }
   };
 
-  const commonContentStyles = {
-    width: '100%',
-    height: '600px', // Mayor altura
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    backgroundColor: '#f9fafb', // Fondo suave, consistente entre code y preview
-    border: `1px solid ${colors.gray200}`,
-    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)',
-    overflow: 'auto',
-    transition: 'all 0.2s ease-in-out'
-  };
-
+  // Estilos para el editor
   const styles = {
     editorContainer: {
       position: 'relative',
@@ -181,19 +178,32 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       color: mode === 'markdown' ? '#0095FF' : '#E34C26',
       borderBottom: `2px solid ${mode === 'markdown' ? '#0095FF' : '#E34C26'}`
     },
-    textarea: {
-      ...commonContentStyles,
-      fontFamily: 'monospace',
-      resize: 'vertical',
+    plainTextarea: {
+      width: '100%',
+      height: '600px',
+      padding: spacing.md,
+      backgroundColor: '#1e1e1e',
+      color: '#d4d4d4',
+      fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
+      fontSize: '14px',
       lineHeight: 1.5,
-      border: 'none',
+      border: `1px solid ${colors.gray200}`,
+      borderRadius: borderRadius.md,
+      resize: 'vertical',
       outline: 'none',
-      maxWidth: '100%',
-      overflowWrap: 'break-word',
-      whiteSpace: 'pre-wrap'
+      overflowWrap: 'normal',
+      whiteSpace: 'pre',
+      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
     },
     previewContainer: {
-      ...commonContentStyles
+      width: '100%',
+      height: '600px',
+      padding: spacing.md,
+      backgroundColor: '#f9fafb',
+      border: `1px solid ${colors.gray200}`,
+      borderRadius: borderRadius.md,
+      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)',
+      overflow: 'auto'
     },
     autoSaveIndicator: {
       position: 'absolute',
@@ -226,10 +236,58 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       borderRadius: `0 0 ${borderRadius.md} ${borderRadius.md}`,
       padding: spacing.sm,
       border: 'none'
-    }
+    },
+    highlighterOptions: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginLeft: spacing.xl,
+    },
+    switchContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      cursor: 'pointer',
+    },
+    switchLabel: {
+      fontSize: typography.fontSize.sm,
+      color: colors.textSecondary,
+      marginRight: spacing.xs,
+    },
+    switch: {
+      position: 'relative',
+      display: 'inline-block',
+      width: '40px',
+      height: '20px',
+    },
+    switchInput: {
+      opacity: 0,
+      width: 0,
+      height: 0,
+    },
+    switchSlider: {
+      position: 'absolute',
+      cursor: 'pointer',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: colors.gray200,
+      transition: '0.4s',
+      borderRadius: '20px',
+    },
+    switchThumb: (isActive) => ({
+      position: 'absolute',
+      cursor: 'pointer',
+      content: '""',
+      height: '16px',
+      width: '16px',
+      left: isActive ? '22px' : '2px',
+      bottom: '2px',
+      backgroundColor: colors.white,
+      transition: '0.4s',
+      borderRadius: '50%',
+    })
   };
-
-  console.log('Current mode:', mode); // Depuración
 
   return (
     <div style={styles.editorContainer}>
@@ -269,43 +327,75 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
           </button>
         </div>
         
-        <div style={styles.modeToggle}>
-          <span>Modo:</span>
-          <button
-            style={styles.modeButton(mode === 'markdown', 'markdown')}
-            onClick={() => handleModeToggle('markdown')}
-            onMouseEnter={(e) => {
-              if (mode !== 'markdown') {
-                e.target.style.backgroundColor = modeColors.markdown.hoverBg;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (mode !== 'markdown') {
-                e.target.style.backgroundColor = modeColors.markdown.background;
-              }
-            }}
-          >
-            Markdown
-          </button>
-          <button
-            style={styles.modeButton(mode === 'html', 'html')}
-            onClick={() => handleModeToggle('html')}
-            onMouseEnter={(e) => {
-              if (mode !== 'html') {
-                e.target.style.backgroundColor = modeColors.html.hoverBg;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (mode !== 'html') {
-                e.target.style.backgroundColor = modeColors.html.background;
-              }
-            }}
-          >
-            HTML
-          </button>
-          <span style={styles.modeBadge}>
-            {mode === 'html' ? 'HTML' : 'MD'}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {/* Opción para resaltado de sintaxis */}
+          {activeTab === 'code' && (
+            <div style={styles.highlighterOptions}>
+              <div 
+                style={styles.switchContainer}
+                onClick={toggleSyntaxHighlighting}
+              >
+                <span style={styles.switchLabel}>Resaltado:</span>
+                <div style={styles.switch}>
+                  <input 
+                    type="checkbox" 
+                    checked={isHighlightingEnabled}
+                    style={styles.switchInput}
+                    readOnly
+                  />
+                  <span 
+                    style={{
+                      ...styles.switchSlider,
+                      backgroundColor: isHighlightingEnabled 
+                        ? (mode === 'markdown' ? '#0095FF' : '#E34C26')
+                        : colors.gray200
+                    }}
+                  >
+                    <span style={styles.switchThumb(isHighlightingEnabled)} />
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <div style={styles.modeToggle}>
+            <span>Modo:</span>
+            <button
+              style={styles.modeButton(mode === 'markdown', 'markdown')}
+              onClick={() => handleModeToggle('markdown')}
+              onMouseEnter={(e) => {
+                if (mode !== 'markdown') {
+                  e.target.style.backgroundColor = modeColors.markdown.hoverBg;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (mode !== 'markdown') {
+                  e.target.style.backgroundColor = modeColors.markdown.background;
+                }
+              }}
+            >
+              Markdown
+            </button>
+            <button
+              style={styles.modeButton(mode === 'html', 'html')}
+              onClick={() => handleModeToggle('html')}
+              onMouseEnter={(e) => {
+                if (mode !== 'html') {
+                  e.target.style.backgroundColor = modeColors.html.hoverBg;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (mode !== 'html') {
+                  e.target.style.backgroundColor = modeColors.html.background;
+                }
+              }}
+            >
+              HTML
+            </button>
+            <span style={styles.modeBadge}>
+              {mode === 'html' ? 'HTML' : 'MD'}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -317,17 +407,27 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
               mode={mode}
             />
             
-            <textarea
-              ref={textAreaRef}
-              value={internalContent}
-              onChange={handleTextAreaChange}
-              style={styles.textarea}
-              placeholder={mode === 'markdown' 
-                ? "Escribe tu post en formato Markdown..." 
-                : "Escribe código HTML aquí..."
-              }
-              spellCheck="false"
-            />
+            {/* Usar el componente de resaltado si está habilitado, o el textarea normal si no */}
+            {isHighlightingEnabled ? (
+              <SyntaxHighlighter
+                content={internalContent}
+                mode={mode}
+                onChange={handleTextAreaChange}
+                textAreaRef={textAreaRef}
+              />
+            ) : (
+              <textarea
+                ref={textAreaRef}
+                value={internalContent}
+                onChange={handleTextAreaChange}
+                style={styles.plainTextarea}
+                placeholder={mode === 'markdown' 
+                  ? "Escribe tu post en formato Markdown..." 
+                  : "Escribe código HTML aquí..."
+                }
+                spellCheck="false"
+              />
+            )}
           </>
         )}
 

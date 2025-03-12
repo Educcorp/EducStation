@@ -103,8 +103,8 @@ const AboutPage = () => {
     },
     timelineYear: {
       position: "absolute",
-      left: -spacing.xxl,
-      top: spacing.lg,
+      left: "-50px",
+      top: "50px",
       width: "40px",
       height: "40px",
       backgroundColor: colors.secondary,
@@ -137,7 +137,10 @@ const AboutPage = () => {
       '&:hover': {
         transform: "translateY(-10px)",
         boxShadow: shadows.lg
-      }
+      },
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center"
     },
     teamImage: {
       width: "100%",
@@ -145,7 +148,8 @@ const AboutPage = () => {
       objectFit: "cover"
     },
     teamInfo: {
-      padding: spacing.lg
+      padding: spacing.lg,
+      textAlign: "center"
     },
     teamName: {
       fontSize: typography.fontSize.lg,
@@ -169,38 +173,56 @@ const AboutPage = () => {
   // Datos del equipo
   const teamMembers = [
     {
-      name: 'María Rodríguez',
-      role: 'Fundadora y Directora',
-      image: '/api/placeholder/250/250',
-      bio: 'Educadora con más de 15 años de experiencia en pedagogía innovadora.'
-    },
-    {
-      name: 'Carlos Méndez',
-      role: 'Editor Principal',
-      image: '/api/placeholder/250/250',
-      bio: 'Docente universitario y escritor especializado en tecnología educativa.'
-    },
-    {
-      name: 'Ana García',
-      role: 'Especialista en Contenidos',
-      image: '/api/placeholder/250/250',
-      bio: 'Experta en creación de recursos pedagógicos digitales e inclusivos.'
-    },
-    {
-      name: 'Roberto Sánchez',
+      name: 'Damian Valencia',
       role: 'Desarrollador Web',
-      image: '/api/placeholder/250/250',
-      bio: 'Ingeniero informático con pasión por la educación digital.'
+      image: '/assets/images/educstation-logo.png', // Ruta relativa correcta
+      bio: 'Se ocupa de de metodologias y estrategias para manejar el aprendizaje y los habitos de estudio.'
+    },
+    {
+      name: 'Fernanda Zepeda',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Encargado de recopilar, redactar o presentar noticias relevantes del ODS 4.'
+    },
+    {
+      name: 'Emmanuel Palacios',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Aborda problematicas en el estudio - Analiza dificultades, obstaculos o desafios que enfrentan los estudiantes durante su proceso de aprendizaje.'
+    },
+    {
+      name: 'Priscila Lopez',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Se enfoca en Educacion de Calidad.'
+    },
+    {
+      name: 'Yoselin Reynaga',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Encargada del desarrollo profesional docente.'
+    },
+    {
+      name: 'Gregorio Sánchez',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Maneja Herramientas tecnologicas - Se especializa en recursos digitales, aplicaciones o plataformas que apoyan al proceso educativo.'
+    },
+    {
+      name: 'Ruben Lavariega',
+      role: 'Desarrollador Web',
+      image: '/assets/images/educstation-logo.png',
+      bio: 'Promueve la participacion colectiva, trabajo en equipo y construccion de redes entre diversos actores educativos.'
     }
   ];
 
   // Datos de timeline
   const timelineEvents = [
-    { year: '2018', title: 'Fundación', description: 'EducStation nace como un proyecto personal para compartir recursos con otros educadores.' },
-    { year: '2019', title: 'Crecimiento', description: 'Se forma el equipo inicial y se lanza la primera versión de la plataforma web.' },
-    { year: '2021', title: 'Expansión', description: 'EducStation se convierte en una comunidad de más de 10,000 educadores.' },
-    { year: '2023', title: 'Renovación', description: 'Rediseño completo de la plataforma con enfoque en creación de contenido colaborativo.' },
-    { year: '2025', title: 'Actualidad', description: 'EducStation se consolida como referente en innovación educativa.' }
+    { year: '1', title: 'Expandir Orizontes', description: 'Buscamos hacer llegar a mas gente la importancia de recibir una buena educacion de calidad.' },
+    { year: '2', title: 'Impulsar el progreso', description: 'Motivaremos a los docentes y alumnos a que integren las nuevas tecnologias a sus metodologias.' },
+    { year: '3', title: 'Apoyo a estudiantes', description: 'Ofreceremos varios tips y guias para ayudar a que los alumnos mejoren en sus estudios.' },
+    { year: '4', title: 'Comunicar noticias', description: 'Compartiremos las noticias mas relevantes relacionadas con la educacion.' },
+    { year: '5', title: 'Crecer la comunidad', description: 'Nos enfocaremos en hacer que nuestro blog sea interactivo, para asi conseguir mas usuarios y motivarlos en sus estudios.' }
   ];
 
   return (
@@ -223,27 +245,27 @@ const AboutPage = () => {
           {/* Stats Section */}
           <section style={styles.stats}>
             <div style={styles.statItem}>
-              <div style={styles.statNumber}>15K+</div>
-              <div style={styles.statLabel}>Educadores</div>
+              <div style={styles.statNumber}>7</div>
+              <div style={styles.statLabel}>Administradores</div>
             </div>
             <div style={styles.statItem}>
-              <div style={styles.statNumber}>500+</div>
+              <div style={styles.statNumber}>0</div>
               <div style={styles.statLabel}>Artículos</div>
             </div>
             <div style={styles.statItem}>
-              <div style={styles.statNumber}>12</div>
-              <div style={styles.statLabel}>Países</div>
+              <div style={styles.statNumber}>0</div>
+              <div style={styles.statLabel}>Visitantes</div>
             </div>
             <div style={styles.statItem}>
-              <div style={styles.statNumber}>7</div>
-              <div style={styles.statLabel}>Años</div>
+              <div style={styles.statNumber}>0</div>
+              <div style={styles.statLabel}>Alumnos</div>
             </div>
           </section>
           
           {/* Historia Section */}
           <section style={styles.section}>
             <h2 style={{...styles.sectionTitle}}>
-              Nuestra Historia
+              Motivaciones
               <span style={{
                 position: "absolute",
                 bottom: 0,
@@ -329,7 +351,7 @@ const AboutPage = () => {
                 { 
                   title: 'Innovación', 
                   icon: '💡', 
-                  description: 'Buscamos constantemente nuevas formas de mejorar la experiencia educativa mediante la tecnología y metodologías innovadoras.' 
+                  description: 'Buscamos traer variedad con todos nuestros posts y con la informacion que ofrecemos, trayendo lo mas reciente del momento.' 
                 },
                 { 
                   title: 'Colaboración', 
@@ -339,12 +361,12 @@ const AboutPage = () => {
                 { 
                   title: 'Inclusión', 
                   icon: '🌈', 
-                  description: 'Promovemos un entorno educativo donde todas las voces son escuchadas y valoradas, independientemente de su origen o condición.' 
+                  description: 'Nos aseguraremos que la informacion dada en nuestra pagina siempre sea inclusiva para todos, sin importar nuestras diferencias.' 
                 },
                 { 
                   title: 'Excelencia', 
                   icon: '🏆', 
-                  description: 'Nos esforzamos por ofrecer contenido y herramientas de la más alta calidad para potenciar el desarrollo profesional de los educadores.' 
+                  description: 'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de si mismos.' 
                 }
               ].map((value, index) => (
                 <div 

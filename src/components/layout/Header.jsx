@@ -39,8 +39,9 @@ const Header = () => {
       backgroundColor: isScrolled ? "rgba(240, 248, 247, 0.95)" : colors.white,
       padding: `${spacing.md} 0`,
       boxShadow: isScrolled ? shadows.md : shadows.sm,
-      position: "sticky",
+      position: "fixed",
       top: 0,
+      width:"100%",
       zIndex: 100,
       transition: transitions.default
     },
