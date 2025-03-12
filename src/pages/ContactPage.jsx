@@ -110,19 +110,19 @@ const ContactPage = () => {
   const faqs = [
     {
       question: '¿Cómo puedo colaborar con EducStation?',
-      answer: 'Ofrecemos diferentes formas de colaboración: puedes enviar artículos para publicar, participar como revisor de contenidos o proponer webinars y eventos. Contacta con nosotros para más detalles.'
+      answer: 'Puedes colaborar con la pagina dejando tus comentarios en nuestros posts, ademas de enviandonos tus preguntas en el apartado de contactos.'
     },
     {
-      question: '¿Ofrecen certificados para los cursos?',
-      answer: 'No! :D.'
+      question: '¿Tienen recursos relacionados a las tecnicas de estudio?',
+      answer: 'Si!, aqui en EducStation contamos con varias guias y herramientas con las cuales puedes mejorar tus metodos de estudio.'
     },
     {
-      question: '¿Tienen recursos para educación primaria?',
-      answer: 'Absolutamente. Contamos con una amplia biblioteca de recursos clasificados por nivel educativo, desde infantil hasta educación superior, con un fuerte énfasis en primaria y secundaria.'
+      question: '¿Podre encontrar informacion reciente aqui?',
+      answer: 'Si!, aqui en EdcuStation nos aseguramos de siempre tener a la mano las noticias recientes mas relevantes del momento relacionadas a la educacion.'
     },
     {
       question: '¿Cómo puedo reportar un problema técnico?',
-      answer: 'Para reportar problemas técnicos, puedes utilizar este formulario de contacto seleccionando "Soporte Técnico" en el campo de asunto, o escribir directamente a soporte@educstation.com.'
+      answer: 'Para reportar problemas técnicos, puedes escribirnos directamente a soporte@educstation.com, responderemos en un plazo de 48hrs.'
     }
   ];
 
