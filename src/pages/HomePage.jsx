@@ -40,7 +40,7 @@ const HomePage = () => {
     {
       id: 1,
       title: 'Cómo Optimizar el Uso de Tecnología en el Aula',
-      image: '/api/placeholder/150/100',
+      image: '/assets/images/educstation-logo.png',
       category: 'herramientas',
       time: '4 horas atrás',
       number: '02',
@@ -49,7 +49,7 @@ const HomePage = () => {
     {
       id: 2,
       title: 'Entendiendo la Psicología del Aprendizaje Visual',
-      image: '/api/placeholder/150/100',
+      image: '/assets/images/educstation-logo.png',
       category: 'técnicas de estudio',
       time: '4 horas atrás',
       number: '03',
@@ -58,7 +58,7 @@ const HomePage = () => {
     {
       id: 3,
       title: 'El Poder de la Colaboración en Entornos Educativos',
-      image: '/api/placeholder/150/100',
+      image: '/assets/images/educstation-logo.png',
       category: 'comunidad',
       time: '4 horas atrás',
       number: '04',
@@ -67,7 +67,7 @@ const HomePage = () => {
     {
       id: 4,
       title: 'Construyendo un Sistema Educativo Inclusivo',
-      image: '/api/placeholder/150/100',
+      image: '/assets/images/educstation-logo.png',
       category: 'educación de calidad',
       time: '4 horas atrás',
       number: '05',
