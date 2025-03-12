@@ -39,8 +39,9 @@ const Header = () => {
       backgroundColor: isScrolled ? "rgba(240, 248, 247, 0.95)" : colors.white,
       padding: `${spacing.md} 0`,
       boxShadow: isScrolled ? shadows.md : shadows.sm,
-      position: "sticky",
+      position: "fixed",
       top: 0,
+      width:"100%",
       zIndex: 100,
       transition: transitions.default
     },
@@ -105,7 +106,6 @@ const Header = () => {
 
   const navItems = [
     { path: '/', label: 'Inicio' },
-    { path: '/blog', label: 'Blog' },
     { path: '/about', label: 'Acerca de' },
     { path: '/contact', label: 'Contacto' },
     { path: '/admin/post', label: 'Crear Post', admin: true }
@@ -179,7 +179,7 @@ const Header = () => {
           onMouseEnter={() => setHoveredItem('profile')}
           onMouseLeave={() => setHoveredItem(null)}
         >
-          <img src="/api/placeholder/40/40" alt="Profile" style={styles.profileImg} />
+          <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
         </div>
       </div>
     </header>

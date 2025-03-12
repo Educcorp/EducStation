@@ -1,4 +1,3 @@
-// src/pages/HomePage.jsx
 import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -13,7 +12,7 @@ const HomePage = () => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   // Estado para el valor de búsqueda
   const [searchValue, setSearchValue] = useState('');
-  
+
   // Categorías de los artículos
   const categories = [
     'Todos',
@@ -25,7 +24,7 @@ const HomePage = () => {
     'Desarrollo Docente',
     'Comunidad'
   ];
-  
+
   // Artículo destacado
   const featuredPost = {
     title: 'Innovación Educativa: Transformando el Aprendizaje en la Era Digital',
@@ -35,13 +34,13 @@ const HomePage = () => {
     number: '01',
     excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
   };
-  
+
   // Lista de artículos
   const posts = [
     {
       id: 1,
       title: 'Cómo Optimizar el Uso de Tecnología en el Aula',
-      image: '/api/placeholder/150/100',
+      image: '/assets/images/educstation-logo.png',
       category: 'herramientas',
       time: '4 horas atrás',
       number: '02',
@@ -50,7 +49,7 @@ const HomePage = () => {
     {
       id: 2,
       title: 'Entendiendo la Psicología del Aprendizaje Visual',
-      image: '/api/placeholder/150/100',
+      image: '/assets/images/educstation-logo.png',
       category: 'técnicas de estudio',
       time: '4 horas atrás',
       number: '03',
@@ -59,7 +58,7 @@ const HomePage = () => {
     {
       id: 3,
       title: 'El Poder de la Colaboración en Entornos Educativos',
-      image: '/api/placeholder/150/100',
+      image: '/assets/images/educstation-logo.png',
       category: 'comunidad',
       time: '4 horas atrás',
       number: '04',
@@ -68,7 +67,7 @@ const HomePage = () => {
     {
       id: 4,
       title: 'Construyendo un Sistema Educativo Inclusivo',
-      image: '/api/placeholder/150/100',
+      image: '/assets/images/educstation-logo.png',
       category: 'educación de calidad',
       time: '4 horas atrás',
       number: '05',
@@ -315,13 +314,19 @@ const HomePage = () => {
           >
             <div style={{
               ...styles.circleText, 
-              animation: 'spin 20s linear infinite',
+              animation: 'spin 1s linear infinite', // Cambiado de 20s a 10s
               transform: hoveredCategory === 'circle' ? 'rotate(-5deg)' : 'rotate(0deg)',
-            }}>• Comparte tu historia • Comparte tu idea • Comparte tu visión •</div>
-            <div style={{
-              ...styles.circleIcon,
-              animation: hoveredCategory === 'circle' ? 'pulse 1s infinite' : 'none'
-            }}>→</div>
+            }}>
+              <img 
+                src="/assets/images/educstation-logo.png"  
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  borderRadius: '50%'
+                }}
+              />
+            </div>
           </div>
         </div>
         

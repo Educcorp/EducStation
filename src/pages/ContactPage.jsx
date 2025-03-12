@@ -87,7 +87,7 @@ const ContactPage = () => {
     {
       icon: '📍',
       title: 'Ubicación',
-      content: 'Av. Educación 123, Ciudad Digital, 28080'
+      content: 'Facultad de Ingenieria Electromecanica, Ucol, Colima, Mexico'
     },
     {
       icon: '📧',
@@ -97,12 +97,12 @@ const ContactPage = () => {
     {
       icon: '☎️',
       title: 'Teléfono',
-      content: '+34 91 123 4567'
+      content: '+314 331 1207'
     },
     {
       icon: '🕒',
       title: 'Horario',
-      content: 'Lunes a Viernes: 9:00 - 18:00'
+      content: 'Lunes a Viernes: 7:00 - 22:00'
     }
   ];
   
@@ -110,19 +110,19 @@ const ContactPage = () => {
   const faqs = [
     {
       question: '¿Cómo puedo colaborar con EducStation?',
-      answer: 'Ofrecemos diferentes formas de colaboración: puedes enviar artículos para publicar, participar como revisor de contenidos o proponer webinars y eventos. Contacta con nosotros para más detalles.'
+      answer: 'Puedes colaborar con la pagina dejando tus comentarios en nuestros posts, ademas de enviandonos tus preguntas en el apartado de contactos.'
     },
     {
-      question: '¿Ofrecen certificados para los cursos?',
-      answer: 'Sí, todos nuestros cursos incluyen un certificado digital al completarlos satisfactoriamente. Estos certificados son verificables a través de nuestra plataforma.'
+      question: '¿Tienen recursos relacionados a las tecnicas de estudio?',
+      answer: 'Si!, aqui en EducStation contamos con varias guias y herramientas con las cuales puedes mejorar tus metodos de estudio.'
     },
     {
-      question: '¿Tienen recursos para educación primaria?',
-      answer: 'Absolutamente. Contamos con una amplia biblioteca de recursos clasificados por nivel educativo, desde infantil hasta educación superior, con un fuerte énfasis en primaria y secundaria.'
+      question: '¿Podre encontrar informacion reciente aqui?',
+      answer: 'Si!, aqui en EdcuStation nos aseguramos de siempre tener a la mano las noticias recientes mas relevantes del momento relacionadas a la educacion.'
     },
     {
       question: '¿Cómo puedo reportar un problema técnico?',
-      answer: 'Para reportar problemas técnicos, puedes utilizar este formulario de contacto seleccionando "Soporte Técnico" en el campo de asunto, o escribir directamente a soporte@educstation.com.'
+      answer: 'Para reportar problemas técnicos, puedes escribirnos directamente a soporte@educstation.com, responderemos en un plazo de 48hrs.'
     }
   ];
 
@@ -411,8 +411,8 @@ const ContactPage = () => {
           <div style={styles.container}>
             <h1 style={styles.title}>Contáctanos</h1>
             <p style={styles.subtitle}>
-              Estamos aquí para ayudarte. Si tienes preguntas, sugerencias o comentarios, 
-              no dudes en ponerte en contacto con nosotros. Respondemos a todas las consultas 
+              Estamos aquí para ayudarte. Resolveremos cualquier incognita que tengas relacionada con nuestro blog,
+              No dudes en contactarte con nosotros!. Respondemos a todas las consultas 
               en un plazo máximo de 48 horas.
             </p>
           </div>
@@ -458,7 +458,7 @@ const ContactPage = () => {
               
               <div style={styles.mapContainer}>
                 <iframe 
-                  src="https://maps.google.com/maps?q=Madrid,Spain&z=13&output=embed" 
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3769.6293535527034!2d-104.40488172201485!3d19.123909435912225!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x84255a99f51cf4b5%3A0x71073f9935f08f0a!2sFacultad%20de%20Ingenier%C3%ADa%20Electromec%C3%A1nica%20(FIE)!5e0!3m2!1sen!2sus!4v1741748318372!5m2!1sen!2sus" 
                   style={styles.map} 
                   title="Mapa de ubicación"
                   allowFullScreen 
