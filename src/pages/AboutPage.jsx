@@ -218,11 +218,11 @@ const AboutPage = () => {
 
   // Datos de timeline
   const timelineEvents = [
-    { year: '2018', title: 'Fundación', description: 'EducStation nace como un proyecto personal para compartir recursos con otros educadores.' },
-    { year: '2019', title: 'Crecimiento', description: 'Se forma el equipo inicial y se lanza la primera versión de la plataforma web.' },
-    { year: '2021', title: 'Expansión', description: 'EducStation se convierte en una comunidad de más de 10,000 educadores.' },
-    { year: '2023', title: 'Renovación', description: 'Rediseño completo de la plataforma con enfoque en creación de contenido colaborativo.' },
-    { year: '2025', title: 'Actualidad', description: 'EducStation se consolida como referente en innovación educativa.' }
+    { year: '1', title: 'Expandir Orizontes', description: 'Buscamos hacer llegar a mas gente la importancia de recibir una buena educacion de calidad.' },
+    { year: '2', title: 'Impulsar el progreso', description: 'Motivaremos a los docentes y alumnos a que integren las nuevas tecnologias a sus metodologias.' },
+    { year: '3', title: 'Apoyo a estudiantes', description: 'Ofreceremos varios tips y guias para ayudar a que los alumnos mejoren en sus estudios.' },
+    { year: '4', title: 'Comunicar noticias', description: 'Compartiremos las noticias mas relevantes relacionadas con la educacion.' },
+    { year: '5', title: 'Crecer la comunidad', description: 'Nos enfocaremos en hacer que nuestro blog sea interactivo, para asi conseguir mas usuarios y motivarlos en sus estudios.' }
   ];
 
   return (
@@ -245,27 +245,27 @@ const AboutPage = () => {
           {/* Stats Section */}
           <section style={styles.stats}>
             <div style={styles.statItem}>
-              <div style={styles.statNumber}>15K+</div>
-              <div style={styles.statLabel}>Educadores</div>
+              <div style={styles.statNumber}>7</div>
+              <div style={styles.statLabel}>Administradores</div>
             </div>
             <div style={styles.statItem}>
-              <div style={styles.statNumber}>500+</div>
+              <div style={styles.statNumber}>0</div>
               <div style={styles.statLabel}>Artículos</div>
             </div>
             <div style={styles.statItem}>
-              <div style={styles.statNumber}>12</div>
-              <div style={styles.statLabel}>Países</div>
+              <div style={styles.statNumber}>0</div>
+              <div style={styles.statLabel}>Visitantes</div>
             </div>
             <div style={styles.statItem}>
-              <div style={styles.statNumber}>7</div>
-              <div style={styles.statLabel}>Años</div>
+              <div style={styles.statNumber}>0</div>
+              <div style={styles.statLabel}>Alumnos</div>
             </div>
           </section>
           
           {/* Historia Section */}
           <section style={styles.section}>
             <h2 style={{...styles.sectionTitle}}>
-              Nuestra Historia
+              Motivaciones
               <span style={{
                 position: "absolute",
                 bottom: 0,
@@ -351,7 +351,7 @@ const AboutPage = () => {
                 { 
                   title: 'Innovación', 
                   icon: '💡', 
-                  description: 'Buscamos constantemente nuevas formas de mejorar la experiencia educativa mediante la tecnología y metodologías innovadoras.' 
+                  description: 'Buscamos traer variedad con todos nuestros posts y con la informacion que ofrecemos, trayendo lo mas reciente del momento.' 
                 },
                 { 
                   title: 'Colaboración', 
@@ -361,12 +361,12 @@ const AboutPage = () => {
                 { 
                   title: 'Inclusión', 
                   icon: '🌈', 
-                  description: 'Promovemos un entorno educativo donde todas las voces son escuchadas y valoradas, independientemente de su origen o condición.' 
+                  description: 'Nos aseguraremos que la informacion dada en nuestra pagina siempre sea inclusiva para todos, sin importar nuestras diferencias.' 
                 },
                 { 
                   title: 'Excelencia', 
                   icon: '🏆', 
-                  description: 'Nos esforzamos por ofrecer contenido y herramientas de la más alta calidad para potenciar el desarrollo profesional de los educadores.' 
+                  description: 'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de si mismos.' 
                 }
               ].map((value, index) => (
                 <div 
