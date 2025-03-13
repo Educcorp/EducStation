@@ -670,7 +670,8 @@ const EducStation = () => {
             </button>
           ))}
           
-          <div style={styles.searchBox}>
+          {/* Barra de búsqueda */}
+          {/* <div style={styles.searchBox}>
             <span style={styles.searchIcon}>🔍</span>
             <input
               type="text"
@@ -682,9 +683,9 @@ const EducStation = () => {
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}
               onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px rgba(124, 77, 255, 0.2), inset 0 2px 5px rgba(0,0,0,0.05)'}
-              onBlur={(e) => e.target.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.05)'}
+              onBlur={(e) => e.target.style.boxShadow = 'inset 0 2px 5px rgba(0,0,0,0.05)'} 
             />
-          </div>
+          </div> */}
         </div>
         
         {/* Featured Post and Grid */}
