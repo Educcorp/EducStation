@@ -307,7 +307,7 @@ status: ${post.status}
     container: {
       maxWidth: "1200px",
       margin: "0 auto",
-      padding: `${spacing.xl} ${spacing.md}`,
+      padding: `${"100px"} ${spacing.md}`,
       fontFamily: typography.fontFamily
     },
     editorContainer: {

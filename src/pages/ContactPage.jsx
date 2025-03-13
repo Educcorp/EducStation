@@ -469,7 +469,7 @@ const ContactPage = () => {
             </div>
             
             {/* Contact Form Section */}
-            <div style={styles.formSection}>
+            <div id="contact-from" style={styles.formSection}> {/* Añadir id="middle" para enlazar con el botón de scroll */}
               <h2 style={{...styles.sectionTitle, '&:after': {...styles.sectionTitle['&:after'], content: '""'}}}>
                 Envíanos un Mensaje
                 <span style={{
@@ -589,7 +589,7 @@ const ContactPage = () => {
           </div>
           
           {/* FAQ Section */}
-          <section style={styles.faqSection}>
+          <section id="faq-section" style={styles.faqSection}>
             <h2 style={{...styles.sectionTitle, '&:after': {...styles.sectionTitle['&:after'], content: '""'}}}>
               Preguntas Frecuentes
               <span style={{

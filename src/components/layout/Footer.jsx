@@ -236,7 +236,7 @@ const Footer = () => {
           <div>
             <h3 style={styles.title}>Enlaces Rápidos</h3>
             <ul style={styles.links}>
-              {['Inicio', 'Sobre Nosotros', 'Blog', 'Contacto', 'FAQ'].map((link, index) => (
+              {['Inicio', 'Acerca de', 'Contacto', 'FAQ', 'Crear Post'].map((link, index) => (
                 <li 
                   key={index} 
                   style={styles.link}
@@ -250,7 +250,7 @@ const Footer = () => {
                   }}
                 >
                   <a 
-                    href="#"
+                     href={link === 'Acerca de' ? '/about' : link === 'Contacto' ? '/contact' : link === 'FAQ' ? '/contact#faq-section'  : link === 'Crear Post' ? '/admin/post' : '/'} // Actualiza el enlace aquí
                     style={styles.linkAnchor}
                     onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
                     onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
