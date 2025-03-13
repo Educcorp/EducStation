@@ -63,6 +63,7 @@ const NewsCarousel = ({ notes }) => {
       marginTop: spacing.xl,
       marginBottom: spacing.xxl,
       boxShadow: "0 10px 30px rgba(11, 68, 68, 0.15)",
+      cursor: "pointer", // Añadido para indicar que todo el carrusel es clickeable
     },
     carouselInner: {
       whiteSpace: "nowrap",
@@ -101,7 +102,7 @@ const NewsCarousel = ({ notes }) => {
     },
     carouselExcerpt: {
       fontSize: typography.fontSize.md,
-      marginBottom: spacing.lg,
+      marginBottom: 0, // Cambiado de spacing.lg a 0 ya que no hay botón después
       opacity: "0.9",
     },
     carouselCategory: {
@@ -163,27 +164,7 @@ const NewsCarousel = ({ notes }) => {
       '&:hover': {
         backgroundColor: isActive ? colors.primary : "rgba(255,255,255,0.8)",
       }
-    }),
-    carouselReadMore: {
-      backgroundColor: colors.primary,
-      color: colors.white,
-      border: "none",
-      borderRadius: "24px",
-      padding: `${spacing.sm} ${spacing.lg}`,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.semibold,
-      cursor: "pointer",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: spacing.xs,
-      boxShadow: "0 4px 12px rgba(11, 68, 68, 0.3)",
-      transition: transitions.default,
-      '&:hover': {
-        backgroundColor: colors.primaryDark,
-        transform: "translateY(-2px)",
-        boxShadow: "0 6px 15px rgba(11, 68, 68, 0.4)"
-      }
-    }
+    })
   };
 
   return (
@@ -200,15 +181,7 @@ const NewsCarousel = ({ notes }) => {
               <div style={styles.carouselCategory}>{slide.category}</div>
               <h2 style={styles.carouselTitle}>{slide.title}</h2>
               <p style={styles.carouselExcerpt}>{slide.excerpt}</p>
-              <button
-                style={hoveredElement === `carousel-btn-${index}`
-                  ? applyHoverStyles(styles.carouselReadMore)
-                  : styles.carouselReadMore}
-                onMouseEnter={() => setHoveredElement(`carousel-btn-${index}`)}
-                onMouseLeave={() => setHoveredElement(null)}
-              >
-                Leer más <span>→</span>
-              </button>
+              {/* El botón "Leer más" ha sido eliminado */}
             </div>
           </div>
         ))}
@@ -330,10 +303,10 @@ const HomePage = () => {
   const carouselNotes = [
     {
       id: 1,
-      title: "La tecnología educativa está revolucionando las aulas",
-      excerpt: "Descubre cómo las herramientas digitales están transformando la experiencia educativa en todos los niveles.",
+      title: "Prohibición de bebidas azucaradas en comedores escolares",
+      excerpt: "El gobierno español está trabajando en un decreto para prohibir el consumo de bebidas azucaradas en comedores escolares, donde se busca promover hábitos mas saludables y combatir la obesidad infantil.",
       image: "/assets/images/educstation-logo.png", // Cambiado para usar la misma imagen
-      category: "Tecnología"
+      category: "Ultima Noticia"
     },
     {
       id: 2,
