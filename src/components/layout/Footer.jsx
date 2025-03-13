@@ -81,6 +81,7 @@ const Footer = () => {
       transition: transitions.default,
       cursor: "pointer",
       fontSize: "18px",
+      color: colors.white,
       '&:hover': {
         backgroundColor: colors.secondary,
         color: colors.primary
@@ -209,11 +210,6 @@ const Footer = () => {
               excelencia en el ámbito educativo.
             </p>
             <div style={styles.social}>
-              <div 
-                style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
-              >f</div>
               <a 
                 href="https://x.com/EducCorp" // Aquí se agrega el enlace de Twitter
                 target="_blank" 
@@ -221,22 +217,15 @@ const Footer = () => {
                 style={{...styles.socialIcon}}
                 onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
-              >t</a>
-              <div 
+              >T</a>
+              <a 
+                href="https://www.linkedin.com/in/educcorp-inc-158297356/" // Aquí se agrega el enlace de Linkedin
+                target="_blank" 
+                rel="noopener noreferrer"
                 style={{...styles.socialIcon}}
                 onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
-              >t</div>
-              <div 
-                style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
-              >in</div>
-              <div 
-                style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
-              >ig</div>
+              >in</a>
             </div>
           </div>
           
