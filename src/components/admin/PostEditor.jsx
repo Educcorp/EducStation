@@ -4,6 +4,8 @@ import { colors, spacing, typography, shadows, borderRadius } from '../../styles
 
 // Componentes para el editor
 import DualModeEditor from './DualModeEditor';
+import EasyModeEditor from './EasyModeEditor';
+import EditorModeSelector from './EditorModeSelector';
 import PostMetadata from './PostMetadata';
 import CoverImageUploader from './CoverImageUploader';
 import MarkdownGuide from './MarkdownGuide';
@@ -11,27 +13,7 @@ import StatusMessage from './StatusMessage';
 import ImportExportActions from './ImportExportActions';
 
 // Funciones para almacenamiento local
-const savePostToLocalStorage = (post) => {
-  try {
-    const postToSave = { ...post };
-    // No guardamos la imagen como tal, sino solo la URL de vista previa
-    delete postToSave.coverImage;
-    localStorage.setItem('post_draft', JSON.stringify(postToSave));
-    console.log('Saved to localStorage:', postToSave); // Debug
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-  }
-};
-
-const loadPostFromLocalStorage = () => {
-  try {
-    const savedPost = localStorage.getItem('post_draft');
-    return savedPost ? JSON.parse(savedPost) : null;
-  } catch (error) {
-    console.error('Error loading from localStorage:', error);
-    return null;
-  }
-};
+import { savePostToLocalStorage, loadPostFromLocalStorage } from './utils/storageUtils';
 
 const PostEditor = () => {
   const [post, setPost] = useState({
@@ -43,7 +25,7 @@ const PostEditor = () => {
     coverImagePreview: null,
     status: 'draft', // 'draft', 'published'
     publishDate: new Date().toISOString().slice(0, 10),
-    editorMode: 'markdown', // Iniciamos explícitamente en modo markdown
+    editorMode: 'easy', // 'easy', 'markdown', o 'html'
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -86,6 +68,23 @@ const PostEditor = () => {
     }
   };
 
+  // Manejador para cambiar el modo de edición
+  const handleEditorModeChange = (mode) => {
+    setPost(prev => ({
+      ...prev,
+      editorMode: mode
+    }));
+    
+    // También notificamos al componente padre sobre el cambio de modo
+    const event = {
+      target: {
+        name: 'editorMode',
+        value: mode
+      }
+    };
+    handleChange(event);
+  };
+
   // Autoguardado cuando el contenido cambia
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -107,10 +106,10 @@ const PostEditor = () => {
       
       setPost({
         ...savedPost,
-        editorMode: hasHTMLStructure ? 'html' : (savedPost.editorMode || 'markdown')
+        editorMode: savedPost.editorMode || (hasHTMLStructure ? 'html' : 'easy')
       });
       
-      console.log('Loaded post with mode:', hasHTMLStructure ? 'html' : (savedPost.editorMode || 'markdown'));
+      console.log('Loaded post with mode:', savedPost.editorMode || (hasHTMLStructure ? 'html' : 'easy'));
     }
   }, []);
 
@@ -175,7 +174,7 @@ const PostEditor = () => {
     let content = '';
     let fileExtension = '';
     
-    if (post.editorMode === 'markdown') {
+    if (post.editorMode === 'markdown' || post.editorMode === 'easy') {
       const frontMatter = `---
 title: ${post.title}
 category: ${post.category}
@@ -193,7 +192,7 @@ status: ${post.status}
     }
     
     const blob = new Blob([content], { 
-      type: post.editorMode === 'markdown' ? 'text/markdown' : 'text/html' 
+      type: post.editorMode === 'html' ? 'text/html' : 'text/markdown' 
     });
     const url = URL.createObjectURL(blob);
     
@@ -211,7 +210,7 @@ status: ${post.status}
     // Mostrar mensaje de éxito
     setSaveMessage({
       type: 'success',
-      text: `Archivo ${post.editorMode === 'markdown' ? 'Markdown' : 'HTML'} descargado correctamente`,
+      text: `Archivo ${post.editorMode === 'html' ? 'HTML' : 'Markdown'} descargado correctamente`,
       icon: '📥'
     });
     
@@ -302,6 +301,43 @@ status: ${post.status}
     reader.readAsText(file);
   };
 
+  // Renderizar el editor según el modo seleccionado
+  const renderEditor = () => {
+    switch (post.editorMode) {
+      case 'easy':
+        return (
+          <EasyModeEditor 
+            content={post.content}
+            onChange={handleChange}
+          />
+        );
+      case 'markdown':
+      case 'html':
+        return (
+          <DualModeEditor 
+            content={post.content}
+            onChange={handleChange}
+            initialMode={post.editorMode}
+          />
+        );
+      default:
+        return (
+          <EasyModeEditor 
+            content={post.content}
+            onChange={handleChange}
+          />
+        );
+    }
+  };
+
+  // Renderizar la guía dependiendo del modo
+  const renderGuide = () => {
+    if (post.editorMode === 'markdown' || post.editorMode === 'html') {
+      return <MarkdownGuide />;
+    }
+    return null;
+  };
+
   // Estilos CSS
   const styles = {
     container: {
@@ -323,10 +359,35 @@ status: ${post.status}
       width: "100%",
       maxWidth: "800px" // Anchura predefinida para el contenido del post
     },
-    sidebar: {},
+    sidebar: {
+      width: "100%",
+      maxWidth: "300px"
+    },
     formGroup: {
       marginBottom: spacing.lg
-    }
+    },
+    actionButtons: {
+      display: 'flex',
+      gap: spacing.md,
+      marginTop: spacing.lg,
+      justifyContent: 'center'
+    },
+    button: (isPrimary) => ({
+      padding: `${spacing.sm} ${spacing.xl}`,
+      borderRadius: borderRadius.md,
+      border: 'none',
+      backgroundColor: isPrimary ? colors.primary : colors.white,
+      color: isPrimary ? colors.white : colors.primary,
+      fontWeight: typography.fontWeight.medium,
+      cursor: 'pointer',
+      boxShadow: shadows.sm,
+      transition: 'all 0.3s ease',
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs,
+      fontSize: typography.fontSize.md,
+      border: isPrimary ? 'none' : `1px solid ${colors.primary}`
+    })
   };
 
   // Log para depuración
@@ -361,7 +422,6 @@ status: ${post.status}
           }
         `
       }} />
-
 
       <div style={{
         display: "grid",
@@ -413,12 +473,15 @@ status: ${post.status}
             />
           </div>
 
+          {/* Selector de modo de edición */}
+          <EditorModeSelector 
+            currentMode={post.editorMode} 
+            onModeChange={handleEditorModeChange} 
+          />
+
           <div style={styles.formGroup}>
-            <DualModeEditor 
-              content={post.content}
-              onChange={handleChange}
-              initialMode={post.editorMode}
-            />
+            {/* Renderizar el editor según el modo seleccionado */}
+            {renderEditor()}
           </div>
 
           {saveMessage && (
@@ -428,6 +491,40 @@ status: ${post.status}
               icon={saveMessage.icon} 
             />
           )}
+
+          <div style={styles.actionButtons}>
+            <button
+              onClick={saveDraft}
+              disabled={isSaving}
+              style={styles.button(false)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = shadows.md;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = shadows.sm;
+              }}
+            >
+              <span>{isSaving ? '⏳' : '💾'}</span> {isSaving ? 'Guardando...' : 'Guardar borrador'}
+            </button>
+            
+            <button
+              onClick={publishPost}
+              disabled={isPublishing}
+              style={styles.button(true)}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = shadows.md;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = shadows.sm;
+              }}
+            >
+              <span>{isPublishing ? '⏳' : '🚀'}</span> {isPublishing ? 'Publicando...' : (post.status === 'published' ? 'Actualizar publicación' : 'Publicar')}
+            </button>
+          </div>
         </div>
 
         <div style={styles.sidebar}>
@@ -442,7 +539,8 @@ status: ${post.status}
             onChange={handleChange} 
           />
 
-          <MarkdownGuide />
+          {/* Renderizar guía según el modo */}
+          {renderGuide()}
           
           <ImportExportActions 
             onExport={exportToFile} 
