@@ -120,6 +120,16 @@ npm start
       <a href="#" title="Code">💻</a>
       <a href="#" title="Design">🎨</a>
     </td>
+    <td align="center">
+      <a href="https://github.com/Emma-Pal">
+        <img src="https://github.com/Emma-Pal.png" width="100px;" alt="Emmanuel Palacios"/>
+        <br />
+        <sub><b>Emmanuel Palacios</b></sub>
+      </a>
+      <br />
+      <a href="#" title="Code">💻</a>
+      <a href="#" title="Design">🎨</a>
+    </td>
     <!-- Add more team members as needed -->
   </tr>
 </table>
