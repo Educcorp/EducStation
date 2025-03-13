@@ -214,6 +214,14 @@ const Footer = () => {
                 onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >f</div>
+              <a 
+                href="https://x.com/EducCorp" // Aquí se agrega el enlace de Twitter
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{...styles.socialIcon}}
+                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
+                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
+              >t</a>
               <div 
                 style={{...styles.socialIcon}}
                 onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
