@@ -37,6 +37,6 @@
   "devDependencies": {
     "react-scripts": "^5.0.1",
     "webpack": "5.75.0",
-    "webpack-dev-server": "4.9.3"
+    "webpack-dev-server": "^4.11.1"
   }
 }
