@@ -663,7 +663,7 @@ const HomePage = () => {
             </button>
           ))}
 
-          <div style={styles.searchBox}>
+          {/* <div style={styles.searchBox}>
             <span style={styles.searchIcon}>🔍</span>
             <input
               type="text"
@@ -674,7 +674,7 @@ const HomePage = () => {
               onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px rgba(11, 68, 68, 0.1), inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
               onBlur={(e) => e.target.style.boxShadow = 'inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Featured Post and Posts Grid - CORREGIDO */}
