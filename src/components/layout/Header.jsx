@@ -8,22 +8,35 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   // Estado para el hover
   const [hoveredItem, setHoveredItem] = useState(null);
-  
+  // Estado para controlar la visibilidad del header
+  const [isVisible, setIsVisible] = useState(true);
+  // Estado para almacenar la posición de scroll anterior
+  const [lastScrollY, setLastScrollY] = useState(0);
+
   // Usar useLocation en lugar de withRouter (que está obsoleto en React Router v6)
   const location = useLocation();
-  
+
   // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
   const userRole = 'admin'; // Opciones: 'admin', 'user', etc.
-  
+
   // Detectar scroll para efectos de navegación
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY) {
+        // Scroll hacia abajo
+        setIsVisible(false);
+      } else {
+        // Scroll hacia arriba
+        setIsVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+      setIsScrolled(currentScrollY > 50);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   // Verificar si la ruta está activa
   const isActive = (path) => {
@@ -40,8 +53,8 @@ const Header = () => {
       padding: `${spacing.md} 0`,
       boxShadow: isScrolled ? shadows.md : shadows.sm,
       position: "fixed",
-      top: 0,
-      width:"100%",
+      top: isVisible ? 0 : '-100px', // Cambiar la posición top para mostrar/ocultar el header
+      width: "100%",
       zIndex: 100,
       transition: transitions.default
     },
