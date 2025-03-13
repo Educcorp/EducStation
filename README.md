@@ -130,6 +130,26 @@ npm start
       <a href="#" title="Code">💻</a>
       <a href="#" title="Design">🎨</a>
     </td>
+    <td align="center">
+      <a href="https://github.com/YoselinRs">
+        <img src="https://github.com/YoselinRs.png" width="100px;" alt="Pichirilla"/>
+        <br />
+        <sub><b>Pichirilla</b></sub>
+      </a>
+      <br />
+      <a href="#" title="Code">💻</a>
+      <a href="#" title="Design">🎨</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Fer463-web">
+        <img src="https://github.com/Fer465-web.png" width="100px;" alt="Fernanda"/>
+        <br />
+        <sub><b>Fernanda</b></sub>
+      </a>
+      <br />
+      <a href="#" title="Code">💻</a>
+      <a href="#" title="Design">🎨</a>
+    </td>
     <!-- Add more team members as needed -->
   </tr>
 </table>
