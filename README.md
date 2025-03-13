@@ -121,6 +121,16 @@ npm start
       <a href="#" title="Design">🎨</a>
     </td>
     <td align="center">
+      <a href="https://github.com/Gregorio-Yahir">
+        <img src="https://github.com/Gregorio-Yahir.png" width="100px;" alt="Gregorio Yahir"/>
+        <br />
+        <sub><b>Gregorio Yahir</b></sub>
+      </a>
+      <br />
+      <a href="#" title="Code">💻</a>
+      <a href="#" title="Design">🎨</a>
+    </td>
+    <td align="center">
       <a href="https://github.com/Emma-Pal">
         <img src="https://github.com/Emma-Pal.png" width="100px;" alt="Emmanuel Palacios"/>
         <br />
