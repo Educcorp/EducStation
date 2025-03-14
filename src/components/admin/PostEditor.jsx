@@ -1,4 +1,4 @@
-// src/components/admin/PostEditor.jsx - Modified
+// src/components/admin/PostEditor.jsx
 import React, { useState, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
@@ -17,6 +17,7 @@ const savePostToLocalStorage = (post) => {
     // No guardamos la imagen como tal, sino solo la URL de vista previa
     delete postToSave.coverImage;
     localStorage.setItem('post_draft', JSON.stringify(postToSave));
+    console.log('Saved to localStorage:', postToSave); // Debug
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }
@@ -42,7 +43,7 @@ const PostEditor = () => {
     coverImagePreview: null,
     status: 'draft', // 'draft', 'published'
     publishDate: new Date().toISOString().slice(0, 10),
-    editorMode: 'simple', // Siempre iniciar en modo simple
+    editorMode: 'simple', // Set default mode to 'simple'
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -63,6 +64,9 @@ const PostEditor = () => {
   // Manejador para cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Log para depuración
+    console.log(`Changing ${name} to ${value}`);
     
     setPost(prev => ({
       ...prev,
@@ -86,6 +90,7 @@ const PostEditor = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (post.content.length > 0 || post.title.length > 0) {
+        console.log('Guardado automático...');
         savePostToLocalStorage(post);
       }
     }, 2000);
@@ -97,11 +102,15 @@ const PostEditor = () => {
   useEffect(() => {
     const savedPost = loadPostFromLocalStorage();
     if (savedPost) {
-      // Forzar modo simple sin importar lo guardado anteriormente
+      // Detectamos si el contenido parece ser HTML para establecer el modo
+      const hasHTMLStructure = /<(!DOCTYPE|html|head|body|div|p|h[1-6]|ul|ol|script|style)[^>]*>/i.test(savedPost.content);
+      
       setPost({
         ...savedPost,
-        editorMode: 'simple' // Siempre iniciar en modo simple
+        editorMode: hasHTMLStructure ? 'html' : (savedPost.editorMode || 'simple') // Ensure 'simple' is the default mode
       });
+      
+      console.log('Loaded post with mode:', hasHTMLStructure ? 'html' : (savedPost.editorMode || 'simple'));
     }
   }, []);
 
@@ -160,7 +169,7 @@ const PostEditor = () => {
     }, 1500);
   };
 
-  // Exportar el post para descargar
+  // Exportar el post a Markdown/HTML para descargar
   const exportToFile = () => {
     // Crear un objeto de texto para descargar
     let content = '';
@@ -178,7 +187,7 @@ status: ${post.status}
 `;
       content = frontMatter + post.content;
       fileExtension = 'md';
-    } else { // HTML mode o simple mode
+    } else { // HTML mode
       content = post.content;
       fileExtension = 'html';
     }
@@ -248,7 +257,7 @@ status: ${post.status}
             publishDate: dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10),
             status: statusMatch ? statusMatch[1] : 'draft',
             content: actualContent.trim(),
-            editorMode: 'simple' // Usar siempre modo simple
+            editorMode: 'markdown'
           };
         } else {
           // Si no hay frontmatter, usar todo como contenido
@@ -270,7 +279,7 @@ status: ${post.status}
           ...prevPost,
           title: title || prevPost.title,
           content: content,
-          editorMode: 'simple' // Usar siempre modo simple
+          editorMode: 'html'
         }));
       } else {
         // Si no es Markdown ni HTML, tratar como texto plano
@@ -303,7 +312,8 @@ status: ${post.status}
     },
     editorContainer: {
       display: "grid",
-      gridTemplateColumns: "1fr 300px",
+      // Cambiado: Invertir el orden de las columnas para que la barra lateral esté a la izquierda
+      gridTemplateColumns: "300px 1fr",
       gap: spacing.xl,
       marginBottom: spacing.xxl,
       '@media (max-width: 768px)': {
@@ -314,11 +324,46 @@ status: ${post.status}
       width: "100%",
       maxWidth: "800px" // Anchura predefinida para el contenido del post
     },
-    sidebar: {},
+    sidebar: {
+      // No necesita cambios específicos de estilo aquí
+    },
     formGroup: {
       marginBottom: spacing.lg
+    },
+    actionsContainer: {
+      display: "flex",
+      justifyContent: "space-between", 
+      gap: spacing.md,
+      marginTop: spacing.xl
+    },
+    actionButton: {
+      padding: `${spacing.sm} ${spacing.lg}`,
+      borderRadius: borderRadius.md,
+      fontWeight: typography.fontWeight.medium,
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      fontSize: typography.fontSize.md,
+      border: "none",
+      // Estilos específicos se aplicarán en cada botón
+    },
+    saveButton: {
+      backgroundColor: colors.secondary,
+      color: colors.primary,
+      "&:hover": {
+        backgroundColor: colors.secondary + "cc", // Añadir transparencia al hover
+      }
+    },
+    publishButton: {
+      backgroundColor: colors.primary,
+      color: colors.white,
+      "&:hover": {
+        backgroundColor: colors.primaryLight,
+      }
     }
   };
+
+  // Log para depuración
+  console.log('Current editor mode:', post.editorMode);
 
   return (
     <div style={styles.container}>
@@ -351,15 +396,30 @@ status: ${post.status}
       }} />
 
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 300px",
-        gap: spacing.xl,
-        marginBottom: spacing.xxl,
-        '@media (max-width: 768px)': {
-          gridTemplateColumns: "1fr"
-        }
-      }}>
+      <div style={styles.editorContainer}>
+        {/* Sidebar - Ahora a la izquierda */}
+        <div style={styles.sidebar}>
+          <CoverImageUploader 
+            coverImagePreview={post.coverImagePreview} 
+            onChange={handleImageChange} 
+          />
+
+          <PostMetadata 
+            post={post} 
+            categories={categories} 
+            onChange={handleChange} 
+          />
+
+          <MarkdownGuide />
+          
+          <ImportExportActions 
+            onExport={exportToFile} 
+            onImport={importFile}
+            isHTML={post.editorMode === 'html'} 
+          />
+        </div>
+
+        {/* Main Editor - Ahora a la derecha */}
         <div style={styles.mainEditor}>
           <div style={styles.formGroup}>
             <label style={{
@@ -405,7 +465,7 @@ status: ${post.status}
             <DualModeEditor 
               content={post.content}
               onChange={handleChange}
-              initialMode='simple'
+              initialMode={post.editorMode}
             />
           </div>
 
@@ -416,27 +476,30 @@ status: ${post.status}
               icon={saveMessage.icon} 
             />
           )}
-        </div>
 
-        <div style={styles.sidebar}>
-          <CoverImageUploader 
-            coverImagePreview={post.coverImagePreview} 
-            onChange={handleImageChange} 
-          />
-
-          <PostMetadata 
-            post={post} 
-            categories={categories} 
-            onChange={handleChange} 
-          />
-
-          <MarkdownGuide />
-          
-          <ImportExportActions 
-            onExport={exportToFile} 
-            onImport={importFile}
-            isHTML={post.editorMode === 'html'} 
-          />
+          <div style={styles.actionsContainer}>
+            <button 
+              onClick={saveDraft}
+              disabled={isSaving}
+              style={{
+                ...styles.actionButton,
+                ...styles.saveButton
+              }}
+            >
+              {isSaving ? 'Guardando...' : 'Guardar borrador'}
+            </button>
+            
+            <button 
+              onClick={publishPost}
+              disabled={isPublishing}
+              style={{
+                ...styles.actionButton,
+                ...styles.publishButton
+              }}
+            >
+              {isPublishing ? 'Publicando...' : 'Publicar post'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
