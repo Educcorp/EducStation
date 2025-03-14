@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avances y Desafíos Recientes en el ODS 4: Educación de Calidad</title>
+    <style>
+        /* Paleta de colores personalizada */
+        :root {
+            --color-light-green: #91a8a8;
+            --color-dark-green: #0b4444;
+            --color-medium-green: #4c7977;
+            --color-light-bg: #f0f8f7;
+            --color-beige: #d2b99a;
+            --color-text-dark: #333333;
+            --color-text-medium: #444444;
+            --color-text-light: #666666;
+        }
+
+        /* Estilos generales */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #fff; /* Cambiado de var(--color-light-bg) a blanco */
+            color: var(--color-text-medium);
+            line-height: 1.6;
+        }
+
+        .post-container {
+            max-width: 100%; /* Cambiado de 800px a 100% */
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            /* Eliminado: box-shadow: 0 0 10px rgba(11, 68, 68, 0.1); */
+            /* Eliminado: border-radius: 8px; */
+        }
+
+        .post-header {
+            margin-bottom: 25px;
+        }
+
+        .post-category {
+            font-size: 14px;
+            color: var(--color-medium-green);
+            margin-bottom: 10px;
+            display: inline-block;
+            background-color: rgba(145, 168, 168, 0.2);
+            padding: 4px 10px;
+            border-radius: 4px;
+        }
+
+        .post-title {
+            font-size: 28px;
+            color: var(--color-dark-green);
+            margin: 10px 0 15px;
+            line-height: 1.3;
+        }
+
+        .post-meta {
+            font-size: 14px;
+            color: var(--color-text-light);
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .post-meta strong {
+            color: var(--color-medium-green);
+        }
+
+        .post-image {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(11, 68, 68, 0.1);
+        }
+
+        .post-content {
+            font-size: 16px;
+            color: var(--color-text-medium);
+        }
+
+        .post-content h2 {
+            font-size: 24px;
+            color: var(--color-dark-green);
+            margin: 30px 0 15px;
+            border-bottom: 2px solid var(--color-light-green);
+            padding-bottom: 8px;
+        }
+
+        .post-content h3 {
+            font-size: 20px;
+            color: var(--color-medium-green);
+            margin: 25px 0 15px;
+        }
+
+        .post-content p {
+            margin-bottom: 20px;
+        }
+
+        .post-content ul,
+        .post-content ol {
+            margin-bottom: 20px;
+            padding-left: 20px;
+        }
+
+        .post-content li {
+            margin-bottom: 10px;
+        }
+
+        .post-content a {
+            color: var(--color-medium-green);
+            text-decoration: underline;
+            transition: color 0.3s;
+        }
+
+        .post-content a:hover {
+            color: var(--color-dark-green);
+        }
+
+        blockquote {
+            border-left: 4px solid var(--color-light-green);
+            padding: 15px;
+            margin: 20px 0;
+            background-color: rgba(240, 248, 247, 0.7);
+            font-style: italic;
+        }
+
+        .post-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--color-light-green);
+        }
+
+        .author-section {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .author-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 3px solid var(--color-light-green);
+        }
+
+        .author-info {
+            flex: 1;
+        }
+
+        .author-name {
+            font-weight: bold;
+            color: var(--color-dark-green);
+            margin: 0 0 5px;
+        }
+
+        .author-bio {
+            font-size: 14px;
+            color: var(--color-text-light);
+            margin: 0;
+        }
+
+        .tags-section {
+            margin: 20px 0;
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: var(--color-light-green);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            transition: background-color 0.3s;
+        }
+
+        .tag:hover {
+            background-color: var(--color-medium-green);
+        }
+
+        .related-posts {
+            margin-top: 30px;
+            background-color: rgba(240, 248, 247, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .related-posts h3 {
+            font-size: 18px;
+            color: var(--color-dark-green);
+            margin-bottom: 15px;
+        }
+
+        .related-post-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .related-post-list li {
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(145, 168, 168, 0.3);
+            padding-bottom: 8px;
+        }
+
+        .related-post-list li:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .related-post-list a {
+            color: var(--color-medium-green);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .related-post-list a:hover {
+            color: var(--color-dark-green);
+        }
+
+        .news-card {
+            border: 1px solid rgba(145, 168, 168, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(11, 68, 68, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .news-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(11, 68, 68, 0.1);
+        }
+
+        .news-card h3 {
+            color: var(--color-dark-green);
+            margin-top: 5px;
+        }
+
+        .news-date {
+            font-size: 12px;
+            color: var(--color-light-green);
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .news-source {
+            font-size: 13px;
+            color: var(--color-text-light);
+            font-style: italic;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .highlight-box {
+            background-color: rgba(240, 248, 247, 0.7);
+            border-left: 4px solid var(--color-medium-green);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .highlight-box h3 {
+            margin-top: 0;
+            color: var(--color-dark-green);
+        }
+
+        .stat-box {
+            background-color: var(--color-medium-green);
+            color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+            box-shadow: 0 3px 6px rgba(11, 68, 68, 0.1);
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--color-beige);
+        }
+
+        .ods-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            display: block;
+            background-color: var(--color-light-bg);
+            border-radius: 50%;
+            padding: 10px;
+        }
+
+        strong {
+            color: var(--color-dark-green);
+        }
+
+        @media (max-width: 768px) {
+            .post-container {
+                padding: 20px;
+            }
+
+            .post-title {
+                font-size: 24px;
+            }
+
+            .author-section {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .author-avatar {
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="post-container">
+        <div class="post-header">
+            <div class="post-category">Objetivos de Desarrollo Sostenible</div>
+            <h1 class="post-title">Avances y Desafíos Recientes en el ODS 4: Educación de Calidad</h1>
+            <div class="post-meta">
+                <span>Publicado por <strong>María Gómez</strong> • <time datetime="2025-03-13">13 de marzo,
+                        2025</time></span>
+                <span>Tiempo de lectura: 6 minutos</span>
+            </div>
+        </div>
+
+        <img class="post-image" src="https://via.placeholder.com/800x400" alt="ODS 4: Educación de Calidad">
+
+        <div class="post-content">
+            <p>El Objetivo de Desarrollo Sostenible 4 (ODS 4) busca "garantizar una educación inclusiva, equitativa y de
+                calidad y promover oportunidades de aprendizaje durante toda la vida para todos". En este artículo,
+                exploramos las últimas noticias, avances y desafíos en este importante objetivo global, especialmente en
+                el contexto post-pandémico que ha transformado profundamente el panorama educativo mundial.</p>
+
+            <div class="stat-box">
+                <img src="https://via.placeholder.com/80" alt="ODS 4 Icono" class="ods-icon">
+                <p>ODS 4: Educación de Calidad</p>
+                <div class="stat-number">258 millones</div>
+                <p>de niños y jóvenes siguen sin escolarizar a nivel mundial</p>
+            </div>
+
+            <h2>Noticias recientes sobre el ODS 4</h2>
+
+            <div class="news-card">
+                <div class="news-date">Febrero 2025</div>
+                <h3>UNESCO lanza nuevo informe sobre la brecha digital educativa</h3>
+                <p>La UNESCO ha publicado su más reciente informe titulado "Cerrando brechas digitales en educación:
+                    Estrategias post-pandemia para 2030". El documento revela que a pesar de los avances significativos
+                    en conectividad desde 2020, alrededor de 1.3 mil millones de estudiantes en países de ingresos bajos
+                    y medios siguen sin acceso confiable a internet para fines educativos.</p>
+                <p>El informe destaca que la brecha digital sigue siendo uno de los principales obstáculos para alcanzar
+                    el ODS 4, exacerbando las desigualdades preexistentes en educación. La UNESCO insta a los gobiernos
+                    a aumentar las inversiones en infraestructura digital educativa y capacitación docente en
+                    tecnologías de aprendizaje.</p>
+                <div class="news-source">Fuente: UNESCO, Febrero 2025</div>
+            </div>
+
+            <div class="news-card">
+                <div class="news-date">Enero 2025</div>
+                <h3>Nuevo programa de financiación educativa para países vulnerables al cambio climático</h3>
+                <p>El Banco Mundial, junto con la Alianza Global para la Educación, ha anunciado un fondo de 4.5 mil
+                    millones de dólares destinado a fortalecer sistemas educativos en países especialmente vulnerables a
+                    los efectos del cambio climático. Este nuevo programa, denominado "Educación Resiliente al Clima",
+                    beneficiará a 37 naciones de África, Asia y América Latina.</p>
+                <p>La iniciativa no solo financiará infraestructura escolar resistente a fenómenos meteorológicos
+                    extremos, sino que también incorporará educación sobre sostenibilidad y cambio climático en los
+                    planes de estudio, formando a la próxima generación en habilidades críticas para enfrentar los
+                    desafíos ambientales.</p>
+                <div class="news-source">Fuente: Banco Mundial, Enero 2025</div>
+            </div>
+
+            <div class="news-card">
+                <div class="news-date">Marzo 2025</div>
+                <h3>España amplía su programa de becas para estudiantes de regiones en riesgo de despoblación</h3>
+                <p>El Ministerio de Educación español ha anunciado la ampliación de su programa de becas para
+                    estudiantes de educación superior procedentes de zonas rurales con riesgo de despoblación. Esta
+                    iniciativa, que forma parte de la Estrategia Nacional frente al Reto Demográfico, beneficiará a más
+                    de 20,000 estudiantes adicionales durante el próximo curso académico.</p>
+                <p>El programa busca fomentar tanto el acceso a educación superior de calidad como el eventual retorno
+                    de talento formado a estas áreas, contribuyendo así a los objetivos del ODS 4 y al desarrollo
+                    sostenible de regiones rurales.</p>
+                <div class="news-source">Fuente: Ministerio de Educación de España, Marzo 2025</div>
+            </div>
+
+            <h2>Avances significativos en el ODS 4</h2>
+
+            <p>A pesar de los desafíos, se han registrado avances notables en varios aspectos del ODS 4:</p>
+
+            <h3>Mayor acceso a educación preescolar</h3>
+            <p>En los últimos tres años, la tasa mundial de participación en educación preescolar ha aumentado del 67%
+                al 73%, con progresos particularmente significativos en Asia Oriental y África Subsahariana. Esto
+                refleja un reconocimiento creciente de la importancia de la educación temprana como base para el
+                aprendizaje futuro.</p>
+
+            <div class="highlight-box">
+                <h3>Mejora en la paridad de género</h3>
+                <p>La brecha de género en educación se ha reducido notablemente en todos los niveles educativos. En
+                    2024, 129 países habían alcanzado la paridad de género en educación primaria, frente a 115 en 2020.
+                    La tendencia es positiva también en educación secundaria y terciaria, aunque persisten disparidades
+                    en algunas regiones.</p>
+            </div>
+
+            <h3>Innovación en modalidades educativas</h3>
+            <p>La crisis educativa desencadenada por la pandemia de COVID-19 ha acelerado la innovación en modalidades
+                de aprendizaje. Modelos híbridos, microaprendizaje digital y plataformas adaptativas están transformando
+                la educación formal e informal, permitiendo mayor flexibilidad y personalización.</p>
+
+            <p>Un informe reciente del Foro Económico Mundial señala que estas innovaciones, adecuadamente
+                implementadas, podrían contribuir a subsanar parte del déficit de aprendizaje acumulado durante los
+                cierres escolares pandémicos.</p>
+
+            <h2>Desafíos persistentes</h2>
+
+            <p>A pesar de los avances, varios desafíos significativos continúan obstaculizando el progreso hacia el ODS
+                4:</p>
+
+            <h3>Crisis de aprendizaje post-pandemia</h3>
+            <p>Los efectos de los cierres escolares durante la pandemia siguen repercutiendo en los niveles de
+                aprendizaje. Según las últimas evaluaciones internacionales, se estima que los estudiantes de los países
+                de ingresos bajos y medios experimentaron pérdidas de aprendizaje equivalentes a 1.5 años de escolaridad
+                en promedio, una brecha que aún no se ha cerrado.</p>
+
+            <blockquote>
+                "La crisis educativa desencadenada por la pandemia ha sido descrita como una 'catástrofe generacional'.
+                Sin una acción urgente y sostenida, corremos el riesgo de dejar atrás a toda una generación de
+                estudiantes." - Antonio Guterres, Secretario General de las Naciones Unidas
+            </blockquote>
+
+            <h3>Financiación educativa insuficiente</h3>
+            <p>A pesar de los compromisos internacionales, la financiación para educación sigue siendo insuficiente. Un
+                reciente análisis de la UNESCO indica que existe una brecha anual de financiamiento de aproximadamente
+                148 mil millones de dólares para alcanzar el ODS 4 en los países de ingresos bajos y medios-bajos.</p>
+
+            <h3>Déficit de docentes cualificados</h3>
+            <p>Se estima que para 2030 se necesitarán 69 millones de nuevos docentes para lograr la educación primaria y
+                secundaria universal. Este desafío se ve agravado por las altas tasas de abandono de la profesión
+                docente, que se han incrementado significativamente tras la pandemia.</p>
+
+            <h2>Iniciativas prometedoras</h2>
+
+            <p>Frente a estos desafíos, varias iniciativas innovadoras están mostrando resultados prometedores:</p>
+
+            <h3>Programa "Escuelas como Centros Comunitarios"</h3>
+            <p>Este modelo, implementado con éxito en países como Colombia, Kenia y Vietnam, transforma las escuelas en
+                centros de aprendizaje comunitario que ofrecen servicios educativos y sociales integrados. Las
+                evaluaciones preliminares muestran mejoras en la asistencia escolar, resultados de aprendizaje y
+                bienestar infantil.</p>
+
+            <h3>Alianzas público-privadas para competencias digitales</h3>
+            <p>Iniciativas como "DigiSkills for All" están creando alianzas entre gobiernos, empresas tecnológicas e
+                instituciones educativas para desarrollar competencias digitales esenciales. Estos programas han
+                capacitado a más de 15 millones de jóvenes en los últimos dos años, mejorando significativamente su
+                empleabilidad.</p>
+
+            <div class="highlight-box">
+                <h3>Innovación en formación docente</h3>
+                <p>Programas como "Teach for Tomorrow" están revolucionando la formación docente mediante el uso de
+                    simulaciones de realidad virtual, mentoría entre pares y comunidades de práctica digitales. Estos
+                    enfoques innovadores han demostrado mejorar la eficacia docente y reducir las tasas de abandono
+                    profesional.</p>
+            </div>
+
+            <h2>El camino hacia 2030</h2>
+
+            <p>A cinco años del plazo establecido para los Objetivos de Desarrollo Sostenible, el ODS 4 enfrenta
+                desafíos considerables pero también oportunidades sin precedentes:</p>
+
+            <ul>
+                <li><strong>Mayor priorización política</strong>: La pandemia ha puesto de relieve la importancia
+                    crítica de los sistemas educativos resilientes, incrementando la atención política a este sector.
+                </li>
+                <li><strong>Transformación digital</strong>: Las tecnologías emergentes ofrecen nuevas oportunidades
+                    para ampliar el acceso a una educación de calidad, aunque deben implementarse con estrategias para
+                    cerrar la brecha digital.</li>
+                <li><strong>Enfoque en equidad</strong>: Cada vez más países están adoptando políticas educativas que
+                    priorizan explícitamente a los grupos más marginados, reconociendo que el progreso hacia el ODS 4
+                    requiere reducir las disparidades.</li>
+                <li><strong>Medición de resultados</strong>: Los avances en la recopilación y análisis de datos
+                    educativos permiten un seguimiento más preciso del progreso y facilitan intervenciones basadas en
+                    evidencia.</li>
+            </ul>
+
+            <p>Para acelerar el progreso hacia el ODS 4, será crucial mantener y aumentar la inversión en educación,
+                fortalecer los sistemas educativos para hacerlos más resilientes e inclusivos, y aprovechar el potencial
+                de la innovación tecnológica de manera equitativa.</p>
+
+            <p>La educación de calidad no es solo un objetivo en sí mismo, sino un catalizador para avanzar en todos los
+                demás Objetivos de Desarrollo Sostenible. Invertir en educación significa invertir en el futuro
+                sostenible que todos deseamos.</p>
+        </div>
+
+        <div class="post-footer">
+            <div class="author-section">
+                <img class="author-avatar" src="https://via.placeholder.com/120" alt="María Gómez">
+                <div class="author-info">
+                    <h4 class="author-name">María Gómez</h4>
+                    <p class="author-bio">Especialista en políticas educativas y desarrollo sostenible. Ha colaborado
+                        con organizaciones internacionales en proyectos relacionados con los ODS y es profesora
+                        universitaria en el ámbito de la educación para el desarrollo.</p>
+                </div>
+            </div>
+
+            <div class="tags-section">
+                <span class="tag">ODS 4</span>
+                <span class="tag">Educación de Calidad</span>
+                <span class="tag">Desarrollo Sostenible</span>
+                <span class="tag">UNESCO</span>
+                <span class="tag">Política Educativa</span>
+                <span class="tag">Innovación Educativa</span>
+            </div>
+
+            <div class="related-posts">
+                <h3>Artículos relacionados</h3>
+                <ul class="related-post-list">
+                    <li><a href="#">El papel de las universidades en la consecución de los ODS</a></li>
+                    <li><a href="#">Estrategias efectivas para reducir el abandono escolar temprano</a></li>
+                    <li><a href="#">Educación STEM y paridad de género: avances y desafíos</a></li>
+                    <li><a href="#">La alfabetización digital como derecho fundamental en el siglo XXI</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

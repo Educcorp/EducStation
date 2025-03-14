@@ -1,4 +1,5 @@
-// src/components/blog/PostViewer.jsx
+/* Modificación para el componente PostViewer.jsx */
+// Actualiza el componente para usar los estilos corregidos
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import Header from '../layout/Header';
@@ -18,7 +19,6 @@ const PostViewer = () => {
         setError(null);
         
         // Siempre usamos post1.html para todos los posts por ahora
-        // Esto cargará el mismo contenido para cualquier post que se seleccione
         const postPath = `/post/post1.html`;
         console.log('Intentando cargar post desde:', postPath);
         
@@ -48,14 +48,18 @@ const PostViewer = () => {
       maxWidth: "1200px",
       margin: "0 auto",
       padding: `100px ${spacing.md} ${spacing.xxl}`,
-      position: "relative"
+      position: "relative",
+      width: "100%",
+      boxSizing: "border-box"
     },
     postContainer: {
       backgroundColor: colors.white,
       borderRadius: borderRadius.lg,
       padding: spacing.xl,
       boxShadow: shadows.md,
-      marginBottom: spacing.xxl
+      marginBottom: spacing.xxl,
+      width: "100%",
+      boxSizing: "border-box"
     },
     loadingMessage: {
       textAlign: "center",
@@ -129,7 +133,7 @@ const PostViewer = () => {
   };
 
   return (
-    <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
+    <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background, width: "100%" }}>
       <Header />
       
       <main style={styles.container}>
@@ -143,7 +147,7 @@ const PostViewer = () => {
           >Inicio</Link>
           <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
           <Link 
-            to="/"
+            to="/blog"
             style={styles.breadcrumbLink}
             onMouseEnter={(e) => e.target.style.color = colors.primary} 
             onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
@@ -182,6 +186,7 @@ const PostViewer = () => {
             <div
               dangerouslySetInnerHTML={createPostComponent()}
               style={{ width: "100%" }}
+              className="post-content"
             />
           )}
         </div>
