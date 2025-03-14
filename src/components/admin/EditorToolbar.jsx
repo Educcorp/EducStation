@@ -191,13 +191,54 @@ const EditorToolbar = ({ onInsertMarkdown, mode = 'markdown' }) => {
     }
   ];
 
+  // Grupos de botones para modo simple
+  const simpleGroups = [
+    {
+      id: 'headings',
+      buttons: [
+        { id: 'h1-simple', label: 'Encabezado H1', text: 'H1', action: () => onInsertMarkdown('heading', 'Título principal') },
+        { id: 'h2-simple', label: 'Encabezado H2', text: 'H2', action: () => onInsertMarkdown('subheading', 'Subtítulo') }
+      ]
+    },
+    {
+      id: 'formatting',
+      buttons: [
+        { id: 'bold-simple', label: 'Negrita', text: <strong>B</strong>, action: () => onInsertMarkdown('bold', 'texto en negrita') },
+        { id: 'italic-simple', label: 'Cursiva', text: <img src="/assets/images/icons/ITALIC_icon.png" alt="Cursiva" style={styles.iconImage} />, action: () => onInsertMarkdown('italic', 'texto en cursiva') },
+        { id: 'font-size', label: 'Tamaño de fuente', text: 'A', action: () => onInsertMarkdown('font-size', '16px') },
+        { id: 'font-family', label: 'Familia de fuente', text: 'F', action: () => onInsertMarkdown('font-family', 'Arial') }
+      ]
+    },
+    {
+      id: 'media',
+      buttons: [
+        { id: 'link-simple', label: 'Enlace', text: <img src="/assets/images/icons/LINK_icon.png" alt="Enlace" style={styles.iconImage} />, action: () => onInsertMarkdown('link', 'texto del enlace') },
+        { id: 'image-simple', label: 'Imagen', text: <img src="/assets/images/icons/IMG_icon.png" alt="Imagen" style={styles.iconImage} />, action: () => onInsertMarkdown('image') }
+      ]
+    },
+    {
+      id: 'lists',
+      buttons: [
+        { id: 'list-simple', label: 'Lista', text: '•', action: () => onInsertMarkdown('list') },
+        { id: 'ordered-simple', label: 'Lista numerada', text: '1.', action: () => onInsertMarkdown('ordered-list') }
+      ]
+    },
+    {
+      id: 'blocks',
+      buttons: [
+        { id: 'quote-simple', label: 'Cita', text: '""', action: () => onInsertMarkdown('quote', 'texto de la cita') },
+        { id: 'divider-simple', label: 'Separador', text: '―', action: () => onInsertMarkdown('divider') }
+      ]
+    }
+  ];
+
   // Seleccionar los grupos según el modo
-  const toolbarGroups = currentMode === 'markdown' ? markdownGroups : htmlGroups;
+  const toolbarGroups = currentMode === 'markdown' ? markdownGroups : currentMode === 'html' ? htmlGroups : simpleGroups;
 
   return (
     <div style={styles.toolbarContainer}>
       <div style={styles.modeIndicator}>
-        {currentMode === 'markdown' ? 'MD' : 'HTML'}
+        {currentMode === 'markdown' ? 'MD' : currentMode === 'html' ? 'HTML' : 'Simple'}
       </div>
       {toolbarGroups.map((group) => (
         <div key={group.id} style={styles.toolbarButtonGroup}>
