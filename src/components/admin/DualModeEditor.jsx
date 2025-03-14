@@ -25,6 +25,8 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
     const hasHTMLStructure = /<(!DOCTYPE|html|head|body|div|p|h[1-6]|ul|ol|script|style)[^>]*>/i.test(content);
     if (hasHTMLStructure && mode !== 'html') {
       setMode('html');
+    } else {
+      setMode(initialMode); // Ensure 'simple' is the default mode
     }
     
     // Actualizar contenido interno cuando cambia el contenido externo
