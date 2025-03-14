@@ -18,8 +18,8 @@ const PostViewer = () => {
         setLoading(true);
         setError(null);
         
-        // Siempre usamos post1.html para todos los posts por ahora
-        const postPath = `/post/post1.html`;
+        // Cargar el archivo HTML correspondiente al ID del post
+        const postPath = postId === 'featured' ? `/post/postfeature.html` : `/post/post${postId}.html`;
         console.log('Intentando cargar post desde:', postPath);
         
         const response = await fetch(postPath);
@@ -171,7 +171,7 @@ const PostViewer = () => {
                 <p><strong>Posibles soluciones:</strong></p>
                 <ul>
                   <li>Verifica que el archivo HTML del post exista en la carpeta 'public/post/'</li>
-                  <li>El nombre del archivo debe ser 'post1.html'</li>
+                  <li>El nombre del archivo debe ser 'post{postId}.html'</li>
                   <li>Si estás en desarrollo local, reinicia el servidor</li>
                 </ul>
                 <Link
