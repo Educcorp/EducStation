@@ -6,24 +6,24 @@ const Footer = () => {
   const [emailValue, setEmailValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (emailValue.trim() === '') return;
-    
+
     setIsSubmitting(true);
-    
+
     // Simulación de envío (reemplazar con llamada a API real)
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
       setEmailValue('');
-      
+
       // Reiniciar el mensaje de éxito después de 3 segundos
       setTimeout(() => setIsSuccess(false), 3000);
     }, 1500);
   };
-  
+
   const styles = {
     footer: {
       backgroundColor: colors.primary,
@@ -53,12 +53,16 @@ const Footer = () => {
       marginRight: spacing.sm,
       width: "32px",
       height: "32px",
-      backgroundColor: colors.primaryLight,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      backgroundImage: `linear-gradient(135deg, ${colors.primaryLight} 60%, ${colors.secondary} 40%)`,
-      borderRadius: "8px"
+      borderRadius: "8px",
+      overflow: "hidden" // Para asegurar que la imagen se mantenga dentro del contenedor
+    },
+    logoImage: {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover" // Para asegurar que la imagen se ajuste correctamente
     },
     description: {
       color: colors.gray200,
@@ -201,7 +205,13 @@ const Footer = () => {
           {/* About Section */}
           <div>
             <div style={styles.logo}>
-              <div style={styles.logoIcon}>E</div>
+              <div style={styles.logoIcon}>
+                <img
+                  src="assets/images/Icon.png"
+                  alt="EducStation Logo"
+                  style={styles.logoImage}
+                />
+              </div>
               EducStation
             </div>
             <p style={styles.description}>
@@ -210,32 +220,32 @@ const Footer = () => {
               excelencia en el ámbito educativo.
             </p>
             <div style={styles.social}>
-              <a 
-                href="https://x.com/EducCorp" // Aquí se agrega el enlace de Twitter
-                target="_blank" 
+              <a
+                href="https://x.com/EducCorp"
+                target="_blank"
                 rel="noopener noreferrer"
-                style={{...styles.socialIcon}}
+                style={{ ...styles.socialIcon }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >T</a>
-              <a 
-                href="https://www.linkedin.com/in/educcorp-inc-158297356/" // Aquí se agrega el enlace de Linkedin
-                target="_blank" 
+              <a
+                href="https://www.linkedin.com/in/educcorp-inc-158297356/"
+                target="_blank"
                 rel="noopener noreferrer"
-                style={{...styles.socialIcon}}
+                style={{ ...styles.socialIcon }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >in</a>
             </div>
           </div>
-          
+
           {/* Quick Links */}
           <div>
             <h3 style={styles.title}>Enlaces Rápidos</h3>
             <ul style={styles.links}>
               {['Inicio', 'Acerca de', 'Contacto', 'FAQ', 'Crear Post'].map((link, index) => (
-                <li 
-                  key={index} 
+                <li
+                  key={index}
                   style={styles.link}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = colors.secondary;
@@ -246,8 +256,8 @@ const Footer = () => {
                     e.currentTarget.style.paddingLeft = spacing.md;
                   }}
                 >
-                  <a 
-                     href={link === 'Acerca de' ? '/about' : link === 'Contacto' ? '/contact' : link === 'FAQ' ? '/contact#faq-section'  : link === 'Crear Post' ? '/admin/post' : '/'} // Actualiza el enlace aquí
+                  <a
+                    href={link === 'Acerca de' ? '/about' : link === 'Contacto' ? '/contact' : link === 'FAQ' ? '/contact#faq-section' : link === 'Crear Post' ? '/admin/post' : '/'}
                     style={styles.linkAnchor}
                     onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
                     onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
@@ -256,14 +266,14 @@ const Footer = () => {
               ))}
             </ul>
           </div>
-          
+
           {/* Categories */}
           <div>
             <h3 style={styles.title}>Categorías</h3>
             <ul style={styles.links}>
               {['Técnicas de Estudio', 'Desarrollo Profesional', 'Educación de Calidad', 'Comunidad', 'Herramientas'].map((link, index) => (
-                <li 
-                  key={index} 
+                <li
+                  key={index}
                   style={styles.link}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.color = colors.secondary;
@@ -274,7 +284,7 @@ const Footer = () => {
                     e.currentTarget.style.paddingLeft = spacing.md;
                   }}
                 >
-                  <a 
+                  <a
                     href="#"
                     style={styles.linkAnchor}
                     onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
@@ -285,7 +295,7 @@ const Footer = () => {
             </ul>
           </div>
         </div>
-        
+
         {/* Bottom Section */}
         <div style={styles.bottom}>
           <div style={styles.copyright}>
@@ -293,10 +303,10 @@ const Footer = () => {
           </div>
           <div style={styles.bottomLinks}>
             {['Términos', 'Privacidad', 'Cookies'].map((link, index) => (
-              <a 
-                key={index} 
-                href="#" 
-                style={{...styles.bottomLink}}
+              <a
+                key={index}
+                href="#"
+                style={{ ...styles.bottomLink }}
                 onMouseEnter={(e) => e.target.style.color = colors.secondary}
                 onMouseLeave={(e) => e.target.style.color = colors.gray200}
               >
