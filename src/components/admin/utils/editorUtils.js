@@ -113,15 +113,50 @@ export const insertMarkdown = (content, markdownType, placeholder = '', textArea
       case 'italic':
         formattedText = `<em>${selectedText || 'texto en cursiva'}</em>`;
         break;
-      case 'heading':
-        formattedText = `<h1>${selectedText || 'Título principal'}</h1>`;
-        break;
-      case 'subheading':
-        formattedText = `<h2>${selectedText || 'Subtítulo'}</h2>`;
-        break;
-      case 'h3':
-        formattedText = `<h3>${selectedText || 'Encabezado 3'}</h3>`;
-        break;
+        case 'heading':
+          // Verificar si ya está contenido en etiquetas h1
+          if (selectedText.match(/^<h1[^>]*>.*<\/h1>$/)) {
+            formattedText = selectedText; // Mantener el formato actual
+          } else if (selectedText.match(/^<h[2-6][^>]*>.*<\/h[2-6]>$/)) {
+            // Si es otro tipo de encabezado, extraer el texto y convertir a h1
+            const innerText = selectedText.replace(/^<h[2-6][^>]*>(.*)<\/h[2-6]>$/, '$1');
+            formattedText = `<h1>${innerText || 'Título principal'}</h1>`;
+          } else {
+            formattedText = `<h1>${selectedText || 'Título principal'}</h1>`;
+          }
+          break;
+        case 'subheading':
+          // Verificar si ya está contenido en etiquetas h2
+          if (selectedText.match(/^<h2[^>]*>.*<\/h2>$/)) {
+            formattedText = selectedText; // Mantener el formato actual
+          } else if (selectedText.match(/^<h1[^>]*>.*<\/h1>$/)) {
+            // Si es h1, extraer el texto y convertir a h2
+            const innerText = selectedText.replace(/^<h1[^>]*>(.*)<\/h1>$/, '$1');
+            formattedText = `<h2>${innerText || 'Subtítulo'}</h2>`;
+          } else if (selectedText.match(/^<h[3-6][^>]*>.*<\/h[3-6]>$/)) {
+            // Si es h3-h6, extraer el texto y convertir a h2
+            const innerText = selectedText.replace(/^<h[3-6][^>]*>(.*)<\/h[3-6]>$/, '$1');
+            formattedText = `<h2>${innerText || 'Subtítulo'}</h2>`;
+          } else {
+            formattedText = `<h2>${selectedText || 'Subtítulo'}</h2>`;
+          }
+          break;
+        case 'h3':
+          // Verificar si ya está contenido en etiquetas h3
+          if (selectedText.match(/^<h3[^>]*>.*<\/h3>$/)) {
+            formattedText = selectedText; // Mantener el formato actual
+          } else if (selectedText.match(/^<h[1-2][^>]*>.*<\/h[1-2]>$/)) {
+            // Si es h1 o h2, extraer el texto y convertir a h3
+            const innerText = selectedText.replace(/^<h[1-2][^>]*>(.*)<\/h[1-2]>$/, '$1');
+            formattedText = `<h3>${innerText || 'Encabezado 3'}</h3>`;
+          } else if (selectedText.match(/^<h[4-6][^>]*>.*<\/h[4-6]>$/)) {
+            // Si es h4-h6, extraer el texto y convertir a h3
+            const innerText = selectedText.replace(/^<h[4-6][^>]*>(.*)<\/h[4-6]>$/, '$1');
+            formattedText = `<h3>${innerText || 'Encabezado 3'}</h3>`;
+          } else {
+            formattedText = `<h3>${selectedText || 'Encabezado 3'}</h3>`;
+          }
+          break;
       case 'link':
         formattedText = `<a href="#">${selectedText || 'enlace'}</a>`;
         break;
