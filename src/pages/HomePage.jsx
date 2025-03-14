@@ -251,8 +251,9 @@ const HomePage = () => {
 
   // Artículo destacado
   const featuredPost = {
+    id: 'featured', // Agregamos el ID para el enlace
     title: 'Innovación Educativa: Transformando el Aprendizaje en la Era Digital',
-    image: '/assets/images/educstation-logo.png', // Cambiado para usar la misma imagen que los otros posts
+    image: '/assets/images/educstation-logo.png',
     category: 'desarrollo docente',
     time: '2 horas atrás',
     number: '01',

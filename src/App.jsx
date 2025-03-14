@@ -9,10 +9,7 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import AdminPostPage from './pages/AdminPostPage';
 import CategoryPage from './pages/CategoryPage';
-
-// Componentes de diseño global
-import Header from './components/layout/Header';
-import Footer from './components/layout/Footer';
+import PostViewer from './components/blog/PostViewer'; // Importamos el nuevo componente
 
 const App = () => {
   return (
@@ -20,7 +17,8 @@ const App = () => {
       <div className="app">
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/blog/:blogId" element={<BlogDetailPage />} />
+          <Route path="/blog/:postId" element={<PostViewer />} /> {/* Nueva ruta para visualizar posts */}
+          <Route path="/blog/detail/:blogId" element={<BlogDetailPage />} /> {/* Mantenemos la ruta original */}
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin/post" element={<AdminPostPage />} />
