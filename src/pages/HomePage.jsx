@@ -252,8 +252,8 @@ const HomePage = () => {
   // Artículo destacado
   const featuredPost = {
     id: 'featured', // Agregamos el ID para el enlace
-    title: 'Innovación Educativa: Transformando el Aprendizaje en la Era Digital',
-    image: '/assets/images/educstation-logo.png',
+    title: 'Herramientas Tecnológicas para la Educación',
+    image: '/assets/images/tecnologia.jpg',
     category: 'desarrollo docente',
     time: '2 horas atrás',
     number: '01',
@@ -264,8 +264,8 @@ const HomePage = () => {
   const posts = [
     {
       id: 1,
-      title: 'Cómo Optimizar el Uso de Tecnología en el Aula',
-      image: '/assets/images/educstation-logo.png',
+      title: 'Herramientas Tecnológicas para la Educación',
+      image: '/assets/images/tecnologia.jpg',
       category: 'herramientas',
       time: '4 horas atrás',
       number: '02',
@@ -273,8 +273,8 @@ const HomePage = () => {
     },
     {
       id: 2,
-      title: 'Entendiendo la Psicología del Aprendizaje Visual',
-      image: '/assets/images/educstation-logo.png',
+      title: 'Comunidad y Colaboración en la Educación',
+      image: '/assets/images/humanos.jpg',
       category: 'técnicas de estudio',
       time: '4 horas atrás',
       number: '03',
@@ -282,8 +282,8 @@ const HomePage = () => {
     },
     {
       id: 3,
-      title: 'El Poder de la Colaboración en Entornos Educativos',
-      image: '/assets/images/educstation-logo.png',
+      title: 'Problemas a enfrentar en la actualidad',
+      image: '/assets/images/desafio.jpg',
       category: 'comunidad',
       time: '4 horas atrás',
       number: '04',
@@ -291,8 +291,8 @@ const HomePage = () => {
     },
     {
       id: 4,
-      title: 'Construyendo un Sistema Educativo Inclusivo',
-      image: '/assets/images/educstation-logo.png',
+      title: 'Desarrollo Profesional Docente',
+      image: '/assets/images/maestro.jpg',
       category: 'educación de calidad',
       time: '4 horas atrás',
       number: '05',
@@ -306,28 +306,28 @@ const HomePage = () => {
       id: 1,
       title: "Prohibición de bebidas azucaradas en comedores escolares",
       excerpt: "El gobierno español está trabajando en un decreto para prohibir el consumo de bebidas azucaradas en comedores escolares, donde se busca promover hábitos mas saludables y combatir la obesidad infantil.",
-      image: "/assets/images/educstation-logo.png", // Cambiado para usar la misma imagen
+      image: "/assets/images/humanos.jpg", // Cambiado para usar la misma imagen
       category: "Ultima Noticia"
     },
     {
       id: 2,
       title: "Aprendizaje colaborativo: La clave del éxito académico",
       excerpt: "Estudios demuestran que el trabajo en equipo mejora la retención y comprensión de conceptos complejos.",
-      image: "/assets/images/educstation-logo.png", // Cambiado para usar la misma imagen
+      image: "/assets/images/desafio.jpg", // Cambiado para usar la misma imagen
       category: "Técnicas de Estudio"
     },
     {
       id: 3,
       title: "Mindfulness en la educación: Mejorando la concentración",
       excerpt: "Implementar prácticas de atención plena puede reducir el estrés y mejorar el rendimiento académico.",
-      image: "/assets/images/educstation-logo.png", // Cambiado para usar la misma imagen
+      image: "/assets/images/maestro.jpg", // Cambiado para usar la misma imagen
       category: "Bienestar"
     },
     {
       id: 4,
       title: "La gamificación como estrategia pedagógica efectiva",
       excerpt: "El uso de elementos de juego en el aula aumenta la motivación y el compromiso de los estudiantes.",
-      image: "/assets/images/educstation-logo.png", // Cambiado para usar la misma imagen
+      image: "/assets/images/tecnologia.jpg", // Cambiado para usar la misma imagen
       category: "Innovación"
     }
   ];

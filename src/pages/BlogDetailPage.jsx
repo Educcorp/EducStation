@@ -13,7 +13,7 @@ const BlogDetailPage = () => {
   // Simulación de post detallado
   const post = {
     id: 1,
-    title: 'Cómo Optimizar el Uso de Tecnología en el Aula',
+    title: 'Herramientas Tecnológicas para la Educación',
     image: '/api/placeholder/1200/600',
     category: 'herramientas',
     time: '4 horas atrás',
@@ -63,7 +63,7 @@ const BlogDetailPage = () => {
     relatedPosts: [
       {
         id: 2,
-        title: 'Las 10 Herramientas Digitales que Todo Educador Debería Conocer',
+        title: 'Comunidad y Colaboración en la Educación',
         image: '/api/placeholder/150/100',
         category: 'herramientas',
         time: '2 días atrás',
@@ -72,7 +72,7 @@ const BlogDetailPage = () => {
       },
       {
         id: 3,
-        title: 'Estrategias para Fomentar la Participación en Clases Virtuales',
+        title: 'Problemas a enfrentar en la actualidad',
         image: '/api/placeholder/150/100',
         category: 'técnicas de estudio',
         time: '3 días atrás',
@@ -81,7 +81,7 @@ const BlogDetailPage = () => {
       },
       {
         id: 4,
-        title: 'Tecnologías Emergentes que Revolucionarán la Educación',
+        title: 'Desarrollo Profesional Docente',
         image: '/api/placeholder/150/100',
         category: 'tendencias',
         time: '1 semana atrás',
