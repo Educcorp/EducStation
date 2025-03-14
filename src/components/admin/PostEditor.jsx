@@ -43,7 +43,7 @@ const PostEditor = () => {
     coverImagePreview: null,
     status: 'draft', // 'draft', 'published'
     publishDate: new Date().toISOString().slice(0, 10),
-    editorMode: 'markdown', // Iniciamos explícitamente en modo markdown
+    editorMode: 'simple', // Set default mode to 'simple'
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -107,10 +107,10 @@ const PostEditor = () => {
       
       setPost({
         ...savedPost,
-        editorMode: hasHTMLStructure ? 'html' : (savedPost.editorMode || 'markdown')
+        editorMode: hasHTMLStructure ? 'html' : (savedPost.editorMode || 'simple') // Ensure 'simple' is the default mode
       });
       
-      console.log('Loaded post with mode:', hasHTMLStructure ? 'html' : (savedPost.editorMode || 'markdown'));
+      console.log('Loaded post with mode:', hasHTMLStructure ? 'html' : (savedPost.editorMode || 'simple'));
     }
   }, []);
 
