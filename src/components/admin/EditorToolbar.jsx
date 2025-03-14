@@ -79,14 +79,14 @@ const EditorToolbar = ({ onInsertMarkdown, mode = 'markdown' }) => {
       id: 'formatting',
       buttons: [
         { id: 'bold', label: 'Negrita', text: <strong>B</strong>, action: () => onInsertMarkdown('bold', 'texto en negrita') },
-        { id: 'italic', label: 'Cursiva', text: <em>I</em>, action: () => onInsertMarkdown('italic', 'texto en cursiva') }
+        { id: 'italic', label: 'Cursiva', text: <img src="/assets/images/icons/ITALIC_icon.png" alt="Cursiva" style={styles.iconImage} />, action: () => onInsertMarkdown('italic', 'texto en cursiva') }
       ]
     },
     {
       id: 'media',
       buttons: [
-        { id: 'link', label: 'Enlace', text: '🔗', action: () => onInsertMarkdown('link', 'texto del enlace') },
-        { id: 'image', label: 'Imagen', text: '🖼️', action: () => onInsertMarkdown('image') }
+        { id: 'link', label: 'Enlace', text: <img src="/assets/images/icons/LINK_icon.png" alt="Enlace" style={styles.iconImage} />, action: () => onInsertMarkdown('link', 'texto del enlace') },
+        { id: 'image', label: 'Imagen', text: <img src="/assets/images/icons/IMG_icon.png" alt="Imagen" style={styles.iconImage} />, action: () => onInsertMarkdown('image') }
       ]
     },
     {
@@ -132,7 +132,7 @@ const EditorToolbar = ({ onInsertMarkdown, mode = 'markdown' }) => {
       id: 'formatting',
       buttons: [
         { id: 'bold-html', label: 'Negrita', text: <strong>B</strong>, action: () => onInsertMarkdown('bold', 'texto en negrita') },
-        { id: 'italic-html', label: 'Cursiva', text: <em>I</em>, action: () => onInsertMarkdown('italic', 'texto en cursiva') },
+        { id: 'italic', label: 'Cursiva', text: <img src="/assets/images/icons/ITALIC_icon.png" alt="Cursiva" style={styles.iconImage} />, action: () => onInsertMarkdown('italic', 'texto en cursiva') },
         { id: 'p-html', label: 'Párrafo', text: 'P', action: () => onInsertMarkdown('paragraph', 'Contenido del párrafo') }
       ]
     },
@@ -146,9 +146,9 @@ const EditorToolbar = ({ onInsertMarkdown, mode = 'markdown' }) => {
     {
       id: 'media',
       buttons: [
-        { id: 'link-html', label: 'Enlace', text: '🔗', action: () => onInsertMarkdown('link', 'texto del enlace') },
-        { id: 'image-html', label: 'Imagen', text: '🖼️', action: () => onInsertMarkdown('image') }
-      ]
+        { id: 'link', label: 'Enlace', text: <img src="/assets/images/icons/LINK_icon.png" alt="Enlace" style={styles.iconImage} />, action: () => onInsertMarkdown('link', 'texto del enlace') },
+        { id: 'image', label: 'Imagen', text: <img src="/assets/images/icons/IMG_icon.png" alt="Imagen" style={styles.iconImage} />, action: () => onInsertMarkdown('image') }
+        ]
     },
     {
       id: 'lists',

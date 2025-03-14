@@ -64,7 +64,7 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
           onClick={() => onFormatText('italic')}
           title="Cursiva"
         >
-          I
+          <img src="/assets/images/icons/ITALIC_icon.png" alt="Cursiva" style={styles.iconImage} />
         </button>
         <button 
           type="button"
@@ -143,7 +143,7 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
           onClick={() => onFormatText('link')}
           title="Insertar enlace"
         >
-          🔗
+          <img src="/assets/images/icons/LINK_icon.png" alt="Cursiva" style={styles.iconImage} />
         </button>
       </div>
 
@@ -155,7 +155,7 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
           onClick={() => onFormatText('image')}
           title="Insertar imagen"
         >
-          🖼️
+        <img src="/assets/images/icons/IMG_icon.png" alt="Cursiva" style={styles.iconImage} />
         </button>
       </div>
     </div>

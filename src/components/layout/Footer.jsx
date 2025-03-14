@@ -200,8 +200,8 @@ const Footer = () => {
         <div style={styles.grid}>
           {/* About Section */}
           <div>
-            <div style={styles.logo}>
-              <div style={styles.logoIcon}>E</div>
+          <div style={styles.logo}>
+              <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
               EducStation
             </div>
             <p style={styles.description}>
