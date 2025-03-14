@@ -312,7 +312,8 @@ status: ${post.status}
     },
     editorContainer: {
       display: "grid",
-      gridTemplateColumns: "1fr 300px",
+      // Cambiado: Invertir el orden de las columnas para que la barra lateral esté a la izquierda
+      gridTemplateColumns: "300px 1fr",
       gap: spacing.xl,
       marginBottom: spacing.xxl,
       '@media (max-width: 768px)': {
@@ -323,9 +324,41 @@ status: ${post.status}
       width: "100%",
       maxWidth: "800px" // Anchura predefinida para el contenido del post
     },
-    sidebar: {},
+    sidebar: {
+      // No necesita cambios específicos de estilo aquí
+    },
     formGroup: {
       marginBottom: spacing.lg
+    },
+    actionsContainer: {
+      display: "flex",
+      justifyContent: "space-between", 
+      gap: spacing.md,
+      marginTop: spacing.xl
+    },
+    actionButton: {
+      padding: `${spacing.sm} ${spacing.lg}`,
+      borderRadius: borderRadius.md,
+      fontWeight: typography.fontWeight.medium,
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      fontSize: typography.fontSize.md,
+      border: "none",
+      // Estilos específicos se aplicarán en cada botón
+    },
+    saveButton: {
+      backgroundColor: colors.secondary,
+      color: colors.primary,
+      "&:hover": {
+        backgroundColor: colors.secondary + "cc", // Añadir transparencia al hover
+      }
+    },
+    publishButton: {
+      backgroundColor: colors.primary,
+      color: colors.white,
+      "&:hover": {
+        backgroundColor: colors.primaryLight,
+      }
     }
   };
 
@@ -363,15 +396,30 @@ status: ${post.status}
       }} />
 
 
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 300px",
-        gap: spacing.xl,
-        marginBottom: spacing.xxl,
-        '@media (max-width: 768px)': {
-          gridTemplateColumns: "1fr"
-        }
-      }}>
+      <div style={styles.editorContainer}>
+        {/* Sidebar - Ahora a la izquierda */}
+        <div style={styles.sidebar}>
+          <CoverImageUploader 
+            coverImagePreview={post.coverImagePreview} 
+            onChange={handleImageChange} 
+          />
+
+          <PostMetadata 
+            post={post} 
+            categories={categories} 
+            onChange={handleChange} 
+          />
+
+          <MarkdownGuide />
+          
+          <ImportExportActions 
+            onExport={exportToFile} 
+            onImport={importFile}
+            isHTML={post.editorMode === 'html'} 
+          />
+        </div>
+
+        {/* Main Editor - Ahora a la derecha */}
         <div style={styles.mainEditor}>
           <div style={styles.formGroup}>
             <label style={{
@@ -428,27 +476,30 @@ status: ${post.status}
               icon={saveMessage.icon} 
             />
           )}
-        </div>
 
-        <div style={styles.sidebar}>
-          <CoverImageUploader 
-            coverImagePreview={post.coverImagePreview} 
-            onChange={handleImageChange} 
-          />
-
-          <PostMetadata 
-            post={post} 
-            categories={categories} 
-            onChange={handleChange} 
-          />
-
-          <MarkdownGuide />
-          
-          <ImportExportActions 
-            onExport={exportToFile} 
-            onImport={importFile}
-            isHTML={post.editorMode === 'html'} 
-          />
+          <div style={styles.actionsContainer}>
+            <button 
+              onClick={saveDraft}
+              disabled={isSaving}
+              style={{
+                ...styles.actionButton,
+                ...styles.saveButton
+              }}
+            >
+              {isSaving ? 'Guardando...' : 'Guardar borrador'}
+            </button>
+            
+            <button 
+              onClick={publishPost}
+              disabled={isPublishing}
+              style={{
+                ...styles.actionButton,
+                ...styles.publishButton
+              }}
+            >
+              {isPublishing ? 'Publicando...' : 'Publicar post'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
