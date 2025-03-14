@@ -1,4 +1,4 @@
-// src/components/admin/PostEditor.jsx
+// src/components/admin/PostEditor.jsx - Modified
 import React, { useState, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
@@ -17,7 +17,6 @@ const savePostToLocalStorage = (post) => {
     // No guardamos la imagen como tal, sino solo la URL de vista previa
     delete postToSave.coverImage;
     localStorage.setItem('post_draft', JSON.stringify(postToSave));
-    console.log('Saved to localStorage:', postToSave); // Debug
   } catch (error) {
     console.error('Error saving to localStorage:', error);
   }
@@ -43,7 +42,7 @@ const PostEditor = () => {
     coverImagePreview: null,
     status: 'draft', // 'draft', 'published'
     publishDate: new Date().toISOString().slice(0, 10),
-    editorMode: 'simple', // Set default mode to 'simple'
+    editorMode: 'simple', // Siempre iniciar en modo simple
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -64,9 +63,6 @@ const PostEditor = () => {
   // Manejador para cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // Log para depuración
-    console.log(`Changing ${name} to ${value}`);
     
     setPost(prev => ({
       ...prev,
@@ -90,7 +86,6 @@ const PostEditor = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (post.content.length > 0 || post.title.length > 0) {
-        console.log('Guardado automático...');
         savePostToLocalStorage(post);
       }
     }, 2000);
@@ -102,15 +97,11 @@ const PostEditor = () => {
   useEffect(() => {
     const savedPost = loadPostFromLocalStorage();
     if (savedPost) {
-      // Detectamos si el contenido parece ser HTML para establecer el modo
-      const hasHTMLStructure = /<(!DOCTYPE|html|head|body|div|p|h[1-6]|ul|ol|script|style)[^>]*>/i.test(savedPost.content);
-      
+      // Forzar modo simple sin importar lo guardado anteriormente
       setPost({
         ...savedPost,
-        editorMode: hasHTMLStructure ? 'html' : (savedPost.editorMode || 'simple') // Ensure 'simple' is the default mode
+        editorMode: 'simple' // Siempre iniciar en modo simple
       });
-      
-      console.log('Loaded post with mode:', hasHTMLStructure ? 'html' : (savedPost.editorMode || 'simple'));
     }
   }, []);
 
@@ -169,7 +160,7 @@ const PostEditor = () => {
     }, 1500);
   };
 
-  // Exportar el post a Markdown/HTML para descargar
+  // Exportar el post para descargar
   const exportToFile = () => {
     // Crear un objeto de texto para descargar
     let content = '';
@@ -187,7 +178,7 @@ status: ${post.status}
 `;
       content = frontMatter + post.content;
       fileExtension = 'md';
-    } else { // HTML mode
+    } else { // HTML mode o simple mode
       content = post.content;
       fileExtension = 'html';
     }
@@ -257,7 +248,7 @@ status: ${post.status}
             publishDate: dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10),
             status: statusMatch ? statusMatch[1] : 'draft',
             content: actualContent.trim(),
-            editorMode: 'markdown'
+            editorMode: 'simple' // Usar siempre modo simple
           };
         } else {
           // Si no hay frontmatter, usar todo como contenido
@@ -279,7 +270,7 @@ status: ${post.status}
           ...prevPost,
           title: title || prevPost.title,
           content: content,
-          editorMode: 'html'
+          editorMode: 'simple' // Usar siempre modo simple
         }));
       } else {
         // Si no es Markdown ni HTML, tratar como texto plano
@@ -328,9 +319,6 @@ status: ${post.status}
       marginBottom: spacing.lg
     }
   };
-
-  // Log para depuración
-  console.log('Current editor mode:', post.editorMode);
 
   return (
     <div style={styles.container}>
@@ -417,7 +405,7 @@ status: ${post.status}
             <DualModeEditor 
               content={post.content}
               onChange={handleChange}
-              initialMode={post.editorMode}
+              initialMode='simple'
             />
           </div>
 
