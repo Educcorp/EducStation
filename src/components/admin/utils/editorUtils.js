@@ -191,3 +191,84 @@ export const insertMarkdown = (content, markdownType, placeholder = '', textArea
     
     return newContent;
   };
+
+/**
+ * Inserta sintaxis simple en el texto de acuerdo al tipo especificado
+ * 
+ * @param {string} content - El contenido actual del editor
+ * @param {string} simpleType - El tipo de sintaxis a insertar ('bold', 'italic', etc.)
+ * @param {string} placeholder - Texto de placeholder cuando no hay selección
+ * @param {HTMLTextAreaElement} textAreaRef - Referencia al elemento textarea
+ * @returns {string} - El contenido actualizado con la sintaxis simple insertada
+ */
+export const insertSimple = (content, simpleType, placeholder = '', textAreaRef) => {
+  if (!textAreaRef) return content;
+  
+  const start = textAreaRef.selectionStart;
+  const end = textAreaRef.selectionEnd;
+  
+  // Texto seleccionado o placeholder
+  const selectedText = start !== end 
+    ? content.substring(start, end) 
+    : placeholder;
+  
+  // Formateamos el contenido seleccionado con la sintaxis simple
+  let formattedText;
+  switch(simpleType) {
+    case 'bold':
+      formattedText = `<b>${selectedText}</b>`;
+      break;
+    case 'italic':
+      formattedText = `<i>${selectedText}</i>`;
+      break;
+    case 'heading':
+      formattedText = `<h1>${selectedText}</h1>`;
+      break;
+    case 'subheading':
+      formattedText = `<h2>${selectedText}</h2>`;
+      break;
+    case 'link':
+      formattedText = `<a href="#">${selectedText}</a>`;
+      break;
+    case 'image':
+      formattedText = `<img src="imagen.jpg" alt="${selectedText}" />`;
+      break;
+    case 'list':
+      formattedText = `<ul><li>${selectedText}</li></ul>`;
+      break;
+    case 'ordered-list':
+      formattedText = `<ol><li>${selectedText}</li></ol>`;
+      break;
+    case 'quote':
+      formattedText = `<blockquote>${selectedText}</blockquote>`;
+      break;
+    case 'divider':
+      formattedText = `<hr />`;
+      break;
+    case 'font-size':
+      formattedText = `<span style="font-size:${placeholder};">${selectedText}</span>`;
+      break;
+    case 'font-family':
+      formattedText = `<span style="font-family:${placeholder};">${selectedText}</span>`;
+      break;
+    default:
+      formattedText = selectedText;
+  }
+  
+  // Actualizamos el contenido
+  const newContent = 
+    content.substring(0, start) + 
+    formattedText + 
+    content.substring(end);
+  
+  // Enfocamos de nuevo el editor y movemos el cursor después del texto insertado
+  setTimeout(() => {
+    textAreaRef.focus();
+    textAreaRef.setSelectionRange(
+      start + formattedText.length,
+      start + formattedText.length
+    );
+  }, 0);
+  
+  return newContent;
+};

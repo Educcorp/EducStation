@@ -1,4 +1,4 @@
-// src/components/layout/Header.jsx
+// src/components/layout/Header.jsx con correcciones
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
@@ -13,7 +13,7 @@ const Header = () => {
   // Estado para almacenar la posición de scroll anterior
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Usar useLocation en lugar de withRouter (que está obsoleto en React Router v6)
+  // Usar useLocation en lugar de withRouter
   const location = useLocation();
 
   // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
@@ -38,10 +38,16 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  // Verificar si la ruta está activa
+  // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
     if (path === '/') {
       return location.pathname === '/';
+    }
+    // Marcar la sección de Blog como activa cuando estamos viendo un post
+    if (path === '/blog') {
+      return location.pathname.startsWith('/blog') || 
+             location.pathname.includes('/post/') || 
+             location.pathname.includes('/category/');
     }
     return location.pathname.startsWith(path);
   };
@@ -57,6 +63,11 @@ const Header = () => {
       width: "100%",
       zIndex: 100,
       transition: transitions.default
+    },
+    headerSpacer: {
+      // Añade un elemento espaciador para compensar la altura del header fijo
+      height: "80px", // Altura aproximada del header con padding
+      width: "100%"
     },
     container: {
       maxWidth: "1200px",
@@ -119,84 +130,91 @@ const Header = () => {
 
   const navItems = [
     { path: '/', label: 'Inicio' },
+    { path: '/blog', label: 'Blog' }, // Añadido item de navegación para Blog
     { path: '/about', label: 'Acerca de' },
     { path: '/contact', label: 'Contacto' },
     { path: '/admin/post', label: 'Crear Post', admin: true }
   ];
 
   return (
-    <header style={styles.header}>
-      <div style={styles.container}>
-        <Link
-          to="/" 
-          style={styles.logo}
-          onMouseEnter={() => setHoveredItem('logo')}
-          onMouseLeave={() => setHoveredItem(null)}
-        >
-          <div style={{
-            ...styles.logoIcon,
-            transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)'
-          }}>
-            <img 
-              src="/assets/images/educstation-logo.png" 
-              alt="EducStation Logo" 
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain"
-              }} 
-            />
-          </div>
-          <span style={{
-            color: colors.primary,
-            fontWeight: typography.fontWeight.bold
-          }}>
-            EducStation
-          </span>
-        </Link>
+    <>
+      <header style={styles.header}>
+        <div style={styles.container}>
+          <Link
+            to="/" 
+            style={styles.logo}
+            onMouseEnter={() => setHoveredItem('logo')}
+            onMouseLeave={() => setHoveredItem(null)}
+          >
+            <div style={{
+              ...styles.logoIcon,
+              transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)'
+            }}>
+              <img 
+                src="/assets/images/educstation-logo.png" 
+                alt="EducStation Logo" 
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "contain"
+                }} 
+              />
+            </div>
+            <span style={{
+              color: colors.primary,
+              fontWeight: typography.fontWeight.bold
+            }}>
+              EducStation
+            </span>
+          </Link>
 
-        <nav style={styles.navLinks}>
-          {navItems.map((item, index) => (
-            // Solo mostrar enlaces de admin a usuarios con rol admin
-            (!item.admin || userRole === 'admin') && (
-              <Link
-                key={index} 
-                to={item.path}
-                style={styles.navLink(isActive(item.path))}
-                onMouseEnter={() => setHoveredItem(`nav-${index}`)}
-                onMouseLeave={() => setHoveredItem(null)}
-              >
-                {item.label}
-                <span 
-                  style={{
-                    position: 'absolute',
-                    width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
-                    height: '2px',
-                    bottom: 0,
-                    left: 0,
-                    backgroundColor: colors.primary,
-                    transition: transitions.default
-                  }}
-                ></span>
-              </Link>
-            )
-          ))}
-        </nav>
-        
-        <div 
-          style={{
-            ...styles.profileIcon,
-            transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
-            boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm
-          }}
-          onMouseEnter={() => setHoveredItem('profile')}
-          onMouseLeave={() => setHoveredItem(null)}
-        >
-          <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
+          <nav style={styles.navLinks}>
+            {navItems.map((item, index) => (
+              // Solo mostrar enlaces de admin a usuarios con rol admin
+              (!item.admin || userRole === 'admin') && (
+                <Link
+                  key={index} 
+                  to={item.path}
+                  style={styles.navLink(isActive(item.path))}
+                  onMouseEnter={() => setHoveredItem(`nav-${index}`)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  {item.label}
+                  <span 
+                    style={{
+                      position: 'absolute',
+                      width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
+                      height: '2px',
+                      bottom: 0,
+                      left: 0,
+                      backgroundColor: colors.primary,
+                      transition: transitions.default
+                    }}
+                  ></span>
+                </Link>
+              )
+            ))}
+          </nav>
+          
+          <div 
+            style={{
+              ...styles.profileIcon,
+              transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
+              boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm
+            }}
+            onMouseEnter={() => setHoveredItem('profile')}
+            onMouseLeave={() => setHoveredItem(null)}
+          >
+            <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+      {/* Añadimos un div espaciador para compensar la altura del header fijo */}
+      <div style={styles.headerSpacer}></div>
+    </>
   );
 };
 
 export default Header;
+
+
