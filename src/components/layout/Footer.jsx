@@ -7,24 +7,24 @@ const Footer = () => {
   const [emailValue, setEmailValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (emailValue.trim() === '') return;
-    
+
     setIsSubmitting(true);
-    
+
     // Simulación de envío (reemplazar con llamada a API real)
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
       setEmailValue('');
-      
+
       // Reiniciar el mensaje de éxito después de 3 segundos
       setTimeout(() => setIsSuccess(false), 3000);
     }, 1500);
   };
-  
+
   const styles = {
     footer: {
       backgroundColor: colors.primary,
@@ -54,12 +54,16 @@ const Footer = () => {
       marginRight: spacing.sm,
       width: "32px",
       height: "32px",
-      backgroundColor: colors.primaryLight,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      backgroundImage: `linear-gradient(135deg, ${colors.primaryLight} 60%, ${colors.secondary} 40%)`,
-      borderRadius: "8px"
+      borderRadius: "8px",
+      overflow: "hidden" // Para asegurar que la imagen se mantenga dentro del contenedor
+    },
+    logoImage: {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover" // Para asegurar que la imagen se ajuste correctamente
     },
     description: {
       color: colors.gray200,
@@ -202,7 +206,13 @@ const Footer = () => {
           {/* About Section */}
           <div>
             <div style={styles.logo}>
-              <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
+              <div style={styles.logoIcon}>
+                <img
+                  src="assets/images/Icon.png"
+                  alt="EducStation Logo"
+                  style={styles.logoImage}
+                />
+              </div>
               EducStation
             </div>
             <p style={styles.description}>
@@ -211,216 +221,78 @@ const Footer = () => {
               excelencia en el ámbito educativo.
             </p>
             <div style={styles.social}>
-              <a 
-                href="https://x.com/EducCorp" 
-                target="_blank" 
+              <a
+                href="https://x.com/EducCorp"
+                target="_blank"
                 rel="noopener noreferrer"
-                style={{...styles.socialIcon}}
+                style={{ ...styles.socialIcon }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >T</a>
-              <a 
-                href="https://www.linkedin.com/in/educcorp-inc-158297356/" 
-                target="_blank" 
+              <a
+                href="https://www.linkedin.com/in/educcorp-inc-158297356/"
+                target="_blank"
                 rel="noopener noreferrer"
-                style={{...styles.socialIcon}}
+                style={{ ...styles.socialIcon }}
                 onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
                 onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
               >in</a>
             </div>
           </div>
-          
+
           {/* Quick Links */}
           <div>
             <h3 style={styles.title}>Enlaces Rápidos</h3>
             <ul style={styles.links}>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Inicio</Link>
-              </li>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/about"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Acerca de</Link>
-              </li>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/contact"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Contacto</Link>
-              </li>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/contact#faq-section"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >FAQ</Link>
-              </li>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/admin/post"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Crear Post</Link>
-              </li>
+              {['Inicio', 'Acerca de', 'Contacto', 'FAQ', 'Crear Post'].map((link, index) => (
+                <li
+                  key={index}
+                  style={styles.link}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = colors.secondary;
+                    e.currentTarget.style.paddingLeft = spacing.lg;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = colors.gray200;
+                    e.currentTarget.style.paddingLeft = spacing.md;
+                  }}
+                >
+                  <a
+                    href={link === 'Acerca de' ? '/about' : link === 'Contacto' ? '/contact' : link === 'FAQ' ? '/contact#faq-section' : link === 'Crear Post' ? '/admin/post' : '/'}
+                    style={styles.linkAnchor}
+                    onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
+                    onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  >{link}</a>
+                </li>
+              ))}
             </ul>
           </div>
-          
+
           {/* Categories */}
           <div>
             <h3 style={styles.title}>Categorías</h3>
             <ul style={styles.links}>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/category/tecnicas-de-estudio"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Técnicas de Estudio</Link>
-              </li>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/category/desarrollo-docente"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Desarrollo Profesional</Link>
-              </li>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/category/educacion-de-calidad"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Educación de Calidad</Link>
-              </li>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/category/comunidad"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Comunidad</Link>
-              </li>
-              <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
-              >
-                <Link 
-                  to="/category/herramientas"
-                  style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Herramientas</Link>
-              </li>
+              {['Técnicas de Estudio', 'Desarrollo Profesional', 'Educación de Calidad', 'Comunidad', 'Herramientas'].map((link, index) => (
+                <li
+                  key={index}
+                  style={styles.link}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = colors.secondary;
+                    e.currentTarget.style.paddingLeft = spacing.lg;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = colors.gray200;
+                    e.currentTarget.style.paddingLeft = spacing.md;
+                  }}
+                >
+                  <a
+                    href="#"
+                    style={styles.linkAnchor}
+                    onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
+                    onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  >{link}</a>
+                </li>
+              ))}
             </ul>
           </div>
           
@@ -456,37 +328,24 @@ const Footer = () => {
             )}
           </div>
         </div>
-        
+
         {/* Bottom Section */}
         <div style={styles.bottom}>
           <div style={styles.copyright}>
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
           <div style={styles.bottomLinks}>
-            <Link 
-              to="/terms" 
-              style={{...styles.bottomLink}}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
-            >
-              Términos
-            </Link>
-            <Link 
-              to="/privacy" 
-              style={{...styles.bottomLink}}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
-            >
-              Privacidad
-            </Link>
-            <Link 
-              to="/cookies" 
-              style={{...styles.bottomLink}}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
-            >
-              Cookies
-            </Link>
+            {['Términos', 'Privacidad', 'Cookies'].map((link, index) => (
+              <a
+                key={index}
+                href="#"
+                style={{ ...styles.bottomLink }}
+                onMouseEnter={(e) => e.target.style.color = colors.secondary}
+                onMouseLeave={(e) => e.target.style.color = colors.gray200}
+              >
+                {link}
+              </a>
+            ))}
           </div>
         </div>
       </div>
