@@ -4,17 +4,20 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import EditorToolbar from './EditorToolbar';
-import { insertMarkdown, insertHTML } from './utils/editorUtils';
+import { insertMarkdown, insertHTML, insertSimple } from './utils/editorUtils';
 import MarkdownPreview from './MarkdownPreview';
 import HTMLPreview from './HTMLPreview';
 import SyntaxHighlighter from './SyntaxHighlighter'; // Importamos el nuevo componente
+import SimplePreview from './SimplePreview'; // Importamos el componente SimplePreview
 
-const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
+const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
   const textAreaRef = useRef(null);
-  const [mode, setMode] = useState(initialMode); // 'markdown' o 'html'
+  const [mode, setMode] = useState(initialMode); // 'markdown', 'html' o 'simple'
   const [activeTab, setActiveTab] = useState('code'); // 'code' o 'preview'
   const [internalContent, setInternalContent] = useState(content || '');
   const [isHighlightingEnabled, setIsHighlightingEnabled] = useState(true);
+  const [simpleTitle, setSimpleTitle] = useState('');
+  const [simpleBody, setSimpleBody] = useState('');
 
   // Detectar si el contenido es HTML y actualizar modo si es necesario
   useEffect(() => {
@@ -34,6 +37,10 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
     if (textAreaRef.current) {
       textAreaRef.current.focus();
     }
+    if (mode === 'simple') {
+      setSimpleTitle('');
+      setSimpleBody('');
+    }
   }, [mode]);
 
   const handleToolbarAction = (actionType, placeholder) => {
@@ -45,7 +52,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
         textAreaRef.current
       );
       updateContent(newContent);
-    } else {
+    } else if (mode === 'html') {
       const newContent = insertHTML(
         internalContent,
         actionType,
@@ -53,11 +60,25 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
         textAreaRef.current
       );
       updateContent(newContent);
+    } else {
+      // Simple mode
+      const newContent = insertSimple(
+        simpleBody,
+        actionType,
+        placeholder,
+        textAreaRef.current
+      );
+      setSimpleBody(newContent);
+      updateContent(newContent);
     }
   };
 
   const updateContent = (newContent) => {
-    setInternalContent(newContent);
+    if (mode === 'simple') {
+      setSimpleBody(newContent);
+    } else {
+      setInternalContent(newContent);
+    }
     
     // Notificar al componente padre sobre el cambio
     const event = {
@@ -88,6 +109,16 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
     onChange(e);
   };
 
+  const handleSimpleTitleChange = (e) => {
+    setSimpleTitle(e.target.value);
+    onChange({ target: { name: 'simpleTitle', value: e.target.value } });
+  };
+
+  const handleSimpleBodyChange = (e) => {
+    setSimpleBody(e.target.value);
+    onChange({ target: { name: 'simpleBody', value: e.target.value } });
+  };
+
   // Toggle para activar/desactivar el resaltado de sintaxis
   const toggleSyntaxHighlighting = () => {
     setIsHighlightingEnabled(!isHighlightingEnabled);
@@ -116,6 +147,17 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
         background: '#E34C26',
         text: '#FFFFFF'
       }
+    },
+    simple: {
+      background: '#2C3E50',
+      text: '#FFFFFF',
+      hoverBg: '#34495E',
+      activeBg: '#4CAF50', // Green color for simple mode
+      activeText: '#FFFFFF',
+      badge: {
+        background: '#4CAF50',
+        text: '#FFFFFF'
+      }
     }
   };
 
@@ -141,7 +183,8 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       alignItems: 'center',
       padding: `${spacing.xs} ${spacing.md}`,
       fontSize: typography.fontSize.sm,
-      gap: spacing.sm
+      gap: spacing.sm,
+      marginLeft: spacing.md // Adjust margin to the left
     },
     modeButton: (isActive, modeType) => ({
       padding: `${spacing.xs} ${spacing.md}`,
@@ -175,8 +218,8 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       transition: 'all 0.2s ease'
     },
     activeTab: {
-      color: mode === 'markdown' ? '#0095FF' : '#E34C26',
-      borderBottom: `2px solid ${mode === 'markdown' ? '#0095FF' : '#E34C26'}`
+      color: mode === 'markdown' ? '#0095FF' : mode === 'html' ? '#E34C26' : '#4CAF50',
+      borderBottom: `2px solid ${mode === 'markdown' ? '#0095FF' : mode === 'html' ? '#E34C26' : '#4CAF50'}`
     },
     plainTextarea: {
       width: '100%',
@@ -209,7 +252,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       position: 'absolute',
       bottom: '10px',
       right: '10px',
-      backgroundColor: mode === 'markdown' ? '#0095FF' : '#E34C26',
+      backgroundColor: mode === 'markdown' ? '#0095FF' : mode === 'html' ? '#E34C26' : '#4CAF50',
       color: colors.white,
       padding: `${spacing.xs} ${spacing.sm}`,
       borderRadius: borderRadius.sm,
@@ -223,13 +266,16 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       fontSize: typography.fontSize.xs,
       backgroundColor: mode === 'html' ? 
         modeColors.html.badge.background : 
-        modeColors.markdown.badge.background,
+        mode === 'markdown' ? modeColors.markdown.badge.background : 
+        modeColors.simple.badge.background,
       color: mode === 'html' ? 
         modeColors.html.badge.text : 
-        modeColors.markdown.badge.text,
+        mode === 'markdown' ? modeColors.markdown.badge.text : 
+        modeColors.simple.badge.text,
       marginLeft: spacing.sm,
       fontWeight: typography.fontWeight.medium,
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      marginRight: spacing.lg // Move further to the left
     },
     editorContent: {
       backgroundColor: '#f9fafb',
@@ -241,7 +287,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       display: 'flex',
       alignItems: 'center',
       gap: spacing.sm,
-      marginLeft: spacing.xl,
+      marginLeft: spacing.md // Adjust margin to the left
     },
     switchContainer: {
       display: 'flex',
@@ -286,7 +332,41 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
       backgroundColor: colors.white,
       transition: '0.4s',
       borderRadius: '50%',
-    })
+    }),
+    simpleEditorContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: spacing.sm,
+    },
+    simpleTitleInput: {
+      width: '100%',
+      padding: spacing.md,
+      backgroundColor: '#1e1e1e',
+      color: '#d4d4d4',
+      fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
+      fontSize: '14px',
+      lineHeight: 1.5,
+      border: `1px solid ${colors.gray200}`,
+      borderRadius: borderRadius.md,
+      outline: 'none',
+    },
+    simpleBodyTextarea: {
+      width: '100%',
+      height: '500px',
+      padding: spacing.md,
+      backgroundColor: '#1e1e1e',
+      color: '#d4d4d4',
+      fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
+      fontSize: '14px',
+      lineHeight: 1.5,
+      border: `1px solid ${colors.gray200}`,
+      borderRadius: borderRadius.md,
+      resize: 'vertical',
+      outline: 'none',
+      overflowWrap: 'normal',
+      whiteSpace: 'pre',
+      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
+    }
   };
 
   return (
@@ -347,7 +427,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
                     style={{
                       ...styles.switchSlider,
                       backgroundColor: isHighlightingEnabled 
-                        ? (mode === 'markdown' ? '#0095FF' : '#E34C26')
+                        ? (mode === 'markdown' ? '#0095FF' : mode === 'html' ? '#E34C26' : '#4CAF50')
                         : colors.gray200
                     }}
                   >
@@ -392,8 +472,24 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
             >
               HTML
             </button>
+            <button
+              style={styles.modeButton(mode === 'simple', 'simple')}
+              onClick={() => handleModeToggle('simple')}
+              onMouseEnter={(e) => {
+                if (mode !== 'simple') {
+                  e.target.style.backgroundColor = modeColors.simple.hoverBg;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (mode !== 'simple') {
+                  e.target.style.backgroundColor = modeColors.simple.background;
+                }
+              }}
+            >
+              Simple
+            </button>
             <span style={styles.modeBadge}>
-              {mode === 'html' ? 'HTML' : 'MD'}
+              {mode === 'html' ? 'HTML' : mode === 'markdown' ? 'MD' : 'Simple'}
             </span>
           </div>
         </div>
@@ -407,8 +503,25 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
               mode={mode}
             />
             
-            {/* Usar el componente de resaltado si está habilitado, o el textarea normal si no */}
-            {isHighlightingEnabled ? (
+            {mode === 'simple' ? (
+              <div style={styles.simpleEditorContainer}>
+                <input
+                  type="text"
+                  value={simpleTitle}
+                  onChange={handleSimpleTitleChange}
+                  style={styles.simpleTitleInput}
+                  placeholder="Escribe el título aquí..."
+                />
+                <textarea
+                  ref={textAreaRef}
+                  value={simpleBody}
+                  onChange={handleSimpleBodyChange}
+                  style={styles.simpleBodyTextarea}
+                  placeholder="Escribe el cuerpo aquí..."
+                  spellCheck="false"
+                />
+              </div>
+            ) : isHighlightingEnabled ? (
               <SyntaxHighlighter
                 content={internalContent}
                 mode={mode}
@@ -435,8 +548,10 @@ const DualModeEditor = ({ content, onChange, initialMode = 'markdown' }) => {
           <div style={styles.previewContainer}>
             {mode === 'markdown' ? (
               <MarkdownPreview content={internalContent} />
-            ) : (
+            ) : mode === 'html' ? (
               <HTMLPreview htmlContent={internalContent} />
+            ) : (
+              <SimplePreview title={simpleTitle} content={simpleBody} />
             )}
           </div>
         )}
