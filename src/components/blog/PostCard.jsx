@@ -1,5 +1,6 @@
 // src/components/blog/PostCard.jsx
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
 
 const PostCard = ({ post }) => {
@@ -25,6 +26,12 @@ const PostCard = ({ post }) => {
       height: "100px",
       overflow: "hidden",
       borderRadius: borderRadius.md
+    },
+    postLink: {
+      textDecoration: "none",
+      display: "flex",
+      width: "100%",
+      gap: spacing.lg
     },
     postImg: {
       width: "100%",
@@ -92,28 +99,30 @@ const PostCard = ({ post }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div style={styles.postImage}>
-        <img
-          src={post.image}
-          alt={post.title}
-          style={isHovered ? applyHoverStyles(styles.postImg) : styles.postImg}
-        />
-      </div>
-      <div style={styles.postContent}>
-        <div style={styles.postMeta}>
-          <div style={styles.postNumber}>#{post.number}</div>
-          <div style={styles.postCategory}>{post.category}</div>
-          <div style={styles.postTime}>
-            <span style={{fontSize: '10px', marginRight: '2px'}}>⏱</span> {post.time}
-          </div>
-          <div style={styles.postLikes}>
-            <span style={{fontSize: '10px', marginRight: '2px', color: colors.secondary}}>♥</span> {post.likes}
-          </div>
+      <Link to={`/blog/${post.id}`} style={styles.postLink}>
+        <div style={styles.postImage}>
+          <img
+            src={post.image}
+            alt={post.title}
+            style={isHovered ? applyHoverStyles(styles.postImg) : styles.postImg}
+          />
         </div>
-        <h3 
-          style={isHovered ? applyHoverStyles(styles.postTitle) : styles.postTitle}
-        >{post.title}</h3>
-      </div>
+        <div style={styles.postContent}>
+          <div style={styles.postMeta}>
+            <div style={styles.postNumber}>#{post.number}</div>
+            <div style={styles.postCategory}>{post.category}</div>
+            <div style={styles.postTime}>
+              <span style={{fontSize: '10px', marginRight: '2px'}}>⏱</span> {post.time}
+            </div>
+            <div style={styles.postLikes}>
+              <span style={{fontSize: '10px', marginRight: '2px', color: colors.secondary}}>♥</span> {post.likes}
+            </div>
+          </div>
+          <h3 
+            style={isHovered ? applyHoverStyles(styles.postTitle) : styles.postTitle}
+          >{post.title}</h3>
+        </div>
+      </Link>
     </div>
   );
 };

@@ -1,5 +1,6 @@
 // src/components/blog/FeaturedPost.jsx
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
 
 const FeaturedPost = ({ post }) => {
@@ -92,6 +93,7 @@ const FeaturedPost = ({ post }) => {
       gap: spacing.xs,
       boxShadow: "0 4px 12px rgba(210, 185, 154, 0.3)",
       transition: transitions.default,
+      textDecoration: "none",
       '&:hover': {
         backgroundColor: colors.white,
         transform: "translateY(-2px)",
@@ -125,13 +127,14 @@ const FeaturedPost = ({ post }) => {
         </div>
         <h2 style={styles.featuredTitle}>{post.title}</h2>
         <p style={styles.featuredExcerpt}>{post.excerpt}</p>
-        <button 
+        <Link 
+          to="/blog/featured"
           style={isButtonHovered ? applyHoverStyles(styles.button) : styles.button}
           onMouseEnter={() => setIsButtonHovered(true)}
           onMouseLeave={() => setIsButtonHovered(false)}
         >
           Leer más <span>→</span>
-        </button>
+        </Link>
       </div>
     </div>
   );
