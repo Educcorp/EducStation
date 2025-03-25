@@ -8,7 +8,7 @@ var LengthOfArrayLike = require('es-abstract/2024/LengthOfArrayLike');
 var ToObject = require('es-object-atoms/ToObject');
 var ToString = require('es-abstract/2024/ToString');
 
-var callBound = require('call-bind/callBound');
+var callBound = require('call-bound');
 var isString = require('is-string');
 var $Object = require('es-object-atoms');
 var $TypeError = require('es-errors/type');
