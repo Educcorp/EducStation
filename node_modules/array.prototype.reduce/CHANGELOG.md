@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v1.0.8](https://github.com/es-shims/Array.prototype.reduce/compare/v1.0.7...v1.0.8) - 2025-03-14
+
+### Commits
+
+- [actions] split out node 10-20, and 20+ [`14cb785`](https://github.com/es-shims/Array.prototype.reduce/commit/14cb78573734e36e5f15402c01eb0f9256d86a30)
+- [Dev Deps] update `@es-shims/api`, `@ljharb/eslint-config`, `auto-changelog`, `has-strict-mode`, `tape` [`1d3d206`](https://github.com/es-shims/Array.prototype.reduce/commit/1d3d206245d643e57addd79fe9c398fc2b759a1e)
+- [Deps] update `call-bind`, `es-abstract`, `es-object-atoms`, `is-string` [`18f0dcc`](https://github.com/es-shims/Array.prototype.reduce/commit/18f0dcc6ddebf1fcb3f911c0098e66996b765c22)
+- [Refactor] use `call-bound` directly [`f64c7db`](https://github.com/es-shims/Array.prototype.reduce/commit/f64c7dbbbd1c6aa64a31cb1bdb013d431bdec24a)
+- [Tests] replace `aud` with `npm audit` [`c79219f`](https://github.com/es-shims/Array.prototype.reduce/commit/c79219f77ef470bc3027a11c29cccf612295b77d)
+- [Dev Deps] add missing peer dep [`baae754`](https://github.com/es-shims/Array.prototype.reduce/commit/baae754ac63450953d5a2d7520b380c3f0f12649)
+
 ## [v1.0.7](https://github.com/es-shims/Array.prototype.reduce/compare/v1.0.6...v1.0.7) - 2024-03-20
 
 ### Commits
