@@ -371,7 +371,7 @@ const HomePage = () => {
     hero: {
       margin: `${spacing.xl} 0 ${spacing.xxl}`,
       position: "relative",
-      background: `linear-gradient(135deg, ${colors.white}20 0%, ${colors.secondary}20 100%)`,
+      background: `linear-gradient(100deg, ${colors.white}99 100%, ${colors.secondary}99 100%)`,
       padding: `${spacing.xl} ${spacing.md}`,
       borderRadius: '12px'
     },

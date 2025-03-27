@@ -148,7 +148,7 @@ const ContactPage = () => {
     hero: {
       textAlign: "center",
       padding: `${spacing.xxl} 0`,
-      background: `linear-gradient(135deg, ${colors.white}20 0%, ${colors.secondary}20 100%)`,
+      background: `linear-gradient(100deg, ${colors.white}99 100%, ${colors.secondary}99 100%)`,
       borderRadius: borderRadius.lg,
       marginBottom: spacing.xxl,
       marginTop: spacing.xl
