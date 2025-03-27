@@ -21,23 +21,26 @@ const Header = () => {
 
   // Detectar scroll para efectos de navegación
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY) {
-        // Scroll hacia abajo
-        setIsVisible(false);
-      } else {
-        // Scroll hacia arriba
-        setIsVisible(true);
-      }
-      setLastScrollY(currentScrollY);
-      setIsScrolled(currentScrollY > 50);
-    };
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+    if (currentScrollY > lastScrollY) {
+      setIsVisible(false);
+    } else {
+      setIsVisible(true);
+    }
 
+    setLastScrollY(currentScrollY);
+    setIsScrolled(currentScrollY > 50);
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, [lastScrollY]);
+
+useEffect(() => {
+  console.log('isVisible:', isVisible);
+}, [isVisible]);
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
     if (path === '/') {
