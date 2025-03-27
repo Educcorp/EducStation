@@ -402,9 +402,9 @@ const ContactPage = () => {
   };
 
   return (
-    <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
+    
+    <div id="top" style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
       <Header />
-      
       <main>
         {/* Hero Section */}
         <section style={styles.hero}>

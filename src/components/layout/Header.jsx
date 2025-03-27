@@ -21,23 +21,26 @@ const Header = () => {
 
   // Detectar scroll para efectos de navegación
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY) {
-        // Scroll hacia abajo
-        setIsVisible(false);
-      } else {
-        // Scroll hacia arriba
-        setIsVisible(true);
-      }
-      setLastScrollY(currentScrollY);
-      setIsScrolled(currentScrollY > 50);
-    };
+  const handleScroll = () => {
+    const currentScrollY = window.scrollY;
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+    if (currentScrollY > lastScrollY) {
+      setIsVisible(false);
+    } else {
+      setIsVisible(true);
+    }
 
+    setLastScrollY(currentScrollY);
+    setIsScrolled(currentScrollY > 50);
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, [lastScrollY]);
+
+useEffect(() => {
+  console.log('isVisible:', isVisible);
+}, [isVisible]);
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
     if (path === '/') {
@@ -169,32 +172,36 @@ const Header = () => {
           </Link>
 
           <nav style={styles.navLinks}>
-            {navItems.map((item, index) => (
-              // Solo mostrar enlaces de admin a usuarios con rol admin
-              (!item.admin || userRole === 'admin') && (
-                <Link
-                  key={index} 
-                  to={item.path}
-                  style={styles.navLink(isActive(item.path))}
-                  onMouseEnter={() => setHoveredItem(`nav-${index}`)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  {item.label}
-                  <span 
-                    style={{
-                      position: 'absolute',
-                      width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
-                      height: '2px',
-                      bottom: 0,
-                      left: 0,
-                      backgroundColor: colors.primary,
-                      transition: transitions.default
-                    }}
-                  ></span>
-                </Link>
-              )
-            ))}
-          </nav>
+  {navItems.map((item, index) => (
+    // Solo mostrar enlaces de admin a usuarios con rol admin
+    (!item.admin || userRole === 'admin') && (
+      <a
+        key={index}
+        href={item.path} // Usamos href para forzar el refresco
+        style={styles.navLink(isActive(item.path))}
+        onClick={(e) => {
+          e.preventDefault(); // Prevenir el comportamiento predeterminado
+          window.location.href = item.path; // Forzar el refresco de la página
+        }}
+        onMouseEnter={() => setHoveredItem(`nav-${index}`)}
+        onMouseLeave={() => setHoveredItem(null)}
+      >
+        {item.label}
+        <span
+          style={{
+            position: 'absolute',
+            width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
+            height: '2px',
+            bottom: 0,
+            left: 0,
+            backgroundColor: colors.primary,
+            transition: transitions.default
+          }}
+        ></span>
+      </a>
+    )
+  ))}
+</nav>
           
           <div 
             style={{
