@@ -245,36 +245,47 @@ const Footer = () => {
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
-                <Link 
-                  to="/"
+                <Link
+                to="/" 
+                  href="/"
                   style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevenir el comportamiento predeterminado
+                    window.location.href = "/"; // Forzar el refresco de la página
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = colors.secondary)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = colors.gray200)}
                 >Inicio</Link>
               </li>
               <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
-                  e.currentTarget.style.paddingLeft = spacing.md;
-                }}
+              style={styles.link}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = colors.secondary;
+                e.currentTarget.style.paddingLeft = spacing.lg;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = colors.gray200;
+                e.currentTarget.style.paddingLeft = spacing.md;
+              }}
               >
                 <Link 
                   to="/about"
+                  href="/about"
                   style={styles.linkAnchor}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/about";
+                  }}
                   onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
-                >Acerca de</Link>
+                >
+                  Acerca de</Link>
               </li>
               <li 
-                style={styles.link}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
-                  e.currentTarget.style.paddingLeft = spacing.lg;
+                  style={styles.link}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = colors.secondary;
+                    e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.color = colors.gray200;
@@ -283,7 +294,12 @@ const Footer = () => {
               >
                 <Link 
                   to="/contact"
+                  href="/contact"
                   style={styles.linkAnchor}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    window.location.href = "/contact";
+                  }}
                   onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
                 >Contacto</Link>
