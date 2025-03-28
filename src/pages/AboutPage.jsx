@@ -184,7 +184,7 @@ const AboutPage = () => {
       name: 'Damian Valencia',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Damian.png', // Ruta relativa correcta
-      bio: 'Se ocupa de de metodologias y estrategias para manejar el aprendizaje y los habitos de estudio.'
+      bio: 'Se ocupa de de metodologías y estrategias para manejar el aprendizaje y los hábitos de estudio.'
     },
     {
       name: 'Fernanda Zepeda',
@@ -196,13 +196,13 @@ const AboutPage = () => {
       name: 'Emmanuel Palacios',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Emma.png',
-      bio: 'Aborda problematicas en el estudio - Analiza dificultades, obstaculos o desafios que enfrentan los estudiantes durante su proceso de aprendizaje.'
+      bio: 'Aborda problemáticas en el estudio: analiza dificultades, obstáculos o desafíos que enfrentan los estudiantes durante su proceso de aprendizaje.'
     },
     {
       name: 'Priscila Lopez',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Priscila.png',
-      bio: 'Se enfoca en Educacion de Calidad.'
+      bio: 'Se enfoca en educación de calidad.'
     },
     {
       name: 'Yoselin Reynaga',
@@ -214,13 +214,13 @@ const AboutPage = () => {
       name: 'Gregorio Sánchez',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Grego.png',
-      bio: 'Maneja Herramientas tecnologicas - Se especializa en recursos digitales, aplicaciones o plataformas que apoyan al proceso educativo.'
+      bio: 'Maneja Herramientas tecnológicas: se especializa en recursos digitales, aplicaciones o plataformas que apoyan al proceso educativo.'
     },
     {
       name: 'Ruben Lavariega',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Ruben.png',
-      bio: 'Promueve la participacion colectiva, trabajo en equipo y construccion de redes entre diversos actores educativos.'
+      bio: 'Promueve la participación colectiva, trabajo en equipo y construcción de redes entre diversos actores educativos.'
     }
   ];
 
