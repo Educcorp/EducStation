@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prohibición de Bebidas Azucaradas en España: Un Paso hacia la Salud Pública</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-light-green: #91a8a8;
+            --color-dark-green: #0b4444;
+            --color-medium-green: #4c7977;
+            --color-light-bg: #f0f8f7;
+            --color-beige: #d2b99a;
+            --color-text-dark: #333333;
+            --color-text-medium: #444444;
+            --color-text-light: #666666;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: var(--color-light-bg);
+            color: var(--color-text-medium);
+            line-height: 1.6;
+        }
+
+        .post-container {
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(11, 68, 68, 0.1);
+            border-radius: 0px;
+            overflow: hidden;
+        }
+
+        .post-header {
+            background: linear-gradient(135deg, var(--color-dark-green) 0%, var(--color-medium-green) 100%);
+            color: white;
+            padding: 40px 30px;
+            position: relative;
+        }
+
+        .post-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(11, 68, 68, 0.6);
+            z-index: 1;
+        }
+
+        .post-header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .post-category {
+            font-size: 14px;
+            color: var(--color-beige);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        .post-title {
+            font-size: 2.5rem;
+            color: white;
+            margin: 15px 0;
+            line-height: 1.3;
+            font-weight: 700;
+        }
+
+        .post-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 20px;
+        }
+
+        .post-content {
+            padding: 30px;
+        }
+
+        .post-content h2 {
+            color: var(--color-dark-green);
+            border-bottom: 3px solid var(--color-light-green);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .post-content h3 {
+            color: var(--color-medium-green);
+            margin: 25px 0 15px;
+            font-size: 1.4rem;
+        }
+
+        .stat-box {
+            background-color: var(--color-light-bg);
+            border-left: 5px solid var(--color-dark-green);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 3px 6px rgba(11, 68, 68, 0.1);
+        }
+
+        .stat-box-icon {
+            width: 80px;
+            height: 80px;
+            background-color: var(--color-medium-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+        }
+
+        .stat-box-icon img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .stat-box-content {
+            flex-grow: 1;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            color: var(--color-dark-green);
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .news-card {
+            background-color: white;
+            border: 1px solid var(--color-light-green);
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(76, 121, 119, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(76, 121, 119, 0.2);
+        }
+
+        .highlight-box {
+            background-color: rgba(145, 168, 168, 0.1);
+            border-left: 5px solid var(--color-medium-green);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 8px;
+        }
+
+        blockquote {
+            border-left: 4px solid var(--color-dark-green);
+            padding-left: 15px;
+            font-style: italic;
+            color: var(--color-text-dark);
+            margin: 25px 0;
+        }
+
+        .author-section {
+            display: flex;
+            align-items: center;
+            padding: 30px;
+            background-color: var(--color-light-bg);
+            border-top: 1px solid var(--color-light-green);
+        }
+
+        .author-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-right: 20px;
+            border: 3px solid var(--color-medium-green);
+        }
+
+        .tags-section {
+            background-color: var(--color-light-bg);
+            padding: 20px 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            background-color: var(--color-medium-green);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        .tag:hover {
+            background-color: var(--color-dark-green);
+        }
+
+        @media (max-width: 768px) {
+            .post-container {
+                margin: 0;
+                border-radius: 0;
+            }
+
+            .post-header {
+                padding: 30px 20px;
+            }
+
+            .post-title {
+                font-size: 2rem;
+            }
+
+            .author-section {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .author-avatar {
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="post-container">
+        <div class="post-header">
+            <div class="post-header-content">
+                <div class="post-category">Ultima Noticia</div>
+                <h1 class="post-title">Prohibición de Bebidas Azucaradas en España: Un Paso Decisivo hacia la Salud
+                    Nutricional</h1>
+                <div class="post-meta">
+                    <span>Publicado por <strong>Elena Martínez Rodríguez</strong> • <time datetime="2025-03-20">20 de
+                            marzo, 2025</time></span>
+                    <span>Tiempo de lectura: 5 minutos</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="post-content">
+            <p>España ha dado un paso histórico en la lucha contra la obesidad y las enfermedades relacionadas con el
+                azúcar, implementando una de las legislaciones más estrictas de Europa regarding bebidas azucaradas.
+                Esta medida pionera promete transformar el panorama nutricional del país y sentar un precedente global
+                en políticas de salud pública.</p>
+
+            <div class="stat-box">
+                <div class="stat-box-icon">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3438/3438231.png" alt="Salud Pública Icon">
+                </div>
+                <div class="stat-box-content">
+                    <div class="stat-number">25%</div>
+                    <p>Reducción estimada en consumo de azúcar con la nueva legislación</p>
+                </div>
+            </div>
+
+            <h2>Detalles de la Prohibición</h2>
+
+            <div class="news-card">
+                <h3>Alcance de la Regulación</h3>
+                <p>La nueva legislación establece restricciones significativas para las bebidas con alto contenido de
+                    azúcar añadido. Específicamente, se prohíbe la venta de bebidas con más de 10 gramos de azúcar por
+                    100 mililitros en:</p>
+                <ul>
+                    <li>Centros educativos</li>
+                    <li>Instalaciones deportivas públicas</li>
+                    <li>Centros de salud y hospitales</li>
+                    <li>Máquinas expendedoras en espacios públicos</li>
+                </ul>
+            </div>
+
+            <h2>Motivaciones de la Medida</h2>
+
+            <div class="highlight-box">
+                <h3>Contexto de Salud</h3>
+                <p>España enfrenta una crisis de obesidad infantil, con aproximadamente el 41.3% de los niños con
+                    sobrepeso u obesidad. Las bebidas azucaradas han sido identificadas como un factor crítico en este
+                    problema de salud pública.</p>
+            </div>
+
+            <h3>Impacto Nutricional Esperado</h3>
+            <p>Los expertos anticipan múltiples beneficios de esta medida:</p>
+            <ul>
+                <li>Reducción del consumo de azúcar entre niños y adolescentes</li>
+                <li>Disminución de riesgos de diabetes tipo 2</li>
+                <li>Menor incidencia de enfermedades cardiovasculares</li>
+                <li>Promoción de hábitos de alimentación más saludables</li>
+            </ul>
+
+            <blockquote>
+                "Esta prohibición no es solo una restricción, es una inversión en la salud de las futuras generaciones."
+                - Ministerio de Sanidad, España
+            </blockquote>
+
+            <div class="news-card">
+                <h3>Reacciones del Sector</h3>
+                <p>La industria de bebidas ha mostrado una respuesta mixta. Mientras algunos fabricantes ya están
+                    reformulando sus productos para reducir el contenido de azúcar, otros han expresado preocupaciones
+                    sobre el impacto económico.</p>
+            </div>
+
+            <h2>Implementación y Sanciones</h2>
+            <p>La legislación incluye un sistema de multas para establecimientos que no cumplan con la normativa, con
+                sanciones que pueden alcanzar hasta 60,000 euros en casos de infracciones graves o reincidentes.</p>
+
+            <div class="highlight-box">
+                <h3>Calendario de Implementación</h3>
+                <p>La entrada en vigor será gradual:</p>
+                <ul>
+                    <li>Primeros 6 meses: Período de información y adaptación</li>
+                    <li>Siguiente año: Implementación progresiva de restricciones</li>
+                    <li>A partir de 2026: Plena aplicación de la normativa</li>
+                </ul>
+            </div>
+
+            <p>España se une así a un movimiento global de regulación nutricional, siguiendo ejemplos de países como
+                México y Reino Unido que han implementado medidas similares para combatir la obesidad y promover la
+                salud pública.</p>
+        </div>
+
+        <div class="author-section">
+            <img class="author-avatar" src="https://xsgames.co/randomusers/assets/avatars/female/67.jpg"
+                alt="María Fernanda Zepeda Hernández">
+            <div class="author-info">
+                <h4 class="author-name">María Fernanda Zepeda Hernández</h4>
+                <p class="author-bio">Periodista especializada en salud pública y nutrición. Con más de 15 años de
+                    experiencia cubriendo políticas de salud y tendencias nutricionales en España y Europa.</p>
+            </div>
+        </div>
+
+        <div class="tags-section">
+            <span class="tag">Salud Pública</span>
+            <span class="tag">Nutrición</span>
+            <span class="tag">Bebidas Azucaradas</span>
+            <span class="tag">Política Alimentaria</span>
+            <span class="tag">Obesidad</span>
+            <span class="tag">Legislación Española</span>
+        </div>
+    </div>
+</body>
+
+</html>
