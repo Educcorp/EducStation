@@ -1,18 +1,7 @@
 // src/components/admin/SyntaxHighlighter.jsx
-import React, { useEffect, useRef, useState } from 'react';
-import { applySyntaxHighlighting, syntaxHighlightingStyles } from './utils/syntaxHighlighting';
+import React, { useEffect, useRef } from 'react';
 
-/**
- * Componente que proporciona resaltado de sintaxis para editores de código
- * Versión mejorada que evita la inserción de texto HTML adicional
- * 
- * @param {Object} props - Propiedades del componente
- * @param {string} props.content - El contenido a resaltar
- * @param {string} props.mode - El modo de editor ('markdown' o 'html')
- * @param {function} props.onChange - Función para manejar cambios en el contenido
- * @param {Object} props.textAreaRef - Referencia al textarea original
- */
-const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
+const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
   const highlighterRef = useRef(null);
   const containerRef = useRef(null);
   
@@ -28,9 +17,9 @@ const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
   useEffect(() => {
     if (highlighterRef.current && textAreaRef.current) {
       try {
-        // Aplicar el resaltado de sintaxis
-        const highlightedContent = applySyntaxHighlighting(content, mode);
-        highlighterRef.current.innerHTML = highlightedContent;
+        // Simplemente escapar HTML - sin añadir clases o modificar el texto
+        const escapedContent = escapeHtml(content);
+        highlighterRef.current.innerHTML = createDivs(escapedContent);
         
         // Configurar event listeners
         textAreaRef.current.addEventListener('scroll', syncScroll);
@@ -46,51 +35,27 @@ const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
         }
       };
     }
-  }, [content, mode]);
+  }, [content]);
 
-  // Función para limpiar completamente el HTML
-  const stripHtml = (html) => {
-    // Crear un elemento div temporal
-    const temp = document.createElement("div");
-    // Establecer el HTML en el div
-    temp.innerHTML = html;
-    // Obtener el texto plano
-    return temp.textContent || temp.innerText || "";
+  // Función para escapar HTML de forma segura
+  const escapeHtml = (unsafe) => {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+  
+  // Crear divs para cada línea, manteniendo líneas vacías
+  const createDivs = (html) => {
+    const lines = html.split('\n');
+    return lines.map(line => `<div>${line || "&nbsp;"}</div>`).join('');
   };
 
-  // Manejar cambios en el texto - VERSIÓN MEJORADA
+  // Manejar cambios en el texto
   const handleChange = (e) => {
-    // Ignorar cualquier evento extraño o inserción automática
-    if (e && e.target && typeof e.target.value === 'string') {
-      let cleanValue = e.target.value;
-      
-      // Para HTML, aplicamos una limpieza completa
-      if (mode === 'html') {
-        // 1. Eliminar todas las etiquetas span y sus atributos
-        cleanValue = cleanValue.replace(/<span[^>]*>(.*?)<\/span>/g, '$1');
-        
-        // 2. Eliminar cualquier atributo data-* o class
-        cleanValue = cleanValue.replace(/\s(data-[^=]*|class)="[^"]*"/g, '');
-        
-        // 3. Si hay etiquetas HTML mal formadas, intentamos arreglarlas
-        cleanValue = cleanValue.replace(/(&lt;|<)data-[^>]*>|<\/data-[^>]*(&gt;|>)/g, '');
-        
-        // 4. Eliminar cualquier etiqueta span vacía remanente
-        cleanValue = cleanValue.replace(/<span><\/span>/g, '');
-      }
-      
-      // Crear un evento limpio para pasar al padre
-      const cleanEvent = {
-        target: {
-          name: 'content',
-          value: cleanValue
-        }
-      };
-      
-      onChange(cleanEvent);
-    } else {
-      onChange(e);
-    }
+    onChange(e);
   };
 
   // Manejar eventos de teclado (Tab, Enter, etc.)
@@ -125,7 +90,6 @@ const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
     }
   };
 
-  // Estilos para el componente
   const styles = {
     container: {
       position: 'relative',
@@ -145,7 +109,7 @@ const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
       height: '100%',
       padding: '16px',
       backgroundColor: '#1e1e1e',
-      color: '#d4d4d4',
+      color: '#E34C26', // Color para HTML
       fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
       fontSize: '14px',
       lineHeight: 1.5,
@@ -178,8 +142,31 @@ const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
 
   return (
     <div ref={containerRef} style={styles.container}>
-      {/* Estilos para el resaltado de sintaxis */}
-      <style dangerouslySetInnerHTML={{ __html: syntaxHighlightingStyles }} />
+      {/* Estilos para el resaltado */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        .syntax-highlight-editor {
+          counter-reset: line;
+          padding-left: 60px;
+        }
+        
+        .syntax-highlight-editor div {
+          position: relative;
+          min-height: 1.5em;
+        }
+        
+        .syntax-highlight-editor div:before {
+          content: counter(line);
+          counter-increment: line;
+          position: absolute;
+          left: -50px;
+          top: 0;
+          width: 40px;
+          color: #636d83;
+          text-align: right;
+          user-select: none;
+          opacity: 0.5;
+        }
+      ` }} />
       
       {/* Capa de resaltado (solo visual) */}
       <pre 
@@ -197,10 +184,7 @@ const SyntaxHighlighter = ({ content, mode, onChange, textAreaRef }) => {
         onScroll={syncScroll}
         style={styles.textarea}
         spellCheck="false"
-        placeholder={mode === 'markdown' 
-          ? "Escribe tu post en formato Markdown..." 
-          : "Escribe código HTML aquí..."
-        }
+        placeholder="Escribe código HTML aquí..."
       />
     </div>
   );

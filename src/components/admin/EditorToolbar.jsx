@@ -1,16 +1,10 @@
 // src/components/admin/EditorToolbar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
 import Tooltip from '../ui/Tooltip';
 
-const EditorToolbar = ({ onInsertMarkdown, mode = 'markdown' }) => {
+const EditorToolbar = ({ onInsertMarkdown }) => {
   const [activeTooltip, setActiveTooltip] = useState(null);
-  const [currentMode, setCurrentMode] = useState(mode);
-
-  // Detect changes in the mode and update
-  useEffect(() => {
-    setCurrentMode(mode);
-  }, [mode]);
 
   // Show tooltip
   const showTooltip = (id) => {
@@ -64,53 +58,6 @@ const EditorToolbar = ({ onInsertMarkdown, mode = 'markdown' }) => {
       objectFit: "contain"
     }
   };
-
-  // Groups of buttons for markdown mode
-  const markdownGroups = [
-    {
-      id: 'headings',
-      buttons: [
-        { id: 'h1', label: 'Encabezado H1', text: 'H1', action: () => onInsertMarkdown('heading', 'Título principal') },
-        { id: 'h2', label: 'Encabezado H2', text: 'H2', action: () => onInsertMarkdown('subheading', 'Subtítulo') },
-        { id: 'h3', label: 'Encabezado H3', text: 'H3', action: () => onInsertMarkdown('h3', 'Encabezado 3') }
-      ]
-    },
-    {
-      id: 'formatting',
-      buttons: [
-        { id: 'bold', label: 'Negrita', text: <strong>B</strong>, action: () => onInsertMarkdown('bold', 'texto en negrita') },
-        { id: 'italic', label: 'Cursiva', text: <img src="/assets/images/icons/ITALIC_icon.png" alt="Cursiva" style={styles.iconImage} />, action: () => onInsertMarkdown('italic', 'texto en cursiva') }
-      ]
-    },
-    {
-      id: 'media',
-      buttons: [
-        { id: 'link', label: 'Enlace', text: <img src="/assets/images/icons/LINK_icon.png" alt="Enlace" style={styles.iconImage} />, action: () => onInsertMarkdown('link', 'texto del enlace') },
-        { id: 'image', label: 'Imagen', text: <img src="/assets/images/icons/IMG_icon.png" alt="Imagen" style={styles.iconImage} />, action: () => onInsertMarkdown('image') }
-      ]
-    },
-    {
-      id: 'lists',
-      buttons: [
-        { id: 'list', label: 'Lista', text: '•', action: () => onInsertMarkdown('list') },
-        { id: 'ordered', label: 'Lista numerada', text: '1.', action: () => onInsertMarkdown('ordered-list') }
-      ]
-    },
-    {
-      id: 'blocks',
-      buttons: [
-        { id: 'code', label: 'Bloque de código', text: '{ }', action: () => onInsertMarkdown('code', 'código aquí') },
-        { id: 'quote', label: 'Cita', text: '""', action: () => onInsertMarkdown('quote', 'texto de la cita') },
-        { id: 'table', label: 'Tabla', text: '⊞', action: () => onInsertMarkdown('table') }
-      ]
-    },
-    {
-      id: 'misc',
-      buttons: [
-        { id: 'divider', label: 'Separador', text: '―', action: () => onInsertMarkdown('divider') }
-      ]
-    }
-  ];
 
   // Groups of buttons for HTML mode
   const htmlGroups = [
@@ -180,12 +127,9 @@ const EditorToolbar = ({ onInsertMarkdown, mode = 'markdown' }) => {
     }
   ];
 
-  // Select the groups based on the mode
-  const toolbarGroups = currentMode === 'markdown' ? markdownGroups : htmlGroups;
-
   return (
     <div style={styles.toolbarContainer}>
-      {toolbarGroups.map((group) => (
+      {htmlGroups.map((group) => (
         <div key={group.id} style={styles.toolbarButtonGroup}>
           {group.buttons.map((button) => (
             <button

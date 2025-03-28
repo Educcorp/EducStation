@@ -6,7 +6,6 @@ import { colors, spacing, typography, shadows, borderRadius } from '../../styles
 import DualModeEditor from './DualModeEditor';
 import PostMetadata from './PostMetadata';
 import CoverImageUploader from './CoverImageUploader';
-import MarkdownGuide from './MarkdownGuide';
 import StatusMessage from './StatusMessage';
 import ImportExportActions from './ImportExportActions';
 
@@ -410,7 +409,7 @@ status: ${post.status}
             onChange={handleChange} 
           />
 
-          <MarkdownGuide />
+          
           
           <ImportExportActions 
             onExport={exportToFile} 

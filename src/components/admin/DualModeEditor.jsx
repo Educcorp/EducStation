@@ -2,31 +2,21 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import EditorToolbar from './EditorToolbar';
-import { insertMarkdown, insertHTML } from './utils/editorUtils';
-import MarkdownPreview from './MarkdownPreview';
+import { insertHTML } from './utils/editorUtils';
 import HTMLPreview from './HTMLPreview';
 import SyntaxHighlighter from './SyntaxHighlighter';
-import SimpleEditor from './SimpleEditor'; // New component we'll create
+import SimpleEditor from './SimpleEditor';
 
 const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
   const textAreaRef = useRef(null);
   const [mode, setMode] = useState('simple'); // Always start with 'simple' mode, regardless of initialMode
-  const [devSubMode, setDevSubMode] = useState('markdown'); // 'markdown' or 'html' for developer mode
-  const [activeTab, setActiveTab] = useState('code'); // Only used in developer mode
+  const [activeTab, setActiveTab] = useState('code'); // Used in developer mode
   const [internalContent, setInternalContent] = useState(content || '');
   const [isHighlightingEnabled, setIsHighlightingEnabled] = useState(true);
   const [simpleContent, setSimpleContent] = useState(content || '');
 
-  // Detect if content is HTML and update mode if necessary
+  // Set content when it changes externally
   useEffect(() => {
-    // Detect if the content appears to be HTML based on common tags
-    const hasHTMLStructure = /<(!DOCTYPE|html|head|body|div|p|h[1-6]|ul|ol|script|style)[^>]*>/i.test(content);
-    
-    if (hasHTMLStructure && mode === 'developer') {
-      setDevSubMode('html');
-    }
-    
-    // Update internal content when external content changes
     setInternalContent(content || '');
     setSimpleContent(content || '');
   }, [content]);
@@ -38,23 +28,13 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       return;
     }
     
-    if (devSubMode === 'markdown') {
-      const newContent = insertMarkdown(
-        internalContent,
-        actionType,
-        placeholder,
-        textAreaRef.current
-      );
-      updateContent(newContent);
-    } else if (devSubMode === 'html') {
-      const newContent = insertHTML(
-        internalContent,
-        actionType,
-        placeholder,
-        textAreaRef.current
-      );
-      updateContent(newContent);
-    }
+    const newContent = insertHTML(
+      internalContent,
+      actionType,
+      placeholder,
+      textAreaRef.current
+    );
+    updateContent(newContent);
   };
 
   // Update content based on current mode
@@ -84,21 +64,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
     const event = {
       target: {
         name: 'editorMode',
-        value: newMode === 'developer' ? devSubMode : 'simple'
-      }
-    };
-    onChange(event);
-  };
-
-  // Handle submode toggle between markdown and html in developer mode
-  const handleDevSubModeToggle = (newSubMode) => {
-    setDevSubMode(newSubMode);
-    
-    // Notify parent component about the mode change
-    const event = {
-      target: {
-        name: 'editorMode',
-        value: newSubMode
+        value: newMode === 'developer' ? 'html' : 'simple'
       }
     };
     onChange(event);
@@ -135,10 +101,10 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       background: '#2C3E50',
       text: '#FFFFFF',
       hoverBg: '#34495E',
-      activeBg: '#0095FF',
+      activeBg: '#E34C26', // HTML color
       activeText: '#FFFFFF',
       badge: {
-        background: '#0095FF',
+        background: '#E34C26',
         text: '#FFFFFF'
       }
     },
@@ -197,29 +163,6 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       boxShadow: isActive ? `0 2px 4px rgba(0,0,0,0.1)` : 'none',
       transform: isActive ? 'translateY(-2px)' : 'translateY(0)'
     }),
-    devSubModeToggle: {
-      display: 'flex',
-      alignItems: 'center',
-      padding: `${spacing.xs} ${spacing.md}`,
-      fontSize: typography.fontSize.sm,
-      gap: spacing.sm,
-      marginLeft: spacing.md
-    },
-    devSubModeButton: (isActive, subModeType) => ({
-      padding: `${spacing.xs} ${spacing.md}`,
-      backgroundColor: isActive ? 
-        (subModeType === 'markdown' ? '#0095FF' : '#E34C26') : 
-        '#2C3E50',
-      border: 'none',
-      borderRadius: borderRadius.sm,
-      cursor: 'pointer',
-      fontSize: typography.fontSize.sm,
-      transition: 'all 0.2s ease',
-      color: isActive ? '#FFFFFF' : '#FFFFFF',
-      fontWeight: isActive ? typography.fontWeight.medium : typography.fontWeight.regular,
-      boxShadow: isActive ? `0 2px 4px rgba(0,0,0,0.1)` : 'none',
-      transform: isActive ? 'translateY(-2px)' : 'translateY(0)'
-    }),
     tabsContainer: {
       display: 'flex'
     },
@@ -232,11 +175,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       fontSize: typography.fontSize.md,
       color: colors.textSecondary,
       borderBottom: '2px solid transparent',
-      transition: 'all 0.2s ease'
+      transition: 'all 0.2s ease',
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs
     },
     activeTab: {
-      color: devSubMode === 'markdown' ? '#0095FF' : devSubMode === 'html' ? '#E34C26' : '#4CAF50',
-      borderBottom: `2px solid ${devSubMode === 'markdown' ? '#0095FF' : devSubMode === 'html' ? '#E34C26' : '#4CAF50'}`
+      color: '#E34C26', // HTML color
+      borderBottom: `2px solid #E34C26` // HTML color
     },
     editorContent: {
       backgroundColor: '#f9fafb',
@@ -244,40 +190,11 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       padding: spacing.sm,
       border: 'none'
     },
-    plainTextarea: {
-      width: '100%',
-      height: '600px',
-      padding: spacing.md,
-      backgroundColor: '#1e1e1e',
-      color: '#d4d4d4',
-      fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
-      fontSize: '14px',
-      lineHeight: 1.5,
-      border: `1px solid ${colors.gray200}`,
-      borderRadius: borderRadius.md,
-      resize: 'vertical',
-      outline: 'none',
-      overflowWrap: 'normal',
-      whiteSpace: 'pre',
-      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
-    },
-    previewContainer: {
-      width: '100%',
-      height: '600px',
-      padding: spacing.md,
-      backgroundColor: '#f9fafb',
-      border: `1px solid ${colors.gray200}`,
-      borderRadius: borderRadius.md,
-      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)',
-      overflow: 'auto'
-    },
     autoSaveIndicator: {
       position: 'absolute',
       bottom: '10px',
       right: '10px',
-      backgroundColor: mode === 'developer' ? 
-        (devSubMode === 'markdown' ? '#0095FF' : '#E34C26') : 
-        '#4CAF50',
+      backgroundColor: mode === 'developer' ? '#E34C26' : '#4CAF50',
       color: colors.white,
       padding: `${spacing.xs} ${spacing.sm}`,
       borderRadius: borderRadius.sm,
@@ -289,9 +206,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       padding: `${spacing.xs} ${spacing.sm}`,
       borderRadius: borderRadius.round,
       fontSize: typography.fontSize.xs,
-      backgroundColor: mode === 'developer' ? 
-        (devSubMode === 'markdown' ? modeColors.developer.badge.background : '#E34C26') : 
-        modeColors.simple.badge.background,
+      backgroundColor: mode === 'developer' ? '#E34C26' : modeColors.simple.badge.background,
       color: mode === 'developer' ? 
         modeColors.developer.badge.text : 
         modeColors.simple.badge.text,
@@ -300,11 +215,11 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
       marginRight: spacing.lg
     },
-    highlighterOptions: {
+    highlighterToggle: {
       display: 'flex',
       alignItems: 'center',
       gap: spacing.sm,
-      marginLeft: spacing.md
+      marginRight: spacing.md
     },
     switchContainer: {
       display: 'flex',
@@ -358,6 +273,11 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)',
       padding: 0,
       overflow: 'auto'
+    },
+    tabIcon: {
+      width: '18px',
+      height: '18px',
+      marginRight: spacing.xs
     }
   };
 
@@ -380,89 +300,68 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
             Desarrollador
           </button>
           
-          {/* Developer submode toggle (only shown in developer mode) */}
-          {mode === 'developer' && (
-            <div style={styles.devSubModeToggle}>
-              <button
-                style={styles.devSubModeButton(devSubMode === 'markdown', 'markdown')}
-                onClick={() => handleDevSubModeToggle('markdown')}
-              >
-                Markdown
-              </button>
-              <button
-                style={styles.devSubModeButton(devSubMode === 'html', 'html')}
-                onClick={() => handleDevSubModeToggle('html')}
-              >
-                HTML
-              </button>
-            </div>
-          )}
-          
           {/* Current mode badge */}
           <span style={styles.modeBadge}>
-            {mode === 'developer' ? 
-              (devSubMode === 'markdown' ? 'MD' : 'HTML') : 
-              'Simple'}
+            {mode === 'developer' ? 'HTML' : 'Simple'}
           </span>
         </div>
         
-        {/* Developer mode tabs (only shown in developer mode) */}
-        {mode === 'developer' && (
-          <div style={styles.tabsContainer}>
-            <button
-              style={{
-                ...styles.tab,
-                ...(activeTab === 'code' ? styles.activeTab : {})
-              }}
-              onClick={() => setActiveTab('code')}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>Code</span>
-              </div>
-            </button>
-            <button
-              style={{
-                ...styles.tab,
-                ...(activeTab === 'preview' ? styles.activeTab : {})
-              }}
-              onClick={() => setActiveTab('preview')}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>Preview</span>
-              </div>
-            </button>
-            
-            {/* Syntax highlighting toggle (only shown in code tab) */}
-            {activeTab === 'code' && (
-              <div style={styles.highlighterOptions}>
-                <div 
-                  style={styles.switchContainer}
-                  onClick={toggleSyntaxHighlighting}
-                >
-                  <span style={styles.switchLabel}>Resaltado:</span>
-                  <div style={styles.switch}>
-                    <input 
-                      type="checkbox" 
-                      checked={isHighlightingEnabled}
-                      style={styles.switchInput}
-                      readOnly
-                    />
-                    <span 
-                      style={{
-                        ...styles.switchSlider,
-                        backgroundColor: isHighlightingEnabled 
-                          ? (devSubMode === 'markdown' ? '#0095FF' : '#E34C26')
-                          : colors.gray200
-                      }}
-                    >
-                      <span style={styles.switchThumb(isHighlightingEnabled)} />
-                    </span>
-                  </div>
+        {/* Controls section (right side) */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {/* Resaltado toggle (shown first) */}
+          {mode === 'developer' && (
+            <div style={styles.highlighterToggle}>
+              <div 
+                style={styles.switchContainer}
+                onClick={toggleSyntaxHighlighting}
+              >
+                <span style={styles.switchLabel}>Resaltado:</span>
+                <div style={styles.switch}>
+                  <input 
+                    type="checkbox" 
+                    checked={isHighlightingEnabled}
+                    style={styles.switchInput}
+                    readOnly
+                  />
+                  <span 
+                    style={{
+                      ...styles.switchSlider,
+                      backgroundColor: isHighlightingEnabled ? '#E34C26' : colors.gray200
+                    }}
+                  >
+                    <span style={styles.switchThumb(isHighlightingEnabled)} />
+                  </span>
                 </div>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+          
+          {/* Tab buttons with icons (static, always shown) */}
+          {mode === 'developer' && (
+            <div style={styles.tabsContainer}>
+              <button
+                style={{
+                  ...styles.tab,
+                  ...(activeTab === 'code' ? styles.activeTab : {})
+                }}
+                onClick={() => setActiveTab('code')}
+              >
+                <img src="/assets/images/icons/CODE_icon.png" alt="Code" style={styles.tabIcon} />
+                <span>Code</span>
+              </button>
+              <button
+                style={{
+                  ...styles.tab,
+                  ...(activeTab === 'preview' ? styles.activeTab : {})
+                }}
+                onClick={() => setActiveTab('preview')}
+              >
+                <img src="/assets/images/icons/PREVIEW_icon.png" alt="Preview" style={styles.tabIcon} />
+                <span>Preview</span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div style={styles.editorContent}>
@@ -473,13 +372,12 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
               <>
                 <EditorToolbar 
                   onInsertMarkdown={handleToolbarAction} 
-                  mode={devSubMode}
+                  mode="html"
                 />
                 
                 {isHighlightingEnabled ? (
                   <SyntaxHighlighter
                     content={internalContent}
-                    mode={devSubMode}
                     onChange={handleTextAreaChange}
                     textAreaRef={textAreaRef}
                   />
@@ -488,11 +386,24 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
                     ref={textAreaRef}
                     value={internalContent}
                     onChange={handleTextAreaChange}
-                    style={styles.plainTextarea}
-                    placeholder={devSubMode === 'markdown' 
-                      ? "Escribe tu post en formato Markdown..." 
-                      : "Escribe código HTML aquí..."
-                    }
+                    style={{
+                      width: '100%',
+                      height: '600px',
+                      padding: spacing.md,
+                      backgroundColor: '#272822',
+                      color: '#F8F8F2',
+                      fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
+                      fontSize: '14px',
+                      lineHeight: 1.5,
+                      border: `1px solid ${colors.gray200}`,
+                      borderRadius: borderRadius.md,
+                      resize: 'vertical',
+                      outline: 'none',
+                      overflowWrap: 'normal',
+                      whiteSpace: 'pre',
+                      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
+                    }}
+                    placeholder="Escribe o Pega tu código HTML aquí..."
                     spellCheck="false"
                   />
                 )}
@@ -500,12 +411,17 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
             )}
 
             {activeTab === 'preview' && (
-              <div style={styles.previewContainer}>
-                {devSubMode === 'markdown' ? (
-                  <MarkdownPreview content={internalContent} />
-                ) : (
-                  <HTMLPreview htmlContent={internalContent} />
-                )}
+              <div style={{
+                width: '100%',
+                height: '600px',
+                padding: spacing.md,
+                backgroundColor: '#f9fafb',
+                border: `1px solid ${colors.gray200}`,
+                borderRadius: borderRadius.md,
+                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)',
+                overflow: 'auto'
+              }}>
+                <HTMLPreview htmlContent={internalContent} />
               </div>
             )}
           </>
