@@ -94,12 +94,12 @@ const ContactPage = () => {
     {
       icon: '📍',
       title: 'Ubicación',
-      content: 'Facultad de Ingenieria Electromecanica, Ucol, Colima, Mexico'
+      content: 'Facultad de Ingeniería Electromecánica, UCOL, Colima, México'
     },
     {
       icon: '📧',
       title: 'Email',
-      content: 'contacto@educstation.com'
+      content: 'educcorp3@gmail.com'
     },
     {
       icon: '☎️',
@@ -117,15 +117,15 @@ const ContactPage = () => {
   const faqs = [
     {
       question: '¿Cómo puedo colaborar con EducStation?',
-      answer: 'Puedes colaborar con la pagina dejando tus comentarios en nuestros posts, ademas de enviandonos tus preguntas en el apartado de contactos.'
+      answer: 'Puedes colaborar con la página dejando tus comentarios en nuestros posts, además de enviandonos tus preguntas en el apartado de contactos.'
     },
     {
-      question: '¿Tienen recursos relacionados a las tecnicas de estudio?',
-      answer: 'Si!, aqui en EducStation contamos con varias guias y herramientas con las cuales puedes mejorar tus metodos de estudio.'
+      question: '¿Tienen recursos relacionados a las técnicas de estudio?',
+      answer: '!Sí! Aquí en EducStation contamos con varias guías y herramientas con las cuales puedes mejorar tus métodos de estudio.'
     },
     {
-      question: '¿Podre encontrar informacion reciente aqui?',
-      answer: 'Si!, aqui en EdcuStation nos aseguramos de siempre tener a la mano las noticias recientes mas relevantes del momento relacionadas a la educacion.'
+      question: '¿Podre encontrar información reciente aqui?',
+      answer: '!Sí! Aquí en EdcuStation nos aseguramos de siempre tener a la mano las noticias recientes más relevantes del momento relacionadas a la educación.'
     },
     {
       question: '¿Cómo puedo reportar un problema técnico?',
