@@ -133,7 +133,7 @@ useEffect(() => {
 
   const navItems = [
     { path: '/', label: 'Inicio' },
-    { path: '/blog', label: 'Blog' }, // Añadido item de navegación para Blog
+    { path: '/category/tecnicas-de-estudio', label: 'Blog' }, // Añadido item de navegación para Blog
     { path: '/about', label: 'Acerca de' },
     { path: '/contact', label: 'Contacto' },
     { path: '/admin/post', label: 'Crear Post', admin: true }
