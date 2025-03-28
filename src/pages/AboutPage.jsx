@@ -226,11 +226,11 @@ const AboutPage = () => {
 
   // Datos de timeline
   const timelineEvents = [
-    { year: '1', title: 'Expandir Orizontes', description: 'Buscamos hacer llegar a mas gente la importancia de recibir una buena educacion de calidad.' },
-    { year: '2', title: 'Impulsar el progreso', description: 'Motivaremos a los docentes y alumnos a que integren las nuevas tecnologias a sus metodologias.' },
-    { year: '3', title: 'Apoyo a estudiantes', description: 'Ofreceremos varios tips y guias para ayudar a que los alumnos mejoren en sus estudios.' },
-    { year: '4', title: 'Comunicar noticias', description: 'Compartiremos las noticias mas relevantes relacionadas con la educacion.' },
-    { year: '5', title: 'Crecer la comunidad', description: 'Nos enfocaremos en hacer que nuestro blog sea interactivo, para asi conseguir mas usuarios y motivarlos en sus estudios.' }
+    { year: '1', title: 'Expandir horizontes', description: 'Buscamos hacer llegar a más gente la importancia de recibir una buena educación de calidad.' },
+    { year: '2', title: 'Impulsar el progreso', description: 'Motivaremos a los docentes y alumnos a que integren las nuevas tecnologías a sus metodologias.' },
+    { year: '3', title: 'Apoyo a estudiantes', description: 'Ofreceremos varios tips y guías para ayudar a que los alumnos mejoren en sus estudios.' },
+    { year: '4', title: 'Comunicar noticias', description: 'Compartiremos las noticias más relevantes relacionadas con la educación.' },
+    { year: '5', title: 'Crecer la comunidad', description: 'Nos enfocaremos en hacer que nuestro blog sea interactivo, para así conseguir más usuarios y motivarlos en sus estudios.' }
   ];
 
   return (
