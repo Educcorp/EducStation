@@ -184,7 +184,7 @@ const AboutPage = () => {
       name: 'Damian Valencia',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Damian.png', // Ruta relativa correcta
-      bio: 'Se ocupa de de metodologias y estrategias para manejar el aprendizaje y los habitos de estudio.'
+      bio: 'Se ocupa de de metodologías y estrategias para manejar el aprendizaje y los hábitos de estudio.'
     },
     {
       name: 'Fernanda Zepeda',
@@ -196,13 +196,13 @@ const AboutPage = () => {
       name: 'Emmanuel Palacios',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Emma.png',
-      bio: 'Aborda problematicas en el estudio - Analiza dificultades, obstaculos o desafios que enfrentan los estudiantes durante su proceso de aprendizaje.'
+      bio: 'Aborda problemáticas en el estudio: analiza dificultades, obstáculos o desafíos que enfrentan los estudiantes durante su proceso de aprendizaje.'
     },
     {
       name: 'Priscila Lopez',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Priscila.png',
-      bio: 'Se enfoca en Educacion de Calidad.'
+      bio: 'Se enfoca en educación de calidad.'
     },
     {
       name: 'Yoselin Reynaga',
@@ -214,23 +214,23 @@ const AboutPage = () => {
       name: 'Gregorio Sánchez',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Grego.png',
-      bio: 'Maneja Herramientas tecnologicas - Se especializa en recursos digitales, aplicaciones o plataformas que apoyan al proceso educativo.'
+      bio: 'Maneja Herramientas tecnológicas: se especializa en recursos digitales, aplicaciones o plataformas que apoyan al proceso educativo.'
     },
     {
       name: 'Ruben Lavariega',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Ruben.png',
-      bio: 'Promueve la participacion colectiva, trabajo en equipo y construccion de redes entre diversos actores educativos.'
+      bio: 'Promueve la participación colectiva, trabajo en equipo y construcción de redes entre diversos actores educativos.'
     }
   ];
 
   // Datos de timeline
   const timelineEvents = [
-    { year: '1', title: 'Expandir Orizontes', description: 'Buscamos hacer llegar a mas gente la importancia de recibir una buena educacion de calidad.' },
-    { year: '2', title: 'Impulsar el progreso', description: 'Motivaremos a los docentes y alumnos a que integren las nuevas tecnologias a sus metodologias.' },
-    { year: '3', title: 'Apoyo a estudiantes', description: 'Ofreceremos varios tips y guias para ayudar a que los alumnos mejoren en sus estudios.' },
-    { year: '4', title: 'Comunicar noticias', description: 'Compartiremos las noticias mas relevantes relacionadas con la educacion.' },
-    { year: '5', title: 'Crecer la comunidad', description: 'Nos enfocaremos en hacer que nuestro blog sea interactivo, para asi conseguir mas usuarios y motivarlos en sus estudios.' }
+    { year: '1', title: 'Expandir horizontes', description: 'Buscamos hacer llegar a más gente la importancia de recibir una buena educación de calidad.' },
+    { year: '2', title: 'Impulsar el progreso', description: 'Motivaremos a los docentes y alumnos a que integren las nuevas tecnologías a sus metodologias.' },
+    { year: '3', title: 'Apoyo a estudiantes', description: 'Ofreceremos varios tips y guías para ayudar a que los alumnos mejoren en sus estudios.' },
+    { year: '4', title: 'Comunicar noticias', description: 'Compartiremos las noticias más relevantes relacionadas con la educación.' },
+    { year: '5', title: 'Crecer la comunidad', description: 'Nos enfocaremos en hacer que nuestro blog sea interactivo, para así conseguir más usuarios y motivarlos en sus estudios.' }
   ];
 
   return (
@@ -365,7 +365,7 @@ const AboutPage = () => {
                 { 
                   title: 'Innovación', 
                   icon: '💡', 
-                  description: 'Buscamos traer variedad con todos nuestros posts y con la informacion que ofrecemos, trayendo lo mas reciente del momento.' 
+                  description: 'Buscamos traer variedad con todos nuestros posts y con la información que ofrecemos, trayendo lo mas reciente del momento.' 
                 },
                 { 
                   title: 'Colaboración', 
@@ -375,12 +375,12 @@ const AboutPage = () => {
                 { 
                   title: 'Inclusión', 
                   icon: '🌈', 
-                  description: 'Nos aseguraremos que la informacion dada en nuestra pagina siempre sea inclusiva para todos, sin importar nuestras diferencias.' 
+                  description: 'Nos aseguraremos que la información dada en nuestra página siempre sea inclusiva para todos, sin importar nuestras diferencias.' 
                 },
                 { 
                   title: 'Excelencia', 
                   icon: '🏆', 
-                  description: 'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de si mismos.' 
+                  description: 'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de sí mismos.' 
                 }
               ].map((value, index) => (
                 <div 
