@@ -6,7 +6,6 @@ import { colors, spacing, typography, shadows, borderRadius } from '../../styles
 import DualModeEditor from './DualModeEditor';
 import PostMetadata from './PostMetadata';
 import CoverImageUploader from './CoverImageUploader';
-import MarkdownGuide from './MarkdownGuide';
 import StatusMessage from './StatusMessage';
 import ImportExportActions from './ImportExportActions';
 
@@ -33,6 +32,78 @@ const loadPostFromLocalStorage = () => {
   }
 };
 
+// Componente para la etiqueta de Contenido animada
+const ContentLabel = () => {
+  const [isAnimated, setIsAnimated] = useState(false);
+  
+  useEffect(() => {
+    // Activar animación después de un breve retraso
+    const timer = setTimeout(() => {
+      setIsAnimated(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const styles = {
+    container: {
+      display: 'flex',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+      transform: isAnimated ? 'translateX(0)' : 'translateX(-20px)',
+      opacity: isAnimated ? 1 : 0,
+      transition: 'all 0.6s ease-out'
+    },
+    icon: {
+      fontSize: '22px',
+      marginRight: spacing.sm,
+      color: colors.secondary,
+      animation: isAnimated ? 'pulseIcon 2s infinite' : 'none'
+    },
+    label: {
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.semiBold,
+      color: colors.primary,
+      position: 'relative',
+      paddingBottom: '3px'
+    },
+    underline: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      width: isAnimated ? '100%' : '0%',
+      height: '2px',
+      backgroundColor: colors.secondary,
+      transition: 'width 0.8s ease-in-out',
+      transitionDelay: '0.3s'
+    },
+    badge: {
+      display: 'inline-block',
+      backgroundColor: isAnimated ? colors.primary : 'transparent',
+      color: 'white',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.round,
+      fontSize: typography.fontSize.xs,
+      marginLeft: spacing.md,
+      transform: isAnimated ? 'scale(1)' : 'scale(0)',
+      transition: 'all 0.5s ease-out',
+      transitionDelay: '0.6s',
+      boxShadow: isAnimated ? '0 2px 4px rgba(11, 68, 68, 0.2)' : 'none'
+    }
+  };
+  
+  return (
+    <div style={styles.container}>
+      <span style={styles.icon}>📝</span>
+      <h3 style={styles.label}>
+        Contenido
+        <span style={styles.underline}></span>
+      </h3>
+      <span style={styles.badge}>Editor</span>
+    </div>
+  );
+};
+
 const PostEditor = () => {
   const [post, setPost] = useState({
     title: '',
@@ -49,6 +120,7 @@ const PostEditor = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Categorías disponibles
   const categories = [
@@ -88,6 +160,8 @@ const PostEditor = () => {
 
   // Autoguardado cuando el contenido cambia
   useEffect(() => {
+    if (!isInitialized) return; // Evita guardar durante la inicialización
+    
     const timer = setTimeout(() => {
       if (post.content.length > 0 || post.title.length > 0) {
         console.log('Guardado automático...');
@@ -96,22 +170,22 @@ const PostEditor = () => {
     }, 2000);
     
     return () => clearTimeout(timer);
-  }, [post]);
+  }, [post, isInitialized]);
   
   // Cargar borrador guardado al iniciar
   useEffect(() => {
     const savedPost = loadPostFromLocalStorage();
     if (savedPost) {
-      // Detectamos si el contenido parece ser HTML para establecer el modo
-      const hasHTMLStructure = /<(!DOCTYPE|html|head|body|div|p|h[1-6]|ul|ol|script|style)[^>]*>/i.test(savedPost.content);
-      
       setPost({
         ...savedPost,
-        editorMode: hasHTMLStructure ? 'html' : (savedPost.editorMode || 'simple') // Ensure 'simple' is the default mode
+        editorMode: savedPost.editorMode || 'simple' // Ensure 'simple' is the default mode
       });
       
-      console.log('Loaded post with mode:', hasHTMLStructure ? 'html' : (savedPost.editorMode || 'simple'));
+      console.log('Loaded post with mode:', savedPost.editorMode || 'simple');
     }
+    
+    // Marcar como inicializado después de cargar
+    setIsInitialized(true);
   }, []);
 
   // Simular guardar como borrador
@@ -169,38 +243,18 @@ const PostEditor = () => {
     }, 1500);
   };
 
-  // Exportar el post a Markdown/HTML para descargar
+  // Exportar el post a HTML para descargar
   const exportToFile = () => {
     // Crear un objeto de texto para descargar
-    let content = '';
-    let fileExtension = '';
+    const content = post.content;
     
-    if (post.editorMode === 'markdown') {
-      const frontMatter = `---
-title: ${post.title}
-category: ${post.category}
-tags: ${post.tags}
-date: ${post.publishDate}
-status: ${post.status}
----
-
-`;
-      content = frontMatter + post.content;
-      fileExtension = 'md';
-    } else { // HTML mode
-      content = post.content;
-      fileExtension = 'html';
-    }
-    
-    const blob = new Blob([content], { 
-      type: post.editorMode === 'markdown' ? 'text/markdown' : 'text/html' 
-    });
+    const blob = new Blob([content], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
     
     // Crear un enlace de descarga y hacer clic en él
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${post.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.${fileExtension}`;
+    a.download = `${post.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.html`;
     document.body.appendChild(a);
     a.click();
     
@@ -211,14 +265,14 @@ status: ${post.status}
     // Mostrar mensaje de éxito
     setSaveMessage({
       type: 'success',
-      text: `Archivo ${post.editorMode === 'markdown' ? 'Markdown' : 'HTML'} descargado correctamente`,
+      text: `Archivo HTML descargado correctamente`,
       icon: '📥'
     });
     
     setTimeout(() => setSaveMessage(null), 3000);
   };
 
-  // Importar un archivo Markdown o HTML
+  // Importar un archivo HTML
   const importFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -228,48 +282,10 @@ status: ${post.status}
       const content = event.target.result;
       const fileExtension = file.name.split('.').pop().toLowerCase();
       
-      // Detectar si es Markdown o HTML
-      const isMarkdown = fileExtension === 'md' || fileExtension === 'markdown';
+      // Verificar que sea HTML
       const isHTML = fileExtension === 'html' || fileExtension === 'htm';
       
-      if (isMarkdown) {
-        // Parsear el frontmatter si existe
-        let postData = { content, editorMode: 'markdown' };
-        
-        const frontMatterRegex = /^---\n([\s\S]*?)\n---\n/;
-        const match = content.match(frontMatterRegex);
-        
-        if (match) {
-          const frontMatter = match[1];
-          const actualContent = content.replace(frontMatterRegex, '');
-          
-          // Extraer metadatos del frontmatter
-          const titleMatch = frontMatter.match(/title:\s*(.*)/);
-          const categoryMatch = frontMatter.match(/category:\s*(.*)/);
-          const tagsMatch = frontMatter.match(/tags:\s*(.*)/);
-          const dateMatch = frontMatter.match(/date:\s*(.*)/);
-          const statusMatch = frontMatter.match(/status:\s*(.*)/);
-          
-          postData = {
-            title: titleMatch ? titleMatch[1] : '',
-            category: categoryMatch ? categoryMatch[1] : '',
-            tags: tagsMatch ? tagsMatch[1] : '',
-            publishDate: dateMatch ? dateMatch[1] : new Date().toISOString().slice(0, 10),
-            status: statusMatch ? statusMatch[1] : 'draft',
-            content: actualContent.trim(),
-            editorMode: 'markdown'
-          };
-        } else {
-          // Si no hay frontmatter, usar todo como contenido
-          postData.content = content;
-        }
-        
-        // Actualizar el estado del post 
-        setPost(prevPost => ({
-          ...prevPost,
-          ...postData
-        }));
-      } else if (isHTML) {
+      if (isHTML) {
         // Extraer el título del documento HTML si existe
         const titleMatch = content.match(/<title>(.*?)<\/title>/i);
         const title = titleMatch ? titleMatch[1] : '';
@@ -282,17 +298,21 @@ status: ${post.status}
           editorMode: 'html'
         }));
       } else {
-        // Si no es Markdown ni HTML, tratar como texto plano
-        setPost(prevPost => ({
-          ...prevPost,
-          content: content
-        }));
+        // Informar que solo se permiten archivos HTML
+        setSaveMessage({
+          type: 'error',
+          text: 'Solo se permiten archivos HTML (.html, .htm)',
+          icon: '⚠️'
+        });
+        
+        setTimeout(() => setSaveMessage(null), 3000);
+        return;
       }
       
       // Mostrar mensaje de éxito
       setSaveMessage({
         type: 'success',
-        text: `Archivo ${isMarkdown ? 'Markdown' : (isHTML ? 'HTML' : 'de texto')} importado correctamente`,
+        text: `Archivo HTML importado correctamente`,
         icon: '📤'
       });
       
@@ -362,8 +382,10 @@ status: ${post.status}
     }
   };
 
-  // Log para depuración
-  console.log('Current editor mode:', post.editorMode);
+  // Solo renderizar una vez inicializado para evitar problemas de redimensión
+  if (!isInitialized) {
+    return <div style={styles.container}>Cargando editor...</div>;
+  }
 
   return (
     <div style={styles.container}>
@@ -378,14 +400,18 @@ status: ${post.status}
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
           }
-          @keyframes pulse {
+          @keyframes pulseIcon {
             0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+            50% { transform: scale(1.1); }
             100% { transform: scale(1); }
           }
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+          }
+          @keyframes shine {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
           }
           @keyframes shake {
             0%, 100% { transform: translateX(0); }
@@ -394,7 +420,6 @@ status: ${post.status}
           }
         `
       }} />
-
 
       <div style={styles.editorContainer}>
         {/* Sidebar - Ahora a la izquierda */}
@@ -409,13 +434,10 @@ status: ${post.status}
             categories={categories} 
             onChange={handleChange} 
           />
-
-          <MarkdownGuide />
           
           <ImportExportActions 
             onExport={exportToFile} 
             onImport={importFile}
-            isHTML={post.editorMode === 'html'} 
           />
         </div>
 
@@ -430,7 +452,7 @@ status: ${post.status}
               fontWeight: typography.fontWeight.medium,
               color: colors.primary
             }} htmlFor="title">
-              <span style={{color: colors.primary, fontSize: '1.1em'}}>📝</span> Título del post
+              <span style={{color: colors.primary, fontSize: '1.4em'}}>📝</span> Título del post
             </label>
             <input
               type="text"
@@ -462,6 +484,9 @@ status: ${post.status}
           </div>
 
           <div style={styles.formGroup}>
+            {/* Etiqueta "Contenido" animada */}
+            <ContentLabel />
+            
             <DualModeEditor 
               content={post.content}
               onChange={handleChange}

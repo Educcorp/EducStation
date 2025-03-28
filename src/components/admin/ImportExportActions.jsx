@@ -2,7 +2,7 @@
 import React from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
-const ImportExportActions = ({ onExport, onImport, isHTML = false }) => {
+const ImportExportActions = ({ onExport, onImport }) => {
   const styles = {
     container: {
       marginTop: spacing.lg,
@@ -65,12 +65,12 @@ const ImportExportActions = ({ onExport, onImport, isHTML = false }) => {
             e.currentTarget.style.boxShadow = 'none';
           }}
         >
-          <span>📤</span> Importar {isHTML ? 'HTML' : 'MD'}
+          <span>📤</span> Importar HTML
         </label>
         <input
           id="importFile"
           type="file"
-          accept={isHTML ? ".html,.htm" : ".md,.markdown,.txt"}
+          accept=".html,.htm"
           style={{ display: 'none' }}
           onChange={onImport}
         />
@@ -90,7 +90,7 @@ const ImportExportActions = ({ onExport, onImport, isHTML = false }) => {
             e.currentTarget.style.boxShadow = 'none';
           }}
         >
-          <span>📥</span> Exportar {isHTML ? 'HTML' : 'MD'}
+          <span>📥</span> Exportar HTML
         </button>
         <p style={styles.helperText}>Descargar como archivo</p>
       </div>
