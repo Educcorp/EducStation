@@ -12,3 +12,7 @@
   .page-animation {
     animation: fadeIn 0.8s ease-in-out;
   }
+
+  .fade-in-zoom{
+    animation: fadeInZoom 0.8s ease-in-out;
+  }
