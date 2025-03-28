@@ -365,7 +365,7 @@ const AboutPage = () => {
                 { 
                   title: 'Innovación', 
                   icon: '💡', 
-                  description: 'Buscamos traer variedad con todos nuestros posts y con la informacion que ofrecemos, trayendo lo mas reciente del momento.' 
+                  description: 'Buscamos traer variedad con todos nuestros posts y con la información que ofrecemos, trayendo lo mas reciente del momento.' 
                 },
                 { 
                   title: 'Colaboración', 
@@ -375,12 +375,12 @@ const AboutPage = () => {
                 { 
                   title: 'Inclusión', 
                   icon: '🌈', 
-                  description: 'Nos aseguraremos que la informacion dada en nuestra pagina siempre sea inclusiva para todos, sin importar nuestras diferencias.' 
+                  description: 'Nos aseguraremos que la información dada en nuestra página siempre sea inclusiva para todos, sin importar nuestras diferencias.' 
                 },
                 { 
                   title: 'Excelencia', 
                   icon: '🏆', 
-                  description: 'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de si mismos.' 
+                  description: 'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de sí mismos.' 
                 }
               ].map((value, index) => (
                 <div 
