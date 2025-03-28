@@ -1,11 +1,18 @@
 // src/pages/ContactPage.jsx
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
+import '../styles/animations.css';
 
 const ContactPage = () => {
   // Estado para el formulario
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
+    return () => clearTimeout(timeout); // Limpia el timeout al desmontar
+  }, []);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -403,14 +410,18 @@ const ContactPage = () => {
 
   return (
     
-    <div id="top" style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
+    <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
       <Header />
       <main>
         {/* Hero Section */}
         <section style={styles.hero}>
           <div style={styles.container}>
-            <h1 style={styles.title}>Contáctanos</h1>
-            <p style={styles.subtitle}>
+            <h1 
+              className={animate ?"page-animation" : ""}
+              style={styles.title}>Contáctanos</h1>
+            <p 
+              className={animate ?"page-animation" : ""}
+              style={styles.subtitle}>
               Estamos aquí para ayudarte. Resolveremos cualquier incognita que tengas relacionada con nuestro blog,
               No dudes en contactarte con nosotros!. Respondemos a todas las consultas 
               en un plazo máximo de 48 horas.
