@@ -5,8 +5,15 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostCard from '../components/blog/PostCard';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
+import '../styles/animations.css';
 
-const CategoryPage = () => {
+const CategoryPage = () => {  
+    const [animate, setAnimate] = useState(false);
+  
+    useEffect(() => {
+      const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
+      return () => clearTimeout(timeout); // Limpia el timeout al desmontar
+    }, []);
   // Obtenemos el parámetro de categoría de la URL
   const { categoryName } = useParams();
   
@@ -538,8 +545,10 @@ const CategoryPage = () => {
                 <span>{currentCategory.name}</span>
               </div>
               
-              <h1 style={styles.title}>{currentCategory.name}</h1>
-              <p style={styles.subtitle}>
+              <h1 
+              className={animate ? "page-animation" : ""}
+              style={styles.title}>{currentCategory.name}</h1>
+              <p className={animate ? "page-animation" : ""} style={styles.subtitle}>
                 Explora nuestra colección de artículos sobre {currentCategory.name.toLowerCase()}. 
                 Aquí encontrarás consejos, estrategias y recursos para mejorar tu práctica educativa 
                 en esta área específica.
@@ -868,5 +877,4 @@ const CategoryPage = () => {
     </div>
   );
 };
-
 export default CategoryPage;
