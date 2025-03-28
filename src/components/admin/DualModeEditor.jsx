@@ -9,7 +9,7 @@ import SimpleEditor from './SimpleEditor';
 
 const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
   const textAreaRef = useRef(null);
-  const [mode, setMode] = useState('simple'); // Always start with 'simple' mode, regardless of initialMode
+  const [mode, setMode] = useState('simple'); // Always start with 'simple' mode
   const [activeTab, setActiveTab] = useState('code'); // Used in developer mode
   const [internalContent, setInternalContent] = useState(content || '');
   const [isHighlightingEnabled, setIsHighlightingEnabled] = useState(true);
@@ -403,7 +403,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
                       whiteSpace: 'pre',
                       boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
                     }}
-                    placeholder="Escribe o Pega tu código HTML aquí..."
+                    placeholder="Escribe o pega tu código HTML aquí..."
                     spellCheck="false"
                   />
                 )}

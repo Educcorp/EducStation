@@ -184,7 +184,7 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
         onScroll={syncScroll}
         style={styles.textarea}
         spellCheck="false"
-        placeholder="Escribe código HTML aquí..."
+        placeholder="Escribe o pega tu código HTML aquí..."
       />
     </div>
   );
