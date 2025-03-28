@@ -304,7 +304,7 @@ const Footer = () => {
                   onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
                 >Contacto</Link>
               </li>
-              <li 
+              <li npm start
                 style={styles.link}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.color = colors.secondary;

@@ -1,10 +1,18 @@
 // src/pages/AboutPage.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
+import '../styles/animations.css'; // Importa la animación CSS
 
 const AboutPage = () => {
+  const [animate, setAnimate] = useState(false);
+
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setAnimate(true), 0);
+    return () => clearTimeout(timeout);  // Activar la animación al montar el componente
+  }, []);
   const styles = {
     container: {
       maxWidth: "1200px",
@@ -226,14 +234,20 @@ const AboutPage = () => {
   ];
 
   return (
-    <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
+    <div 
+    //className={animate?"page-animation" : ""}
+      style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
       <Header />
       
       <main>
         <section style={styles.hero}>
           <div style={styles.container}>
-            <h1 style={styles.title}>Sobre EducStation</h1>
-            <p style={styles.subtitle}>
+            <h1 
+              className={animate ?"page-animation" : ""}
+              style={styles.title}>Sobre EducStation</h1>
+            <p 
+              className={animate ? "page-animation" : ""}
+              style={styles.subtitle}>
               Somos una plataforma dedicada a potenciar el desarrollo profesional de educadores 
               mediante la creación, curación y compartición de recursos educativos de calidad.
               Nuestra misión es transformar la educación a través de la innovación y la colaboración.
