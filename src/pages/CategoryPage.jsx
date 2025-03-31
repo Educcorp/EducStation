@@ -536,13 +536,14 @@ const CategoryPage = () => {
                 >Inicio</a>
                 <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
                 <a 
-                  href="/blog"
+                  href="/category/tecnicas-de-estudio"
                   style={styles.breadcrumbLink}
                   onMouseEnter={(e) => e.target.style.color = colors.primary} 
                   onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
                 >Blog</a>
                 <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
                 <span>{currentCategory.name}</span>
+                
               </div>
               
               <h1 
