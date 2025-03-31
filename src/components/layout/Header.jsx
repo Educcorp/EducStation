@@ -12,6 +12,8 @@ const Header = () => {
   const [isVisible, setIsVisible] = useState(true);
   // Estado para almacenar la posición de scroll anterior
   const [lastScrollY, setLastScrollY] = useState(0);
+  // Estado para controlar la visibilidad del menú
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Usar useLocation en lugar de withRouter
   const location = useLocation();
@@ -21,26 +23,26 @@ const Header = () => {
 
   // Detectar scroll para efectos de navegación
   useEffect(() => {
-  const handleScroll = () => {
-    const currentScrollY = window.scrollY;
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
 
-    if (currentScrollY > lastScrollY) {
-      setIsVisible(false);
-    } else {
-      setIsVisible(true);
-    }
+      if (currentScrollY > lastScrollY) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
 
-    setLastScrollY(currentScrollY);
-    setIsScrolled(currentScrollY > 50);
-  };
+      setLastScrollY(currentScrollY);
+      setIsScrolled(currentScrollY > 50);
+    };
 
-  window.addEventListener('scroll', handleScroll);
-  return () => window.removeEventListener('scroll', handleScroll);
-}, [lastScrollY]);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
-useEffect(() => {
-  console.log('isVisible:', isVisible);
-}, [isVisible]);
+  useEffect(() => {
+    console.log('isVisible:', isVisible);
+  }, [isVisible]);
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
     if (path === '/') {
@@ -78,7 +80,8 @@ useEffect(() => {
       padding: `0 ${spacing.md}`,
       display: "flex",
       justifyContent: "space-between",
-      alignItems: "center"
+      alignItems: "center",
+      position: "relative"
     },
     logo: {
       display: "flex",
@@ -129,6 +132,25 @@ useEffect(() => {
       height: "100%",
       objectFit: "cover"
     },
+    menu: {
+      position: "absolute",
+      top: "50px",
+      right: "0",
+      backgroundColor: colors.white,
+      boxShadow: shadows.md,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      display: isMenuOpen ? "block" : "none",
+      zIndex: 200
+    },
+    menuItem: {
+      padding: `${spacing.sm} ${spacing.md}`,
+      color: colors.textSecondary,
+      textDecoration: "none",
+      display: "block",
+      cursor: "pointer",
+      transition: transitions.default
+    }
   };
 
   const navItems = [
@@ -172,48 +194,55 @@ useEffect(() => {
           </Link>
 
           <nav style={styles.navLinks}>
-  {navItems.map((item, index) => (
-    // Solo mostrar enlaces de admin a usuarios con rol admin
-    (!item.admin || userRole === 'admin') && (
-      <a
-        key={index}
-        href={item.path} // Usamos href para forzar el refresco
-        style={styles.navLink(isActive(item.path))}
-        onClick={(e) => {
-          e.preventDefault(); // Prevenir el comportamiento predeterminado
-          window.location.href = item.path; // Forzar el refresco de la página
-        }}
-        onMouseEnter={() => setHoveredItem(`nav-${index}`)}
-        onMouseLeave={() => setHoveredItem(null)}
-      >
-        {item.label}
-        <span
-          style={{
-            position: 'absolute',
-            width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
-            height: '2px',
-            bottom: 0,
-            left: 0,
-            backgroundColor: colors.primary,
-            transition: transitions.default
-          }}
-        ></span>
-      </a>
-    )
-  ))}
-</nav>
+            {navItems.map((item, index) => (
+              // Solo mostrar enlaces de admin a usuarios con rol admin
+              (!item.admin || userRole === 'admin') && (
+                <a
+                  key={index}
+                  href={item.path} // Usamos href para forzar el refresco
+                  style={styles.navLink(isActive(item.path))}
+                  onClick={(e) => {
+                    e.preventDefault(); // Prevenir el comportamiento predeterminado
+                    window.location.href = item.path; // Forzar el refresco de la página
+                  }}
+                  onMouseEnter={() => setHoveredItem(`nav-${index}`)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  {item.label}
+                  <span
+                    style={{
+                      position: 'absolute',
+                      width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
+                      height: '2px',
+                      bottom: 0,
+                      left: 0,
+                      backgroundColor: colors.primary,
+                      transition: transitions.default
+                    }}
+                  ></span>
+                </a>
+              )
+            ))}
+          </nav>
           
           <div 
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm
+              boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm,
+              cursor: 'pointer' // Add cursor pointer for button-like behavior
             }}
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
+            onClick={() => setIsMenuOpen(!isMenuOpen)} // Toggle menu visibility
           >
-            
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
+          </div>
+          <div style={styles.menu}>
+            <a href="/" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Inicio</a>
+            <a href="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</a>
+            <a href="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</a>
+            <a href="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</a>
           </div>
         </div>
       </header>
