@@ -212,6 +212,7 @@ useEffect(() => {
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
           >
+            
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
           </div>
         </div>
