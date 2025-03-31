@@ -150,6 +150,22 @@ const Header = () => {
       display: "block",
       cursor: "pointer",
       transition: transitions.default
+    },
+    loginButton: {
+      padding: `${spacing.sm} ${spacing.md}`,
+      backgroundColor: colors.secondary,
+      color: colors.primary,
+      border: "none",
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.medium,
+      cursor: "pointer",
+      transition: transitions.default,
+      marginLeft: spacing.md,
+      '&:hover': {
+        backgroundColor: colors.primary,
+        color: colors.white
+      }
     }
   };
 
@@ -225,12 +241,26 @@ const Header = () => {
             ))}
           </nav>
           
+          <button 
+            style={styles.loginButton}
+            onClick={() => (window.location.href = "/login")} // Redirect to login page
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.primary;
+              e.currentTarget.style.color = colors.white;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = colors.secondary;
+              e.currentTarget.style.color = colors.primary;
+            }}
+          >
+            Inicio de Sesión
+          </button>
           <div 
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
               boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm,
-              cursor: 'pointer' // Add cursor pointer for button-like behavior
+              cursor: 'pointer'
             }}
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
