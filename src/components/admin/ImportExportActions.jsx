@@ -2,7 +2,9 @@
 import React from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
-const ImportExportActions = ({ onExport, onImport }) => {
+const ImportExportActions = ({ onExport, onImport, isHtmlMode }) => {
+  if (!isHtmlMode) return null; // Only render if HTML mode is active
+
   const styles = {
     container: {
       marginTop: spacing.lg,

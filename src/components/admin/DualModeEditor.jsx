@@ -5,8 +5,9 @@ import { insertHTML } from './utils/editorUtils';
 import HTMLPreview from './HTMLPreview';
 import SyntaxHighlighter from './SyntaxHighlighter';
 import SimpleEditor from './SimpleEditor';
+import ImportExportActions from './ImportExportActions';
 
-const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
+const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, onImport }) => {
   const textAreaRef = useRef(null);
   const [mode, setMode] = useState('simple'); // Siempre comenzar con modo simple
   const [activeTab, setActiveTab] = useState('code'); // Para el modo desarrollador
@@ -561,6 +562,13 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
           </div>
         )}
       </div>
+
+      {/* Import/Export Actions moved to the bottom */}
+      <ImportExportActions 
+        onExport={onExport} 
+        onImport={onImport} 
+        isHtmlMode={mode === 'developer'} 
+      />
 
       {/* Modal de confirmación para el modo desarrollador */}
       {showDeveloperModal && (

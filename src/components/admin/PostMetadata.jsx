@@ -20,8 +20,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
       gap: spacing.xs,
       marginBottom: spacing.xs,
       fontWeight: typography.fontWeight.medium,
-      color: colors.primary,
-      fontSize: typography.fontSize.lg //agrandar letra
+      color: colors.primary
     },
     input: {
       width: "100%",
@@ -78,7 +77,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
     <div style={styles.card}>
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="category">
-          <span style={{ color: colors.secondary, fontSize: '1.1em' }}>📂</span> Categoría
+          <span style={{color: colors.secondary, fontSize: '1.1em'}}>📂</span> Categoría
         </label>
         <select
           id="category"
@@ -102,46 +101,10 @@ const PostMetadata = ({ post, categories, onChange }) => {
         </select>
       </div>
 
-      <div style={styles.formGroup}>
-        <label style={styles.label} htmlFor="tags">
-          <span style={{ color: colors.secondary, fontSize: '1.1em' }}>🏷️</span> Etiquetas
-        </label>
-        <div style={styles.tagsInputContainer}>
-          <input
-            type="text"
-            id="tags"
-            name="tags"
-            value={post.tags}
-            onChange={onChange}
-            style={styles.input}
-            placeholder="ej: educación, tecnología, innovación"
-            onFocus={(e) => {
-              e.target.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
-            }}
-            onBlur={(e) => {
-              e.target.style.boxShadow = 'none';
-            }}
-          />
-        </div>
-        <p style={styles.helperText}>
-          <span style={{ color: colors.secondary }}>💡</span>
-          Separadas por comas. Las etiquetas facilitan la búsqueda para los lectores.
-        </p>
-
-        {post.tags && (
-          <div style={styles.tagContainer}>
-            {post.tags.split(',').map((tag, index) => tag.trim() && (
-              <span key={index} style={styles.tag}>
-                {tag.trim()}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
 
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="publishDate">
-          <span style={{ color: colors.secondary, fontSize: '1.1em' }}>📅</span> Fecha de publicación
+          <span style={{color: colors.secondary, fontSize: '1.1em'}}>📅</span> Fecha de publicación
         </label>
         <input
           type="date"
@@ -159,7 +122,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
           }}
         />
         <p style={styles.helperText}>
-          <span style={{ color: colors.secondary }}>⏰</span>
+          <span style={{color: colors.secondary}}>⏰</span>
           Puedes programar la publicación para una fecha futura.
         </p>
       </div>
