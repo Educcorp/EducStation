@@ -117,7 +117,7 @@ const LoginPage = () => {
         },
         loginImage: {
             flex: 1,
-            backgroundImage: "url('/assets/images/tecnologia.jpg')",
+            backgroundImage: "url('/assets/images/humanos.jpg')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             position: 'relative',

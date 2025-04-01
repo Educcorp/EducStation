@@ -39,18 +39,11 @@ const Header = () => {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
-<<<<<<< HEAD
 
   useEffect(() => {
     console.log('isVisible:', isVisible);
   }, [isVisible]);
 
-=======
-
-  useEffect(() => {
-    console.log('isVisible:', isVisible);
-  }, [isVisible]);
->>>>>>> main
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
     if (path === '/') {
@@ -248,7 +241,6 @@ const Header = () => {
               )
             ))}
           </nav>
-<<<<<<< HEAD
 
           {/* Botón de inicio de sesión */}
           <Link to="/login">
@@ -268,33 +260,11 @@ const Header = () => {
           </Link>
 
           <div
-=======
-          
-          <button 
-            style={styles.loginButton}
-            onClick={() => (window.location.href = "/login")} // Redirect to login page
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.primary;
-              e.currentTarget.style.color = colors.white;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.secondary;
-              e.currentTarget.style.color = colors.primary;
-            }}
-          >
-            Inicio de Sesión
-          </button>
-          <div 
->>>>>>> main
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
               boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm,
-<<<<<<< HEAD
               marginLeft: spacing.md
-=======
-              cursor: 'pointer'
->>>>>>> main
             }}
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
@@ -302,11 +272,8 @@ const Header = () => {
           >
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
           </div>
-<<<<<<< HEAD
 
           {/* Menú desplegable */}
-=======
->>>>>>> main
           <div style={styles.menu}>
             <a href="/" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Inicio</a>
             <a href="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</a>
