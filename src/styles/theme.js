@@ -1,7 +1,9 @@
 // src/styles/theme.js
-// Modificación para incluir tema oscuro y claro
+// Configuración completa de temas claro y oscuro
 
-// Tema claro (existente)
+// Tema claro (base)
+
+
 export const lightColors = {
   // Colores principales de la paleta
   primary: '#0b4444',         // Verde oscuro
@@ -30,7 +32,9 @@ export const lightColors = {
   warning: '#d2a579',         // Beige más anaranjado
 };
 
-// Tema oscuro (nuevo)
+// Tema oscuro 
+
+
 export const darkColors = {
   // Colores principales de la paleta
   primary: '#4c7977',         // Verde azulado más claro como color principal
@@ -59,30 +63,14 @@ export const darkColors = {
   warning: '#ffb74d',         // Ámbar más brillante para advertencias
 };
 
+
+
 // Exportar la función para seleccionar colores basados en el tema
 export const getThemeColors = (isDarkMode) => {
   return isDarkMode ? darkColors : lightColors;
 };
 
-// El resto del tema se mantiene igual
-export const spacing = {
-  xs: '4px',
-  sm: '8px',
-  md: '16px',
-  lg: '24px',
-  xl: '32px',
-  xxl: '48px',
-};
-
-export const borderRadius = {
-  sm: '4px',
-  md: '8px',
-  lg: '12px',
-  xl: '16px',
-  round: '24px',
-  circle: '50%',
-};
-
+// Sombras para el tema claro
 export const shadows = {
   sm: '0 1px 3px rgba(11, 68, 68, 0.08)',
   md: '0 4px 15px rgba(11, 68, 68, 0.1)',
@@ -92,10 +80,10 @@ export const shadows = {
 
 // Sombras para el tema oscuro
 export const darkShadows = {
-  sm: '0 1px 3px rgba(0, 0, 0, 0.2)',
-  md: '0 4px 15px rgba(0, 0, 0, 0.25)',
-  lg: '0 10px 30px rgba(0, 0, 0, 0.3)',
-  primary: '0 4px 12px rgba(0, 0, 0, 0.25)',
+  sm: '0 1px 3px rgba(0, 0, 0, 0.3)',
+  md: '0 4px 15px rgba(0, 0, 0, 0.4)',
+  lg: '0 10px 30px rgba(0, 0, 0, 0.5)',
+  primary: '0 4px 12px rgba(0, 0, 0, 0.4)',
 };
 
 // Función para obtener las sombras según el tema
@@ -103,6 +91,27 @@ export const getThemeShadows = (isDarkMode) => {
   return isDarkMode ? darkShadows : shadows;
 };
 
+// Espaciados
+export const spacing = {
+  xs: '4px',
+  sm: '8px',
+  md: '16px',
+  lg: '24px',
+  xl: '32px',
+  xxl: '48px',
+};
+
+// Radios de bordes
+export const borderRadius = {
+  sm: '4px',
+  md: '8px',
+  lg: '12px',
+  xl: '16px',
+  round: '24px',
+  circle: '50%',
+};
+
+// Tipografía
 export const typography = {
   fontFamily: "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
   fontSize: {
@@ -122,6 +131,7 @@ export const typography = {
   },
 };
 
+// Transiciones
 export const transitions = {
   default: 'all 0.3s ease',
   fast: 'all 0.2s ease',
@@ -139,4 +149,5 @@ export const applyHoverStyles = (styleObj) => {
 };
 
 // Para mantener compatibilidad con el código existente, también exportamos lightColors como colors
-export const colors = lightColors;
+export const colorsark = darkColors;
+export const colors = darkColors;

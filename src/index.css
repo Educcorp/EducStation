@@ -1,50 +1,23 @@
 /* src/index.css modificado con soporte para tema oscuro */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-:root {
-  /* Variables CSS para el tema claro */
-  --primary: #0b4444;
-  --primary-light: #4c7977;
-  --primary-dark: #043333;
-  --secondary: #d2b99a;
-  --background: #91a8a4;
-  --white: #f0f8f7;
-  --text-primary: #0b4444;
-  --text-secondary: #4c7977;
-  
-  /* Tonos de gris para compatibilidad */
-  --gray100: #e1e7e6;
-  --gray200: #c4d0ce;
-  --gray300: #a7b9b6;
-  
-  /* Variables para transición */
-  --transition-speed: 0.3s;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  transition: background-color 0.3s ease, 
+              color 0.3s ease, 
+              border-color 0.3s ease, 
+              box-shadow 0.3s ease;
 }
 
 html, body {
   height: 100%;
   width: 100%;
-  overflow-x: hidden; /* Evita scroll horizontal */
-  transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
-}
-
-body {
+  overflow-x: hidden;
+  background-color: var(--background);
+  color: var(--text-primary);
   font-family: 'Poppins', sans-serif;
-  background-color: var(--background);
-  color: var(--text-primary);
-  margin: 0;
-  padding: 0;
-}
-
-.dark-mode body {
-  background-color: var(--background);
-  color: var(--text-primary);
 }
 
 #root {
@@ -52,7 +25,7 @@ body {
   display: flex;
   flex-direction: column;
   width: 100%;
-  overflow-x: hidden; /* Asegura que no haya scroll horizontal */
+  overflow-x: hidden;
 }
 
 .app {
@@ -65,10 +38,10 @@ body {
 main {
   flex: 1;
   width: 100%;
-  max-width: 100vw; /* Limita el ancho al 100% del viewport */
+  max-width: 100vw;
 }
 
-/* Estilos para los contenedores principales - ajuste para PostViewer y otros componentes */
+/* Contenedores y contenido */
 .container, .postContainer {
   width: 100%;
   max-width: 1200px;
@@ -77,35 +50,29 @@ main {
   box-sizing: border-box;
 }
 
-/* Asegurarse de que las imágenes no se desborden */
+/* Imágenes responsivas */
 img {
   max-width: 100%;
   height: auto;
 }
 
-/* Estilos para el contenido del post */
+/* Contenido de post */
 .post-content {
-  background-color: white;
+  background-color: var(--white);
   border-radius: 12px;
   padding: 30px;
   margin-bottom: 30px;
   box-shadow: 0 4px 15px rgba(11, 68, 68, 0.1);
   width: 100%;
   box-sizing: border-box;
-  transition: background-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
 }
 
-.dark-mode .post-content {
-  background-color: var(--white);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-}
-
-/* Estilos para botones */
+/* Botones */
 button {
   background-color: var(--secondary);
   color: var(--primary);
   border: none;
-  transition: all var(--transition-speed) ease;
+  transition: all 0.3s ease;
   cursor: pointer;
 }
 
@@ -113,11 +80,11 @@ button:hover {
   background-color: var(--white);
 }
 
-/* Enlaces */
+/* Lagos */
 a {
   color: var(--primary);
   text-decoration: none;
-  transition: color var(--transition-speed) ease;
+  transition: color 0.3s ease;
 }
 
 a:hover {
@@ -126,12 +93,8 @@ a:hover {
 
 /* Animaciones */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideIn {
