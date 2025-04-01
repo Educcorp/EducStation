@@ -78,7 +78,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'Educcorp_educs',
         'USER': 'root',
-        'PASSWORD': 'priscila2006',
+        'PASSWORD': 'edugobb575399',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
@@ -86,6 +86,7 @@ DATABASES = {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
 }
 
+            
             
             
     }
