@@ -1,5 +1,67 @@
-# Dependencies
-# /node_modules    <- He comentado esta línea para permitir que node_modules se incluya
+# Base de datos SQLite
+*.sqlite3
+db.sqlite3
+
+# Archivos de configuración con credenciales
+# Nota: settings.py normalmente se sube al repositorio, pero deberías
+# considerar usar variables de entorno para las credenciales en producción
+# o crear un settings_local.py para desarrollo que sí esté en .gitignore
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de distribución Python
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Entorno virtual (si decides mantenerlo dentro del proyecto)
+venv/
+ENV/
+.env
+env/
+
+# Archivos de logs
+*.log
+
+# Archivos locales de IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Archivos estáticos y de medios (en producción)
+/static/
+/media/
+
+# Archivos temporales
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+coverage.xml
+*.cover
+
+# Dependencies Node.js
+# /node_modules    <- Esta línea está comentada para permitir que node_modules se incluya
 /.pnp
 .pnp.js
 
@@ -17,12 +79,11 @@
 .env.production.local
 .env
 
+# Logs de Node.js
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-node_modules
-node_modules
-node_modules
-node_modules
-node_modules
-node_modules
+
+# Archivos migraciones (opcional, generalmente se deben incluir)
+# */migrations/*.py
+# !*/migrations/__init__.py
