@@ -1,7 +1,9 @@
-// src/components/layout/Header.jsx con correcciones
+// src/components/layout/Header.jsx con modo oscuro
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import { spacing, typography, borderRadius, transitions, getThemeColors, getThemeShadows } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext';
+import ThemeToggle from '../common/ThemeToggle';
 
 const Header = () => {
   // Estado para detectar si la página ha sido scrolleada
@@ -17,6 +19,13 @@ const Header = () => {
 
   // Usar useLocation en lugar de withRouter
   const location = useLocation();
+  
+  // Obtener el contexto del tema
+  const { isDarkMode } = useTheme();
+  
+  // Obtener colores y sombras del tema actual
+  const colors = getThemeColors(isDarkMode);
+  const themeShadows = getThemeShadows(isDarkMode);
 
   // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
   const userRole = 'admin'; // Opciones: 'admin', 'user', etc.
@@ -40,9 +49,6 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  useEffect(() => {
-    console.log('isVisible:', isVisible);
-  }, [isVisible]);
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
     if (path === '/') {
@@ -57,12 +63,14 @@ const Header = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Estilos del header
+  // Estilos del header adaptados al tema
   const styles = {
     header: {
-      backgroundColor: isScrolled ? "rgba(240, 248, 247, 0.95)" : colors.white,
+      backgroundColor: isScrolled 
+        ? (isDarkMode ? `rgba(10, 25, 25, 0.95)` : "rgba(240, 248, 247, 0.95)")
+        : (isDarkMode ? colors.white : colors.white),
       padding: `${spacing.md} 0`,
-      boxShadow: isScrolled ? shadows.md : shadows.sm,
+      boxShadow: isScrolled ? themeShadows.md : themeShadows.sm,
       position: "fixed",
       top: isVisible ? 0 : '-100px', // Cambiar la posición top para mostrar/ocultar el header
       width: "100%",
@@ -93,7 +101,7 @@ const Header = () => {
       transition: transitions.default
     },
     logoIcon: {
-      backgroundColor: colors.background,
+      backgroundColor: isDarkMode ? colors.primaryLight : colors.background,
       borderRadius: borderRadius.md,
       display: "flex",
       alignItems: "center",
@@ -106,7 +114,8 @@ const Header = () => {
     },
     navLinks: {
       display: "flex",
-      gap: spacing.xl
+      gap: spacing.xl,
+      alignItems: "center" // Para alinear verticalmente con el botón de tema
     },
     navLink: (isActivePath) => ({
       color: isActivePath ? colors.primary : colors.textSecondary,
@@ -120,10 +129,10 @@ const Header = () => {
       width: "40px",
       height: "40px",
       borderRadius: borderRadius.circle,
-      backgroundColor: colors.primaryLight,
+      backgroundColor: isDarkMode ? colors.gray200 : colors.primaryLight,
       overflow: "hidden",
-      boxShadow: shadows.sm,
-      border: `2px solid ${colors.white}`,
+      boxShadow: themeShadows.sm,
+      border: `2px solid ${isDarkMode ? colors.gray300 : colors.white}`,
       transition: transitions.default,
       cursor: "pointer"
     },
@@ -136,8 +145,8 @@ const Header = () => {
       position: "absolute",
       top: "50px",
       right: "0",
-      backgroundColor: colors.white,
-      boxShadow: shadows.md,
+      backgroundColor: isDarkMode ? colors.white : colors.white,
+      boxShadow: themeShadows.md,
       borderRadius: borderRadius.md,
       padding: spacing.md,
       display: isMenuOpen ? "block" : "none",
@@ -151,21 +160,8 @@ const Header = () => {
       cursor: "pointer",
       transition: transitions.default
     },
-    loginButton: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary,
-      color: colors.primary,
-      border: "none",
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
-      cursor: "pointer",
-      transition: transitions.default,
-      marginLeft: spacing.md,
-      '&:hover': {
-        backgroundColor: colors.primary,
-        color: colors.white
-      }
+    themeToggleContainer: {
+      marginRight: spacing.md
     }
   };
 
@@ -239,28 +235,19 @@ const Header = () => {
                 </a>
               )
             ))}
+            
+            {/* Botón de cambio de tema */}
+            <div style={styles.themeToggleContainer}>
+              <ThemeToggle />
+            </div>
           </nav>
           
-          <button 
-            style={styles.loginButton}
-            onClick={() => (window.location.href = "/login")} // Redirect to login page
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.primary;
-              e.currentTarget.style.color = colors.white;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.secondary;
-              e.currentTarget.style.color = colors.primary;
-            }}
-          >
-            Inicio de Sesión
-          </button>
           <div 
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm,
-              cursor: 'pointer'
+              boxShadow: hoveredItem === 'profile' ? themeShadows.md : themeShadows.sm,
+              cursor: 'pointer' // Add cursor pointer for button-like behavior
             }}
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
@@ -268,11 +255,19 @@ const Header = () => {
           >
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
           </div>
-          <div style={styles.menu}>
+          <div style={{
+            ...styles.menu,
+            backgroundColor: isDarkMode ? colors.white : colors.white,
+          }}>
             <a href="/" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Inicio</a>
             <a href="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</a>
             <a href="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</a>
             <a href="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</a>
+            
+            {/* Botón de tema en el menú */}
+            <div style={{...styles.menuItem, display: 'flex', alignItems: 'center'}}>
+              <ThemeToggle inMenu={true} />
+            </div>
           </div>
         </div>
       </header>
@@ -283,5 +278,3 @@ const Header = () => {
 };
 
 export default Header;
-
-
