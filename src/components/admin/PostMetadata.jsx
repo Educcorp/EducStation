@@ -20,7 +20,8 @@ const PostMetadata = ({ post, categories, onChange }) => {
       gap: spacing.xs,
       marginBottom: spacing.xs,
       fontWeight: typography.fontWeight.medium,
-      color: colors.primary
+      color: colors.primary,
+      fontSize: typography.fontSize.lg //agrandar letra
     },
     input: {
       width: "100%",
@@ -77,7 +78,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
     <div style={styles.card}>
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="category">
-          <span style={{color: colors.secondary, fontSize: '1.1em'}}>📂</span> Categoría
+          <span style={{ color: colors.secondary, fontSize: '1.1em' }}>📂</span> Categoría
         </label>
         <select
           id="category"
@@ -103,7 +104,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
 
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="tags">
-          <span style={{color: colors.secondary, fontSize: '1.1em'}}>🏷️</span> Etiquetas
+          <span style={{ color: colors.secondary, fontSize: '1.1em' }}>🏷️</span> Etiquetas
         </label>
         <div style={styles.tagsInputContainer}>
           <input
@@ -123,10 +124,10 @@ const PostMetadata = ({ post, categories, onChange }) => {
           />
         </div>
         <p style={styles.helperText}>
-          <span style={{color: colors.secondary}}>💡</span>
+          <span style={{ color: colors.secondary }}>💡</span>
           Separadas por comas. Las etiquetas facilitan la búsqueda para los lectores.
         </p>
-        
+
         {post.tags && (
           <div style={styles.tagContainer}>
             {post.tags.split(',').map((tag, index) => tag.trim() && (
@@ -140,7 +141,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
 
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="publishDate">
-          <span style={{color: colors.secondary, fontSize: '1.1em'}}>📅</span> Fecha de publicación
+          <span style={{ color: colors.secondary, fontSize: '1.1em' }}>📅</span> Fecha de publicación
         </label>
         <input
           type="date"
@@ -158,7 +159,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
           }}
         />
         <p style={styles.helperText}>
-          <span style={{color: colors.secondary}}>⏰</span>
+          <span style={{ color: colors.secondary }}>⏰</span>
           Puedes programar la publicación para una fecha futura.
         </p>
       </div>
