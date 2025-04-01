@@ -1,7 +1,8 @@
-
+/* src/index.css modificado con soporte para tema oscuro */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 :root {
+  /* Variables CSS para el tema claro */
   --primary: #0b4444;
   --primary-light: #4c7977;
   --primary-dark: #043333;
@@ -10,6 +11,9 @@
   --white: #f0f8f7;
   --text-primary: #0b4444;
   --text-secondary: #4c7977;
+  
+  /* Variables para transición */
+  --transition-speed: 0.3s;
 }
 
 * {
@@ -22,6 +26,7 @@ html, body {
   height: 100%;
   width: 100%;
   overflow-x: hidden; /* Evita scroll horizontal */
+  transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
 }
 
 body {
@@ -30,6 +35,11 @@ body {
   color: var(--text-primary);
   margin: 0;
   padding: 0;
+}
+
+.dark-mode body {
+  background-color: var(--background);
+  color: var(--text-primary);
 }
 
 #root {
@@ -77,6 +87,12 @@ img {
   box-shadow: 0 4px 15px rgba(11, 68, 68, 0.1);
   width: 100%;
   box-sizing: border-box;
+  transition: background-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.dark-mode .post-content {
+  background-color: var(--white);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 /* Estilos para botones */
@@ -84,7 +100,7 @@ button {
   background-color: var(--secondary);
   color: var(--primary);
   border: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition-speed) ease;
   cursor: pointer;
 }
 
@@ -96,7 +112,7 @@ button:hover {
 a {
   color: var(--primary);
   text-decoration: none;
-  transition: color 0.3s ease;
+  transition: color var(--transition-speed) ease;
 }
 
 a:hover {
