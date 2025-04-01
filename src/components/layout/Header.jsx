@@ -1,6 +1,6 @@
-// src/components/layout/Header.jsx con correcciones
+// src/components/layout/Header.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 
 const Header = () => {
@@ -14,12 +14,21 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   // Estado para controlar la visibilidad del menú
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Estado para controlar si el usuario está autenticado
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Usar useLocation en lugar de withRouter
+  // Usar useLocation y useNavigate de react-router-dom
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
   const userRole = 'admin'; // Opciones: 'admin', 'user', etc.
+
+  // Verificar si el usuario está autenticado cuando se carga el componente
+  useEffect(() => {
+    const token = localStorage.getItem('userToken');
+    setIsAuthenticated(!!token);
+  }, []);
 
   // Detectar scroll para efectos de navegación
   useEffect(() => {
@@ -43,6 +52,22 @@ const Header = () => {
   useEffect(() => {
     console.log('isVisible:', isVisible);
   }, [isVisible]);
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    // Eliminar el token del localStorage
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userName');
+
+    // Actualizar el estado de autenticación
+    setIsAuthenticated(false);
+
+    // Redireccionar a la página principal
+    navigate('/');
+
+    // Opcional: mostrar un mensaje de cierre de sesión exitoso
+    alert('Has cerrado sesión correctamente');
+  };
 
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
@@ -167,6 +192,22 @@ const Header = () => {
         backgroundColor: colors.primary,
         color: colors.white
       }
+    },
+    logoutButton: {
+      padding: `${spacing.sm} ${spacing.md}`,
+      backgroundColor: colors.secondary, // Color diferente para distinguirlo
+      color: colors.white,
+      border: "none",
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.medium,
+      cursor: "pointer",
+      transition: transitions.default,
+      marginLeft: spacing.md,
+      '&:hover': {
+        backgroundColor: colors.primary,
+        color: colors.white
+      }
     }
   };
 
@@ -242,10 +283,11 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Botón de inicio de sesión */}
-          <Link to="/login">
+          {/* Botón condicional: Inicio de Sesión o Cerrar Sesión */}
+          {isAuthenticated ? (
             <button
-              style={styles.loginButton}
+              style={styles.logoutButton}
+              onClick={handleLogout}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.primary;
                 e.currentTarget.style.color = colors.white;
@@ -255,9 +297,25 @@ const Header = () => {
                 e.currentTarget.style.color = colors.primary;
               }}
             >
-              Inicio de Sesión
+              Cerrar Sesión
             </button>
-          </Link>
+          ) : (
+            <Link to="/login">
+              <button
+                style={styles.loginButton}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.primary;
+                  e.currentTarget.style.color = colors.white;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.secondary;
+                  e.currentTarget.style.color = colors.primary;
+                }}
+              >
+                Inicio de Sesión
+              </button>
+            </Link>
+          )}
 
           <div
             style={{
@@ -279,6 +337,13 @@ const Header = () => {
             <a href="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</a>
             <a href="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</a>
             <a href="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</a>
+            {isAuthenticated && (
+              <a href="#" style={styles.menuItem} onClick={(e) => {
+                e.preventDefault();
+                handleLogout();
+                setIsMenuOpen(false);
+              }}>Cerrar Sesión</a>
+            )}
           </div>
         </div>
       </header>
