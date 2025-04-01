@@ -48,7 +48,8 @@ const Footer = () => {
       marginBottom: spacing.md,
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.bold,
-      color: colors.white
+      color: colors.white,
+      cursor: "pointer" // Add cursor pointer for button-like behavior
     },
     logoIcon: {
       marginRight: spacing.sm,
@@ -201,7 +202,12 @@ const Footer = () => {
         <div style={styles.grid}>
           {/* About Section */}
           <div>
-            <div style={styles.logo}>
+            <div 
+              style={styles.logo} 
+              onClick={() => (window.location.href = "/")} // Redirect to homepage
+              onMouseEnter={(e) => (e.currentTarget.style.color = colors.secondary)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = colors.white)}
+            >
               <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
               EducStation
             </div>
