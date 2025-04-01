@@ -12,6 +12,11 @@
   --text-primary: #0b4444;
   --text-secondary: #4c7977;
   
+  /* Tonos de gris para compatibilidad */
+  --gray100: #e1e7e6;
+  --gray200: #c4d0ce;
+  --gray300: #a7b9b6;
+  
   /* Variables para transición */
   --transition-speed: 0.3s;
 }

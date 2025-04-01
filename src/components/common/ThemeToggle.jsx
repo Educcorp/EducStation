@@ -1,7 +1,7 @@
 // src/components/common/ThemeToggle.jsx
 import React, { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { transitions, getThemeColors } from '../../styles/theme';
+import { transitions, getThemeColors, colors } from '../../styles/theme';
 
 const ThemeToggle = ({ inMenu = false }) => {
   const { isDarkMode, toggleTheme } = useTheme();

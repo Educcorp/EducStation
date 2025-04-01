@@ -137,3 +137,6 @@ export const applyHoverStyles = (styleObj) => {
   }
   return newStyles;
 };
+
+// Para mantener compatibilidad con el código existente, también exportamos lightColors como colors
+export const colors = lightColors;

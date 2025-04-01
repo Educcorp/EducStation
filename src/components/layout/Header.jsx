@@ -1,7 +1,7 @@
 // src/components/layout/Header.jsx con modo oscuro
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { spacing, typography, borderRadius, transitions, getThemeColors, getThemeShadows } from '../../styles/theme';
+import { spacing, typography, borderRadius, transitions, getThemeColors, getThemeShadows, colors } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
 import ThemeToggle from '../common/ThemeToggle';
 
