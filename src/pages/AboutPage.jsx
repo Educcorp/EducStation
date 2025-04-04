@@ -257,24 +257,6 @@ const AboutPage = () => {
         
         <div style={styles.container}>
           {/* Stats Section */}
-          <section style={styles.stats}>
-            <div style={styles.statItem}>
-              <div style={styles.statNumber}>7</div>
-              <div style={styles.statLabel}>Administradores</div>
-            </div>
-            <div style={styles.statItem}>
-              <div style={styles.statNumber}>0</div>
-              <div style={styles.statLabel}>Artículos</div>
-            </div>
-            <div style={styles.statItem}>
-              <div style={styles.statNumber}>0</div>
-              <div style={styles.statLabel}>Visitantes</div>
-            </div>
-            <div style={styles.statItem}>
-              <div style={styles.statNumber}>0</div>
-              <div style={styles.statLabel}>Alumnos</div>
-            </div>
-          </section>
           
           {/* Historia Section */}
           <section style={styles.section}>
