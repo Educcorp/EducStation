@@ -17,7 +17,7 @@ const MarkdownPreview = ({ content }) => {
       '& p': {
         marginBottom: spacing.md
       },
-      '& h1': {
+      '& h11': {
         fontSize: '1.8em',
         fontWeight: 'bold',
         marginBottom: spacing.md,
