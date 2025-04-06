@@ -1,8 +1,21 @@
 // src/components/admin/SimpleEditorToolbar.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
 
 const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
+  // Estado para manejar la selección de tamaño de texto
+  const [fontSize, setFontSize] = useState(16); // Tamaño por defecto
+  
+  // Función para incrementar o decrementar el tamaño de fuente
+  const changeFontSize = (increment) => {
+    const newSize = fontSize + increment;
+    // Limitar el tamaño entre 8 y 72px
+    if (newSize >= 8 && newSize <= 72) {
+      setFontSize(newSize);
+      onFormatText('fontSize', `${newSize}px`);
+    }
+  };
+
   const styles = {
     toolbar: {
       display: 'flex',
@@ -37,12 +50,43 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       '&:hover': {
         backgroundColor: colors.gray100
       }
-    })
+    }),
+    iconImage: {
+      width: '18px',
+      height: '18px',
+      objectFit: 'contain'
+    },
+    fontSizeControls: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xxs
+    },
+    fontSizeButton: {
+      background: 'none',
+      border: 'none',
+      borderRadius: borderRadius.sm,
+      padding: spacing.xs,
+      cursor: 'pointer',
+      color: colors.textPrimary,
+      transition: 'all 0.2s ease',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      '&:hover': {
+        backgroundColor: colors.gray100
+      }
+    },
+    fontSizeDisplay: {
+      fontSize: typography.fontSize.sm,
+      color: colors.textPrimary,
+      width: '28px',
+      textAlign: 'center'
+    }
   };
 
   return (
     <div style={styles.toolbar}>
-      {/* Text formatting */}
+      {/* Grupo de formato de texto */}
       <div style={styles.group}>
         <button 
           type="button"
@@ -79,35 +123,32 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
         </button>
       </div>
 
-      {/* Headings */}
+      {/* Grupo de tamaño de texto - Reemplaza a los encabezados */}
       <div style={styles.group}>
-        <button 
-          type="button"
-          style={{...styles.button(activeFormats.h1)}}
-          onClick={() => onFormatText('h1')}
-          title="Encabezado 1"
-        >
-          H1
-        </button>
-        <button 
-          type="button"
-          style={{...styles.button(activeFormats.h2)}}
-          onClick={() => onFormatText('h2')}
-          title="Encabezado 2"
-        >
-          H2
-        </button>
-        <button 
-          type="button"
-          style={{...styles.button(activeFormats.h3)}}
-          onClick={() => onFormatText('h3')}
-          title="Encabezado 3"
-        >
-          H3
-        </button>
+        <div style={styles.fontSizeControls}>
+          <button 
+            type="button"
+            style={styles.fontSizeButton}
+            onClick={() => changeFontSize(-1)}
+            title="Reducir tamaño de texto"
+          >
+            <span style={{ fontSize: '14px' }}>A-</span>
+          </button>
+          
+          <span style={styles.fontSizeDisplay}>{fontSize}px</span>
+          
+          <button 
+            type="button"
+            style={styles.fontSizeButton}
+            onClick={() => changeFontSize(1)}
+            title="Aumentar tamaño de texto"
+          >
+            <span style={{ fontSize: '18px' }}>A+</span>
+          </button>
+        </div>
       </div>
 
-      {/* Lists */}
+      {/* Grupo de listas */}
       <div style={styles.group}>
         <button 
           type="button"
@@ -127,7 +168,7 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
         </button>
       </div>
 
-      {/* Text color and link */}
+      {/* Grupo de color de texto y enlace */}
       <div style={styles.group}>
         <button 
           type="button"
@@ -143,11 +184,11 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
           onClick={() => onFormatText('link')}
           title="Insertar enlace"
         >
-          <img src="/assets/images/icons/LINK_icon.png" alt="Cursiva" style={styles.iconImage} />
+          <img src="/assets/images/icons/LINK_icon.png" alt="Enlace" style={styles.iconImage} />
         </button>
       </div>
 
-      {/* Insert image */}
+      {/* Grupo de insertar imagen */}
       <div style={styles.group}>
         <button 
           type="button"
@@ -155,7 +196,7 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
           onClick={() => onFormatText('image')}
           title="Insertar imagen"
         >
-        <img src="/assets/images/icons/IMG_icon.png" alt="Cursiva" style={styles.iconImage} />
+          <img src="/assets/images/icons/IMG_icon.png" alt="Imagen" style={styles.iconImage} />
         </button>
       </div>
     </div>

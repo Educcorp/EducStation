@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import SimpleEditorToolbar from './SimpleEditorToolbar';
+import FloatingToolbar from './FloatingToolbar'; // Importamos nuestra nueva barra flotante
 
 const SimpleEditor = ({ content, onChange }) => {
   const editorRef = useRef(null);
@@ -138,6 +139,22 @@ const SimpleEditor = ({ content, onChange }) => {
           break;
         case 'orderedList':
           document.execCommand('insertOrderedList', false, null);
+          break;
+        case 'fontSize':
+          // Manejo especial para tamaño de fuente
+          document.execCommand('fontSize', false, '7'); // Usamos 7 como valor temporal
+          
+          // Después modificamos los elementos con fontSize=7 para usar el valor real
+          const selection = window.getSelection();
+          if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            const fontElements = document.querySelectorAll('font[size="7"]');
+            
+            fontElements.forEach(element => {
+              element.removeAttribute('size');
+              element.style.fontSize = value;
+            });
+          }
           break;
         default:
           // For basic formatting (bold, italic, underline)
@@ -308,10 +325,17 @@ const SimpleEditor = ({ content, onChange }) => {
 
   return (
     <div style={styles.container}>
-      {/* Toolbar */}
+      {/* Barra de herramientas estática */}
       <SimpleEditorToolbar 
         onFormatText={applyFormat}
         activeFormats={activeFormats} 
+      />
+      
+      {/* Barra de herramientas flotante (nueva) */}
+      <FloatingToolbar 
+        onFormatText={applyFormat}
+        activeFormats={activeFormats}
+        editorRef={editorRef}
       />
       
       {/* Placeholder text when editor is empty */}
