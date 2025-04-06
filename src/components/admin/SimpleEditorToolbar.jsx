@@ -204,10 +204,6 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {}, fontSize, setFo
         backgroundColor: 'rgba(43, 87, 154, 0.1)'
       }
     },
-    caret: {
-      marginLeft: '2px',
-      fontSize: '10px'
-    },
     incrementButton: {
       background: 'none',
       border: 'none',
@@ -290,7 +286,6 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {}, fontSize, setFo
               title="Haz clic para editar el tamaño o mostrar opciones predefinidas"
             >
               {fontSize}
-              <span style={styles.caret}>▾</span>
             </button>
           )}
           

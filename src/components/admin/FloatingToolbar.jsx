@@ -78,11 +78,6 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       outline: 'none',
       backgroundColor: 'white'
     },
-    caret: {
-      marginLeft: '2px',
-      fontSize: '10px',
-      color: '#2B579A'
-    },
     fontSizeMenu: {
       position: 'absolute',
       top: '100%',
@@ -425,17 +420,8 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
               style={styles.fontSizeButton}
               onClick={enableFontSizeEditing} // Al hacer clic directo, abre el editor de tamaño personalizado
               onDoubleClick={() => setShowFontSizeMenu(!showFontSizeMenu)} // Doble clic muestra el menú
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-                e.currentTarget.style.borderColor = '#2B579A';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.borderColor = '#e1e7e6';
-              }}
             >
               {fontSize}
-              <span style={styles.caret}>▾</span>
             </button>
             
             {/* Menú desplegable con tamaños predefinidos */}
