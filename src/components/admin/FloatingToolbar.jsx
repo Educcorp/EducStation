@@ -135,10 +135,28 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   };
 
   // Función para verificar la selección de texto
-  const checkSelection = () => {
+  const checkSelection = (event) => {
     try {
       const selection = window.getSelection();
-      
+
+      // Evitar ocultar la barra si estamos interactuando con elementos de la barra
+      if (
+        toolbarRef.current &&
+        (toolbarRef.current.contains(document.activeElement) ||
+         (event && toolbarRef.current.contains(event.target)))
+      ) {
+        return;
+      }
+
+      // Prevent hiding the toolbar if interacting with the font size menu
+      if (
+        fontSizeMenuRef.current &&
+        (fontSizeMenuRef.current.contains(document.activeElement) ||
+         (selection.anchorNode && fontSizeMenuRef.current.contains(selection.anchorNode)))
+      ) {
+        return;
+      }
+
       if (!selection || selection.isCollapsed || !editorRef.current) {
         setVisible(false);
         setShowFontSizeMenu(false);
