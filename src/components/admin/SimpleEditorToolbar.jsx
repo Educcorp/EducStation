@@ -7,9 +7,12 @@ const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72
 
 const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
   // Estado para manejar la selección de tamaño de texto
-  const [fontSize, setFontSize] = useState(16); // Tamaño por defecto
+  const [fontSize, setFontSize] = useState(12); // Tamaño por defecto cambiado a 12
+  const [customFontSize, setCustomFontSize] = useState('');
+  const [isEditingFontSize, setIsEditingFontSize] = useState(false);
   const [showFontSizeMenu, setShowFontSizeMenu] = useState(false);
   const fontSizeMenuRef = useRef(null);
+  const customFontInputRef = useRef(null);
   
   // Cerrar el menú cuando se hace clic fuera
   useEffect(() => {
@@ -30,6 +33,33 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
     setFontSize(size);
     onFormatText('fontSize', `${size}px`);
     setShowFontSizeMenu(false);
+    setIsEditingFontSize(false);
+  };
+  
+  // Maneja la entrada de texto para tamaño personalizado
+  const handleCustomFontSizeChange = (e) => {
+    // Solo permitir números y un punto decimal
+    const value = e.target.value.replace(/[^0-9.]/g, '');
+    // Evitar múltiples puntos decimales
+    if (value.split('.').length > 2) return;
+    
+    setCustomFontSize(value);
+  };
+
+  // Maneja cuando el usuario confirma un tamaño personalizado
+  const handleCustomFontSizeSubmit = (e) => {
+    e.preventDefault();
+    
+    if (customFontSize) {
+      const size = parseFloat(customFontSize);
+      // Validar que sea un número y esté en un rango razonable
+      if (!isNaN(size) && size >= 1 && size <= 500) {
+        setFontSize(size);
+        applyFontSize(size);
+      }
+    }
+    
+    setIsEditingFontSize(false);
   };
   
   // Incrementar/decrementar tamaño de fuente
@@ -45,6 +75,21 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       setFontSize(newSize);
       onFormatText('fontSize', `${newSize}px`);
     }
+  };
+  
+  // Activar el modo de edición de tamaño personalizado
+  const enableFontSizeEditing = () => {
+    setIsEditingFontSize(true);
+    setCustomFontSize(fontSize.toString());
+    setShowFontSizeMenu(false);
+    
+    // Enfocar el input después de que se haya renderizado
+    setTimeout(() => {
+      if (customFontInputRef.current) {
+        customFontInputRef.current.focus();
+        customFontInputRef.current.select();
+      }
+    }, 50);
   };
 
   const styles = {
@@ -90,13 +135,13 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
     },
     fontSizeButton: {
       background: 'none',
-      border: 'none',
+      border: '1px solid #e1e7e6',
       borderRadius: borderRadius.sm,
       padding: `${spacing.xxs} ${spacing.xs}`,
       margin: `0 ${spacing.xxs}`,
       fontSize: typography.fontSize.sm,
       cursor: 'pointer',
-      color: colors.textPrimary,
+      color: '#333333', // Color más oscuro para mejor legibilidad
       display: 'flex',
       alignItems: 'center',
       transition: 'all 0.2s ease',
@@ -110,12 +155,23 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       minWidth: '30px',
       textAlign: 'center'
     },
+    fontSizeInput: {
+      width: '40px',
+      border: '1px solid #2B579A',
+      borderRadius: '4px',
+      padding: '4px',
+      fontSize: '13px',
+      color: '#333333',
+      textAlign: 'center',
+      outline: 'none',
+      backgroundColor: 'white',
+    },
     fontSizeMenu: {
       position: 'absolute',
       top: '100%',
       left: '0',
       backgroundColor: 'white',
-      border: '1px solid #e1e7e6',
+      border: '1px solid #cccccc',
       borderRadius: '4px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
       maxHeight: '300px',
@@ -131,9 +187,27 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       userSelect: 'none',
       transition: 'background-color 0.2s',
       textAlign: 'center',
+      color: '#333333', // Color más oscuro para mejor legibilidad
       '&:hover': {
         backgroundColor: 'rgba(43, 87, 154, 0.1)'
       }
+    },
+    customOption: {
+      borderTop: '1px solid #e1e7e6', 
+      fontStyle: 'italic',
+      padding: '6px 12px',
+      cursor: 'pointer',
+      userSelect: 'none',
+      textAlign: 'center',
+      color: '#2B579A',
+      '&:hover': {
+        backgroundColor: 'rgba(43, 87, 154, 0.1)'
+      }
+    },
+    caret: {
+      marginLeft: '2px',
+      fontSize: '10px',
+      color: '#2B579A'
     },
     caret: {
       marginLeft: '2px',
@@ -198,16 +272,32 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       {/* Grupo de tamaño de texto */}
       <div style={styles.group}>
         <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
-          {/* Selector de tamaño con desplegable */}
-          <button
-            type="button"
-            style={styles.fontSizeButton}
-            onClick={() => setShowFontSizeMenu(!showFontSizeMenu)}
-            title="Tamaño de fuente"
-          >
-            {fontSize}
-            <span style={styles.caret}>▾</span>
-          </button>
+          {isEditingFontSize ? (
+            /* Campo de entrada para tamaño personalizado */
+            <form onSubmit={handleCustomFontSizeSubmit} style={{ display: 'flex', margin: '0 2px' }}>
+              <input
+                ref={customFontInputRef}
+                type="text"
+                value={customFontSize}
+                onChange={handleCustomFontSizeChange}
+                onBlur={handleCustomFontSizeSubmit}
+                style={styles.fontSizeInput}
+                title="Ingresa un tamaño personalizado"
+              />
+            </form>
+          ) : (
+            /* Selector de tamaño con desplegable */
+            <button
+              type="button"
+              style={styles.fontSizeButton}
+              onClick={enableFontSizeEditing} // Al hacer clic directo, abre el editor de tamaño personalizado
+              onDoubleClick={() => setShowFontSizeMenu(!showFontSizeMenu)} // Doble clic muestra el menú
+              title="Haz clic para editar el tamaño o mostrar opciones predefinidas"
+            >
+              {fontSize}
+              <span style={styles.caret}>▾</span>
+            </button>
+          )}
           
           {/* Menú desplegable */}
           <div 
@@ -229,6 +319,13 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
                 {size}
               </div>
             ))}
+            {/* Opción de tamaño personalizado */}
+            <div
+              style={styles.customOption}
+              onClick={enableFontSizeEditing}
+            >
+              Personalizado
+            </div>
           </div>
           
           {/* Controles de incremento/decremento */}

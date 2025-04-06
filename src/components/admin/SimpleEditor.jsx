@@ -141,19 +141,26 @@ const SimpleEditor = ({ content, onChange }) => {
           document.execCommand('insertOrderedList', false, null);
           break;
         case 'fontSize':
-          // Manejo especial para tamaño de fuente
-          document.execCommand('fontSize', false, '7'); // Usamos 7 como valor temporal
-          
-          // Después modificamos los elementos con fontSize=7 para usar el valor real
-          const selection = window.getSelection();
-          if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            const fontElements = document.querySelectorAll('font[size="7"]');
+          // Aplicar el tamaño de fuente usando el elemento span
+          if (value) {
+            // Crear un span con el estilo de tamaño de fuente
+            const size = parseFloat(value);
+            document.execCommand('fontSize', false, '7'); // Usamos 7 como valor temporal
             
-            fontElements.forEach(element => {
-              element.removeAttribute('size');
-              element.style.fontSize = value;
-            });
+            // Después modificamos los elementos con fontSize=7 para usar el valor real
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+              const fontElements = document.querySelectorAll('font[size="7"]');
+              
+              fontElements.forEach(element => {
+                element.removeAttribute('size');
+                element.style.fontSize = value;
+              });
+            }
+            
+            // Notificar a las barras de herramientas sobre el cambio
+            // para mantener la sincronización
+            checkActiveFormats();
           }
           break;
         default:
@@ -323,6 +330,14 @@ const SimpleEditor = ({ content, onChange }) => {
     }
   };
 
+  // Initialize content with default font size
+  useEffect(() => {
+    if (editorRef.current && !content) {
+      // Si el contenido está vacío, establecer el tamaño de fuente predeterminado
+      editorRef.current.style.fontSize = '12px';
+    }
+  }, [content]);
+
   return (
     <div style={styles.container}>
       {/* Barra de herramientas estática */}
@@ -348,7 +363,7 @@ const SimpleEditor = ({ content, onChange }) => {
       {/* Editable content area */}
       <div
         ref={editorRef}
-        style={styles.editor}
+        style={{...styles.editor, fontSize: '12px' }} // Establecer tamaño predeterminado
         onInput={handleContentChange}
         onBlur={handleContentChange}
         onKeyDown={handleKeyDown}

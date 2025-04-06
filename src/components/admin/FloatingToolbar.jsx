@@ -6,11 +6,17 @@ const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72
 // FloatingToolbar - Barra de herramientas flotante para edición de texto
 // Aparece cuando se selecciona texto en el editor
 const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
+  // Estados del componente
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [showFontSizeMenu, setShowFontSizeMenu] = useState(false);
+  const [customFontSize, setCustomFontSize] = useState('');
+  const [isEditingFontSize, setIsEditingFontSize] = useState(false);
+  
+  // Referencias
   const toolbarRef = useRef(null);
   const fontSizeMenuRef = useRef(null);
+  const customFontInputRef = useRef(null);
   
   // Estilos para la barra de herramientas
   const styles = {
@@ -53,29 +59,43 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       display: 'flex',
       alignItems: 'center',
       background: 'none',
-      border: 'none',
+      border: '1px solid #e1e7e6',
       borderRadius: '4px',
-      padding: '6px 8px',
+      padding: '4px 8px',
       margin: '0 2px',
       fontSize: '13px',
       cursor: 'pointer',
-      color: '#4c7977',
+      color: '#333333', // Color más oscuro para mejor legibilidad
+      fontWeight: 'normal',
       transition: 'all 0.2s ease',
       position: 'relative',
       '&:hover': {
-        backgroundColor: 'rgba(43, 87, 154, 0.1)'
+        backgroundColor: 'rgba(43, 87, 154, 0.1)',
+        borderColor: '#2B579A'
       }
+    },
+    fontSizeInput: {
+      width: '40px',
+      border: '1px solid #2B579A',
+      borderRadius: '4px',
+      padding: '4px',
+      fontSize: '13px',
+      color: '#333333',
+      textAlign: 'center',
+      outline: 'none',
+      backgroundColor: 'white',
     },
     caret: {
       marginLeft: '2px',
-      fontSize: '10px'
+      fontSize: '10px',
+      color: '#2B579A'
     },
     fontSizeMenu: {
       position: 'absolute',
       top: '100%',
       left: '0',
       backgroundColor: 'white',
-      border: '1px solid #e1e7e6',
+      border: '1px solid #cccccc',
       borderRadius: '4px',
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
       maxHeight: '300px',
@@ -91,6 +111,19 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       userSelect: 'none',
       transition: 'background-color 0.2s',
       textAlign: 'center',
+      color: '#333333', // Color más oscuro para mejor legibilidad
+      '&:hover': {
+        backgroundColor: 'rgba(43, 87, 154, 0.1)'
+      }
+    },
+    customOption: {
+      borderTop: '1px solid #e1e7e6', 
+      fontStyle: 'italic',
+      padding: '6px 12px',
+      cursor: 'pointer',
+      userSelect: 'none',
+      textAlign: 'center',
+      color: '#2B579A',
       '&:hover': {
         backgroundColor: 'rgba(43, 87, 154, 0.1)'
       }
@@ -216,7 +249,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
   // Función para obtener el tamaño de fuente actual
   const getCurrentFontSize = () => {
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) return 12; // Valor por defecto
+    if (!selection || selection.isCollapsed) return 12; // Valor por defecto cambiado a 12
     
     try {
       const range = selection.getRangeAt(0);
@@ -236,7 +269,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       
       return closestPreset || 12; // Devolver 12 como valor por defecto si no se puede determinar
     } catch (error) {
-      return 12; // Valor por defecto
+      return 12; // Valor por defecto cambiado a 12
     }
   };
 
@@ -244,6 +277,32 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
   const applyFontSize = (size) => {
     onFormatText('fontSize', `${size}px`);
     setShowFontSizeMenu(false);
+    setIsEditingFontSize(false);
+  };
+
+  // Maneja la entrada de texto para tamaño personalizado
+  const handleCustomFontSizeChange = (e) => {
+    // Solo permitir números y un punto decimal
+    const value = e.target.value.replace(/[^0-9.]/g, '');
+    // Evitar múltiples puntos decimales
+    if (value.split('.').length > 2) return;
+    
+    setCustomFontSize(value);
+  };
+
+  // Maneja cuando el usuario confirma un tamaño personalizado
+  const handleCustomFontSizeSubmit = (e) => {
+    e.preventDefault();
+    
+    if (customFontSize) {
+      const size = parseFloat(customFontSize);
+      // Validar que sea un número y esté en un rango razonable
+      if (!isNaN(size) && size >= 1 && size <= 500) {
+        applyFontSize(size);
+      }
+    }
+    
+    setIsEditingFontSize(false);
   };
 
   // Incrementar/decrementar tamaño de fuente
@@ -256,6 +315,21 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
     } else if (!increment && currentIndex > 0) {
       applyFontSize(FONT_SIZES[currentIndex - 1]);
     }
+  };
+  
+  // Activar el modo de edición de tamaño personalizado
+  const enableFontSizeEditing = () => {
+    setIsEditingFontSize(true);
+    setCustomFontSize(getCurrentFontSize().toString());
+    setShowFontSizeMenu(false);
+    
+    // Enfocar el input después de que se haya renderizado
+    setTimeout(() => {
+      if (customFontInputRef.current) {
+        customFontInputRef.current.focus();
+        customFontInputRef.current.select();
+      }
+    }, 50);
   };
 
   // Detectar cambios en la selección
@@ -329,42 +403,65 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       
       <div style={styles.separator} />
       
-      {/* Selector de tamaño de fuente tipo Word */}
+      {/* Selector de tamaño de fuente tipo Word con opción personalizada */}
       <div style={styles.sizeControls}>
-        {/* Botón de tamaño actual con desplegable */}
-        <div style={{ position: 'relative' }}>
-          <button
-            type="button"
-            title="Tamaño de fuente"
-            style={styles.fontSizeButton}
-            onClick={() => setShowFontSizeMenu(!showFontSizeMenu)}
-          >
-            {getCurrentFontSize()}
-            <span style={styles.caret}>▾</span>
-          </button>
-          
-          {/* Menú desplegable con tamaños predefinidos */}
-          <div 
-            ref={fontSizeMenuRef}
-            style={styles.fontSizeMenu}
-          >
-            {FONT_SIZES.map(size => (
+        {isEditingFontSize ? (
+          /* Campo de entrada para tamaño personalizado */
+          <form onSubmit={handleCustomFontSizeSubmit} style={{ display: 'flex', margin: '0 2px' }}>
+            <input
+              ref={customFontInputRef}
+              type="text"
+              value={customFontSize}
+              onChange={handleCustomFontSizeChange}
+              onBlur={handleCustomFontSizeSubmit}
+              style={styles.fontSizeInput}
+              title="Ingresa un tamaño personalizado"
+            />
+          </form>
+        ) : (
+          /* Botón de tamaño actual con desplegable */
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              title="Haz clic para editar el tamaño o mostrar opciones predefinidas"
+              style={styles.fontSizeButton}
+              onClick={enableFontSizeEditing} // Al hacer clic directo, abre el editor de tamaño personalizado
+              onDoubleClick={() => setShowFontSizeMenu(!showFontSizeMenu)} // Doble clic muestra el menú
+            >
+              {getCurrentFontSize()}
+              <span style={styles.caret}>▾</span>
+            </button>
+            
+            {/* Menú desplegable con tamaños predefinidos */}
+            <div 
+              ref={fontSizeMenuRef}
+              style={styles.fontSizeMenu}
+            >
+              {FONT_SIZES.map(size => (
+                <div
+                  key={size}
+                  style={{
+                    ...styles.fontSizeItem,
+                    backgroundColor: getCurrentFontSize() === size 
+                      ? 'rgba(43, 87, 154, 0.1)' 
+                      : 'transparent',
+                    fontWeight: getCurrentFontSize() === size ? 'bold' : 'normal'
+                  }}
+                  onClick={() => applyFontSize(size)}
+                >
+                  {size}
+                </div>
+              ))}
+              {/* Opción de tamaño personalizado */}
               <div
-                key={size}
-                style={{
-                  ...styles.fontSizeItem,
-                  backgroundColor: getCurrentFontSize() === size 
-                    ? 'rgba(43, 87, 154, 0.1)' 
-                    : 'transparent',
-                  fontWeight: getCurrentFontSize() === size ? 'bold' : 'normal'
-                }}
-                onClick={() => applyFontSize(size)}
+                style={styles.customOption}
+                onClick={enableFontSizeEditing}
               >
-                {size}
+                Personalizado
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        )}
         
         {/* Controles de incremento/decremento */}
         <div>
