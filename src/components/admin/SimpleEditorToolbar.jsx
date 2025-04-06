@@ -36,7 +36,33 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {}, fontSize, setFo
   
   // Función para aplicar un tamaño de fuente específico
   const applyFontSize = (size) => {
-    setFontSize(size); // Usar la función proporcionada por el componente padre
+    const selection = window.getSelection();
+    const ranges = [];
+    
+    // Recolectar todos los rangos seleccionados
+    for (let i = 0; i < selection.rangeCount; i++) {
+      ranges.push(selection.getRangeAt(i));
+    }
+    
+    // Aplicar el tamaño a cada rango
+    ranges.forEach(range => {
+      const span = document.createElement('span');
+      span.style.fontSize = `${size}px`;
+      
+      // Si el rango está vacío (solo cursor), prepararlo para el siguiente texto
+      if (range.collapsed) {
+        range.insertNode(span);
+        range.selectNodeContents(span);
+        range.collapse(true);
+      } else {
+        // Envolver el contenido seleccionado con el nuevo tamaño
+        const content = range.extractContents();
+        span.appendChild(content);
+        range.insertNode(span);
+      }
+    });
+
+    setFontSize(size);
     setShowFontSizeMenu(false);
     setIsEditingFontSize(false);
   };
@@ -68,12 +94,66 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {}, fontSize, setFo
   
   // Incrementar/decrementar tamaño de fuente
   const changeFontSize = (increment) => {
-    const currentIndex = FONT_SIZES.indexOf(fontSize);
+    const selection = window.getSelection();
+    const ranges = [];
     
-    if (increment && currentIndex < FONT_SIZES.length - 1) {
-      applyFontSize(FONT_SIZES[currentIndex + 1]);
-    } else if (!increment && currentIndex > 0) {
-      applyFontSize(FONT_SIZES[currentIndex - 1]);
+    // Recolectar todos los rangos y sus tamaños actuales
+    for (let i = 0; i < selection.rangeCount; i++) {
+      const range = selection.getRangeAt(i);
+      let currentSize = fontSize;
+      
+      // Intentar obtener el tamaño actual del texto seleccionado
+      if (!range.collapsed) {
+        const span = range.commonAncestorContainer;
+        const computedStyle = window.getComputedStyle(span.nodeType === 3 ? span.parentNode : span);
+        const currentFontSize = parseFloat(computedStyle.fontSize);
+        if (!isNaN(currentFontSize)) {
+          currentSize = currentFontSize;
+        }
+      }
+      
+      ranges.push({ range, currentSize });
+    }
+    
+    // Aplicar el cambio a cada rango
+    ranges.forEach(({ range, currentSize }) => {
+      let newSize;
+      const currentIndex = FONT_SIZES.indexOf(currentSize);
+      
+      if (increment) {
+        // Si el tamaño actual no está en la lista, encontrar el siguiente más grande
+        if (currentIndex === -1) {
+          newSize = FONT_SIZES.find(size => size > currentSize) || FONT_SIZES[FONT_SIZES.length - 1];
+        } else {
+          newSize = FONT_SIZES[Math.min(currentIndex + 1, FONT_SIZES.length - 1)];
+        }
+      } else {
+        // Si el tamaño actual no está en la lista, encontrar el anterior más pequeño
+        if (currentIndex === -1) {
+          newSize = FONT_SIZES.find(size => size < currentSize) || FONT_SIZES[0];
+        } else {
+          newSize = FONT_SIZES[Math.max(currentIndex - 1, 0)];
+        }
+      }
+      
+      const span = document.createElement('span');
+      span.style.fontSize = `${newSize}px`;
+      
+      if (range.collapsed) {
+        range.insertNode(span);
+        range.selectNodeContents(span);
+        range.collapse(true);
+      } else {
+        const content = range.extractContents();
+        span.appendChild(content);
+        range.insertNode(span);
+      }
+    });
+    
+    // Actualizar el estado con el último tamaño aplicado
+    const lastRange = ranges[ranges.length - 1];
+    if (lastRange) {
+      setFontSize(lastRange.currentSize);
     }
   };
   
