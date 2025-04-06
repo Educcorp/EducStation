@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
-import SimpleEditorToolbar from './SimpleEditorToolbar';
 import FloatingToolbar from './FloatingToolbar';
 
 const SimpleEditor = ({ content, onChange }) => {
@@ -99,7 +98,7 @@ const SimpleEditor = ({ content, onChange }) => {
           currentNode = currentNode.parentNode;
         }
         
-        // NUEVO: Obtener el tamaño de fuente actual
+        // Obtener el tamaño de fuente actual
         const computedStyle = window.getComputedStyle(element);
         const fontSize = parseInt(computedStyle.fontSize);
         if (fontSize && !isNaN(fontSize)) {
@@ -313,8 +312,15 @@ const SimpleEditor = ({ content, onChange }) => {
       }
     }
   };
+  
+  // Mostrar la barra flotante al hacer clic en el editor
+  const handleEditorClick = () => {
+    // Este evento será capturado por FloatingToolbar 
+    // pero añadimos la función aquí para dar feedback visual si es necesario
+    editorRef.current?.focus();
+  };
 
-  // Styles for the editor
+  // Estilos para el editor
   const styles = {
     container: {
       position: 'relative',
@@ -325,20 +331,22 @@ const SimpleEditor = ({ content, onChange }) => {
     },
     editor: {
       width: '100%',
-      height: 'calc(100% - 40px)', // Account for toolbar height
+      height: '100%', // Aprovechamos toda la altura disponible al eliminar la barra estática
       padding: spacing.xl,
       outline: 'none',
       overflow: 'auto',
       color: colors.textPrimary,
       fontFamily: typography.fontFamily,
       fontSize: typography.fontSize.md,
-      lineHeight: 1.6
+      lineHeight: 1.6,
+      transition: 'box-shadow 0.2s ease',
+      cursor: 'text',
+      minHeight: '600px' // Garantizamos una altura mínima adecuada
     },
     placeholder: {
       position: 'absolute',
-      top: '40px', // Below toolbar
+      top: spacing.xl,
       left: spacing.xl,
-      padding: spacing.xl,
       color: colors.gray300,
       pointerEvents: 'none'
     }
@@ -354,15 +362,7 @@ const SimpleEditor = ({ content, onChange }) => {
 
   return (
     <div style={styles.container}>
-      {/* Barra de herramientas estática */}
-      <SimpleEditorToolbar 
-        onFormatText={applyFormat}
-        activeFormats={activeFormats}
-        fontSize={currentFontSize}
-        setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
-      />
-      
-      {/* Barra de herramientas flotante */}
+      {/* Barra de herramientas flotante - ahora es la única barra */}
       <FloatingToolbar 
         onFormatText={applyFormat}
         activeFormats={activeFormats}
@@ -381,11 +381,14 @@ const SimpleEditor = ({ content, onChange }) => {
       {/* Editable content area */}
       <div
         ref={editorRef}
-        style={{...styles.editor, fontSize: '12px' }} // Establecer tamaño predeterminado
+        style={{...styles.editor, fontSize: '12px' }}
         onInput={handleContentChange}
         onBlur={handleContentChange}
         onKeyDown={handleKeyDown}
-        onClick={checkActiveFormats}
+        onClick={(e) => {
+          handleEditorClick();
+          checkActiveFormats();
+        }}
         onKeyUp={checkActiveFormats}
         onMouseUp={checkActiveFormats}
         onPaste={handlePaste}

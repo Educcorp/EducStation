@@ -3,8 +3,19 @@ import React, { useState, useEffect, useRef } from 'react';
 // Tamaños de fuente predeterminados como en Word
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
 
+// Función para aplicar estilos de hover
+const getHoverStyle = (style) => {
+  if (style['&:hover']) {
+    const hoverStyle = {...style};
+    Object.assign(hoverStyle, style['&:hover']);
+    delete hoverStyle['&:hover'];
+    return hoverStyle;
+  }
+  return style;
+};
+
 // FloatingToolbar - Barra de herramientas flotante para edición de texto
-// Aparece cuando se selecciona texto en el editor
+// Aparece cuando se hace clic en el editor o se selecciona texto
 const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, setFontSize }) => {
   // Estados del componente
   const [visible, setVisible] = useState(false);
@@ -28,8 +39,8 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       alignItems: 'center',
       backgroundColor: 'white',
       borderRadius: '6px',
-      padding: '4px',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.12)',
+      padding: '6px',
+      boxShadow: '0 3px 12px rgba(0, 0, 0, 0.15)',
       transition: 'opacity 0.2s ease, transform 0.2s ease',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(10px)',
@@ -163,7 +174,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     return true;
   };
 
-  // Función para verificar la selección de texto
+  // Función para verificar la selección de texto o si el editor está activo
   const checkSelection = (event) => {
     try {
       const selection = window.getSelection();
@@ -185,43 +196,46 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       ) {
         return;
       }
-
-      if (!selection || selection.isCollapsed || !editorRef.current) {
+      
+      // Verificar si el editor está activo
+      const isEditorActive = editorRef.current === document.activeElement;
+      
+      // Verificar si tenemos una selección válida
+      const hasSelection = selection && !selection.isCollapsed && editorRef.current;
+      
+      // Si ni el editor está activo ni hay selección, ocultar la barra
+      if (!isEditorActive && !hasSelection) {
         setVisible(false);
         setShowFontSizeMenu(false);
         return;
       }
       
-      // Verificar si la selección está dentro del editor
-      const range = selection.getRangeAt(0);
-      let container = range.commonAncestorContainer;
-      
-      // Si el contenedor es un nodo de texto, obtener su elemento padre
-      if (container.nodeType === 3) {
-        container = container.parentNode;
-      }
-      
-      // Verificar si el contenedor o algún antecesor es el editor
+      // Verificar si la selección o el cursor está dentro del editor
       let isInEditor = false;
-      let current = container;
       
-      while (current && !isInEditor) {
-        if (current === editorRef.current) {
-          isInEditor = true;
+      if (isEditorActive) {
+        isInEditor = true;
+      } else if (hasSelection) {
+        const range = selection.getRangeAt(0);
+        let container = range.commonAncestorContainer;
+        
+        // Si el contenedor es un nodo de texto, obtener su elemento padre
+        if (container.nodeType === 3) {
+          container = container.parentNode;
         }
-        current = current.parentNode;
+        
+        // Verificar si el contenedor o algún antecesor es el editor
+        let current = container;
+        
+        while (current && !isInEditor) {
+          if (current === editorRef.current) {
+            isInEditor = true;
+          }
+          current = current.parentNode;
+        }
       }
       
       if (!isInEditor) {
-        setVisible(false);
-        setShowFontSizeMenu(false);
-        return;
-      }
-      
-      // La selección está dentro del editor, mostrar la barra
-      const rect = range.getBoundingClientRect();
-      
-      if (rect.width === 0) {
         setVisible(false);
         setShowFontSizeMenu(false);
         return;
@@ -233,16 +247,31 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       // Calculamos la altura de la barra (se estima en 40px si aún no está renderizada)
       const toolbarHeight = toolbarRef.current ? toolbarRef.current.offsetHeight : 40;
       
-      // Posicionar sobre la selección con un margen adecuado
-      // Colocamos la barra por encima de la línea de texto actual
-      const lineHeight = parseInt(window.getComputedStyle(editorRef.current).lineHeight) || 24;
+      let newPosition;
       
-      const newPosition = {
-        // Posicionamos la barra encima de la línea de texto con un pequeño margen
-        top: rect.top - editorRect.top - toolbarHeight - 8,
-        // Centramos horizontalmente respecto a la selección
-        left: rect.left - editorRect.left + (rect.width / 2)
-      };
+      if (hasSelection) {
+        // Si hay selección, posicionar encima de la selección
+        const rect = selection.getRangeAt(0).getBoundingClientRect();
+        
+        if (rect.width === 0) {
+          setVisible(false);
+          setShowFontSizeMenu(false);
+          return;
+        }
+        
+        newPosition = {
+          // Posicionamos la barra encima de la línea de texto con un pequeño margen
+          top: rect.top - editorRect.top - toolbarHeight - 8,
+          // Centramos horizontalmente respecto a la selección
+          left: rect.left - editorRect.left + (rect.width / 2)
+        };
+      } else {
+        // Si solo está activo el editor sin selección, posicionar en la parte superior
+        newPosition = {
+          top: 10, // Un pequeño margen desde el borde superior
+          left: editorRect.width / 2 // Centrado horizontalmente
+        };
+      }
       
       // Ajustar para que no se salga del editor
       if (toolbarRef.current) {
@@ -257,8 +286,9 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
           newPosition.left = (toolbarWidth / 2) + 10;
         }
         
-        // Si no hay espacio arriba, colocar debajo de la selección
-        if (newPosition.top < 0) {
+        // Si no hay espacio arriba, colocar debajo de la selección (para el caso de selección)
+        if (hasSelection && newPosition.top < 0) {
+          const rect = selection.getRangeAt(0).getBoundingClientRect();
           newPosition.top = rect.bottom - editorRect.top + 8;
         }
       }
@@ -358,7 +388,33 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     setShowFontSizeMenu(!showFontSizeMenu);
   };
 
-  // Detectar cambios en la selección
+  // Actualizar el estado local cuando cambia el tamaño de fuente recibido
+  useEffect(() => {
+    if (isEditingFontSize) {
+      setCustomFontSize(fontSize.toString());
+    }
+  }, [fontSize, isEditingFontSize]);
+  
+  // Mostrar la barra al hacer clic en el editor
+  useEffect(() => {
+    const handleEditorClick = () => {
+      if (editorRef.current && editorRef.current === document.activeElement) {
+        checkSelection();
+      }
+    };
+    
+    if (editorRef.current) {
+      editorRef.current.addEventListener('click', handleEditorClick);
+    }
+    
+    return () => {
+      if (editorRef.current) {
+        editorRef.current.removeEventListener('click', handleEditorClick);
+      }
+    };
+  }, [editorRef?.current]);
+
+  // Detectar cambios en la selección y en el foco del editor
   useEffect(() => {
     // No agregar event listeners si no hay editorRef
     if (!editorRef || !editorRef.current) return;
@@ -366,6 +422,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     document.addEventListener('selectionchange', checkSelection);
     editorRef.current.addEventListener('mouseup', checkSelection);
     editorRef.current.addEventListener('keyup', checkSelection);
+    editorRef.current.addEventListener('focus', checkSelection);
     
     // Limpiar event listeners
     return () => {
@@ -373,6 +430,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       if (editorRef.current) {
         editorRef.current.removeEventListener('mouseup', checkSelection);
         editorRef.current.removeEventListener('keyup', checkSelection);
+        editorRef.current.removeEventListener('focus', checkSelection);
       }
     };
   }, [editorRef?.current]);
@@ -390,24 +448,6 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-  // Actualizar el tamaño personalizado cuando cambia el tamaño de fuente
-  useEffect(() => {
-    if (isEditingFontSize) {
-      setCustomFontSize(fontSize.toString());
-    }
-  }, [fontSize]);
-
-  // Aplicar estilos de hover
-  const getHoverStyle = (style) => {
-    if (style['&:hover']) {
-      const hoverStyle = {...style};
-      Object.assign(hoverStyle, style['&:hover']);
-      delete hoverStyle['&:hover'];
-      return hoverStyle;
-    }
-    return style;
-  };
 
   return (
     <div 
@@ -650,6 +690,44 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         }}
       >
         🔗
+      </button>
+      
+      <button 
+        type="button"
+        title="Insertar imagen"
+        style={styles.button(false)}
+        onClick={() => {
+          restoreSelection();
+          onFormatText('image');
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
+      >
+        📷
+      </button>
+      
+      <button 
+        type="button"
+        title="Lista con viñetas"
+        style={activeFormats.unorderedList ? getHoverStyle(styles.button(true)) : styles.button(false)}
+        onClick={() => {
+          restoreSelection();
+          onFormatText('unorderedList');
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          if (!activeFormats.unorderedList) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }
+        }}
+      >
+        •
       </button>
     </div>
   );
