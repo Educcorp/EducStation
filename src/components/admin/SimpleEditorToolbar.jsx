@@ -1,16 +1,47 @@
 // src/components/admin/SimpleEditorToolbar.jsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { colors, spacing, typography, borderRadius } from '../../styles/theme';
+
+// Tamaños de fuente predeterminados como en Word
+const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
 
 const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
   // Estado para manejar la selección de tamaño de texto
   const [fontSize, setFontSize] = useState(16); // Tamaño por defecto
+  const [showFontSizeMenu, setShowFontSizeMenu] = useState(false);
+  const fontSizeMenuRef = useRef(null);
   
-  // Función para incrementar o decrementar el tamaño de fuente
+  // Cerrar el menú cuando se hace clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (fontSizeMenuRef.current && !fontSizeMenuRef.current.contains(event.target)) {
+        setShowFontSizeMenu(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
+  // Función para aplicar un tamaño de fuente específico
+  const applyFontSize = (size) => {
+    setFontSize(size);
+    onFormatText('fontSize', `${size}px`);
+    setShowFontSizeMenu(false);
+  };
+  
+  // Incrementar/decrementar tamaño de fuente
   const changeFontSize = (increment) => {
-    const newSize = fontSize + increment;
-    // Limitar el tamaño entre 8 y 72px
-    if (newSize >= 8 && newSize <= 72) {
+    const currentIndex = FONT_SIZES.indexOf(fontSize);
+    
+    if (increment && currentIndex < FONT_SIZES.length - 1) {
+      const newSize = FONT_SIZES[currentIndex + 1];
+      setFontSize(newSize);
+      onFormatText('fontSize', `${newSize}px`);
+    } else if (!increment && currentIndex > 0) {
+      const newSize = FONT_SIZES[currentIndex - 1];
       setFontSize(newSize);
       onFormatText('fontSize', `${newSize}px`);
     }
@@ -29,7 +60,8 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       display: 'flex',
       borderRight: `1px solid ${colors.gray200}`,
       marginRight: spacing.sm,
-      paddingRight: spacing.sm
+      paddingRight: spacing.sm,
+      alignItems: 'center'
     },
     button: (isActive) => ({
       background: 'none',
@@ -39,8 +71,8 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       margin: `0 ${spacing.xxs}`,
       fontSize: '16px',
       cursor: 'pointer',
-      color: isActive ? colors.primary : colors.textPrimary,
-      backgroundColor: isActive ? `${colors.primary}15` : 'transparent',
+      color: isActive ? '#2B579A' : colors.textPrimary,
+      backgroundColor: isActive ? 'rgba(43, 87, 154, 0.1)' : 'transparent',
       transition: 'all 0.2s ease',
       width: '32px',
       height: '32px',
@@ -48,7 +80,7 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       alignItems: 'center',
       justifyContent: 'center',
       '&:hover': {
-        backgroundColor: colors.gray100
+        backgroundColor: 'rgba(43, 87, 154, 0.1)'
       }
     }),
     iconImage: {
@@ -56,31 +88,71 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       height: '18px',
       objectFit: 'contain'
     },
-    fontSizeControls: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.xxs
-    },
     fontSizeButton: {
       background: 'none',
       border: 'none',
       borderRadius: borderRadius.sm,
-      padding: spacing.xs,
+      padding: `${spacing.xxs} ${spacing.xs}`,
+      margin: `0 ${spacing.xxs}`,
+      fontSize: typography.fontSize.sm,
       cursor: 'pointer',
       color: colors.textPrimary,
-      transition: 'all 0.2s ease',
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
+      transition: 'all 0.2s ease',
+      position: 'relative',
       '&:hover': {
-        backgroundColor: colors.gray100
+        backgroundColor: 'rgba(43, 87, 154, 0.1)'
       }
     },
     fontSizeDisplay: {
-      fontSize: typography.fontSize.sm,
-      color: colors.textPrimary,
-      width: '28px',
+      margin: `0 ${spacing.xs}`,
+      minWidth: '30px',
       textAlign: 'center'
+    },
+    fontSizeMenu: {
+      position: 'absolute',
+      top: '100%',
+      left: '0',
+      backgroundColor: 'white',
+      border: '1px solid #e1e7e6',
+      borderRadius: '4px',
+      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+      maxHeight: '300px',
+      overflow: 'auto',
+      zIndex: 1001,
+      display: showFontSizeMenu ? 'block' : 'none',
+      marginTop: '2px',
+      width: '50px'
+    },
+    fontSizeItem: {
+      padding: '6px 12px',
+      cursor: 'pointer',
+      userSelect: 'none',
+      transition: 'background-color 0.2s',
+      textAlign: 'center',
+      '&:hover': {
+        backgroundColor: 'rgba(43, 87, 154, 0.1)'
+      }
+    },
+    caret: {
+      marginLeft: '2px',
+      fontSize: '10px'
+    },
+    incrementButton: {
+      background: 'none',
+      border: 'none',
+      padding: '3px 5px',
+      cursor: 'pointer',
+      color: '#2B579A', // Color azul estilo Word
+      fontSize: '10px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '3px',
+      '&:hover': {
+        backgroundColor: 'rgba(43, 87, 154, 0.1)'
+      }
     }
   };
 
@@ -123,28 +195,61 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
         </button>
       </div>
 
-      {/* Grupo de tamaño de texto - Reemplaza a los encabezados */}
+      {/* Grupo de tamaño de texto */}
       <div style={styles.group}>
-        <div style={styles.fontSizeControls}>
-          <button 
+        <div style={{ display: 'flex', alignItems: 'center', position: 'relative' }}>
+          {/* Selector de tamaño con desplegable */}
+          <button
             type="button"
             style={styles.fontSizeButton}
-            onClick={() => changeFontSize(-1)}
-            title="Reducir tamaño de texto"
+            onClick={() => setShowFontSizeMenu(!showFontSizeMenu)}
+            title="Tamaño de fuente"
           >
-            <span style={{ fontSize: '14px' }}>A-</span>
+            {fontSize}
+            <span style={styles.caret}>▾</span>
           </button>
           
-          <span style={styles.fontSizeDisplay}>{fontSize}px</span>
-          
-          <button 
-            type="button"
-            style={styles.fontSizeButton}
-            onClick={() => changeFontSize(1)}
-            title="Aumentar tamaño de texto"
+          {/* Menú desplegable */}
+          <div 
+            ref={fontSizeMenuRef}
+            style={styles.fontSizeMenu}
           >
-            <span style={{ fontSize: '18px' }}>A+</span>
-          </button>
+            {FONT_SIZES.map(size => (
+              <div
+                key={size}
+                style={{
+                  ...styles.fontSizeItem,
+                  backgroundColor: fontSize === size 
+                    ? 'rgba(43, 87, 154, 0.1)' 
+                    : 'transparent',
+                  fontWeight: fontSize === size ? 'bold' : 'normal'
+                }}
+                onClick={() => applyFontSize(size)}
+              >
+                {size}
+              </div>
+            ))}
+          </div>
+          
+          {/* Controles de incremento/decremento */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <button
+              type="button"
+              style={styles.incrementButton}
+              onClick={() => changeFontSize(true)}
+              title="Aumentar tamaño de fuente"
+            >
+              <span style={{ color: '#2B579A' }}>▲</span>
+            </button>
+            <button
+              type="button"
+              style={styles.incrementButton}
+              onClick={() => changeFontSize(false)}
+              title="Reducir tamaño de fuente"
+            >
+              <span style={{ color: '#2B579A' }}>▼</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -176,7 +281,7 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
           onClick={() => onFormatText('textColor')}
           title="Color de texto"
         >
-          A
+          <span style={{ color: '#2B579A' }}>A</span>
         </button>
         <button 
           type="button"
