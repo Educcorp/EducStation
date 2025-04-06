@@ -163,7 +163,7 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {}, fontSize, setFo
     setCustomFontSize(fontSize.toString());
     setShowFontSizeMenu(false);
     
-    // Enfocar el input después de que se haya renderizado
+      // Enfocar el input después de que se haya renderizado
     setTimeout(() => {
       if (customFontInputRef.current) {
         customFontInputRef.current.focus();
