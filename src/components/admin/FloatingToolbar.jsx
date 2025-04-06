@@ -5,7 +5,7 @@ const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72
 
 // FloatingToolbar - Barra de herramientas flotante para edición de texto
 // Aparece cuando se selecciona texto en el editor
-const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
+const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, setFontSize }) => {
   // Estados del componente
   const [visible, setVisible] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
@@ -50,10 +50,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       alignItems: 'center',
       justifyContent: 'center',
       width: '28px',
-      height: '28px',
-      '&:hover': {
-        backgroundColor: 'rgba(43, 87, 154, 0.1)'
-      }
+      height: '28px'
     }),
     fontSizeButton: {
       display: 'flex',
@@ -68,11 +65,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       color: '#333333', // Color más oscuro para mejor legibilidad
       fontWeight: 'normal',
       transition: 'all 0.2s ease',
-      position: 'relative',
-      '&:hover': {
-        backgroundColor: 'rgba(43, 87, 154, 0.1)',
-        borderColor: '#2B579A'
-      }
+      position: 'relative'
     },
     fontSizeInput: {
       width: '40px',
@@ -83,7 +76,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       color: '#333333',
       textAlign: 'center',
       outline: 'none',
-      backgroundColor: 'white',
+      backgroundColor: 'white'
     },
     caret: {
       marginLeft: '2px',
@@ -111,10 +104,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       userSelect: 'none',
       transition: 'background-color 0.2s',
       textAlign: 'center',
-      color: '#333333', // Color más oscuro para mejor legibilidad
-      '&:hover': {
-        backgroundColor: 'rgba(43, 87, 154, 0.1)'
-      }
+      color: '#333333'
     },
     customOption: {
       borderTop: '1px solid #e1e7e6', 
@@ -123,10 +113,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       cursor: 'pointer',
       userSelect: 'none',
       textAlign: 'center',
-      color: '#2B579A',
-      '&:hover': {
-        backgroundColor: 'rgba(43, 87, 154, 0.1)'
-      }
+      color: '#2B579A'
     },
     separator: {
       width: '1px',
@@ -136,7 +123,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
     },
     sizeControls: {
       display: 'flex',
-      alignItems: 'center',
+      alignItems: 'center'
     },
     incrementButton: {
       background: 'none',
@@ -148,10 +135,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: '3px',
-      '&:hover': {
-        backgroundColor: 'rgba(43, 87, 154, 0.1)'
-      }
+      borderRadius: '3px'
     }
   };
 
@@ -224,11 +208,11 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
         
         // Ajuste horizontal para que no se salga por los lados
         if (newPosition.left + (toolbarWidth / 2) > editorRect.width) {
-          newPosition.left = editorRect.width - toolbarWidth - 10;
+          newPosition.left = editorRect.width - (toolbarWidth / 2) - 10;
         }
         
         if (newPosition.left - (toolbarWidth / 2) < 0) {
-          newPosition.left = toolbarWidth / 2 + 10;
+          newPosition.left = (toolbarWidth / 2) + 10;
         }
         
         // Si no hay espacio arriba, colocar debajo de la selección
@@ -246,36 +230,9 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
     }
   };
 
-  // Función para obtener el tamaño de fuente actual
-  const getCurrentFontSize = () => {
-    const selection = window.getSelection();
-    if (!selection || selection.isCollapsed) return 12; // Valor por defecto cambiado a 12
-    
-    try {
-      const range = selection.getRangeAt(0);
-      const element = range.commonAncestorContainer;
-      
-      // Intenta obtener el elemento si es un nodo de texto
-      const node = element.nodeType === 3 ? element.parentNode : element;
-      
-      // Obtener el estilo computado
-      const style = window.getComputedStyle(node);
-      const fontSize = parseInt(style.fontSize);
-      
-      // Encontrar el tamaño preestablecido más cercano
-      const closestPreset = FONT_SIZES.reduce((prev, curr) => {
-        return (Math.abs(curr - fontSize) < Math.abs(prev - fontSize)) ? curr : prev;
-      }, FONT_SIZES[0]);
-      
-      return closestPreset || 12; // Devolver 12 como valor por defecto si no se puede determinar
-    } catch (error) {
-      return 12; // Valor por defecto cambiado a 12
-    }
-  };
-
-  // Función para aplicar un tamaño de fuente específico
+  // Aplicar un tamaño de fuente específico
   const applyFontSize = (size) => {
-    onFormatText('fontSize', `${size}px`);
+    setFontSize(size); // Usar la función proporcionada por el componente padre
     setShowFontSizeMenu(false);
     setIsEditingFontSize(false);
   };
@@ -307,8 +264,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
 
   // Incrementar/decrementar tamaño de fuente
   const changeFontSize = (increment) => {
-    const currentSize = getCurrentFontSize();
-    const currentIndex = FONT_SIZES.indexOf(currentSize);
+    const currentIndex = FONT_SIZES.indexOf(fontSize);
     
     if (increment && currentIndex < FONT_SIZES.length - 1) {
       applyFontSize(FONT_SIZES[currentIndex + 1]);
@@ -320,7 +276,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
   // Activar el modo de edición de tamaño personalizado
   const enableFontSizeEditing = () => {
     setIsEditingFontSize(true);
-    setCustomFontSize(getCurrentFontSize().toString());
+    setCustomFontSize(fontSize.toString());
     setShowFontSizeMenu(false);
     
     // Enfocar el input después de que se haya renderizado
@@ -365,6 +321,24 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
     };
   }, []);
 
+  // Actualizar el tamaño personalizado cuando cambia el tamaño de fuente
+  useEffect(() => {
+    if (isEditingFontSize) {
+      setCustomFontSize(fontSize.toString());
+    }
+  }, [fontSize]);
+
+  // Aplicar estilos de hover
+  const getHoverStyle = (style) => {
+    if (style['&:hover']) {
+      const hoverStyle = {...style};
+      Object.assign(hoverStyle, style['&:hover']);
+      delete hoverStyle['&:hover'];
+      return hoverStyle;
+    }
+    return style;
+  };
+
   return (
     <div 
       ref={toolbarRef}
@@ -379,24 +353,48 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
       <button 
         type="button"
         title="Negrita"
-        style={styles.button(activeFormats.bold)}
+        style={activeFormats.bold ? getHoverStyle(styles.button(true)) : styles.button(false)}
         onClick={() => onFormatText('bold')}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          if (!activeFormats.bold) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }
+        }}
       >
         <strong>B</strong>
       </button>
       <button 
         type="button"
         title="Cursiva"
-        style={styles.button(activeFormats.italic)}
+        style={activeFormats.italic ? getHoverStyle(styles.button(true)) : styles.button(false)}
         onClick={() => onFormatText('italic')}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          if (!activeFormats.italic) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }
+        }}
       >
         <em>I</em>
       </button>
       <button 
         type="button"
         title="Subrayado"
-        style={styles.button(activeFormats.underline)}
+        style={activeFormats.underline ? getHoverStyle(styles.button(true)) : styles.button(false)}
         onClick={() => onFormatText('underline')}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          if (!activeFormats.underline) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }
+        }}
       >
         <u>U</u>
       </button>
@@ -427,8 +425,16 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
               style={styles.fontSizeButton}
               onClick={enableFontSizeEditing} // Al hacer clic directo, abre el editor de tamaño personalizado
               onDoubleClick={() => setShowFontSizeMenu(!showFontSizeMenu)} // Doble clic muestra el menú
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+                e.currentTarget.style.borderColor = '#2B579A';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.borderColor = '#e1e7e6';
+              }}
             >
-              {getCurrentFontSize()}
+              {fontSize}
               <span style={styles.caret}>▾</span>
             </button>
             
@@ -442,12 +448,20 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
                   key={size}
                   style={{
                     ...styles.fontSizeItem,
-                    backgroundColor: getCurrentFontSize() === size 
+                    backgroundColor: fontSize === size 
                       ? 'rgba(43, 87, 154, 0.1)' 
                       : 'transparent',
-                    fontWeight: getCurrentFontSize() === size ? 'bold' : 'normal'
+                    fontWeight: fontSize === size ? 'bold' : 'normal'
                   }}
                   onClick={() => applyFontSize(size)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (fontSize !== size) {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }
+                  }}
                 >
                   {size}
                 </div>
@@ -456,6 +470,12 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
               <div
                 style={styles.customOption}
                 onClick={enableFontSizeEditing}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }}
               >
                 Personalizado
               </div>
@@ -470,6 +490,12 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
             title="Aumentar tamaño de fuente"
             style={styles.incrementButton}
             onClick={() => changeFontSize(true)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <span style={{ color: '#2B579A' }}>▲</span>
           </button>
@@ -478,6 +504,12 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
             title="Reducir tamaño de fuente"
             style={styles.incrementButton}
             onClick={() => changeFontSize(false)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             <span style={{ color: '#2B579A' }}>▼</span>
           </button>
@@ -492,14 +524,28 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef }) => {
         title="Color de texto"
         style={styles.button(false)}
         onClick={() => onFormatText('textColor')}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'transparent';
+        }}
       >
         <span style={{ color: '#2B579A' }}>A</span>
       </button>
       <button 
         type="button"
         title="Insertar enlace"
-        style={styles.button(activeFormats.link)}
+        style={activeFormats.link ? getHoverStyle(styles.button(true)) : styles.button(false)}
         onClick={() => onFormatText('link')}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
+        }}
+        onMouseLeave={(e) => {
+          if (!activeFormats.link) {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }
+        }}
       >
         🔗
       </button>

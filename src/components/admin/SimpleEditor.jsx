@@ -1,12 +1,16 @@
 // src/components/admin/SimpleEditor.jsx
+
 import React, { useState, useRef, useEffect } from 'react';
-import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import SimpleEditorToolbar from './SimpleEditorToolbar';
-import FloatingToolbar from './FloatingToolbar'; // Importamos nuestra nueva barra flotante
+import FloatingToolbar from './FloatingToolbar';
 
 const SimpleEditor = ({ content, onChange }) => {
   const editorRef = useRef(null);
   const [internalContent, setInternalContent] = useState(content || '');
+  // Estado compartido para el tamaño de fuente - importante para sincronización
+  const [currentFontSize, setCurrentFontSize] = useState(12); // Valor predeterminado
+  
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
     italic: false,
@@ -94,6 +98,13 @@ const SimpleEditor = ({ content, onChange }) => {
           
           currentNode = currentNode.parentNode;
         }
+        
+        // NUEVO: Obtener el tamaño de fuente actual
+        const computedStyle = window.getComputedStyle(element);
+        const fontSize = parseInt(computedStyle.fontSize);
+        if (fontSize && !isNaN(fontSize)) {
+          setCurrentFontSize(fontSize);
+        }
       }
       
       setActiveFormats(formats);
@@ -143,8 +154,11 @@ const SimpleEditor = ({ content, onChange }) => {
         case 'fontSize':
           // Aplicar el tamaño de fuente usando el elemento span
           if (value) {
-            // Crear un span con el estilo de tamaño de fuente
+            // Actualizar el estado compartido con el nuevo tamaño
             const size = parseFloat(value);
+            setCurrentFontSize(size);
+            
+            // Crear un span con el estilo de tamaño de fuente
             document.execCommand('fontSize', false, '7'); // Usamos 7 como valor temporal
             
             // Después modificamos los elementos con fontSize=7 para usar el valor real
@@ -343,14 +357,18 @@ const SimpleEditor = ({ content, onChange }) => {
       {/* Barra de herramientas estática */}
       <SimpleEditorToolbar 
         onFormatText={applyFormat}
-        activeFormats={activeFormats} 
+        activeFormats={activeFormats}
+        fontSize={currentFontSize}
+        setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
       />
       
-      {/* Barra de herramientas flotante (nueva) */}
+      {/* Barra de herramientas flotante */}
       <FloatingToolbar 
         onFormatText={applyFormat}
         activeFormats={activeFormats}
         editorRef={editorRef}
+        fontSize={currentFontSize}
+        setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
       />
       
       {/* Placeholder text when editor is empty */}

@@ -5,9 +5,8 @@ import { colors, spacing, typography, borderRadius } from '../../styles/theme';
 // Tamaños de fuente predeterminados como en Word
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
 
-const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
-  // Estado para manejar la selección de tamaño de texto
-  const [fontSize, setFontSize] = useState(12); // Tamaño por defecto cambiado a 12
+const SimpleEditorToolbar = ({ onFormatText, activeFormats = {}, fontSize, setFontSize }) => {
+  // Estado para la selección de tamaño de texto (ahora recibido como prop)
   const [customFontSize, setCustomFontSize] = useState('');
   const [isEditingFontSize, setIsEditingFontSize] = useState(false);
   const [showFontSizeMenu, setShowFontSizeMenu] = useState(false);
@@ -28,10 +27,16 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
     };
   }, []);
   
+  // Actualizar el estado local cuando cambia el tamaño de fuente recibido
+  useEffect(() => {
+    if (isEditingFontSize) {
+      setCustomFontSize(fontSize.toString());
+    }
+  }, [fontSize, isEditingFontSize]);
+  
   // Función para aplicar un tamaño de fuente específico
   const applyFontSize = (size) => {
-    setFontSize(size);
-    onFormatText('fontSize', `${size}px`);
+    setFontSize(size); // Usar la función proporcionada por el componente padre
     setShowFontSizeMenu(false);
     setIsEditingFontSize(false);
   };
@@ -54,7 +59,6 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       const size = parseFloat(customFontSize);
       // Validar que sea un número y esté en un rango razonable
       if (!isNaN(size) && size >= 1 && size <= 500) {
-        setFontSize(size);
         applyFontSize(size);
       }
     }
@@ -67,13 +71,9 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
     const currentIndex = FONT_SIZES.indexOf(fontSize);
     
     if (increment && currentIndex < FONT_SIZES.length - 1) {
-      const newSize = FONT_SIZES[currentIndex + 1];
-      setFontSize(newSize);
-      onFormatText('fontSize', `${newSize}px`);
+      applyFontSize(FONT_SIZES[currentIndex + 1]);
     } else if (!increment && currentIndex > 0) {
-      const newSize = FONT_SIZES[currentIndex - 1];
-      setFontSize(newSize);
-      onFormatText('fontSize', `${newSize}px`);
+      applyFontSize(FONT_SIZES[currentIndex - 1]);
     }
   };
   
@@ -203,11 +203,6 @@ const SimpleEditorToolbar = ({ onFormatText, activeFormats = {} }) => {
       '&:hover': {
         backgroundColor: 'rgba(43, 87, 154, 0.1)'
       }
-    },
-    caret: {
-      marginLeft: '2px',
-      fontSize: '10px',
-      color: '#2B579A'
     },
     caret: {
       marginLeft: '2px',
