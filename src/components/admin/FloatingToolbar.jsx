@@ -56,7 +56,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       margin: '0 2px',
       fontSize: '14px',
       cursor: 'pointer',
-      color: isActive ? '#2B579A' : '#4c7977',
+      color: isActive ? '#1b4fd9' : '#0b4444',
       backgroundColor: isActive ? 'rgba(43, 87, 154, 0.1)' : 'transparent',
       transition: 'all 0.2s ease',
       display: 'flex',
@@ -491,7 +491,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         onMouseEnter={() => showTooltip('italic')}
         onMouseLeave={hideTooltip}
       >
-        <em>I</em>
+        <em>Ｉ</em>
         <Tooltip
           isVisible={activeTooltip === 'italic'}
           text="Cursiva"
@@ -625,7 +625,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
             onMouseEnter={() => showTooltip('increaseFontSize')}
             onMouseLeave={hideTooltip}
           >
-            <span style={{ color: '#2B579A' }}>▲</span>
+            <span style={{ color: '#0b4444' }}>▲</span>
             <Tooltip
               isVisible={activeTooltip === 'increaseFontSize'}
               text="Aumentar tamaño"
@@ -641,7 +641,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
             onMouseEnter={() => showTooltip('decreaseFontSize')}
             onMouseLeave={hideTooltip}
           >
-            <span style={{ color: '#2B579A' }}>▼</span>
+            <span style={{ color: '#0b4444' }}>▼</span>
             <Tooltip
               isVisible={activeTooltip === 'decreaseFontSize'}
               text="Reducir tamaño"
@@ -663,7 +663,9 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         onMouseEnter={() => showTooltip('textColor')}
         onMouseLeave={hideTooltip}
       >
-        <span style={{ color: '#2B579A' }}>A</span>
+        <span style={{ color: '#0b4444' }}>A
+          
+        </span>
         <Tooltip
           isVisible={activeTooltip === 'textColor'}
           text="Color de texto"
@@ -679,7 +681,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         onMouseEnter={() => showTooltip('link')}
         onMouseLeave={hideTooltip}
       >
-        🔗
+        <img src="/assets/images/icons/LINK_icon.png" style={styles.iconImage} />
         <Tooltip
           isVisible={activeTooltip === 'link'}
           text="Insertar enlace"
@@ -696,7 +698,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         onMouseEnter={() => showTooltip('image')}
         onMouseLeave={hideTooltip}
       >
-        📷
+        <img src="/assets/images/icons/IMG_icon.png"  style={styles.iconImage} />
         <Tooltip
           isVisible={activeTooltip === 'image'}
           text="Insertar imagen"
