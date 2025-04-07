@@ -38,7 +38,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       zIndex: 1000,
       display: visible ? 'flex' : 'none',
       alignItems: 'center',
-      backgroundColor:  'rgba(23, 16, 56, 0.16)',
+      backgroundColor:  'rgb(209, 224, 217)',
       borderRadius: '9px',
       padding: '6px',
       boxShadow: '0 3px 12px rgba(61, 42, 42, 0.2)',
@@ -46,7 +46,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(10px)',
       gap: '2px',
-      border: '1px solid #e1e7e6' // Añadir un borde sutil para mejorar la visibilidad
+      border: 'rgb(0, 0, 0)' // Añadir un borde sutil para mejorar la visibilidad
     },
     button: (isActive) => ({
       background: 'none',
@@ -113,7 +113,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       userSelect: 'none',
       transition: 'background-color 0.2s',
       textAlign: 'center',
-      color: '#333333'
+      color: '#0b4444'
     },
     customOption: {
       borderTop: '1px solid #e1e7e6', 
@@ -140,7 +140,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       border: 'none',
       padding: '3px 5px',
       cursor: 'pointer',
-      color: '#2B579A', // Color azul estilo Word
+      color: '#2B579A', 
       fontSize: '14px',
       display: 'flex',
       alignItems: 'center',
@@ -673,6 +673,22 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       </button>
       <button 
         type="button"
+        style={styles.button(activeFormats.unorderedList)}
+        onClick={() => {
+          restoreSelection();
+          onFormatText('unorderedList');
+        }}
+        onMouseEnter={() => showTooltip('unorderedList')}
+        onMouseLeave={hideTooltip}
+      >
+        •
+        <Tooltip
+          isVisible={activeTooltip === 'unorderedList'}
+          text="Lista con viñetas"
+        />
+      </button>
+      <button 
+        type="button"
         style={styles.button(activeFormats.link)}
         onClick={() => {
           restoreSelection();
@@ -705,22 +721,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         />
       </button>
       
-      <button 
-        type="button"
-        style={styles.button(activeFormats.unorderedList)}
-        onClick={() => {
-          restoreSelection();
-          onFormatText('unorderedList');
-        }}
-        onMouseEnter={() => showTooltip('unorderedList')}
-        onMouseLeave={hideTooltip}
-      >
-        •
-        <Tooltip
-          isVisible={activeTooltip === 'unorderedList'}
-          text="Lista con viñetas"
-        />
-      </button>
+
     </div>
   );
 };
