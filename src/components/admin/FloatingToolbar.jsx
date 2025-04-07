@@ -1,18 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import Tooltip from '../ui/Tooltip'; // Importamos el componente Tooltip
 
 // Tamaños de fuente predeterminados como en Word
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
-
-// Función para aplicar estilos de hover
-const getHoverStyle = (style) => {
-  if (style['&:hover']) {
-    const hoverStyle = {...style};
-    Object.assign(hoverStyle, style['&:hover']);
-    delete hoverStyle['&:hover'];
-    return hoverStyle;
-  }
-  return style;
-};
 
 // FloatingToolbar - Barra de herramientas flotante para edición de texto
 // Aparece cuando se hace clic en el editor o se selecciona texto
@@ -24,11 +14,22 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   const [customFontSize, setCustomFontSize] = useState('');
   const [isEditingFontSize, setIsEditingFontSize] = useState(false);
   const [savedSelection, setSavedSelection] = useState(null);
+  const [activeTooltip, setActiveTooltip] = useState(null);
   
   // Referencias
   const toolbarRef = useRef(null);
   const fontSizeMenuRef = useRef(null);
   const customFontInputRef = useRef(null);
+  
+  // Mostrar tooltip
+  const showTooltip = (id) => {
+    setActiveTooltip(id);
+  };
+
+  // Ocultar tooltip
+  const hideTooltip = () => {
+    setActiveTooltip(null);
+  };
   
   // Estilos para la barra de herramientas
   const styles = {
@@ -62,7 +63,8 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       alignItems: 'center',
       justifyContent: 'center',
       width: '28px',
-      height: '28px'
+      height: '28px',
+      position: 'relative'
     }),
     fontSizeButton: {
       display: 'flex',
@@ -130,7 +132,8 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     },
     sizeControls: {
       display: 'flex',
-      alignItems: 'center'
+      alignItems: 'center',
+      position: 'relative'
     },
     incrementButton: {
       background: 'none',
@@ -142,7 +145,8 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: '3px'
+      borderRadius: '3px',
+      position: 'relative'
     }
   };
 
@@ -463,59 +467,53 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       <button 
         type="button"
         title="Negrita"
-        style={activeFormats.bold ? getHoverStyle(styles.button(true)) : styles.button(false)}
+        style={styles.button(activeFormats.bold)}
         onClick={() => {
           restoreSelection();
           onFormatText('bold');
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          if (!activeFormats.bold) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
+        onMouseEnter={() => showTooltip('bold')}
+        onMouseLeave={hideTooltip}
       >
         <strong>B</strong>
+        <Tooltip
+          isVisible={activeTooltip === 'bold'}
+          text="Negrita"
+        />
       </button>
       <button 
         type="button"
         title="Cursiva"
-        style={activeFormats.italic ? getHoverStyle(styles.button(true)) : styles.button(false)}
+        style={styles.button(activeFormats.italic)}
         onClick={() => {
           restoreSelection();
           onFormatText('italic');
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          if (!activeFormats.italic) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
+        onMouseEnter={() => showTooltip('italic')}
+        onMouseLeave={hideTooltip}
       >
         <em>I</em>
+        <Tooltip
+          isVisible={activeTooltip === 'italic'}
+          text="Cursiva"
+        />
       </button>
       <button 
         type="button"
         title="Subrayado"
-        style={activeFormats.underline ? getHoverStyle(styles.button(true)) : styles.button(false)}
+        style={styles.button(activeFormats.underline)}
         onClick={() => {
           restoreSelection();
           onFormatText('underline');
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          if (!activeFormats.underline) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
+        onMouseEnter={() => showTooltip('underline')}
+        onMouseLeave={hideTooltip}
       >
         <u>U</u>
+        <Tooltip
+          isVisible={activeTooltip === 'underline'}
+          text="Subrayado"
+        />
       </button>
       
       <div style={styles.separator} />
@@ -553,12 +551,17 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
           <div style={{ position: 'relative' }}>
             <button
               type="button"
-              title="Haz clic para editar el tamaño o mostrar opciones predefinidas"
               style={styles.fontSizeButton}
               onClick={enableFontSizeEditing} // Al hacer clic directo, abre el editor de tamaño personalizado
               onDoubleClick={toggleFontSizeMenu} // Doble clic muestra el menú
+              onMouseEnter={() => showTooltip('fontSize')}
+              onMouseLeave={hideTooltip}
             >
               {fontSize}
+              <Tooltip
+                isVisible={activeTooltip === 'fontSize'}
+                text="Tamaño de fuente"
+              />
             </button>
             
             {/* Menú desplegable con tamaños predefinidos */}
@@ -617,37 +620,35 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         <div>
           <button
             type="button"
-            title="Aumentar tamaño de fuente"
             style={styles.incrementButton}
             onClick={(e) => {
               e.stopPropagation();
               changeFontSize(true);
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            onMouseEnter={() => showTooltip('increaseFontSize')}
+            onMouseLeave={hideTooltip}
           >
             <span style={{ color: '#2B579A' }}>▲</span>
+            <Tooltip
+              isVisible={activeTooltip === 'increaseFontSize'}
+              text="Aumentar tamaño"
+            />
           </button>
           <button
             type="button"
-            title="Reducir tamaño de fuente"
             style={styles.incrementButton}
             onClick={(e) => {
               e.stopPropagation();
               changeFontSize(false);
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
+            onMouseEnter={() => showTooltip('decreaseFontSize')}
+            onMouseLeave={hideTooltip}
           >
             <span style={{ color: '#2B579A' }}>▼</span>
+            <Tooltip
+              isVisible={activeTooltip === 'decreaseFontSize'}
+              text="Reducir tamaño"
+            />
           </button>
         </div>
       </div>
@@ -657,77 +658,69 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       {/* Opciones de formato avanzadas */}
       <button 
         type="button"
-        title="Color de texto"
         style={styles.button(false)}
         onClick={() => {
           restoreSelection();
           onFormatText('textColor');
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
+        onMouseEnter={() => showTooltip('textColor')}
+        onMouseLeave={hideTooltip}
       >
         <span style={{ color: '#2B579A' }}>A</span>
+        <Tooltip
+          isVisible={activeTooltip === 'textColor'}
+          text="Color de texto"
+        />
       </button>
       <button 
         type="button"
-        title="Insertar enlace"
-        style={activeFormats.link ? getHoverStyle(styles.button(true)) : styles.button(false)}
+        style={styles.button(activeFormats.link)}
         onClick={() => {
           restoreSelection();
           onFormatText('link');
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          if (!activeFormats.link) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
+        onMouseEnter={() => showTooltip('link')}
+        onMouseLeave={hideTooltip}
       >
         🔗
+        <Tooltip
+          isVisible={activeTooltip === 'link'}
+          text="Insertar enlace"
+        />
       </button>
       
       <button 
         type="button"
-        title="Insertar imagen"
         style={styles.button(false)}
         onClick={() => {
           restoreSelection();
           onFormatText('image');
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'transparent';
-        }}
+        onMouseEnter={() => showTooltip('image')}
+        onMouseLeave={hideTooltip}
       >
         📷
+        <Tooltip
+          isVisible={activeTooltip === 'image'}
+          text="Insertar imagen"
+        />
       </button>
       
       <button 
         type="button"
-        title="Lista con viñetas"
-        style={activeFormats.unorderedList ? getHoverStyle(styles.button(true)) : styles.button(false)}
+        style={styles.button(activeFormats.unorderedList)}
         onClick={() => {
           restoreSelection();
           onFormatText('unorderedList');
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(43, 87, 154, 0.1)';
-        }}
-        onMouseLeave={(e) => {
-          if (!activeFormats.unorderedList) {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
-        }}
+        onMouseEnter={() => showTooltip('unorderedList')}
+        onMouseLeave={hideTooltip}
       >
         •
+        <Tooltip
+          isVisible={activeTooltip === 'unorderedList'}
+          text="Lista con viñetas"
+        />
       </button>
     </div>
   );
