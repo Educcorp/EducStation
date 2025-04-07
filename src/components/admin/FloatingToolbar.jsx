@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Tooltip from '../ui/Tooltip'; // Importamos el componente Tooltip
 
 // Tamaños de fuente predeterminados como en Word
-const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72];
+const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72,120];
 
 // FloatingToolbar - Barra de herramientas flotante para edición de texto
 // Aparece cuando se hace clic en el editor o se selecciona texto
@@ -38,10 +38,10 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       zIndex: 1000,
       display: visible ? 'flex' : 'none',
       alignItems: 'center',
-      backgroundColor: 'white',
-      borderRadius: '6px',
+      backgroundColor:  'rgba(23, 16, 56, 0.16)',
+      borderRadius: '9px',
       padding: '6px',
-      boxShadow: '0 3px 12px rgba(0, 0, 0, 0.15)',
+      boxShadow: '0 3px 12px rgba(61, 42, 42, 0.2)',
       transition: 'opacity 0.2s ease, transform 0.2s ease',
       opacity: visible ? 1 : 0,
       transform: visible ? 'translateX(-50%) translateY(0)' : 'translateX(-50%) translateY(10px)',
@@ -466,7 +466,6 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       {/* Formato de texto básico */}
       <button 
         type="button"
-        title="Negrita"
         style={styles.button(activeFormats.bold)}
         onClick={() => {
           restoreSelection();
@@ -483,7 +482,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       </button>
       <button 
         type="button"
-        title="Cursiva"
+
         style={styles.button(activeFormats.italic)}
         onClick={() => {
           restoreSelection();
@@ -500,7 +499,6 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       </button>
       <button 
         type="button"
-        title="Subrayado"
         style={styles.button(activeFormats.underline)}
         onClick={() => {
           restoreSelection();
@@ -542,7 +540,6 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
                 }, 100);
               }}
               style={styles.fontSizeInput}
-              title="Ingresa un tamaño personalizado"
               onClick={(e) => e.stopPropagation()}
             />
           </form>
