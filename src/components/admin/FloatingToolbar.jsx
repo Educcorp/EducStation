@@ -16,10 +16,35 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   const [savedSelection, setSavedSelection] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
   
+  // Nuevo estado para controlar la escritura
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimerRef = useRef(null);
+  const TYPING_TIMEOUT = 800; // Tiempo en ms para considerar que se dejó de escribir
+  
   // Referencias
   const toolbarRef = useRef(null);
   const fontSizeMenuRef = useRef(null);
   const customFontInputRef = useRef(null);
+  
+  // Función para manejar el inicio de escritura
+  const handleTypingStart = () => {
+    // Ocultar la barra mientras se escribe
+    setVisible(false);
+    
+    // Limpiar el timer anterior si existe
+    if (typingTimerRef.current) {
+      clearTimeout(typingTimerRef.current);
+    }
+    
+    // Establecer que se está escribiendo
+    setIsTyping(true);
+    
+    // Configurar un nuevo timer para detectar cuando se deja de escribir
+    typingTimerRef.current = setTimeout(() => {
+      setIsTyping(false);
+      checkSelection(); // Comprobar posición del cursor y mostrar la barra
+    }, TYPING_TIMEOUT);
+  };
   
   // Mostrar tooltip
   const showTooltip = (id) => {
@@ -35,7 +60,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   const styles = {
     floatingBar: {
       position: 'absolute',
-      zIndex: 1000,
+      zIndex: 1050, // Incrementado para asegurar visibilidad
       display: visible ? 'flex' : 'none',
       alignItems: 'center',
       backgroundColor:  'rgb(209, 224, 217)',
@@ -102,7 +127,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
       maxHeight: '300px',
       overflow: 'auto',
-      zIndex: 1001,
+      zIndex: 1051,
       display: showFontSizeMenu ? 'block' : 'none',
       marginTop: '2px',
       width: '50px'
@@ -181,6 +206,12 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   // Función para verificar la selección de texto o si el editor está activo
   const checkSelection = (event) => {
     try {
+      // Si se está escribiendo, no mostramos la barra
+      if (isTyping) {
+        setVisible(false);
+        return;
+      }
+      
       const selection = window.getSelection();
 
       // Evitar ocultar la barra si estamos interactuando con elementos de la barra
@@ -254,7 +285,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       let newPosition;
       
       if (hasSelection) {
-        // Si hay selección, posicionar encima de la selección
+        // Si hay selección, posicionar debajo de la selección
         const rect = selection.getRangeAt(0).getBoundingClientRect();
         
         if (rect.width === 0) {
@@ -264,17 +295,59 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         }
         
         newPosition = {
-          // Posicionamos la barra encima de la línea de texto con un pequeño margen
-          top: rect.top - editorRect.top - toolbarHeight - 8,
+          // Posicionamos la barra DEBAJO de la línea de texto seleccionada
+          top: rect.bottom - editorRect.top + 8,
           // Centramos horizontalmente respecto a la selección
           left: rect.left - editorRect.left + (rect.width / 2)
         };
       } else {
-        // Si solo está activo el editor sin selección, posicionar en la parte superior
-        newPosition = {
-          top: 10, // Un pequeño margen desde el borde superior
-          left: editorRect.width / 2 // Centrado horizontalmente
-        };
+        // Si solo está activo el editor sin selección, posicionar debajo del cursor
+        try {
+          // Obtenemos la posición del cursor (caret)
+          const range = selection.getRangeAt(0);
+          
+          // Creamos un elemento temporal para medir la posición exacta del cursor
+          const span = document.createElement('span');
+          // Aseguramos que el span no afecte visualmente al contenido
+          span.style.display = 'inline-block';
+          span.style.height = '0px';
+          span.style.width = '0px';
+          span.style.overflow = 'hidden';
+          span.innerHTML = '.'; // Necesitamos algún contenido para que tenga dimensiones
+          
+          // Guardamos una copia del rango para restaurarlo después
+          const rangeCopy = range.cloneRange();
+          
+          // Insertamos temporalmente el span en la posición del cursor
+          range.insertNode(span);
+          
+          // Obtenemos la posición del span (que equivale a la posición del cursor)
+          const rect = span.getBoundingClientRect();
+          
+          // Eliminamos el span temporal para no afectar al contenido
+          if (span.parentNode) {
+            span.parentNode.removeChild(span);
+          }
+          
+          // Restauramos la selección original
+          selection.removeAllRanges();
+          selection.addRange(rangeCopy);
+          
+          // Calculamos la posición de la barra basada en la posición del cursor
+          newPosition = {
+            // Posicionamos la barra justo debajo del cursor
+            top: rect.bottom - editorRect.top + 8, // Un pequeño margen debajo
+            // Alineamos horizontalmente con el cursor
+            left: rect.left - editorRect.left
+          };
+        } catch (error) {
+          // Si hay algún error, usamos una posición predeterminada segura
+          console.error('Error al obtener posición del cursor:', error);
+          newPosition = {
+            top: 50, // Posición vertical segura
+            left: editorRect.width / 2 // Centrado horizontalmente
+          };
+        }
       }
       
       // Ajustar para que no se salga del editor
@@ -425,19 +498,37 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     
     document.addEventListener('selectionchange', checkSelection);
     editorRef.current.addEventListener('mouseup', checkSelection);
-    editorRef.current.addEventListener('keyup', checkSelection);
     editorRef.current.addEventListener('focus', checkSelection);
+    
+    // Añadir evento para detectar inicio de escritura
+    const handleKeyDown = (event) => {
+      // Solo reaccionamos a teclas "normales", no a atajos o teclas especiales
+      const isModifierKey = event.ctrlKey || event.metaKey || event.altKey;
+      const isNavigationKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'].includes(event.key);
+      
+      if (!isModifierKey && !isNavigationKey) {
+        handleTypingStart();
+      }
+    };
+    
+    // Ya no usamos keyup para mostrar inmediatamente
+    editorRef.current.addEventListener('keydown', handleKeyDown);
     
     // Limpiar event listeners
     return () => {
       document.removeEventListener('selectionchange', checkSelection);
       if (editorRef.current) {
         editorRef.current.removeEventListener('mouseup', checkSelection);
-        editorRef.current.removeEventListener('keyup', checkSelection);
         editorRef.current.removeEventListener('focus', checkSelection);
+        editorRef.current.removeEventListener('keydown', handleKeyDown);
+      }
+      
+      // Limpiar el timer si existe
+      if (typingTimerRef.current) {
+        clearTimeout(typingTimerRef.current);
       }
     };
-  }, [editorRef?.current]);
+  }, [editorRef?.current, isTyping]);
 
   // Cerrar el menú cuando se hace clic fuera
   useEffect(() => {
@@ -720,8 +811,6 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
           text="Insertar imagen"
         />
       </button>
-      
-
     </div>
   );
 };
