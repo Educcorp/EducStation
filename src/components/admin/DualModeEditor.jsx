@@ -5,8 +5,9 @@ import { insertHTML } from './utils/editorUtils';
 import HTMLPreview from './HTMLPreview';
 import SyntaxHighlighter from './SyntaxHighlighter';
 import SimpleEditor from './SimpleEditor';
+import ImportExportActions from './ImportExportActions';
 
-const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
+const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, onImport }) => {
   const textAreaRef = useRef(null);
   const [mode, setMode] = useState('simple'); // Siempre comenzar con modo simple
   const [activeTab, setActiveTab] = useState('code'); // Para el modo desarrollador
@@ -344,8 +345,9 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
     },
     tooltip: {
       position: 'absolute',
-      top: '100%',
-      right: '0',
+      top: '-15%',
+      left: '50%', // Centra horizontalmente
+      transform: 'translateX(-50%)', // Ajusta el tooltip al centro del botón
       backgroundColor: 'rgba(0, 0, 0, 0.8)',
       color: colors.white,
       padding: `${spacing.xs} ${spacing.sm}`,
@@ -355,8 +357,9 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
       visibility: hoveredElement === 'codeButton' ? 'visible' : 'hidden',
       opacity: hoveredElement === 'codeButton' ? 1 : 0,
       transition: 'all 0.3s ease',
-      zIndex: 10,
-      marginTop: spacing.xs
+      zIndex: 9999, // Asegura que el tooltip esté al frente
+      marginTop: spacing.xs,
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Añade un efecto de sombra para mayor visibilidad
     }
   };
 
@@ -554,13 +557,15 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple' }) => {
           </div>
         )}
 
-        {/* Indicador de autoguardado */}
-        {internalContent.length > 0 && (
-          <div style={styles.autoSaveIndicator}>
-            Guardado automático...
-          </div>
-        )}
+
       </div>
+
+      {/* Import/Export Actions moved to the bottom */}
+      <ImportExportActions 
+        onExport={onExport} 
+        onImport={onImport} 
+        isHtmlMode={mode === 'developer'} 
+      />
 
       {/* Modal de confirmación para el modo desarrollador */}
       {showDeveloperModal && (

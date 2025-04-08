@@ -164,7 +164,7 @@ const PostEditor = () => {
     
     const timer = setTimeout(() => {
       if (post.content.length > 0 || post.title.length > 0) {
-        console.log('Guardado automático...');
+        // console.log('Guardado automático'); // Eliminar o comentar esta línea
         savePostToLocalStorage(post);
       }
     }, 2000);
