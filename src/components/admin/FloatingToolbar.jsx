@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Tooltip from '../ui/Tooltip'; // Importamos el componente Tooltip
+import Tooltip from '../ui/Tooltip';
+import ColorPicker from './ColorPicker'; // Importamos el nuevo componente ColorPicker
 
 // Tamaños de fuente predeterminados como en Word
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72,120];
@@ -17,10 +18,15 @@ const [savedSelection, setSavedSelection] = useState(null);
 const [activeTooltip, setActiveTooltip] = useState(null);
 const [isTyping, setIsTyping] = useState(false);
 
+// Estados para el selector de color
+const [showColorPicker, setShowColorPicker] = useState(false);
+const [currentIconColor, setCurrentIconColor] = useState('#0b4444'); // Color inicial del ícono
+
 // Referencias
 const toolbarRef = useRef(null);
 const fontSizeMenuRef = useRef(null);
 const customFontInputRef = useRef(null);
+const colorButtonRef = useRef(null);
 
 // Mostrar tooltip
 const showTooltip = (id) => {
@@ -30,6 +36,49 @@ const showTooltip = (id) => {
 // Ocultar tooltip
 const hideTooltip = () => {
   setActiveTooltip(null);
+};
+
+// Manejar clic en el botón de color
+const handleColorButtonClick = () => {
+  // Guardar la selección actual antes de abrir el color picker
+  saveSelection();
+  // Mostrar u ocultar el selector de color
+  setShowColorPicker(!showColorPicker);
+  // Ocultar otros menús
+  setShowFontSizeMenu(false);
+};
+
+// Resetear colores a los predeterminados en caso de error
+const resetToDefaultColors = () => {
+  const defaultColors = ['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a'];
+  try {
+    localStorage.setItem('savedTextColors', JSON.stringify(defaultColors));
+  } catch (e) {
+    console.warn('No se pudo resetear colores en localStorage:', e);
+  }
+  return defaultColors;
+};
+
+// Aplicar color seleccionado
+const applyTextColor = (color) => {
+  if (restoreSelection()) {
+    try {
+      document.execCommand('foreColor', false, color);
+      setShowColorPicker(false);
+      // Actualizar el color del ícono al color seleccionado
+      setCurrentIconColor(color);
+    } catch (e) {
+      console.error('Error al aplicar color:', e);
+      // En caso de error, usar un color predeterminado
+      document.execCommand('foreColor', false, '#0b4444');
+      setCurrentIconColor('#0b4444');
+    }
+  }
+};
+
+// Cerrar el selector de color
+const closeColorPicker = () => {
+  setShowColorPicker(false);
 };
 
 // Estilos para la barra de herramientas
@@ -59,6 +108,24 @@ const styles = {
     cursor: 'pointer',
     color: isActive ? '#1b4fd9' : '#0b4444',
     backgroundColor: isActive ? 'rgba(43, 87, 154, 0.1)' : 'transparent',
+    transition: 'all 0.2s ease',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '28px',
+    height: '28px',
+    position: 'relative'
+  }),
+  colorButton: (showingPicker) => ({
+    background: 'none',
+    border: 'none',
+    borderRadius: '4px',
+    padding: '6px',
+    margin: '0 2px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    color: '#0b4444',
+    backgroundColor: showingPicker ? 'rgba(43, 87, 154, 0.1)' : 'transparent',
     transition: 'all 0.2s ease',
     display: 'flex',
     alignItems: 'center',
@@ -148,6 +215,18 @@ const styles = {
     justifyContent: 'center',
     borderRadius: '3px',
     position: 'relative'
+  },
+  colorIconContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative'
+  },
+  colorIcon: {
+    fontWeight: 'bold',
+    color: currentIconColor,
+    fontSize: '16px',
+    transition: 'color 0.3s ease'
   }
 };
 
@@ -577,8 +656,17 @@ useEffect(() => {
 // Cerrar el menú cuando se hace clic fuera
 useEffect(() => {
   const handleClickOutside = (event) => {
+    // Cerrar selector de tamaño
     if (fontSizeMenuRef.current && !fontSizeMenuRef.current.contains(event.target)) {
       setShowFontSizeMenu(false);
+    }
+    
+    // Cerrar selector de color si no se está haciendo clic en él o en su botón
+    if (showColorPicker && 
+        colorButtonRef.current && 
+        !colorButtonRef.current.contains(event.target) &&
+        !event.target.closest('.color-picker-container')) {
+      setShowColorPicker(false);
     }
   };
   
@@ -586,7 +674,7 @@ useEffect(() => {
   return () => {
     document.removeEventListener('mousedown', handleClickOutside);
   };
-}, []);
+}, [showColorPicker]);
 
 return (
   <div 
@@ -787,25 +875,37 @@ return (
     
     <div style={styles.separator} />
     
+    {/* Botón de color de texto con ícono dinámico */}
+    <div style={{ position: 'relative' }}>
+      <button 
+        ref={colorButtonRef}
+        type="button"
+        style={styles.colorButton(showColorPicker)}
+        onClick={handleColorButtonClick}
+        onMouseEnter={() => showTooltip('textColor')}
+        onMouseLeave={hideTooltip}
+      >
+        <div style={styles.colorIconContainer}>
+          <span style={styles.colorIcon}>𒊹</span>
+        </div>
+        <Tooltip
+          isVisible={activeTooltip === 'textColor'}
+          text="Color de texto"
+        />
+      </button>
+      
+      {/* Componente selector de color */}
+      {showColorPicker && (
+        <div className="color-picker-container">
+          <ColorPicker 
+            onSelectColor={applyTextColor}
+            onCloseColorPicker={closeColorPicker}
+          />
+        </div>
+      )}
+    </div>
+    
     {/* Opciones de formato avanzadas */}
-    <button 
-      type="button"
-      style={styles.button(false)}
-      onClick={() => {
-        restoreSelection();
-        onFormatText('textColor');
-      }}
-      onMouseEnter={() => showTooltip('textColor')}
-      onMouseLeave={hideTooltip}
-    >
-      <span style={{ color: '#0b4444' }}>A
-        
-      </span>
-      <Tooltip
-        isVisible={activeTooltip === 'textColor'}
-        text="Color de texto"
-      />
-    </button>
     <button 
       type="button"
       style={styles.button(activeFormats.unorderedList)}
@@ -855,10 +955,7 @@ return (
         text="Insertar imagen"
       />
     </button>
-    
-
   </div>
 );
-};
-
+}
 export default FloatingToolbar;
