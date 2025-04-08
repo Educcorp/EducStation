@@ -48,18 +48,7 @@ const handleColorButtonClick = () => {
   setShowFontSizeMenu(false);
 };
 
-// Resetear colores a los predeterminados en caso de error
-const resetToDefaultColors = () => {
-  const defaultColors = ['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a'];
-  try {
-    localStorage.setItem('savedTextColors', JSON.stringify(defaultColors));
-  } catch (e) {
-    console.warn('No se pudo resetear colores en localStorage:', e);
-  }
-  return defaultColors;
-};
-
-// Aplicar color seleccionado
+// Aplicar color seleccionado y guardarlo automáticamente
 const applyTextColor = (color) => {
   if (restoreSelection()) {
     try {
@@ -67,6 +56,37 @@ const applyTextColor = (color) => {
       setShowColorPicker(false);
       // Actualizar el color del ícono al color seleccionado
       setCurrentIconColor(color);
+      
+      // Guardar automáticamente el color en localStorage
+      const defaultColors = ['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a'];
+      try {
+        // Recuperar colores guardados
+        const storedColorsStr = localStorage.getItem('savedTextColors');
+        let storedColors = defaultColors;
+        
+        if (storedColorsStr) {
+          try {
+            const parsed = JSON.parse(storedColorsStr);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              storedColors = parsed;
+            }
+          } catch (e) {
+            console.warn('Error al parsear colores guardados:', e);
+          }
+        }
+        
+        // Verificar si el color ya existe
+        if (!storedColors.includes(color)) {
+          // Mantener solo los últimos 5 colores
+          if (storedColors.length >= 5) {
+            storedColors.shift();
+          }
+          storedColors.push(color);
+          localStorage.setItem('savedTextColors', JSON.stringify(storedColors));
+        }
+      } catch (e) {
+        console.warn('Error al guardar color:', e);
+      }
     } catch (e) {
       console.error('Error al aplicar color:', e);
       // En caso de error, usar un color predeterminado
