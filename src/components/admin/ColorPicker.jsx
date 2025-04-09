@@ -146,9 +146,9 @@ const getContrastText = (bgColor) => {
 const styles = {
   colorPickerContainer: {
     position: 'absolute',
-    top: '100%',
-    left: '0',
-    marginTop: '5px',
+    top: '170%',
+    right: '0%', // Posicionar a la izquierda del botón
+    marginRight: '-130px', // Espacio entre el botón y el selector
     backgroundColor: 'white',
     borderRadius: '16px',
     boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15), 0 2px 5px rgba(0, 0, 0, 0.1)',
@@ -174,18 +174,22 @@ const styles = {
     borderRadius: '10px',
     background: '#f0f8f7',
     padding: '10px 14px',
-    boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.03)',
+    boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.01)',
     transition: 'all 0.3s ease',
     transform: animateColor ? 'scale(1.02)' : 'scale(1)',
   },
   colorBox: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '8px',
-    boxShadow: '0 3px 6px rgba(0, 0, 0, 0.1)',
+    position: 'absolute',
+    top: '25%',
+    right: '112%', // Posicionar a la izquierda del botón
+    marginRight: '-130px',
+    width: '28px',
+    height: '28px',
+    borderRadius: '20px',
+    boxShadow: '0 3px 6px rgba(0, 0, 0, 0.49)',
     transition: 'all 0.3s ease',
     transform: animateColor ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
-  },  
+  }, 
   hexValue: {
     fontFamily: 'monospace',
     fontSize: '15px',
@@ -378,7 +382,7 @@ return (
         />
         <div style={styles.colorPreview}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={styles.colorLabel}>Color actual:</span>
+            <span style={styles.colorLabel}>‎ Color actual:</span>
             <div 
               style={{
                 ...styles.colorBox,
@@ -401,7 +405,7 @@ return (
                 e.currentTarget.style.transform = 'scale(1)';
               }}
             >
-              {justCopied ? '✓' : '📋'}
+              {justCopied ? '✓' : '     ❏ '}
               {showCopiedTooltip && (
                 <div style={styles.copyTooltip}>
                   ¡Copiado!
