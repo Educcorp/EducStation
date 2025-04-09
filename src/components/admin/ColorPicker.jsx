@@ -6,7 +6,7 @@ import { borderRadius } from '../../styles/theme';
 const ColorPicker = ({ onSelectColor, onCloseColorPicker }) => {
 // Estado para colores guardados y el color actual
 const [savedColors, setSavedColors] = useState([
-'#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a'
+'#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a', '#3a6ea5', '#ff6b6b', '#ffe66d'
 ]);
 // Intentar recuperar el último color usado desde localStorage
 const [currentColor, setCurrentColor] = useState(() => {
@@ -19,7 +19,6 @@ try {
 });
 const [activeTooltip, setActiveTooltip] = useState(null);
 const [animateColor, setAnimateColor] = useState(false);
-const [animateSave, setAnimateSave] = useState(false);
 const [justCopied, setJustCopied] = useState(false);
 
 // Mostrar tooltip
@@ -42,14 +41,10 @@ const handleKeyPress = (e) => {
 // Función para guardar automáticamente un nuevo color
 const saveColor = (colorToSave) => {
   if (!savedColors.includes(colorToSave)) {
-    // Animar el botón de guardar
-    setAnimateSave(true);
-    setTimeout(() => setAnimateSave(false), 300);
-    
     // Crear una copia del array actual sin mutar el estado original
     const newColors = [...savedColors];
-    // Eliminar el color más antiguo si ya tenemos 5
-    if (newColors.length >= 5) {
+    // Eliminar el color más antiguo si ya tenemos 8
+    if (newColors.length >= 8) {
       newColors.shift();
     }
     // Añadir el nuevo color
@@ -72,16 +67,25 @@ const selectColor = (color) => {
   setTimeout(() => setAnimateColor(false), 300);
   
   setCurrentColor(color);
-  // Aplicar el color al texto seleccionado
-  onSelectColor(color);
+  
+  // Verificamos que la función onSelectColor existe antes de llamarla
+  if (typeof onSelectColor === 'function') {
+    // Restaurar la selección original y aplicar el color solo después
+    // de completar la interacción con el selector de color
+    setTimeout(() => {
+      onSelectColor(color);
+    }, 50);
+  }
+  
   // Guardar el color actual en localStorage para recordarlo
   try {
     localStorage.setItem('lastUsedTextColor', color);
   } catch (e) {
     console.warn('No se pudo guardar el último color usado:', e);
   }
+  
   // Guardar automáticamente el color (excepto los predeterminados)
-  const defaultColors = ['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a'];
+  const defaultColors = ['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a', '#3a6ea5', '#ff6b6b', '#ffe66d'];
   if (!defaultColors.includes(color)) {
     saveColor(color);
   }
@@ -123,7 +127,7 @@ useEffect(() => {
   } catch (e) {
     console.warn('Error al cargar colores desde localStorage:', e);
     // En caso de error, asegurémonos de usar los colores predeterminados
-    setSavedColors(['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a']);
+    setSavedColors(['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a', '#3a6ea5', '#ff6b6b', '#ffe66d']);
   }
 }, []);
 
@@ -222,7 +226,6 @@ const styles = {
   },
   savedColorsContainer: {
     marginTop: '8px',
-    marginBottom: '16px',
     padding: '14px',
     borderRadius: '14px',
     backgroundColor: '#f5f7fa',
@@ -252,37 +255,6 @@ const styles = {
     cursor: 'pointer',
     boxShadow: '0 3px 5px rgba(0, 0, 0, 0.1)',
     transition: 'all 0.2s ease',
-  },
-  buttonContainer: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    marginTop: '14px',
-    gap: '10px',
-  },
-  button: {
-    padding: '10px 0',
-    borderRadius: '10px',
-    border: 'none',
-    background: 'linear-gradient(145deg, #1b4fd9, #1a75ff)',
-    color: 'white',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    width: '48%',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 4px 6px rgba(26, 115, 232, 0.2)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '5px',
-  },
-  applyButton: {
-    transform: animateColor ? 'scale(0.97)' : 'scale(1)',
-  },
-  saveButton: {
-    background: 'linear-gradient(145deg, #12a35a, #0d904d)',
-    boxShadow: '0 4px 6px rgba(26, 115, 46, 0.2)',
-    transform: animateSave ? 'scale(0.97)' : 'scale(1)',
   },
   closeButton: {
     position: 'absolute',
@@ -328,10 +300,8 @@ const styles = {
     padding: '3px',
     transition: 'all 0.2s ease',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05) inset',
-  },
-  buttonIcon: {
-    fontSize: '16px',
-    marginRight: '5px',
+    pointerEvents: 'auto', // Asegurar que los eventos del ratón funcionan
+    touchAction: 'none', // Mejorar soporte táctil
   },
 };
 
@@ -355,6 +325,14 @@ const cssAnimation = `
   }
 `;
 
+// Manejar cambio de color en el input
+const handleColorChange = (e) => {
+  const newColor = e.target.value;
+  setCurrentColor(newColor);
+  // No aplicamos el color inmediatamente, solo actualizamos la visualización
+  // Esto permite manipular el selector sin interferir con la selección de texto
+};
+
 return (
   <>
     {/* Estilos CSS para animaciones */}
@@ -363,6 +341,8 @@ return (
     <div 
       style={styles.colorPickerContainer} 
       onClick={(e) => e.stopPropagation()} 
+      onMouseDown={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
       className="color-picker-container"
     >
       <button 
@@ -391,7 +371,11 @@ return (
         <input 
           type="color" 
           value={currentColor}
-          onChange={(e) => setCurrentColor(e.target.value)}
+          onChange={handleColorChange}
+          onMouseDown={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          onBlur={(e) => selectColor(e.target.value)}
           onKeyPress={handleKeyPress}
           style={styles.colorInput}
         />
@@ -450,8 +434,7 @@ return (
                   justifyContent: 'center',
                 }}
                 onClick={(e) => {
-                  // Importante: solo llamar a selectColor, no a onCloseColorPicker
-                  e.stopPropagation(); // Evitar que el evento llegue a otros elementos
+                  e.stopPropagation();
                   selectColor(color);
                 }}
                 title={color}
@@ -471,51 +454,6 @@ return (
             );
           })}
         </div>
-      </div>
-      
-      <div style={styles.buttonContainer}>
-        <button 
-          style={{...styles.button, ...styles.applyButton}} 
-          onClick={() => selectColor(currentColor)}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 6px 10px rgba(26, 115, 232, 0.3)';
-            showTooltip('applyColor');
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 6px rgba(26, 115, 232, 0.2)';
-            hideTooltip();
-          }}
-        >
-          <span style={styles.buttonIcon}>✓</span>
-          Aplicar
-          <Tooltip
-            isVisible={activeTooltip === 'applyColor'}
-            text="Aplicar este color"
-          />
-        </button>
-        <button 
-          style={{...styles.button, ...styles.saveButton}} 
-          onClick={() => saveColor(currentColor)}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 6px 10px rgba(26, 115, 46, 0.3)';
-            showTooltip('saveColor');
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = '0 4px 6px rgba(26, 115, 46, 0.2)';
-            hideTooltip();
-          }}
-        >
-          <span style={styles.buttonIcon}>💾</span>
-          Guardar
-          <Tooltip
-            isVisible={activeTooltip === 'saveColor'}
-            text="Guardar en memoria"
-          />
-        </button>
       </div>
     </div>
   </>

@@ -291,18 +291,23 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       transition: 'all 0.2s ease',
       transform: (animateButton === 'increaseSize' || animateButton === 'decreaseSize') ? 'scale(0.9)' : 'scale(1)',
     },
-    colorIconContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-      width: '20px',
-      height: '20px',
-      borderRadius: '4px',
-      backgroundColor: currentIconColor,
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-      transition: 'transform 0.3s ease',
-    },
+
+      // ... otros estilos ...
+      
+      colorIconContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        width: '20px',
+        height: '20px',
+        borderRadius: '4px',
+        backgroundColor: currentIconColor,
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+        transition: 'transform 0.3s ease',
+      },
+      // Eliminar el estilo colorIcon que tenía la "A"
+
     colorIcon: {
       fontSize: '14px',
       fontWeight: 'bold',
@@ -985,36 +990,36 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         
         <div style={styles.separator} />
         
-        {/* Botón de color de texto mejorado */}
-        <div style={{ position: 'relative' }}>
-          <button 
-            ref={colorButtonRef}
-            type="button"
-            style={styles.colorButton(showColorPicker)}
-            onClick={handleColorButtonClick}
-            onMouseEnter={() => showTooltip('textColor')}
-            onMouseLeave={hideTooltip}
-          >
-            <div style={styles.colorIconContainer}>
-              <span style={styles.colorIcon}>A</span>
-            </div>
-            <Tooltip
-              isVisible={activeTooltip === 'textColor'}
-              text="Color de texto"
-            />
-          </button>
-          
-          {/* Componente selector de color */}
-          {showColorPicker && (
-            <div className="color-picker-container">
-              <ColorPicker 
-                onSelectColor={applyTextColor}
-                onCloseColorPicker={closeColorPicker}
+          {/* Botón de color de texto mejorado */}
+          <div style={{ position: 'relative' }}>
+            <button 
+              ref={colorButtonRef}
+              type="button"
+              style={styles.colorButton(showColorPicker)}
+              onClick={handleColorButtonClick}
+              onMouseEnter={() => showTooltip('textColor')}
+              onMouseLeave={hideTooltip}
+            >
+              <div style={styles.colorIconContainer}>
+                {/* Se eliminó la letra "A" aquí, dejando solo el rectángulo de color */}
+              </div>
+              <Tooltip
+                isVisible={activeTooltip === 'textColor'}
+                text="Color de texto"
               />
-            </div>
-          )}
-        </div>
-        
+            </button>
+            
+            {/* Componente selector de color */}
+            {showColorPicker && (
+              <div className="color-picker-container">
+                <ColorPicker 
+                  onSelectColor={applyTextColor}
+                  onCloseColorPicker={closeColorPicker}
+                />
+              </div>
+            )}
+          </div>
+
         {/* Opciones de formato avanzadas */}
         <button 
           type="button"
