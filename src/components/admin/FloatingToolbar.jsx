@@ -20,7 +20,15 @@ const [isTyping, setIsTyping] = useState(false);
 
 // Estados para el selector de color
 const [showColorPicker, setShowColorPicker] = useState(false);
-const [currentIconColor, setCurrentIconColor] = useState('#0b4444'); // Color inicial del ícono
+const [currentIconColor, setCurrentIconColor] = useState(() => {
+  try {
+    // Intentar recuperar el último color usado
+    const lastUsedColor = localStorage.getItem('lastUsedTextColor');
+    return lastUsedColor || '#0b4444';
+  } catch (e) {
+    return '#0b4444';
+  }
+}); // Color inicial del ícono
 
 // Referencias
 const toolbarRef = useRef(null);
@@ -56,36 +64,45 @@ const applyTextColor = (color) => {
       setShowColorPicker(false);
       // Actualizar el color del ícono al color seleccionado
       setCurrentIconColor(color);
-      
-      // Guardar automáticamente el color en localStorage
-      const defaultColors = ['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a'];
+      // Guardar el último color usado para mantener sincronización
       try {
-        // Recuperar colores guardados
-        const storedColorsStr = localStorage.getItem('savedTextColors');
-        let storedColors = defaultColors;
-        
-        if (storedColorsStr) {
-          try {
-            const parsed = JSON.parse(storedColorsStr);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              storedColors = parsed;
-            }
-          } catch (e) {
-            console.warn('Error al parsear colores guardados:', e);
-          }
-        }
-        
-        // Verificar si el color ya existe
-        if (!storedColors.includes(color)) {
-          // Mantener solo los últimos 5 colores
-          if (storedColors.length >= 5) {
-            storedColors.shift();
-          }
-          storedColors.push(color);
-          localStorage.setItem('savedTextColors', JSON.stringify(storedColors));
-        }
+        localStorage.setItem('lastUsedTextColor', color);
       } catch (e) {
-        console.warn('Error al guardar color:', e);
+        console.warn('No se pudo guardar el último color usado:', e);
+      }
+      
+      // Guardar automáticamente el color en localStorage (excepto los predeterminados)
+      const defaultColors = ['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a'];
+      
+      if (!defaultColors.includes(color)) {
+        try {
+          // Recuperar colores guardados
+          const storedColorsStr = localStorage.getItem('savedTextColors');
+          let storedColors = defaultColors;
+          
+          if (storedColorsStr) {
+            try {
+              const parsed = JSON.parse(storedColorsStr);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                storedColors = parsed;
+              }
+            } catch (e) {
+              console.warn('Error al parsear colores guardados:', e);
+            }
+          }
+          
+          // Verificar si el color ya existe
+          if (!storedColors.includes(color)) {
+            // Mantener solo los últimos 5 colores
+            if (storedColors.length >= 5) {
+              storedColors.shift();
+            }
+            storedColors.push(color);
+            localStorage.setItem('savedTextColors', JSON.stringify(storedColors));
+          }
+        } catch (e) {
+          console.warn('Error al guardar color:', e);
+        }
       }
     } catch (e) {
       console.error('Error al aplicar color:', e);
