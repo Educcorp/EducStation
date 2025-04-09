@@ -17,17 +17,21 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [isTyping, setIsTyping] = useState(false);
 
-  // Estados para el selector de color
+  // Definir el color predeterminado como constante
+  const DEFAULT_TEXT_COLOR = '#0b4444'; // Verde oscuro
+  
+  // Estados para el selector de color usando el color predeterminado
   const [showColorPicker, setShowColorPicker] = useState(false);
-  const [currentIconColor, setCurrentIconColor] = useState(() => {
+  const [currentIconColor, setCurrentIconColor] = useState(DEFAULT_TEXT_COLOR);
+
+  // Guardar el color predeterminado en localStorage al iniciar
+  useEffect(() => {
     try {
-      // Intentar recuperar el último color usado
-      const lastUsedColor = localStorage.getItem('lastUsedTextColor');
-      return lastUsedColor || '#0b4444';
+      localStorage.setItem('lastUsedTextColor', DEFAULT_TEXT_COLOR);
     } catch (e) {
-      return '#0b4444';
+      console.warn('No se pudo guardar el color por defecto:', e);
     }
-  });
+  }, []);
 
   // Estados para animaciones
   const [animateButton, setAnimateButton] = useState(null);
@@ -291,23 +295,18 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       transition: 'all 0.2s ease',
       transform: (animateButton === 'increaseSize' || animateButton === 'decreaseSize') ? 'scale(0.9)' : 'scale(1)',
     },
-
-      // ... otros estilos ...
-      
-      colorIconContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        width: '20px',
-        height: '20px',
-        borderRadius: '4px',
-        backgroundColor: currentIconColor,
-        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-        transition: 'transform 0.3s ease',
-      },
-      // Eliminar el estilo colorIcon que tenía la "A"
-
+    colorIconContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      position: 'relative',
+      width: '20px',
+      height: '20px',
+      borderRadius: '4px',
+      backgroundColor: currentIconColor,
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+      transition: 'transform 0.3s ease',
+    },
     colorIcon: {
       fontSize: '14px',
       fontWeight: 'bold',
@@ -753,6 +752,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     return () => {
       document.removeEventListener('selectionchange', handleSelectionChange);
       if (editorRef.current) {
+        editorRef.current.removeEventListener('mouseup', handleSelectionChange);
         editorRef.current.removeEventListener('mouseup', handleSelectionChange);
         editorRef.current.removeEventListener('keydown', handleKeyDown);
         editorRef.current.removeEventListener('input', handleInput);

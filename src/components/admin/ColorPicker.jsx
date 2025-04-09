@@ -61,7 +61,6 @@ const saveColor = (colorToSave) => {
 };
 
 // Función para seleccionar un color guardado
-// Versión corregida:
 const selectColor = (color) => {
   // Animar el elemento de color actual
   setAnimateColor(true);
