@@ -61,6 +61,7 @@ const saveColor = (colorToSave) => {
 };
 
 // Función para seleccionar un color guardado
+// Versión corregida:
 const selectColor = (color) => {
   // Animar el elemento de color actual
   setAnimateColor(true);
@@ -70,11 +71,8 @@ const selectColor = (color) => {
   
   // Verificamos que la función onSelectColor existe antes de llamarla
   if (typeof onSelectColor === 'function') {
-    // Restaurar la selección original y aplicar el color solo después
-    // de completar la interacción con el selector de color
-    setTimeout(() => {
-      onSelectColor(color);
-    }, 50);
+    // Llamar a onSelectColor directamente sin setTimeout
+    onSelectColor(color);
   }
   
   // Guardar el color actual en localStorage para recordarlo

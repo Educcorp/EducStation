@@ -1049,7 +1049,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
           onMouseEnter={() => showTooltip('link')}
           onMouseLeave={hideTooltip}
         >
-          <span style={{ fontSize: '16px' }}>🔗</span>
+          <span style={{ fontSize: '16px' }}><img src="/assets/images/icons/LINK_icon.png" alt="Enlace" style={styles.iconImage} /></span>
           <Tooltip
             isVisible={activeTooltip === 'link'}
             text="Insertar enlace"
@@ -1067,7 +1067,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
           onMouseEnter={() => showTooltip('image')}
           onMouseLeave={hideTooltip}
         >
-          <span style={{ fontSize: '16px' }}>🖼️</span>
+          <span style={{ fontSize: '16px' }}><img src="/assets/images/icons/IMG_icon.png" alt="Imagen" style={styles.iconImage} /></span>
           <Tooltip
             isVisible={activeTooltip === 'image'}
             text="Insertar imagen"
