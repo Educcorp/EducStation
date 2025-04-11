@@ -449,6 +449,7 @@ const AboutPage = () => {
                 { 
                   title: 'Excelencia', 
                   icon: '🏆', 
+                  description:'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de sí mismos.'
                 }
               ].map((value, index) => (
                 <div 
