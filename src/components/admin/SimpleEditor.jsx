@@ -1,11 +1,15 @@
 // src/components/admin/SimpleEditor.jsx
+
 import React, { useState, useRef, useEffect } from 'react';
-import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
-import SimpleEditorToolbar from './SimpleEditorToolbar';
+import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import FloatingToolbar from './FloatingToolbar';
 
 const SimpleEditor = ({ content, onChange }) => {
   const editorRef = useRef(null);
   const [internalContent, setInternalContent] = useState(content || '');
+  // Estado compartido para el tamaño de fuente - importante para sincronización
+  const [currentFontSize, setCurrentFontSize] = useState(12); // Valor predeterminado
+  
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
     italic: false,
@@ -93,6 +97,13 @@ const SimpleEditor = ({ content, onChange }) => {
           
           currentNode = currentNode.parentNode;
         }
+        
+        // Obtener el tamaño de fuente actual
+        const computedStyle = window.getComputedStyle(element);
+        const fontSize = parseInt(computedStyle.fontSize);
+        if (fontSize && !isNaN(fontSize)) {
+          setCurrentFontSize(fontSize);
+        }
       }
       
       setActiveFormats(formats);
@@ -138,6 +149,32 @@ const SimpleEditor = ({ content, onChange }) => {
           break;
         case 'orderedList':
           document.execCommand('insertOrderedList', false, null);
+          break;
+        case 'fontSize':
+          // Aplicar el tamaño de fuente usando el elemento span
+          if (value) {
+            // Actualizar el estado compartido con el nuevo tamaño
+            const size = parseFloat(value);
+            setCurrentFontSize(size);
+            
+            // Crear un span con el estilo de tamaño de fuente
+            document.execCommand('fontSize', false, '7'); // Usamos 7 como valor temporal
+            
+            // Después modificamos los elementos con fontSize=7 para usar el valor real
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+              const fontElements = document.querySelectorAll('font[size="7"]');
+              
+              fontElements.forEach(element => {
+                element.removeAttribute('size');
+                element.style.fontSize = value;
+              });
+            }
+            
+            // Notificar a las barras de herramientas sobre el cambio
+            // para mantener la sincronización
+            checkActiveFormats();
+          }
           break;
         default:
           // For basic formatting (bold, italic, underline)
@@ -275,8 +312,15 @@ const SimpleEditor = ({ content, onChange }) => {
       }
     }
   };
+  
+  // Mostrar la barra flotante al hacer clic en el editor
+  const handleEditorClick = () => {
+    // Este evento será capturado por FloatingToolbar 
+    // pero añadimos la función aquí para dar feedback visual si es necesario
+    editorRef.current?.focus();
+  };
 
-  // Styles for the editor
+  // Estilos para el editor
   const styles = {
     container: {
       position: 'relative',
@@ -287,31 +331,44 @@ const SimpleEditor = ({ content, onChange }) => {
     },
     editor: {
       width: '100%',
-      height: 'calc(100% - 40px)', // Account for toolbar height
+      height: '100%', // Aprovechamos toda la altura disponible al eliminar la barra estática
       padding: spacing.xl,
       outline: 'none',
       overflow: 'auto',
       color: colors.textPrimary,
       fontFamily: typography.fontFamily,
       fontSize: typography.fontSize.md,
-      lineHeight: 1.6
+      lineHeight: 1.6,
+      transition: 'box-shadow 0.2s ease',
+      cursor: 'text',
+      minHeight: '600px' // Garantizamos una altura mínima adecuada
     },
     placeholder: {
       position: 'absolute',
-      top: '40px', // Below toolbar
+      top: spacing.xl,
       left: spacing.xl,
-      padding: spacing.xl,
       color: colors.gray300,
       pointerEvents: 'none'
     }
   };
 
+  // Initialize content with default font size
+  useEffect(() => {
+    if (editorRef.current && !content) {
+      // Si el contenido está vacío, establecer el tamaño de fuente predeterminado
+      editorRef.current.style.fontSize = '12px';
+    }
+  }, [content]);
+
   return (
     <div style={styles.container}>
-      {/* Toolbar */}
-      <SimpleEditorToolbar 
+      {/* Barra de herramientas flotante - ahora es la única barra */}
+      <FloatingToolbar 
         onFormatText={applyFormat}
-        activeFormats={activeFormats} 
+        activeFormats={activeFormats}
+        editorRef={editorRef}
+        fontSize={currentFontSize}
+        setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
       />
       
       {/* Placeholder text when editor is empty */}
@@ -324,11 +381,14 @@ const SimpleEditor = ({ content, onChange }) => {
       {/* Editable content area */}
       <div
         ref={editorRef}
-        style={styles.editor}
+        style={{...styles.editor, fontSize: '12px' }}
         onInput={handleContentChange}
         onBlur={handleContentChange}
         onKeyDown={handleKeyDown}
-        onClick={checkActiveFormats}
+        onClick={(e) => {
+          handleEditorClick();
+          checkActiveFormats();
+        }}
         onKeyUp={checkActiveFormats}
         onMouseUp={checkActiveFormats}
         onPaste={handlePaste}
