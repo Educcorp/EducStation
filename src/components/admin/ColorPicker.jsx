@@ -382,7 +382,7 @@ return (
         />
         <div style={styles.colorPreview}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={styles.colorLabel}>‎ Color actual:</span>
+            <span style={styles.colorLabel}>‎   Color actual:</span>
             <div 
               style={{
                 ...styles.colorBox,
