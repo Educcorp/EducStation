@@ -199,7 +199,6 @@ const CookiesPage = () => {
       color: colors.primary,
       textDecoration: "none",
       borderBottom: `1px dotted ${colors.secondary}`,
-      transition: "all 0.3s ease",
       fontWeight: typography.fontWeight.medium,
       '&:hover': {
         color: colors.secondary,

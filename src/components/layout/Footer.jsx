@@ -508,6 +508,10 @@ const Footer = () => {
             <Link 
               to="/terms" 
               style={{...styles.bottomLink}}
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = "/terms";
+              }}
               onMouseEnter={(e) => e.target.style.color = colors.secondary}
               onMouseLeave={(e) => e.target.style.color = colors.gray200}
             >
@@ -516,6 +520,10 @@ const Footer = () => {
             <Link 
               to="/privacy" 
               style={{...styles.bottomLink}}
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = "/privacy";
+              }}
               onMouseEnter={(e) => e.target.style.color = colors.secondary}
               onMouseLeave={(e) => e.target.style.color = colors.gray200}
             >
@@ -524,6 +532,10 @@ const Footer = () => {
             <Link 
               to="/cookies" 
               style={{...styles.bottomLink}}
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = "/cookies";
+              }}
               onMouseEnter={(e) => e.target.style.color = colors.secondary}
               onMouseLeave={(e) => e.target.style.color = colors.gray200}
             >
