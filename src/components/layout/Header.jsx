@@ -1,7 +1,9 @@
-// src/components/layout/Header.jsx con correcciones
+// src/components/layout/Header.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import ThemeToggleButton from '../common/ThemeToggleButton';
+import { useTheme } from '../../context/ThemeContext';
 
 const Header = () => {
   // Estado para detectar si la página ha sido scrolleada
@@ -14,6 +16,19 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   // Estado para controlar la visibilidad del menú
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Obtener el tema actual
+  const { isDarkMode } = useTheme();
+
+  // Ajustar los colores basados en el tema
+  const currentColors = isDarkMode ? {
+    ...colors,
+    background: '#1a2e2d',
+    white: '#0a1919',
+    textPrimary: '#e1e7e6',
+    textSecondary: '#a7b9b6',
+    primary: isDarkMode ? '#4c7977' : '#0b4444'
+  } : colors;
 
   // Usar useLocation en lugar de withRouter
   const location = useLocation();
@@ -40,9 +55,6 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
-  useEffect(() => {
-    console.log('isVisible:', isVisible);
-  }, [isVisible]);
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
     if (path === '/') {
@@ -60,7 +72,13 @@ const Header = () => {
   // Estilos del header
   const styles = {
     header: {
-      backgroundColor: isScrolled ? "rgba(240, 248, 247, 0.95)" : colors.white,
+      backgroundColor: isScrolled 
+        ? isDarkMode 
+          ? "rgba(26, 46, 45, 0.95)" 
+          : "rgba(240, 248, 247, 0.95)" 
+        : isDarkMode 
+          ? "#1a2e2d" 
+          : colors.white,
       padding: `${spacing.md} 0`,
       boxShadow: isScrolled ? shadows.md : shadows.sm,
       position: "fixed",
@@ -86,14 +104,14 @@ const Header = () => {
     logo: {
       display: "flex",
       alignItems: "center",
-      color: colors.primary,
+      color: currentColors.primary,
       textDecoration: "none",
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.bold,
       transition: transitions.default
     },
     logoIcon: {
-      backgroundColor: colors.background,
+      backgroundColor: isDarkMode ? "#2d4a49" : colors.background,
       borderRadius: borderRadius.md,
       display: "flex",
       alignItems: "center",
@@ -106,10 +124,11 @@ const Header = () => {
     },
     navLinks: {
       display: "flex",
-      gap: spacing.xl
+      gap: spacing.xl,
+      alignItems: "center" // Añadido para alinear el botón de tema
     },
     navLink: (isActivePath) => ({
-      color: isActivePath ? colors.primary : colors.textSecondary,
+      color: isActivePath ? currentColors.primary : currentColors.textSecondary,
       textDecoration: "none",
       fontWeight: typography.fontWeight.medium,
       position: "relative",
@@ -120,10 +139,10 @@ const Header = () => {
       width: "40px",
       height: "40px",
       borderRadius: borderRadius.circle,
-      backgroundColor: colors.primaryLight,
+      backgroundColor: isDarkMode ? "#2d4a49" : colors.primaryLight,
       overflow: "hidden",
       boxShadow: shadows.sm,
-      border: `2px solid ${colors.white}`,
+      border: `2px solid ${isDarkMode ? "#3a5c5b" : colors.white}`,
       transition: transitions.default,
       cursor: "pointer"
     },
@@ -136,7 +155,7 @@ const Header = () => {
       position: "absolute",
       top: "50px",
       right: "0",
-      backgroundColor: colors.white,
+      backgroundColor: isDarkMode ? "#1a2e2d" : colors.white,
       boxShadow: shadows.md,
       borderRadius: borderRadius.md,
       padding: spacing.md,
@@ -145,7 +164,7 @@ const Header = () => {
     },
     menuItem: {
       padding: `${spacing.sm} ${spacing.md}`,
-      color: colors.textSecondary,
+      color: currentColors.textSecondary,
       textDecoration: "none",
       display: "block",
       cursor: "pointer",
@@ -153,8 +172,8 @@ const Header = () => {
     },
     loginButton: {
       padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary,
-      color: colors.primary,
+      backgroundColor: currentColors.secondary,
+      color: currentColors.primary,
       border: "none",
       borderRadius: borderRadius.md,
       fontSize: typography.fontSize.sm,
@@ -163,8 +182,8 @@ const Header = () => {
       transition: transitions.default,
       marginLeft: spacing.md,
       '&:hover': {
-        backgroundColor: colors.primary,
-        color: colors.white
+        backgroundColor: currentColors.primary,
+        color: isDarkMode ? "#1a2e2d" : colors.white
       }
     }
   };
@@ -202,7 +221,7 @@ const Header = () => {
               />
             </div>
             <span style={{
-              color: colors.primary,
+              color: currentColors.primary,
               fontWeight: typography.fontWeight.bold
             }}>
               EducStation
@@ -232,25 +251,28 @@ const Header = () => {
                       height: '2px',
                       bottom: 0,
                       left: 0,
-                      backgroundColor: colors.primary,
+                      backgroundColor: currentColors.primary,
                       transition: transitions.default
                     }}
                   ></span>
                 </a>
               )
             ))}
+            
+            {/* Botón de cambio de tema */}
+            <ThemeToggleButton />
           </nav>
           
           <button 
             style={styles.loginButton}
             onClick={() => (window.location.href = "/login")} // Redirect to login page
             onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.primary;
-              e.currentTarget.style.color = colors.white;
+              e.currentTarget.style.backgroundColor = currentColors.primary;
+              e.currentTarget.style.color = isDarkMode ? "#1a2e2d" : colors.white;
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.secondary;
-              e.currentTarget.style.color = colors.primary;
+              e.currentTarget.style.backgroundColor = currentColors.secondary;
+              e.currentTarget.style.color = currentColors.primary;
             }}
           >
             Inicio de Sesión
@@ -268,7 +290,10 @@ const Header = () => {
           >
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
           </div>
-          <div style={styles.menu}>
+          <div style={{
+            ...styles.menu,
+            backgroundColor: isDarkMode ? "#1a2e2d" : colors.white,
+          }}>
             <a href="/" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Inicio</a>
             <a href="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</a>
             <a href="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</a>
@@ -283,5 +308,3 @@ const Header = () => {
 };
 
 export default Header;
-
-
