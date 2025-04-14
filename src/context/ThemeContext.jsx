@@ -8,9 +8,16 @@ export const ThemeContext = createContext();
 export const ThemeProvider = ({ children }) => {
   // Verificar si hay una preferencia guardada en localStorage
   const getSavedTheme = () => {
-    const savedTheme = localStorage.getItem('theme');
-    return savedTheme === 'dark' || 
-           (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    try {
+      const savedTheme = localStorage.getItem('theme');
+      // Si hay un tema guardado, usarlo. Si no, usar la preferencia del sistema
+      return savedTheme === 'dark' || 
+             (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    } catch (error) {
+      // Si hay algún error (ej. localStorage no disponible), usar tema claro por defecto
+      console.warn('Error accessing theme preferences:', error);
+      return false;
+    }
   };
 
   // Estado para controlar si el tema es oscuro o claro
@@ -21,17 +28,51 @@ export const ThemeProvider = ({ children }) => {
     setIsDarkMode(prevMode => !prevMode);
   };
 
-  // Actualizar localStorage cuando cambia el tema
+  // Actualizar localStorage y clases CSS cuando cambia el tema
   useEffect(() => {
-    localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-    
-    // Actualizar la clase en el elemento HTML para estilos globales
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark-mode');
-    } else {
-      document.documentElement.classList.remove('dark-mode');
+    try {
+      // Guardar preferencia en localStorage
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      
+      // Actualizar la clase en el elemento HTML para estilos globales
+      if (isDarkMode) {
+        document.documentElement.classList.add('dark-mode');
+      } else {
+        document.documentElement.classList.remove('dark-mode');
+      }
+    } catch (error) {
+      console.warn('Error saving theme preferences:', error);
     }
   }, [isDarkMode]);
+
+  // También verificar si cambia la preferencia del sistema
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Solo ajustar el tema si no hay una preferencia guardada
+    const handleChange = (e) => {
+      if (localStorage.getItem('theme') === null) {
+        setIsDarkMode(e.matches);
+      }
+    };
+
+    // Agregar listener para cambios (compatibilidad cruzada entre navegadores)
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      // Para navegadores más antiguos
+      mediaQuery.addListener(handleChange);
+    }
+
+    // Limpiar
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
