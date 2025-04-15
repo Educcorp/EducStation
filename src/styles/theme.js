@@ -150,4 +150,4 @@ export const applyHoverStyles = (styleObj) => {
 
 // Para mantener compatibilidad con el código existente, también exportamos lightColors como colors
 export const colorsark = darkColors;
-export const colors = darkColors;
+export const colors = lightColors;

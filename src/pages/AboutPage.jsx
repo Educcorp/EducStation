@@ -184,43 +184,130 @@ const AboutPage = () => {
       name: 'Damian Valencia',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Damian.png', // Ruta relativa correcta
-      bio: 'Se ocupa de de metodologías y estrategias para manejar el aprendizaje y los hábitos de estudio.'
+      bio: (
+        <button
+          onClick={() => window.open('https://github.com/Dami-Val', '_blank')}
+          style={{
+            color: colors.primary,
+            padding: spacing.sm,
+            borderRadius: borderRadius.sm,
+            cursor: 'pointer',
+            fontSize: typography.fontSize.sm,
+            background: 'none',
+          }}>  'Se ocupa de de metodologías y estrategias para manejar el aprendizaje y los hábitos de estudio.'
+          </button>
+      ),
     },
     {
       name: 'Fernanda Zepeda',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/fer.png',
-      bio: 'Encargado de recopilar, redactar o presentar noticias relevantes del ODS 4.'
+      bio:(
+        <button
+          onClick={() => window.open('https://github.com/Fer463-web', '_blank')}
+          style={{
+            color: colors.primary,
+            padding: spacing.sm,
+            borderRadius: borderRadius.sm,
+            cursor: 'pointer',
+            fontSize: typography.fontSize.sm,
+            background: 'none',
+          }}>  'Encargado de recopilar, redactar o presentar noticias relevantes del ODS 4.'
+          </button>
+          ),
     },
     {
       name: 'Emmanuel Palacios',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Emma.png',
-      bio: 'Aborda problemáticas en el estudio: analiza dificultades, obstáculos o desafíos que enfrentan los estudiantes durante su proceso de aprendizaje.'
+      bio:(
+        <button
+          onClick={() => window.open('https://github.com/Emma-Pal', '_blank')}
+          style={{
+            color: colors.primary,
+            padding: spacing.sm,
+            borderRadius: borderRadius.sm,
+            cursor: 'pointer',
+            fontSize: typography.fontSize.sm,
+            background: 'none',
+          }}>  'Aborda problemáticas en el estudio: analiza dificultades, obstáculos o desafíos que enfrentan los estudiantes durante su proceso de aprendizaje.'
+          </button>
+          ),
     },
     {
       name: 'Priscila Lopez',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Priscila.png',
-      bio: 'Se enfoca en educación de calidad.'
+      bio:(
+        <button
+          onClick={() => window.open('https://github.com/pjusto930', '_blank')}
+          style={{
+            color: colors.primary,
+            padding: spacing.sm,
+            borderRadius: borderRadius.sm,
+            cursor: 'pointer',
+            fontSize: typography.fontSize.sm,
+            background: 'none',
+          }}> 'Se enfoca en educación de calidad.'
+          </button>
+      ),
     },
     {
       name: 'Yoselin Reynaga',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/yose.png',
-      bio: 'Encargada del desarrollo profesional docente.'
+      bio:(
+        <button
+          onClick={() => window.open('https://github.com/yoselinRS', '_blank')}
+          style={{
+            color: colors.primary,
+            padding: spacing.sm,
+            borderRadius: borderRadius.sm,
+            cursor: 'pointer',
+            fontSize: typography.fontSize.sm,
+            background: 'none',
+          }}>'Encargada del desarrollo profesional docente.'
+          </button>
+      ) 
     },
     {
       name: 'Gregorio Sánchez',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Grego.png',
-      bio: 'Maneja Herramientas tecnológicas: se especializa en recursos digitales, aplicaciones o plataformas que apoyan al proceso educativo.'
+      bio:(
+        <button
+          onClick={() => window.open('https://github.com/Gregorio-Yahir', '_blank')}
+          style={{
+            color: colors.primary,
+            padding: spacing.sm,
+            borderRadius: borderRadius.sm,
+            cursor: 'pointer',
+            fontSize: typography.fontSize.sm,
+            background: 'none',
+          }}
+        >'Maneja Herramientas tecnológicas: se especializa en recursos digitales, aplicaciones o plataformas que apoyan al proceso educativo.'
+        </button> 
+      ),
     },
     {
       name: 'Ruben Lavariega',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Ruben.png',
-      bio: 'Promueve la participación colectiva, trabajo en equipo y construcción de redes entre diversos actores educativos.'
+      bio: (
+        <button
+          onClick={() => window.open('https://github.com/RubenLavariega', '_blank')}
+          style={{
+            color: colors.primary,
+            padding: spacing.sm,
+            borderRadius: borderRadius.sm,
+            cursor: 'pointer',
+            fontSize: typography.fontSize.sm,
+            background: 'none',
+          }}
+        >
+          Promueve la participación colectiva, trabajo en equipo y construcción de redes entre diversos actores educativos. Ir a Google
+        </button>
+      ),
     }
   ];
 
@@ -257,24 +344,6 @@ const AboutPage = () => {
         
         <div style={styles.container}>
           {/* Stats Section */}
-          <section style={styles.stats}>
-            <div style={styles.statItem}>
-              <div style={styles.statNumber}>7</div>
-              <div style={styles.statLabel}>Administradores</div>
-            </div>
-            <div style={styles.statItem}>
-              <div style={styles.statNumber}>0</div>
-              <div style={styles.statLabel}>Artículos</div>
-            </div>
-            <div style={styles.statItem}>
-              <div style={styles.statNumber}>0</div>
-              <div style={styles.statLabel}>Visitantes</div>
-            </div>
-            <div style={styles.statItem}>
-              <div style={styles.statNumber}>0</div>
-              <div style={styles.statLabel}>Alumnos</div>
-            </div>
-          </section>
           
           {/* Historia Section */}
           <section style={styles.section}>
@@ -380,7 +449,7 @@ const AboutPage = () => {
                 { 
                   title: 'Excelencia', 
                   icon: '🏆', 
-                  description: 'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de sí mismos.' 
+                  description:'Nos esforzamos por ofrecer contenido y herramientas para impulsar a los alumnos a que den lo mejor de sí mismos.'
                 }
               ].map((value, index) => (
                 <div 
