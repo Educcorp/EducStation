@@ -31,7 +31,7 @@ const App = () => {
       <Router>
         {/* ScrollToTop se ejecutará cada vez que cambie la ruta */}
         <ScrollToTop />
-        
+
         <div className="app">
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -42,12 +42,12 @@ const App = () => {
             <Route path="/admin/post" element={<AdminPostPage />} />
             <Route path="/admin/post/:postId" element={<AdminPostPage />} />
             <Route path="/category/:categoryName" element={<CategoryPage />} />
-            
+
             {/* Rutas para términos, privacidad y cookies */}
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/cookies" element={<CookiesPage />} />
-            
+
             {/* Ruta de respaldo */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
