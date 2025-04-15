@@ -57,7 +57,8 @@ const TermsPage = () => {
     },
     listItem: {
       marginBottom: spacing.md,
-      lineHeight: 1.6
+      lineHeight: 1.6,
+      color: colors.textSecondary // Define el color del texto de los elementos de la lista
     },
     numberedList: {
       paddingLeft: spacing.xl,
@@ -66,7 +67,7 @@ const TermsPage = () => {
     },
     emphasis: {
       fontWeight: typography.fontWeight.medium,
-      color: colors.primary
+      color: colors.primary 
     },
     contactSection: {
       backgroundColor: colors.primary + '08', // Color primario con baja opacidad

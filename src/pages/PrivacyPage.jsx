@@ -66,7 +66,8 @@ const PrivacyPage = () => {
     },
     listItem: {
       marginBottom: spacing.md,
-      lineHeight: 1.6
+      lineHeight: 1.6,
+      color: colors.textSecondary
     },
     emphasis: {
       fontWeight: typography.fontWeight.medium,
