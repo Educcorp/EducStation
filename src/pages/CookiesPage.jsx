@@ -152,7 +152,8 @@ const CookiesPage = () => {
     },
     cookieDescription: {
       marginBottom: spacing.lg,
-      lineHeight: 1.6
+      lineHeight: 1.6,
+      color: colors.textSecondary
     },
     cookieExamplesTitle: {
       fontSize: typography.fontSize.md,
@@ -172,12 +173,13 @@ const CookiesPage = () => {
       padding: spacing.sm,
       fontSize: typography.fontSize.sm,
       fontWeight: typography.fontWeight.medium,
-      borderBottom: `2px solid ${colors.secondary + '40'}`
+      borderBottom: `2px solid ${colors.secondary + '40'}`,
     },
     tableCell: {
       padding: spacing.sm,
       borderBottom: `1px solid ${colors.gray200}`,
-      fontSize: typography.fontSize.sm
+      fontSize: typography.fontSize.sm,
+      color: colors.textSecondary
     },
     managementSection: {
       backgroundColor: colors.white,
@@ -254,11 +256,11 @@ const CookiesPage = () => {
             En particular, utilizamos cookies para:
           </p>
           <ul style={{ paddingLeft: spacing.xl, marginBottom: spacing.lg, listStyleType: "disc" }}>
-            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>Recordar sus preferencias y configuraciones</li>
-            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>Mantener sus sesiones activas mientras utiliza nuestro sitio</li>
-            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>Entender cómo utiliza nuestro sitio para mejorarlo</li>
-            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>Recopilar analíticas para optimizar el rendimiento de nuestro sitio</li>
-            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>En algunos casos, para proporcionar contenido y anuncios personalizados</li>
+            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6, color: colors.textSecondary }}>Recordar sus preferencias y configuraciones</li>
+            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6, color: colors.textSecondary }}>Mantener sus sesiones activas mientras utiliza nuestro sitio</li>
+            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6, color: colors.textSecondary }}>Entender cómo utiliza nuestro sitio para mejorarlo</li>
+            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6, color: colors.textSecondary}}>Recopilar analíticas para optimizar el rendimiento de nuestro sitio</li>
+            <li style={{ marginBottom: spacing.sm, lineHeight: 1.6, color: colors.textSecondary }}>En algunos casos, para proporcionar contenido y anuncios personalizados</li>
           </ul>
         </section>
 
@@ -341,7 +343,7 @@ const CookiesPage = () => {
           
           <div style={styles.browserSection}>
             <h4 style={styles.browserTitle}>Google Chrome</h4>
-            <p style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>
+            <p style={{ marginBottom: spacing.sm, lineHeight: 1.6, color:colors.textSecondary }}>
               Para gestionar las cookies en Chrome, vaya a "Configuración" &gt; "Privacidad y seguridad" &gt; "Cookies y otros datos de sitios".
               <br />
               <a 
@@ -365,7 +367,7 @@ const CookiesPage = () => {
           
           <div style={styles.browserSection}>
             <h4 style={styles.browserTitle}>Mozilla Firefox</h4>
-            <p style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>
+            <p style={{ marginBottom: spacing.sm, lineHeight: 1.6, color: colors.textSecondary }}>
               Para gestionar las cookies en Firefox, vaya a "Opciones" &gt; "Privacidad y Seguridad" y busque la sección "Cookies y datos del sitio".
               <br />
               <a 
@@ -389,7 +391,7 @@ const CookiesPage = () => {
           
           <div style={styles.browserSection}>
             <h4 style={styles.browserTitle}>Safari</h4>
-            <p style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>
+            <p style={{ marginBottom: spacing.sm, lineHeight: 1.6, color: colors.textSecondary }}>
               Para gestionar las cookies en Safari, vaya a "Preferencias" &gt; "Privacidad" y busque la sección "Cookies y datos de sitios web".
               <br />
               <a 
@@ -413,7 +415,7 @@ const CookiesPage = () => {
           
           <div style={styles.browserSection}>
             <h4 style={styles.browserTitle}>Microsoft Edge</h4>
-            <p style={{ marginBottom: spacing.sm, lineHeight: 1.6 }}>
+            <p style={{ marginBottom: spacing.sm, lineHeight: 1.6, color: colors.textSecondary }}>
               Para gestionar las cookies en Edge, vaya a "Configuración" &gt; "Cookies y permisos del sitio" &gt; "Cookies y datos del sitio".
               <br />
               <a 

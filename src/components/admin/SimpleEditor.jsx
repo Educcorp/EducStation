@@ -130,9 +130,9 @@ const SimpleEditor = ({ content, onChange }) => {
           applyHeadingFormat(command);
           break;
         case 'textColor':
-          const color = prompt('Introduzca un color (ej. #0b4444, red, etc):', '#0b4444');
-          if (color) {
-            document.execCommand('foreColor', false, color);
+          // Ya no necesitamos usar el prompt porque ahora tenemos un color picker
+          if (value) {
+            document.execCommand('foreColor', false, value);
           }
           break;
         case 'link':
