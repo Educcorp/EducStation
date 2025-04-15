@@ -144,6 +144,26 @@ const getContrastText = (bgColor) => {
 
 // Estilos para el componente
 const styles = {
+  // 1. Añade este estilo al objeto styles dentro del componente ColorPicker
+applyButton: {
+  backgroundColor: '#4c7977',
+  color: 'white',
+  border: 'none',
+  borderRadius: '10px',
+  padding: '8px 14px',
+  fontWeight: '600',
+  cursor: 'pointer',
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+  marginTop: '16px',
+  width: '100%',
+  transition: 'all 0.2s ease',
+  fontSize: '14px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: '8px',
+},
+
   colorPickerContainer: {
     position: 'absolute',
     top: '170%',
@@ -415,7 +435,7 @@ return (
           </div>
         </div>
       </div>
-      
+
       {/* Colores guardados mejorados visualmente */}
       <div style={styles.savedColorsContainer}>
         <div style={styles.savedColorsLabel}>
@@ -452,8 +472,33 @@ return (
                   <span style={{ color: contrastText, fontSize: '20px' }}>✓</span>
                 )}
               </div>
+
             );
+
+            
           })}
+          
+          <button 
+            style={styles.applyButton}
+            onClick={() => selectColor(currentColor)}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#3a6ea5';
+              e.currentTarget.style.transform = 'scale(1.02)';
+              showTooltip('applyColor');
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = '#4c7977';
+              e.currentTarget.style.transform = 'scale(1)';
+              hideTooltip();
+            }}
+          >
+            Aplicar color <span style={{fontSize: '16px'}}>✓</span>
+            <Tooltip
+              isVisible={activeTooltip === 'applyColor'}
+              text="Aplicar este color"
+            />
+          </button>
+          
         </div>
       </div>
     </div>
