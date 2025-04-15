@@ -1,6 +1,6 @@
-// src/components/layout/Header.jsx
+// src/components/layout/Header.jsx modificado
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 
 const Header = () => {
@@ -17,9 +17,8 @@ const Header = () => {
   // Estado para controlar si el usuario está autenticado
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Usar useLocation y useNavigate de react-router-dom
+  // Usar useLocation en lugar de withRouter
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
   const userRole = 'admin'; // Opciones: 'admin', 'user', etc.
@@ -61,9 +60,6 @@ const Header = () => {
 
     // Actualizar el estado de autenticación
     setIsAuthenticated(false);
-
-    // Redireccionar a la página principal
-    navigate('/');
 
     // Opcional: mostrar un mensaje de cierre de sesión exitoso
     alert('Has cerrado sesión correctamente');
@@ -196,7 +192,7 @@ const Header = () => {
     logoutButton: {
       padding: `${spacing.sm} ${spacing.md}`,
       backgroundColor: colors.secondary, // Color diferente para distinguirlo
-      color: colors.white,
+      color: colors.primary,
       border: "none",
       borderRadius: borderRadius.md,
       fontSize: typography.fontSize.sm,
@@ -337,12 +333,16 @@ const Header = () => {
             <a href="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</a>
             <a href="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</a>
             <a href="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</a>
-            {isAuthenticated && (
+            {isAuthenticated ? (
               <a href="#" style={styles.menuItem} onClick={(e) => {
                 e.preventDefault();
                 handleLogout();
                 setIsMenuOpen(false);
               }}>Cerrar Sesión</a>
+            ) : (
+              <Link to="/login" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>
+                Iniciar Sesión
+              </Link>
             )}
           </div>
         </div>
