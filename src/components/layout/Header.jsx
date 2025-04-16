@@ -298,6 +298,17 @@ const Header = () => {
             <a href="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</a>
             <a href="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</a>
             <a href="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</a>
+            
+            {/* Botón de cambio de tema en el menú */}
+            <div style={{
+              ...styles.menuItem,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <span>{isDarkMode ? "Modo oscuro" : "Modo claro"}</span>
+              <ThemeToggleButton />
+            </div>
           </div>
         </div>
       </header>
