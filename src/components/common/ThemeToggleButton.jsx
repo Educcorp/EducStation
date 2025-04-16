@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 
-const ThemeToggleButton = () => {
+const ThemeToggleButton = ({ preventPropagation = false }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
 
@@ -56,10 +56,17 @@ const ThemeToggleButton = () => {
     setIsHovered(false);
   };
 
+  const handleClick = (e) => {
+    if (preventPropagation) {
+      e.stopPropagation();
+    }
+    toggleTheme();
+  };
+
   return (
     <button
       style={styles.toggleButton}
-      onClick={toggleTheme}
+      onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       aria-label={isDarkMode ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}

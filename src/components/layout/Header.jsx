@@ -18,7 +18,7 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Obtener el tema actual
-  const { isDarkMode } = useTheme();
+  const { isDarkMode, toggleTheme } = useTheme();
 
   // Ajustar los colores basados en el tema
   const currentColors = isDarkMode ? {
@@ -300,14 +300,18 @@ const Header = () => {
             <a href="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</a>
             
             {/* Botón de cambio de tema en el menú */}
-            <div style={{
-              ...styles.menuItem,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}>
+            <div 
+              style={{
+                ...styles.menuItem,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer'
+              }}
+              onClick={toggleTheme}
+            >
               <span>{isDarkMode ? "Modo oscuro" : "Modo claro"}</span>
-              <ThemeToggleButton />
+              <ThemeToggleButton preventPropagation={true} />
             </div>
           </div>
         </div>

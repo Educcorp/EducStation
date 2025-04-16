@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { colors, spacing, typography, transitions } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const Footer = () => {
+  const { isDarkMode } = useTheme();
   const [emailValue, setEmailValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -25,10 +27,21 @@ const Footer = () => {
     }, 1500);
   };
   
+  // Definir colores basados en el tema actual
+  const currentColors = {
+    background: isDarkMode ? '#1a2e2d' : colors.primary,
+    text: isDarkMode ? '#e1e7e6' : colors.white,
+    secondaryText: isDarkMode ? '#8ba6a4' : colors.gray200,
+    accent: isDarkMode ? '#e0c7a8' : colors.secondary,
+    border: isDarkMode ? 'rgba(139, 166, 164, 0.2)' : 'rgba(240, 248, 247, 0.1)',
+    inputBg: isDarkMode ? 'rgba(11, 28, 27, 0.5)' : 'rgba(240, 248, 247, 0.1)',
+    inputFocusBg: isDarkMode ? 'rgba(11, 28, 27, 0.8)' : 'rgba(240, 248, 247, 0.2)',
+  };
+  
   const styles = {
     footer: {
-      backgroundColor: colors.primary,
-      color: colors.white,
+      backgroundColor: currentColors.background,
+      color: currentColors.text,
       padding: `${spacing.xxl} 0 ${spacing.xl}`,
       marginTop: spacing.xxl
     },
@@ -48,22 +61,22 @@ const Footer = () => {
       marginBottom: spacing.md,
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.bold,
-      color: colors.white,
-      cursor: "pointer" // Add cursor pointer for button-like behavior
+      color: currentColors.text,
+      cursor: "pointer"
     },
     logoIcon: {
       marginRight: spacing.sm,
       width: "32px",
       height: "32px",
-      backgroundColor: colors.primaryLight,
+      backgroundColor: isDarkMode ? colors.primary : colors.primaryLight,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      backgroundImage: `linear-gradient(135deg, ${colors.primaryLight} 60%, ${colors.secondary} 40%)`,
+      backgroundImage: `linear-gradient(135deg, ${isDarkMode ? colors.primary : colors.primaryLight} 60%, ${currentColors.accent} 40%)`,
       borderRadius: "8px"
     },
     description: {
-      color: colors.gray200,
+      color: currentColors.secondaryText,
       marginBottom: spacing.xl,
       lineHeight: "1.6",
       fontSize: typography.fontSize.sm
@@ -76,24 +89,20 @@ const Footer = () => {
       width: "36px",
       height: "36px",
       borderRadius: "50%",
-      backgroundColor: "rgba(240, 248, 247, 0.1)",
+      backgroundColor: currentColors.border,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       transition: transitions.default,
       cursor: "pointer",
       fontSize: "18px",
-      color: colors.white,
-      '&:hover': {
-        backgroundColor: colors.secondary,
-        color: colors.primary
-      }
+      color: currentColors.text
     },
     title: {
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.semiBold,
       marginBottom: spacing.md,
-      color: colors.white
+      color: currentColors.text
     },
     links: {
       listStyle: "none",
@@ -105,24 +114,12 @@ const Footer = () => {
       position: "relative",
       paddingLeft: spacing.md,
       transition: transitions.default,
-      '&:hover': {
-        color: colors.secondary,
-        paddingLeft: spacing.lg
-      },
-      '&:before': {
-        content: '"›"',
-        position: "absolute",
-        left: 0,
-        color: colors.secondary
-      }
+      color: currentColors.secondaryText
     },
     linkAnchor: {
-      color: colors.gray200,
+      color: currentColors.secondaryText,
       textDecoration: "none",
-      transition: transitions.default,
-      '&:hover': {
-        color: colors.secondary
-      }
+      transition: transitions.default
     },
     newsletter: {
       marginTop: spacing.md
@@ -136,41 +133,34 @@ const Footer = () => {
       padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: "4px 0 0 4px",
       border: "none",
-      backgroundColor: "rgba(240, 248, 247, 0.1)",
-      color: colors.white,
+      backgroundColor: currentColors.inputBg,
+      color: currentColors.text,
       '&::placeholder': {
-        color: colors.gray200
+        color: currentColors.secondaryText
       },
       '&:focus': {
         outline: "none",
-        backgroundColor: "rgba(240, 248, 247, 0.2)"
+        backgroundColor: currentColors.inputFocusBg
       }
     },
     button: {
       padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary,
-      color: colors.primary,
+      backgroundColor: currentColors.accent,
+      color: isDarkMode ? colors.text : colors.primary,
       border: "none",
       borderRadius: "0 4px 4px 0",
       cursor: "pointer",
-      transition: transitions.default,
-      '&:hover': {
-        backgroundColor: colors.white
-      },
-      '&:disabled': {
-        backgroundColor: colors.gray300,
-        cursor: "not-allowed"
-      }
+      transition: transitions.default
     },
     message: {
       fontSize: typography.fontSize.sm,
       marginTop: spacing.sm,
-      color: colors.secondary
+      color: currentColors.accent
     },
     bottom: {
       marginTop: spacing.xxl,
       paddingTop: spacing.md,
-      borderTop: `1px solid rgba(240, 248, 247, 0.1)`,
+      borderTop: `1px solid ${currentColors.border}`,
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -178,7 +168,7 @@ const Footer = () => {
       gap: spacing.md
     },
     copyright: {
-      color: colors.gray200,
+      color: currentColors.secondaryText,
       fontSize: typography.fontSize.sm
     },
     bottomLinks: {
@@ -186,13 +176,10 @@ const Footer = () => {
       gap: spacing.md
     },
     bottomLink: {
-      color: colors.gray200,
+      color: currentColors.secondaryText,
       fontSize: typography.fontSize.sm,
       textDecoration: "none",
-      transition: transitions.default,
-      '&:hover': {
-        color: colors.secondary
-      }
+      transition: transitions.default
     }
   };
 
@@ -204,9 +191,9 @@ const Footer = () => {
           <div>
             <div 
               style={styles.logo} 
-              onClick={() => (window.location.href = "/")} // Redirect to homepage
-              onMouseEnter={(e) => (e.currentTarget.style.color = colors.secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = colors.white)}
+              onClick={() => (window.location.href = "/")}
+              onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.text)}
             >
               <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
               EducStation
@@ -222,16 +209,16 @@ const Footer = () => {
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
+                onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.accent}
+                onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.border}
               >T</a>
               <a 
                 href="https://www.linkedin.com/in/educcorp-inc-158297356/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={{...styles.socialIcon}}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
+                onMouseEnter={(e) => e.target.style.backgroundColor = currentColors.accent}
+                onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.border}
               >in</a>
             </div>
           </div>
@@ -243,11 +230,11 @@ const Footer = () => {
               <li 
                 style={styles.link}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
+                  e.currentTarget.style.color = currentColors.accent;
                   e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
@@ -256,21 +243,21 @@ const Footer = () => {
                   href="/"
                   style={styles.linkAnchor}
                   onClick={(e) => {
-                    e.preventDefault(); // Prevenir el comportamiento predeterminado
-                    window.location.href = "/"; // Forzar el refresco de la página
+                    e.preventDefault();
+                    window.location.href = "/";
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = colors.secondary)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = colors.gray200)}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >Inicio</Link>
               </li>
               <li 
               style={styles.link}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = colors.secondary;
+                e.currentTarget.style.color = currentColors.accent;
                 e.currentTarget.style.paddingLeft = spacing.lg;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.color = colors.gray200;
+                e.currentTarget.style.color = currentColors.secondaryText;
                 e.currentTarget.style.paddingLeft = spacing.md;
               }}
               >
@@ -282,19 +269,19 @@ const Footer = () => {
                     e.preventDefault();
                     window.location.href = "/about";
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >
                   Acerca de</Link>
               </li>
               <li 
                   style={styles.link}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = colors.secondary;
+                    e.currentTarget.style.color = currentColors.accent;
                     e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
@@ -306,44 +293,44 @@ const Footer = () => {
                     e.preventDefault();
                     window.location.href = "/contact";
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >Contacto</Link>
               </li>
-              <li npm start
+              <li 
                 style={styles.link}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
+                  e.currentTarget.style.color = currentColors.accent;
                   e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
                 <Link 
                   to="/contact#faq-section"
                   style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >FAQ</Link>
               </li>
               <li 
                 style={styles.link}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
+                  e.currentTarget.style.color = currentColors.accent;
                   e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
                 <Link 
                   to="/admin/post"
                   style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >Crear Post</Link>
               </li>
             </ul>
@@ -356,91 +343,91 @@ const Footer = () => {
               <li 
                 style={styles.link}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
+                  e.currentTarget.style.color = currentColors.accent;
                   e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
                 <Link 
                   to="/category/tecnicas-de-estudio"
                   style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >Técnicas de Estudio</Link>
               </li>
               <li 
                 style={styles.link}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
+                  e.currentTarget.style.color = currentColors.accent;
                   e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
                 <Link 
                   to="/category/desarrollo-docente"
                   style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >Desarrollo Profesional</Link>
               </li>
               <li 
                 style={styles.link}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
+                  e.currentTarget.style.color = currentColors.accent;
                   e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
                 <Link 
                   to="/category/educacion-de-calidad"
                   style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >Educación de Calidad</Link>
               </li>
               <li 
                 style={styles.link}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
+                  e.currentTarget.style.color = currentColors.accent;
                   e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
                 <Link 
                   to="/category/comunidad"
                   style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >Comunidad</Link>
               </li>
               <li 
                 style={styles.link}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.secondary;
+                  e.currentTarget.style.color = currentColors.accent;
                   e.currentTarget.style.paddingLeft = spacing.lg;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.gray200;
+                  e.currentTarget.style.color = currentColors.secondaryText;
                   e.currentTarget.style.paddingLeft = spacing.md;
                 }}
               >
                 <Link 
                   to="/category/herramientas"
                   style={styles.linkAnchor}
-                  onMouseEnter={(e) => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={(e) => e.currentTarget.style.color = colors.gray200}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = currentColors.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = currentColors.secondaryText)}
                 >Herramientas</Link>
               </li>
             </ul>
@@ -465,8 +452,8 @@ const Footer = () => {
                 type="submit"
                 disabled={isSubmitting}
                 style={styles.button}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.white}
-                onMouseLeave={(e) => e.target.style.backgroundColor = colors.secondary}
+                onMouseEnter={(e) => e.target.style.backgroundColor = isDarkMode ? '#f0f0f0' : colors.white}
+                onMouseLeave={(e) => e.target.style.backgroundColor = currentColors.accent}
               >
                 {isSubmitting ? '...' : 'OK'}
               </button>
@@ -488,24 +475,24 @@ const Footer = () => {
             <Link 
               to="/terms" 
               style={{...styles.bottomLink}}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
+              onMouseEnter={(e) => e.target.style.color = currentColors.accent}
+              onMouseLeave={(e) => e.target.style.color = currentColors.secondaryText}
             >
               Términos
             </Link>
             <Link 
               to="/privacy" 
               style={{...styles.bottomLink}}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
+              onMouseEnter={(e) => e.target.style.color = currentColors.accent}
+              onMouseLeave={(e) => e.target.style.color = currentColors.secondaryText}
             >
               Privacidad
             </Link>
             <Link 
               to="/cookies" 
               style={{...styles.bottomLink}}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
+              onMouseEnter={(e) => e.target.style.color = currentColors.accent}
+              onMouseLeave={(e) => e.target.style.color = currentColors.secondaryText}
             >
               Cookies
             </Link>
