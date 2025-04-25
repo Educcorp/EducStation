@@ -2,6 +2,8 @@
 *.sqlite3
 db.sqlite3
 
+
+node_modules
 # Archivos de configuración con credenciales
 # Nota: settings.py normalmente se sube al repositorio, pero deberías
 # considerar usar variables de entorno para las credenciales en producción
