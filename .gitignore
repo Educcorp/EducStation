@@ -3,7 +3,7 @@
 db.sqlite3
 
 node_modules/
-package-lock.json 
+package-lock.json
 
 # Archivos de configuración con credenciales
 # Nota: settings.py normalmente se sube al repositorio, pero deberías
