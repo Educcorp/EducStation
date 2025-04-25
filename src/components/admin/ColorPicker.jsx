@@ -493,10 +493,7 @@ return (
             }}
           >
             Aplicar color <span style={{fontSize: '16px'}}>✓</span>
-            <Tooltip
-              isVisible={activeTooltip === 'applyColor'}
-              text="Aplicar este color"
-            />
+
           </button>
           
         </div>
