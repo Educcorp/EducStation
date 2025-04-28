@@ -50,9 +50,9 @@ const Header = () => {
     }
     // Marcar la sección de Blog como activa cuando estamos viendo un post
     if (path === '/blog') {
-      return location.pathname.startsWith('/blog') || 
-             location.pathname.includes('/post/') || 
-             location.pathname.includes('/category/');
+      return location.pathname.startsWith('/blog') ||
+        location.pathname.includes('/post/') ||
+        location.pathname.includes('/category/');
     }
     return location.pathname.startsWith(path);
   };
@@ -182,7 +182,7 @@ const Header = () => {
       <header style={styles.header}>
         <div style={styles.container}>
           <Link
-            to="/" 
+            to="/"
             style={styles.logo}
             onMouseEnter={() => setHoveredItem('logo')}
             onMouseLeave={() => setHoveredItem(null)}
@@ -191,14 +191,14 @@ const Header = () => {
               ...styles.logoIcon,
               transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)'
             }}>
-              <img 
-                src="/assets/images/educstation-logo.png" 
-                alt="EducStation Logo" 
+              <img
+                src="/assets/images/educstation-logo.png"
+                alt="EducStation Logo"
                 style={{
                   width: "100%",
                   height: "100%",
                   objectFit: "contain"
-                }} 
+                }}
               />
             </div>
             <span style={{
@@ -240,8 +240,8 @@ const Header = () => {
               )
             ))}
           </nav>
-          
-          <button 
+
+          <button
             style={styles.loginButton}
             onClick={() => (window.location.href = "/login")} // Redirect to login page
             onMouseEnter={(e) => {
@@ -255,7 +255,7 @@ const Header = () => {
           >
             Inicio de Sesión
           </button>
-          <div 
+          <div
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
