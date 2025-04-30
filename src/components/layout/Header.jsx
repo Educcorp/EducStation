@@ -16,6 +16,8 @@ const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   // Estado para controlar si el usuario está autenticado
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Estado para almacenar el nombre del usuario
+  const [userName, setUserName] = useState('');
 
   // Usar useLocation en lugar de withRouter
   const location = useLocation();
@@ -26,7 +28,9 @@ const Header = () => {
   // Verificar si el usuario está autenticado cuando se carga el componente
   useEffect(() => {
     const token = localStorage.getItem('userToken');
+    const storedUserName = localStorage.getItem('userName') || 'Usuario';
     setIsAuthenticated(!!token);
+    setUserName(storedUserName);
   }, []);
 
   // Detectar scroll para efectos de navegación
@@ -60,6 +64,7 @@ const Header = () => {
 
     // Actualizar el estado de autenticación
     setIsAuthenticated(false);
+    setUserName('');
 
     // Opcional: mostrar un mensaje de cierre de sesión exitoso
     alert('Has cerrado sesión correctamente');
@@ -163,7 +168,8 @@ const Header = () => {
       borderRadius: borderRadius.md,
       padding: spacing.md,
       display: isMenuOpen ? "block" : "none",
-      zIndex: 200
+      zIndex: 200,
+      minWidth: "200px"
     },
     menuItem: {
       padding: `${spacing.sm} ${spacing.md}`,
@@ -171,7 +177,11 @@ const Header = () => {
       textDecoration: "none",
       display: "block",
       cursor: "pointer",
-      transition: transitions.default
+      transition: transitions.default,
+      '&:hover': {
+        backgroundColor: colors.background,
+        color: colors.primary
+      }
     },
     loginButton: {
       padding: `${spacing.sm} ${spacing.md}`,
@@ -204,6 +214,59 @@ const Header = () => {
         backgroundColor: colors.primary,
         color: colors.white
       }
+    },
+    // Estilos adicionales para el perfil de usuario
+    userProfileSection: {
+      padding: spacing.md,
+      borderBottom: `1px solid ${colors.gray200}`,
+      marginBottom: spacing.sm,
+      textAlign: 'center'
+    },
+    userAvatar: {
+      width: '60px',
+      height: '60px',
+      borderRadius: '50%',
+      margin: '0 auto',
+      marginBottom: spacing.sm,
+      border: `2px solid ${colors.primary}`,
+      padding: '2px',
+      backgroundColor: colors.white
+    },
+    userName: {
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.semiBold,
+      color: colors.primary,
+      marginBottom: spacing.xs
+    },
+    userRole: {
+      fontSize: typography.fontSize.sm,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm
+    },
+    userEmail: {
+      fontSize: typography.fontSize.xs,
+      color: colors.textSecondary,
+      marginBottom: spacing.sm,
+      wordBreak: 'break-all'
+    },
+    menuSeparator: {
+      height: '1px',
+      backgroundColor: colors.gray200,
+      margin: `${spacing.xs} 0`,
+      width: '100%'
+    },
+    menuHeader: {
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.semiBold,
+      color: colors.textSecondary,
+      textTransform: 'uppercase',
+      padding: `${spacing.xs} ${spacing.md}`,
+      letterSpacing: '1px'
+    },
+    menuItemIcon: {
+      marginRight: spacing.sm,
+      fontSize: typography.fontSize.sm,
+      color: colors.primary
     }
   };
 
@@ -214,6 +277,12 @@ const Header = () => {
     { path: '/contact', label: 'Contacto' },
     { path: '/admin/post', label: 'Crear Post', admin: true }
   ];
+
+  const getMenuItemStyle = (index) => ({
+    ...styles.menuItem,
+    backgroundColor: hoveredItem === `menu-${index}` ? colors.background : 'transparent',
+    color: hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary
+  });
 
   return (
     <>
@@ -323,22 +392,121 @@ const Header = () => {
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
           </div>
 
-          {/* Menú desplegable */}
+          {/* Menú desplegable con perfil del usuario */}
           <div style={styles.menu}>
-            <Link to="/" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Inicio</Link>
-            <Link to="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</Link>
-            <Link to="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</Link>
-            <Link to="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</Link>
             {isAuthenticated ? (
-              <a href="#" style={styles.menuItem} onClick={(e) => {
-                e.preventDefault();
-                handleLogout();
-                setIsMenuOpen(false);
-              }}>Cerrar Sesión</a>
+              <>
+                {/* Sección de perfil del usuario */}
+                <div style={styles.userProfileSection}>
+                  <div style={styles.userAvatar}>
+                    <img src="/assets/images/logoBN.png" alt="Avatar" style={styles.profileImg} />
+                  </div>
+                  <div style={styles.userName}>{userName}</div>
+                  <div style={styles.userRole}>{userRole === 'admin' ? 'Administrador' : 'Usuario'}</div>
+                </div>
+
+                {/* Opciones del menú para usuario autenticado */}
+                <div style={styles.menuHeader}>Cuenta</div>
+                <Link 
+                  to="/profile" 
+                  style={getMenuItemStyle(0)}
+                  onMouseEnter={() => setHoveredItem('menu-0')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span style={styles.menuItemIcon}>👤</span> Mi Perfil
+                </Link>
+                <Link 
+                  to="/settings" 
+                  style={getMenuItemStyle(1)}
+                  onMouseEnter={() => setHoveredItem('menu-1')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span style={styles.menuItemIcon}>⚙️</span> Configuración
+                </Link>
+                {userRole === 'admin' && (
+                  <Link 
+                    to="/admin/dashboard" 
+                    style={getMenuItemStyle(2)}
+                    onMouseEnter={() => setHoveredItem('menu-2')}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span style={styles.menuItemIcon}>📊</span> Panel de Control
+                  </Link>
+                )}
+
+                <div style={styles.menuSeparator}></div>
+                
+                <div style={styles.menuHeader}>Contenido</div>
+                <Link 
+                  to="/admin/post" 
+                  style={getMenuItemStyle(3)}
+                  onMouseEnter={() => setHoveredItem('menu-3')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span style={styles.menuItemIcon}>✏️</span> Crear Post
+                </Link>
+                <Link 
+                  to="/my-posts" 
+                  style={getMenuItemStyle(4)}
+                  onMouseEnter={() => setHoveredItem('menu-4')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span style={styles.menuItemIcon}>📝</span> Mis Publicaciones
+                </Link>
+                <Link 
+                  to="/favorites" 
+                  style={getMenuItemStyle(5)}
+                  onMouseEnter={() => setHoveredItem('menu-5')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <span style={styles.menuItemIcon}>⭐</span> Favoritos
+                </Link>
+
+                <div style={styles.menuSeparator}></div>
+                
+                <a 
+                  href="#" 
+                  style={getMenuItemStyle(6)}
+                  onMouseEnter={() => setHoveredItem('menu-6')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                >
+                  <span style={styles.menuItemIcon}>🚪</span> Cerrar Sesión
+                </a>
+              </>
             ) : (
-              <Link to="/login" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>
-                Iniciar Sesión
-              </Link>
+              <>
+                {/* Menú para usuarios no autenticados */}
+                <div style={styles.menuHeader}>Menú</div>
+                <Link to="/" style={getMenuItemStyle(0)} onMouseEnter={() => setHoveredItem('menu-0')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}>🏠</span> Inicio
+                </Link>
+                <Link to="/about" style={getMenuItemStyle(1)} onMouseEnter={() => setHoveredItem('menu-1')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}>ℹ️</span> Acerca de
+                </Link>
+                <Link to="/contact" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}>📞</span> Contacto
+                </Link>
+                
+                <div style={styles.menuSeparator}></div>
+                
+                <Link to="/login" style={getMenuItemStyle(3)} onMouseEnter={() => setHoveredItem('menu-3')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}>🔑</span> Iniciar Sesión
+                </Link>
+                <Link to="/register" style={getMenuItemStyle(4)} onMouseEnter={() => setHoveredItem('menu-4')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}>📝</span> Registrarse
+                </Link>
+              </>
             )}
           </div>
         </div>
