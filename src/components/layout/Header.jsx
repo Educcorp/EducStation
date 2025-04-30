@@ -4,33 +4,25 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 
 const Header = () => {
-  // Agregar useNavigate para manejar redirecciones
   const navigate = useNavigate();
 
-  // Estado para detectar si la página ha sido scrolleada
+  // Estados existentes
   const [isScrolled, setIsScrolled] = useState(false);
-  // Estado para el hover
   const [hoveredItem, setHoveredItem] = useState(null);
-  // Estado para controlar la visibilidad del header
   const [isVisible, setIsVisible] = useState(true);
-  // Estado para almacenar la posición de scroll anterior
   const [lastScrollY, setLastScrollY] = useState(0);
-  // Estado para controlar la visibilidad del menú
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  // Estado para controlar si el usuario está autenticado
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // Estado para almacenar el nombre del usuario
   const [userName, setUserName] = useState('');
-  // Estado para la notificación (simplificado)
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
-  // Usar useLocation en lugar de withRouter
+  // Nuevo estado para el modal de confirmación
+  const [confirmLogout, setConfirmLogout] = useState(false);
+
   const location = useLocation();
+  const userRole = 'admin';
 
-  // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
-  const userRole = 'admin'; // Opciones: 'admin', 'user', etc.
-
-  // Verificar si el usuario está autenticado cuando se carga el componente
+  // Verificar autenticación
   useEffect(() => {
     const token = localStorage.getItem('userToken');
     const storedUserName = localStorage.getItem('userName') || 'Usuario';
@@ -38,17 +30,15 @@ const Header = () => {
     setUserName(storedUserName);
   }, []);
 
-  // Detectar scroll para efectos de navegación
+  // Detectar scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
-
       setLastScrollY(currentScrollY);
       setIsScrolled(currentScrollY > 50);
     };
@@ -63,7 +53,6 @@ const Header = () => {
       const timer = setTimeout(() => {
         setNotification({ ...notification, show: false });
       }, 3000);
-
       return () => clearTimeout(timer);
     }
   }, [notification.show]);
@@ -73,9 +62,14 @@ const Header = () => {
     setNotification({ show: true, message, type });
   };
 
-  // Función para cerrar sesión
-  const handleLogout = () => {
-    // Guardar el nombre del usuario antes de eliminarlo
+  // Función para iniciar el proceso de cierre de sesión
+  const initiateLogout = () => {
+    setConfirmLogout(true);
+    setIsMenuOpen(false);
+  };
+
+  // Función para confirmar el cierre de sesión
+  const confirmLogoutAction = () => {
     const currentUser = localStorage.getItem('userName') || 'Usuario';
 
     // Eliminar datos de autenticación
@@ -85,23 +79,25 @@ const Header = () => {
     // Actualizar estado
     setIsAuthenticated(false);
     setUserName('');
-
-    // Cerrar menú
-    setIsMenuOpen(false);
+    setConfirmLogout(false);
 
     // Mostrar mensaje
     showNotification(`¡Hasta pronto, ${currentUser}! Has cerrado sesión correctamente.`);
 
-    // Redireccionar a inicio (usando navigate en lugar de window.location)
+    // Redireccionar a inicio
     navigate('/');
   };
 
-  // Verificar si la ruta está activa, con lógica adicional para la sección de blog
+  // Función para cancelar el cierre de sesión
+  const cancelLogout = () => {
+    setConfirmLogout(false);
+  };
+
+  // Verificar si la ruta está activa
   const isActive = (path) => {
     if (path === '/') {
       return location.pathname === '/';
     }
-    // Marcar la sección de Blog como activa cuando estamos viendo un post
     if (path === '/blog') {
       return location.pathname.startsWith('/blog') ||
         location.pathname.includes('/post/') ||
@@ -117,14 +113,13 @@ const Header = () => {
       padding: `${spacing.md} 0`,
       boxShadow: isScrolled ? shadows.md : shadows.sm,
       position: "fixed",
-      top: isVisible ? 0 : '-100px', // Cambiar la posición top para mostrar/ocultar el header
+      top: isVisible ? 0 : '-100px',
       width: "100%",
       zIndex: 100,
       transition: transitions.default
     },
     headerSpacer: {
-      // Añade un elemento espaciador para compensar la altura del header fijo
-      height: "80px", // Altura aproximada del header con padding
+      height: "80px",
       width: "100%"
     },
     container: {
@@ -227,7 +222,7 @@ const Header = () => {
     },
     logoutButton: {
       padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary, // Color diferente para distinguirlo
+      backgroundColor: colors.secondary,
       color: colors.primary,
       border: "none",
       borderRadius: borderRadius.md,
@@ -241,7 +236,6 @@ const Header = () => {
         color: colors.white
       }
     },
-    // Estilos adicionales para el perfil de usuario
     userProfileSection: {
       padding: spacing.md,
       borderBottom: `1px solid ${colors.gray200}`,
@@ -288,7 +282,7 @@ const Header = () => {
       fontSize: typography.fontSize.sm,
       color: colors.primary
     },
-    // Estilo para la notificación (simplificado y más estable)
+    // Estilo para la notificación
     notification: {
       position: 'fixed',
       bottom: '30px',
@@ -305,23 +299,121 @@ const Header = () => {
       textAlign: 'center',
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.medium,
-      display: notification.show ? 'block' : 'none'
+      display: notification.show ? 'flex' : 'none',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    notificationIcon: {
+      marginRight: spacing.md,
+      fontSize: '20px'
+    },
+
+    // Estilos para el modal de confirmación
+    modalOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: confirmLogout ? 'flex' : 'none',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 9999,
+      backdropFilter: 'blur(4px)'
+    },
+    modalContent: {
+      backgroundColor: colors.white,
+      borderRadius: borderRadius.lg,
+      boxShadow: shadows.xl,
+      width: '90%',
+      maxWidth: '450px',
+      padding: 0,
+      overflow: 'hidden',
+      animation: 'modalFadeIn 0.3s ease-out forwards',
+      transform: 'scale(0.9)',
+      opacity: 0
+    },
+    modalHeader: {
+      backgroundColor: colors.primary,
+      color: colors.white,
+      padding: `${spacing.md} ${spacing.xl}`,
+      display: 'flex',
+      alignItems: 'center',
+      borderBottom: `1px solid ${colors.primaryDark}`
+    },
+    modalWarningIcon: {
+      fontSize: '24px',
+      marginRight: spacing.md,
+      color: colors.white
+    },
+    modalTitle: {
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.bold,
+      margin: 0
+    },
+    modalBody: {
+      padding: `${spacing.xl} ${spacing.xl}`,
+      fontSize: typography.fontSize.md,
+      lineHeight: '1.6',
+      color: colors.textPrimary,
+      textAlign: 'center'
+    },
+    modalFooter: {
+      padding: `${spacing.md} ${spacing.xl}`,
+      borderTop: `1px solid ${colors.gray200}`,
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: spacing.md
+    },
+    cancelButton: {
+      padding: `${spacing.sm} ${spacing.xl}`,
+      backgroundColor: colors.white,
+      color: colors.primary,
+      border: `1px solid ${colors.primary}`,
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.medium,
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      outline: 'none'
+    },
+    confirmButton: {
+      padding: `${spacing.sm} ${spacing.xl}`,
+      backgroundColor: '#ff5252', // Color de advertencia para cerrar sesión
+      color: colors.white,
+      border: 'none',
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.medium,
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      outline: 'none'
+    },
+    userName: {
+      fontWeight: typography.fontWeight.bold,
+      color: colors.primary
+    },
+    waveAnimation: {
+      display: 'inline-block',
+      animation: 'waveHand 0.5s ease-in-out 2',
+      transformOrigin: '70% 70%'
     }
   };
-
-  const navItems = [
-    { path: '/', label: 'Inicio' },
-    { path: '/category/tecnicas-de-estudio', label: 'Blog' }, // Añadido item de navegación para Blog
-    { path: '/about', label: 'Acerca de' },
-    { path: '/contact', label: 'Contacto' },
-    { path: '/admin/post', label: 'Crear Post', admin: true }
-  ];
 
   const getMenuItemStyle = (index) => ({
     ...styles.menuItem,
     backgroundColor: hoveredItem === `menu-${index}` ? colors.background : 'transparent',
     color: hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary
   });
+
+  const navItems = [
+    { path: '/', label: 'Inicio' },
+    { path: '/category/tecnicas-de-estudio', label: 'Blog' },
+    { path: '/about', label: 'Acerca de' },
+    { path: '/contact', label: 'Contacto' },
+    { path: '/admin/post', label: 'Crear Post', admin: true }
+  ];
 
   return (
     <>
@@ -361,7 +453,7 @@ const Header = () => {
               (!item.admin || userRole === 'admin') && (
                 <Link
                   key={index}
-                  to={item.path} // Usar Link de React Router en lugar de forzar refresco
+                  to={item.path}
                   style={styles.navLink(isActive(item.path))}
                   onMouseEnter={() => setHoveredItem(`nav-${index}`)}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -387,7 +479,7 @@ const Header = () => {
           {isAuthenticated ? (
             <button
               style={styles.logoutButton}
-              onClick={handleLogout}
+              onClick={initiateLogout} // Ahora muestra el modal de confirmación
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.primary;
                 e.currentTarget.style.color = colors.white;
@@ -426,7 +518,7 @@ const Header = () => {
             }}
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
-            onClick={() => setIsMenuOpen(!isMenuOpen)} // Toggle menu visibility
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
           </div>
@@ -516,7 +608,7 @@ const Header = () => {
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
-                    handleLogout();
+                    initiateLogout(); // Ahora muestra el modal de confirmación
                   }}
                 >
                   <span style={styles.menuItemIcon}>🚪</span> Cerrar Sesión
@@ -552,10 +644,81 @@ const Header = () => {
       {/* Añadimos un div espaciador para compensar la altura del header fijo */}
       <div style={styles.headerSpacer}></div>
 
-      {/* Notificación simplificada */}
+      {/* Notificación de éxito al cerrar sesión */}
       <div style={styles.notification}>
+        {notification.type === 'success' && (
+          <span style={styles.notificationIcon}>
+            <span style={styles.waveAnimation}>👋</span>
+          </span>
+        )}
+        {notification.type === 'error' && (
+          <span style={styles.notificationIcon}>❌</span>
+        )}
         {notification.message}
       </div>
+
+      {/* Modal de confirmación para cerrar sesión */}
+      <div style={styles.modalOverlay} onClick={cancelLogout}>
+        <div
+          style={styles.modalContent}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={styles.modalHeader}>
+            <span style={styles.modalWarningIcon}>⚠️</span>
+            <h3 style={styles.modalTitle}>Confirmar cierre de sesión</h3>
+          </div>
+          <div style={styles.modalBody}>
+            <p>¿Estás seguro de que deseas cerrar tu sesión en <strong>EducStation</strong>?</p>
+            <p>Tendrás que volver a iniciar sesión para acceder a tu perfil y contenido personalizado.</p>
+          </div>
+          <div style={styles.modalFooter}>
+            <button
+              style={styles.cancelButton}
+              onClick={cancelLogout}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.background;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.white;
+              }}
+            >
+              Cancelar
+            </button>
+            <button
+              style={styles.confirmButton}
+              onClick={confirmLogoutAction}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#ff3030';
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#ff5252';
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              Sí, cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* CSS para animaciones */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes modalFadeIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+
+          @keyframes waveHand {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(15deg); }
+            100% { transform: rotate(0deg); }
+          }
+        `
+      }} />
     </>
   );
 };
