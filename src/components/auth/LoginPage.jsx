@@ -268,51 +268,6 @@ const LoginPage = () => {
                 boxShadow: 'none',
             }
         },
-        socialLogin: {
-            marginTop: spacing.lg,
-            textAlign: 'center',
-            position: 'relative',
-        },
-        socialDivider: {
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: spacing.md,
-        },
-        dividerLine: {
-            flex: 1,
-            height: '1px',
-            backgroundColor: colors.gray200,
-        },
-        dividerText: {
-            padding: `0 ${spacing.md}`,
-            color: colors.primaryLight,
-            fontSize: typography.fontSize.sm,
-        },
-        socialIcons: {
-            display: 'flex',
-            justifyContent: 'center',
-            gap: spacing.md,
-        },
-        socialIcon: {
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: colors.white,
-            border: `1px solid ${colors.gray200}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: typography.fontSize.md,
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: colors.primaryLight,
-                borderColor: colors.primaryLight,
-                color: colors.white,
-                transform: 'translateY(-3px)',
-                boxShadow: '0 4px 10px rgba(11, 68, 68, 0.15)',
-            }
-        },
         registerLink: {
             textAlign: 'center',
             marginTop: spacing.xl,
@@ -470,61 +425,6 @@ const LoginPage = () => {
                             >
                                 {isSubmitting ? 'Iniciando sesión...' : 'Iniciar Sesión'}
                             </button>
-
-                            <div style={styles.socialLogin}>
-                                <div style={styles.socialDivider}>
-                                    <div style={styles.dividerLine}></div>
-                                    <span style={styles.dividerText}>O continúa con</span>
-                                    <div style={styles.dividerLine}></div>
-                                </div>
-                                <div style={styles.socialIcons}>
-                                    <div style={styles.socialIcon}
-                                        onMouseEnter={(e) => {
-                                            e.target.style.backgroundColor = colors.primaryLight;
-                                            e.target.style.borderColor = colors.primaryLight;
-                                            e.target.style.color = colors.white;
-                                            e.target.style.transform = 'translateY(-3px)';
-                                            e.target.style.boxShadow = '0 4px 10px rgba(11, 68, 68, 0.15)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.target.style.backgroundColor = colors.white;
-                                            e.target.style.borderColor = colors.gray200;
-                                            e.target.style.color = 'inherit';
-                                            e.target.style.transform = 'none';
-                                            e.target.style.boxShadow = 'none';
-                                        }}>G</div>
-                                    <div style={styles.socialIcon}
-                                        onMouseEnter={(e) => {
-                                            e.target.style.backgroundColor = colors.primaryLight;
-                                            e.target.style.borderColor = colors.primaryLight;
-                                            e.target.style.color = colors.white;
-                                            e.target.style.transform = 'translateY(-3px)';
-                                            e.target.style.boxShadow = '0 4px 10px rgba(11, 68, 68, 0.15)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.target.style.backgroundColor = colors.white;
-                                            e.target.style.borderColor = colors.gray200;
-                                            e.target.style.color = 'inherit';
-                                            e.target.style.transform = 'none';
-                                            e.target.style.boxShadow = 'none';
-                                        }}>f</div>
-                                    <div style={styles.socialIcon}
-                                        onMouseEnter={(e) => {
-                                            e.target.style.backgroundColor = colors.primaryLight;
-                                            e.target.style.borderColor = colors.primaryLight;
-                                            e.target.style.color = colors.white;
-                                            e.target.style.transform = 'translateY(-3px)';
-                                            e.target.style.boxShadow = '0 4px 10px rgba(11, 68, 68, 0.15)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.target.style.backgroundColor = colors.white;
-                                            e.target.style.borderColor = colors.gray200;
-                                            e.target.style.color = 'inherit';
-                                            e.target.style.transform = 'none';
-                                            e.target.style.boxShadow = 'none';
-                                        }}>in</div>
-                                </div>
-                            </div>
 
                             <div style={styles.registerLink}>
                                 ¿No tienes una cuenta? <Link to="/register" style={{
