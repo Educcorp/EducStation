@@ -1,9 +1,12 @@
 // src/components/layout/Header.jsx modificado
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 
 const Header = () => {
+  // Agregar useNavigate para manejar redirecciones
+  const navigate = useNavigate();
+
   // Estado para detectar si la página ha sido scrolleada
   const [isScrolled, setIsScrolled] = useState(false);
   // Estado para el hover
@@ -18,6 +21,8 @@ const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   // Estado para almacenar el nombre del usuario
   const [userName, setUserName] = useState('');
+  // Estado para la notificación (simplificado)
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
   // Usar useLocation en lugar de withRouter
   const location = useLocation();
@@ -52,22 +57,43 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
+  // Ocultar notificación después de 3 segundos
   useEffect(() => {
-    console.log('isVisible:', isVisible);
-  }, [isVisible]);
+    if (notification.show) {
+      const timer = setTimeout(() => {
+        setNotification({ ...notification, show: false });
+      }, 3000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [notification.show]);
+
+  // Función para mostrar notificación
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+  };
 
   // Función para cerrar sesión
   const handleLogout = () => {
-    // Eliminar el token del localStorage
+    // Guardar el nombre del usuario antes de eliminarlo
+    const currentUser = localStorage.getItem('userName') || 'Usuario';
+
+    // Eliminar datos de autenticación
     localStorage.removeItem('userToken');
     localStorage.removeItem('userName');
 
-    // Actualizar el estado de autenticación
+    // Actualizar estado
     setIsAuthenticated(false);
     setUserName('');
 
-    // Opcional: mostrar un mensaje de cierre de sesión exitoso
-    alert('Has cerrado sesión correctamente');
+    // Cerrar menú
+    setIsMenuOpen(false);
+
+    // Mostrar mensaje
+    showNotification(`¡Hasta pronto, ${currentUser}! Has cerrado sesión correctamente.`);
+
+    // Redireccionar a inicio (usando navigate en lugar de window.location)
+    navigate('/');
   };
 
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
@@ -243,12 +269,6 @@ const Header = () => {
       color: colors.textSecondary,
       marginBottom: spacing.sm
     },
-    userEmail: {
-      fontSize: typography.fontSize.xs,
-      color: colors.textSecondary,
-      marginBottom: spacing.sm,
-      wordBreak: 'break-all'
-    },
     menuSeparator: {
       height: '1px',
       backgroundColor: colors.gray200,
@@ -267,6 +287,25 @@ const Header = () => {
       marginRight: spacing.sm,
       fontSize: typography.fontSize.sm,
       color: colors.primary
+    },
+    // Estilo para la notificación (simplificado y más estable)
+    notification: {
+      position: 'fixed',
+      bottom: '30px',
+      left: '50%',
+      transform: 'translateX(-50%)',
+      minWidth: '300px',
+      maxWidth: '90%',
+      backgroundColor: notification.type === 'success' ? colors.primary : (notification.type === 'error' ? colors.error : colors.primaryLight),
+      color: colors.white,
+      padding: `${spacing.md} ${spacing.xl}`,
+      borderRadius: borderRadius.md,
+      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+      zIndex: 9999,
+      textAlign: 'center',
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.medium,
+      display: notification.show ? 'block' : 'none'
     }
   };
 
@@ -407,8 +446,8 @@ const Header = () => {
 
                 {/* Opciones del menú para usuario autenticado */}
                 <div style={styles.menuHeader}>Cuenta</div>
-                <Link 
-                  to="/profile" 
+                <Link
+                  to="/profile"
                   style={getMenuItemStyle(0)}
                   onMouseEnter={() => setHoveredItem('menu-0')}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -416,8 +455,8 @@ const Header = () => {
                 >
                   <span style={styles.menuItemIcon}>👤</span> Mi Perfil
                 </Link>
-                <Link 
-                  to="/settings" 
+                <Link
+                  to="/settings"
                   style={getMenuItemStyle(1)}
                   onMouseEnter={() => setHoveredItem('menu-1')}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -426,8 +465,8 @@ const Header = () => {
                   <span style={styles.menuItemIcon}>⚙️</span> Configuración
                 </Link>
                 {userRole === 'admin' && (
-                  <Link 
-                    to="/admin/dashboard" 
+                  <Link
+                    to="/admin/dashboard"
                     style={getMenuItemStyle(2)}
                     onMouseEnter={() => setHoveredItem('menu-2')}
                     onMouseLeave={() => setHoveredItem(null)}
@@ -438,10 +477,10 @@ const Header = () => {
                 )}
 
                 <div style={styles.menuSeparator}></div>
-                
+
                 <div style={styles.menuHeader}>Contenido</div>
-                <Link 
-                  to="/admin/post" 
+                <Link
+                  to="/admin/post"
                   style={getMenuItemStyle(3)}
                   onMouseEnter={() => setHoveredItem('menu-3')}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -449,8 +488,8 @@ const Header = () => {
                 >
                   <span style={styles.menuItemIcon}>✏️</span> Crear Post
                 </Link>
-                <Link 
-                  to="/my-posts" 
+                <Link
+                  to="/my-posts"
                   style={getMenuItemStyle(4)}
                   onMouseEnter={() => setHoveredItem('menu-4')}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -458,8 +497,8 @@ const Header = () => {
                 >
                   <span style={styles.menuItemIcon}>📝</span> Mis Publicaciones
                 </Link>
-                <Link 
-                  to="/favorites" 
+                <Link
+                  to="/favorites"
                   style={getMenuItemStyle(5)}
                   onMouseEnter={() => setHoveredItem('menu-5')}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -469,16 +508,15 @@ const Header = () => {
                 </Link>
 
                 <div style={styles.menuSeparator}></div>
-                
-                <a 
-                  href="#" 
+
+                <a
+                  href="#"
                   style={getMenuItemStyle(6)}
                   onMouseEnter={() => setHoveredItem('menu-6')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
                     handleLogout();
-                    setIsMenuOpen(false);
                   }}
                 >
                   <span style={styles.menuItemIcon}>🚪</span> Cerrar Sesión
@@ -497,9 +535,9 @@ const Header = () => {
                 <Link to="/contact" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}>📞</span> Contacto
                 </Link>
-                
+
                 <div style={styles.menuSeparator}></div>
-                
+
                 <Link to="/login" style={getMenuItemStyle(3)} onMouseEnter={() => setHoveredItem('menu-3')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}>🔑</span> Iniciar Sesión
                 </Link>
@@ -513,6 +551,11 @@ const Header = () => {
       </header>
       {/* Añadimos un div espaciador para compensar la altura del header fijo */}
       <div style={styles.headerSpacer}></div>
+
+      {/* Notificación simplificada */}
+      <div style={styles.notification}>
+        {notification.message}
+      </div>
     </>
   );
 };
