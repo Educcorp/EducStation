@@ -1,4 +1,4 @@
-// src/components/layout/Header.jsx con correcciones
+// src/components/layout/Header.jsx modificado
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
@@ -14,12 +14,20 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   // Estado para controlar la visibilidad del menú
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  // Estado para controlar si el usuario está autenticado
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Usar useLocation en lugar de withRouter
   const location = useLocation();
 
   // Simular rol de usuario - En una implementación real, esto vendría de tu sistema de autenticación
   const userRole = 'admin'; // Opciones: 'admin', 'user', etc.
+
+  // Verificar si el usuario está autenticado cuando se carga el componente
+  useEffect(() => {
+    const token = localStorage.getItem('userToken');
+    setIsAuthenticated(!!token);
+  }, []);
 
   // Detectar scroll para efectos de navegación
   useEffect(() => {
@@ -43,6 +51,20 @@ const Header = () => {
   useEffect(() => {
     console.log('isVisible:', isVisible);
   }, [isVisible]);
+
+  // Función para cerrar sesión
+  const handleLogout = () => {
+    // Eliminar el token del localStorage
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('userName');
+
+    // Actualizar el estado de autenticación
+    setIsAuthenticated(false);
+
+    // Opcional: mostrar un mensaje de cierre de sesión exitoso
+    alert('Has cerrado sesión correctamente');
+  };
+
   // Verificar si la ruta está activa, con lógica adicional para la sección de blog
   const isActive = (path) => {
     if (path === '/') {
@@ -166,6 +188,22 @@ const Header = () => {
         backgroundColor: colors.primary,
         color: colors.white
       }
+    },
+    logoutButton: {
+      padding: `${spacing.sm} ${spacing.md}`,
+      backgroundColor: colors.secondary, // Color diferente para distinguirlo
+      color: colors.primary,
+      border: "none",
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.medium,
+      cursor: "pointer",
+      transition: transitions.default,
+      marginLeft: spacing.md,
+      '&:hover': {
+        backgroundColor: colors.primary,
+        color: colors.white
+      }
     }
   };
 
@@ -213,14 +251,10 @@ const Header = () => {
             {navItems.map((item, index) => (
               // Solo mostrar enlaces de admin a usuarios con rol admin
               (!item.admin || userRole === 'admin') && (
-                <a
+                <Link
                   key={index}
-                  href={item.path} // Usamos href para forzar el refresco
+                  to={item.path} // Usar Link de React Router en lugar de forzar refresco
                   style={styles.navLink(isActive(item.path))}
-                  onClick={(e) => {
-                    e.preventDefault(); // Prevenir el comportamiento predeterminado
-                    window.location.href = item.path; // Forzar el refresco de la página
-                  }}
                   onMouseEnter={() => setHoveredItem(`nav-${index}`)}
                   onMouseLeave={() => setHoveredItem(null)}
                 >
@@ -236,31 +270,51 @@ const Header = () => {
                       transition: transitions.default
                     }}
                   ></span>
-                </a>
+                </Link>
               )
             ))}
           </nav>
 
-          <button
-            style={styles.loginButton}
-            onClick={() => (window.location.href = "/login")} // Redirect to login page
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.primary;
-              e.currentTarget.style.color = colors.white;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = colors.secondary;
-              e.currentTarget.style.color = colors.primary;
-            }}
-          >
-            Inicio de Sesión
-          </button>
+          {/* Botón condicional: Inicio de Sesión o Cerrar Sesión */}
+          {isAuthenticated ? (
+            <button
+              style={styles.logoutButton}
+              onClick={handleLogout}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.primary;
+                e.currentTarget.style.color = colors.white;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.secondary;
+                e.currentTarget.style.color = colors.primary;
+              }}
+            >
+              Cerrar Sesión
+            </button>
+          ) : (
+            <Link to="/login">
+              <button
+                style={styles.loginButton}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.primary;
+                  e.currentTarget.style.color = colors.white;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.secondary;
+                  e.currentTarget.style.color = colors.primary;
+                }}
+              >
+                Inicio de Sesión
+              </button>
+            </Link>
+          )}
+
           <div
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
               boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm,
-              cursor: 'pointer'
+              marginLeft: spacing.md
             }}
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
@@ -268,11 +322,24 @@ const Header = () => {
           >
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
           </div>
+
+          {/* Menú desplegable */}
           <div style={styles.menu}>
-            <a href="/" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Inicio</a>
-            <a href="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</a>
-            <a href="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</a>
-            <a href="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</a>
+            <Link to="/" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Inicio</Link>
+            <Link to="/about" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Acerca de</Link>
+            <Link to="/contact" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Contacto</Link>
+            <Link to="/admin/post" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>Crear Post</Link>
+            {isAuthenticated ? (
+              <a href="#" style={styles.menuItem} onClick={(e) => {
+                e.preventDefault();
+                handleLogout();
+                setIsMenuOpen(false);
+              }}>Cerrar Sesión</a>
+            ) : (
+              <Link to="/login" style={styles.menuItem} onClick={() => setIsMenuOpen(false)}>
+                Iniciar Sesión
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -283,5 +350,3 @@ const Header = () => {
 };
 
 export default Header;
-
-

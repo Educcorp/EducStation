@@ -1,11 +1,12 @@
 // src/components/auth/LoginPage.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 
 const LoginPage = () => {
+    const navigate = useNavigate(); // Usar useNavigate en lugar de window.location
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -79,8 +80,8 @@ const LoginPage = () => {
             localStorage.setItem('userToken', 'sample-token-12345');
             localStorage.setItem('userName', 'Usuario Demo');
 
-            // Redireccionar a la página principal
-            window.location.href = '/';
+            // Redireccionar a la página principal usando navigate en lugar de window.location
+            navigate('/');
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
             setErrors({

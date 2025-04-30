@@ -1,16 +1,12 @@
 // src/App.jsx
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-
 // Importación del nuevo componente ScrollToTop
 import ScrollToTop from './components/utils/ScrollToTop';
-
 // Importación del ThemeProvider
 import { ThemeProvider } from './context/ThemeContext';
-
 // Importación de estilos del tema oscuro
 import './styles/darkMode.css';
-
 // Importación de páginas
 import HomePage from './pages/HomePage';
 import BlogDetailPage from './pages/BlogDetailPage';
@@ -19,10 +15,8 @@ import ContactPage from './pages/ContactPage';
 import AdminPostPage from './pages/AdminPostPage';
 import CategoryPage from './pages/CategoryPage';
 import PostViewer from './components/blog/PostViewer';
-
 // Importación de páginas de autenticación
 import LoginPage from './components/auth/LoginPage';
-
 // Páginas adicionales
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -34,7 +28,6 @@ const App = () => {
       <Router>
         {/* ScrollToTop se ejecutará cada vez que cambie la ruta */}
         <ScrollToTop />
-
         <div className="app">
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -48,12 +41,10 @@ const App = () => {
 
             {/* Ruta para la página de login */}
             <Route path="/login" element={<LoginPage />} />
-
             {/* Rutas para términos, privacidad y cookies */}
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/cookies" element={<CookiesPage />} />
-
             {/* Ruta de respaldo */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
