@@ -77,7 +77,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
     <div style={styles.card}>
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="category">
-          <span style={{color: colors.secondary, fontSize: '1.1em'}}>📂</span> Categoría
+          <span style={{ color: colors.secondary, fontSize: '1.1em' }}>📂</span> Categoría
         </label>
         <select
           id="category"
@@ -104,7 +104,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
 
       <div style={styles.formGroup}>
         <label style={styles.label} htmlFor="publishDate">
-          <span style={{color: colors.secondary, fontSize: '1.1em'}}>📅</span> Fecha de publicación
+          <span style={{ color: colors.secondary, fontSize: '1.1em' }}>📅</span> Fecha de publicación
         </label>
         <input
           type="date"
@@ -122,7 +122,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
           }}
         />
         <p style={styles.helperText}>
-          <span style={{color: colors.secondary}}>⏰</span>
+          <span style={{ color: colors.secondary }}>⏰</span>
           Puedes programar la publicación para una fecha futura.
         </p>
       </div>
