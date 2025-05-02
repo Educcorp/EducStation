@@ -17,6 +17,7 @@ import CategoryPage from './pages/CategoryPage';
 import PostViewer from './components/blog/PostViewer';
 // Importación de páginas de autenticación
 import LoginPage from './components/auth/LoginPage';
+import RegisterPage from './components/auth/RegisterPage';
 // Páginas adicionales
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
@@ -41,6 +42,7 @@ const App = () => {
 
             {/* Ruta para la página de login */}
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
             {/* Rutas para términos, privacidad y cookies */}
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
