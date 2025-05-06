@@ -9,31 +9,42 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isAuth, setIsAuth] = useState(false);
 
-  useEffect(() => {
+// Actualización para AuthContext.jsx
+useEffect(() => {
     const loadUserData = async () => {
       setLoading(true);
       try {
-        if (isAuthenticated()) {
-          const userData = await getCurrentUser();
-          setUser(userData);
-          setIsAuth(true);
+        const token = localStorage.getItem('token');
+        
+        if (token) {
+          // Verificar la validez del token con el servidor
+          const isValid = await validateToken(token);
+          
+          if (isValid) {
+            const userData = await getCurrentUser();
+            setUser(userData);
+            setIsAuth(true);
+          } else {
+            // Token inválido o expirado
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            setUser(null);
+            setIsAuth(false);
+          }
         }
       } catch (error) {
         console.error('Error cargando datos del usuario:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         setUser(null);
         setIsAuth(false);
       } finally {
         setLoading(false);
       }
     };
-
+  
     loadUserData();
   }, []);
-
-  const updateAuthState = (userData) => {
-    setUser(userData);
-    setIsAuth(!!userData);
-  };
 
   return (
     <AuthContext.Provider value={{ user, loading, isAuth, updateAuthState }}>

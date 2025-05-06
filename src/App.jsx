@@ -21,9 +21,25 @@ import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
 
 // Componente para rutas protegidas
-const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  return token ? children : <Navigate to="/login" replace />;
+const PrivateRoute = ({ children, requiredRole = null }) => {
+  const { user, isAuth, loading } = useContext(AuthContext);
+  
+  // Mostrar loader mientras se verifica la autenticación
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  
+  // Verificar autenticación
+  if (!isAuth) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Verificar permisos si se requiere un rol específico
+  if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+  
+  return children;
 };
 
 const App = () => {
