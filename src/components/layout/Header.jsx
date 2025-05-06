@@ -160,7 +160,7 @@ const Header = () => {
       gap: spacing.xl
     },
     navLink: (isActivePath) => ({
-      color: isDarkMode ? (isActivePath ? '#ffd700' : '#fff') : (isActivePath ? '#333' : '#000'), // Ajusta el color de los enlaces
+      color: isDarkMode ? (isActivePath ? '#ffd700' : '#fff') : (isActivePath ? '#333' : '#000'), // Texto blanco en modo oscuro
       textDecoration: 'none',
       fontWeight: typography.fontWeight.medium,
       position: 'relative',
@@ -187,24 +187,26 @@ const Header = () => {
       position: "absolute",
       top: "50px",
       right: "0",
-      backgroundColor: colors.white,
+      backgroundColor: isDarkMode ? "#444" : colors.white, // Fondo más oscuro en modo oscuro
+      color: isDarkMode ? "#fff" : colors.textPrimary, // Texto más claro en modo oscuro
       boxShadow: shadows.md,
       borderRadius: borderRadius.md,
       padding: spacing.md,
       display: isMenuOpen ? "block" : "none",
       zIndex: 200,
-      minWidth: "200px"
+      minWidth: "200px",
+      transition: "background-color 0.3s ease, color 0.3s ease", // Transición suave
     },
     menuItem: {
       padding: `${spacing.sm} ${spacing.md}`,
-      color: isDarkMode ? '#fff' : '#000', // Cambia el color de los elementos del menú
+      color: isDarkMode ? '#fff' : colors.textPrimary, // Texto blanco en modo oscuro
       textDecoration: 'none',
       display: 'block',
       cursor: 'pointer',
       transition: transitions.default,
-      '&:hover': {
-        backgroundColor: isDarkMode ? '#444' : colors.background,
-        color: isDarkMode ? '#ffd700' : colors.primary, // Cambia el color al pasar el mouse
+      "&:hover": {
+        backgroundColor: isDarkMode ? "#555" : colors.background, // Fondo más oscuro al pasar el mouse
+        color: isDarkMode ? "#ffd700" : colors.primary, // Color de texto al pasar el mouse
       },
     },
     loginButton: {
@@ -267,18 +269,18 @@ const Header = () => {
       marginBottom: spacing.sm
     },
     menuSeparator: {
-      height: '1px',
-      backgroundColor: colors.gray200,
+      height: "1px",
+      backgroundColor: isDarkMode ? "#555" : colors.gray200, // Línea más oscura en modo oscuro
       margin: `${spacing.xs} 0`,
-      width: '100%'
+      width: "100%",
     },
     menuHeader: {
       fontSize: typography.fontSize.xs,
       fontWeight: typography.fontWeight.semiBold,
-      color: isDarkMode ? '#ccc' : colors.textSecondary, // Ajusta el color del encabezado del menú
-      textTransform: 'uppercase',
+      color: isDarkMode ? "#ccc" : colors.textSecondary, // Cambia el color del encabezado
+      textTransform: "uppercase",
       padding: `${spacing.xs} ${spacing.md}`,
-      letterSpacing: '1px',
+      letterSpacing: "1px",
     },
     menuItemIcon: {
       marginRight: spacing.sm,
@@ -406,8 +408,8 @@ const Header = () => {
 
   const getMenuItemStyle = (index) => ({
     ...styles.menuItem,
-    backgroundColor: hoveredItem === `menu-${index}` ? colors.background : 'transparent',
-    color: hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary
+    backgroundColor: hoveredItem === `menu-${index}` ? (isDarkMode ? "#555" : colors.background) : "transparent", // Fondo al pasar el mouse
+    color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#ffd700" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Texto blanco en modo oscuro
   });
 
   const navItems = [
