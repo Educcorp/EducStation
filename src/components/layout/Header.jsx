@@ -15,6 +15,7 @@ const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState('');
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  const [isDarkMode, setIsDarkMode] = useState(false); // Nuevo estado para el modo oscuro
 
   // Nuevo estado para el modal de confirmación
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -106,10 +107,22 @@ const Header = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Estilos del header
+  // Función para alternar el modo oscuro
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.body.style.backgroundColor = isDarkMode ? colors.white : colors.black;
+    document.body.style.color = isDarkMode ? colors.textPrimary : colors.white;
+  };
+
+  // Estilos del header (modificados para incluir modo oscuro)
   const styles = {
     header: {
-      backgroundColor: isScrolled ? "rgba(240, 248, 247, 0.95)" : colors.white,
+      backgroundColor: isDarkMode
+        ? "rgba(0, 0, 0, 0.95)"
+        : isScrolled
+        ? "rgba(240, 248, 247, 0.95)"
+        : colors.white,
+      color: isDarkMode ? colors.white : colors.textPrimary,
       padding: `${spacing.md} 0`,
       boxShadow: isScrolled ? shadows.md : shadows.sm,
       position: "fixed",
@@ -390,14 +403,26 @@ const Header = () => {
       transition: 'all 0.2s ease',
       outline: 'none'
     },
-    userName: {
-      fontWeight: typography.fontWeight.bold,
-      color: colors.primary
-    },
     waveAnimation: {
       display: 'inline-block',
       animation: 'waveHand 0.5s ease-in-out 2',
       transformOrigin: '70% 70%'
+    },
+    darkModeButton: {
+      padding: `${spacing.sm} ${spacing.md}`,
+      backgroundColor: isDarkMode ? colors.primary : colors.secondary,
+      color: isDarkMode ? colors.white : colors.primary,
+      border: "none",
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.medium,
+      cursor: "pointer",
+      transition: transitions.default,
+      marginLeft: spacing.md,
+      '&:hover': {
+        backgroundColor: isDarkMode ? colors.primaryDark : colors.primary,
+        color: colors.white
+      }
     }
   };
 
@@ -601,6 +626,21 @@ const Header = () => {
 
                 <div style={styles.menuSeparator}></div>
 
+                {/* Botón de modo oscuro dentro del menú */}
+                <button
+                  style={{
+                    ...styles.darkModeButton,
+                    width: '100%',
+                    textAlign: 'left',
+                    padding: `${spacing.sm} ${spacing.md}`,
+                  }}
+                  onClick={toggleDarkMode}
+                >
+                  {isDarkMode ? "🌞 Modo Claro" : "🌙 Modo Oscuro"}
+                </button>
+
+                <div style={styles.menuSeparator}></div>
+
                 <a
                   href="#"
                   style={getMenuItemStyle(6)}
@@ -639,6 +679,22 @@ const Header = () => {
               </>
             )}
           </div>
+
+          {/* Botón de modo oscuro */}
+          <button
+            style={styles.darkModeButton}
+            onClick={toggleDarkMode}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? colors.primaryDark : colors.primary;
+              e.currentTarget.style.color = colors.white;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = isDarkMode ? colors.primary : colors.secondary;
+              e.currentTarget.style.color = isDarkMode ? colors.white : colors.primary;
+            }}
+          >
+            {isDarkMode ? "Modo Claro" : "Modo Oscuro"}
+          </button>
         </div>
       </header>
       {/* Añadimos un div espaciador para compensar la altura del header fijo */}
