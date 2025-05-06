@@ -112,8 +112,8 @@ const Header = () => {
   // Estilos del header
   const styles = {
     header: {
-      backgroundColor: isDarkMode ? '#333' : '#fff', // Cambia el color según el modo
-      color: isDarkMode ? '#fff' : '#000', // Cambia el color del texto
+      backgroundColor: isDarkMode ? '#333' : '#fff', // Cambia el color de fondo según el modo
+      color: isDarkMode ? '#fff' : '#000', // Cambia el color del texto según el modo
       padding: '16px',
       position: 'fixed',
       top: 0,
@@ -160,12 +160,12 @@ const Header = () => {
       gap: spacing.xl
     },
     navLink: (isActivePath) => ({
-      color: isActivePath ? colors.primary : colors.textSecondary,
-      textDecoration: "none",
+      color: isDarkMode ? (isActivePath ? '#ffd700' : '#fff') : (isActivePath ? '#333' : '#000'), // Ajusta el color de los enlaces
+      textDecoration: 'none',
       fontWeight: typography.fontWeight.medium,
-      position: "relative",
+      position: 'relative',
       padding: `${spacing.xs} 0`,
-      transition: transitions.default
+      transition: transitions.default,
     }),
     profileIcon: {
       width: "40px",
@@ -197,15 +197,15 @@ const Header = () => {
     },
     menuItem: {
       padding: `${spacing.sm} ${spacing.md}`,
-      color: colors.textSecondary,
-      textDecoration: "none",
-      display: "block",
-      cursor: "pointer",
+      color: isDarkMode ? '#fff' : '#000', // Cambia el color de los elementos del menú
+      textDecoration: 'none',
+      display: 'block',
+      cursor: 'pointer',
       transition: transitions.default,
       '&:hover': {
-        backgroundColor: colors.background,
-        color: colors.primary
-      }
+        backgroundColor: isDarkMode ? '#444' : colors.background,
+        color: isDarkMode ? '#ffd700' : colors.primary, // Cambia el color al pasar el mouse
+      },
     },
     loginButton: {
       padding: `${spacing.sm} ${spacing.md}`,
@@ -275,10 +275,10 @@ const Header = () => {
     menuHeader: {
       fontSize: typography.fontSize.xs,
       fontWeight: typography.fontWeight.semiBold,
-      color: colors.textSecondary,
+      color: isDarkMode ? '#ccc' : colors.textSecondary, // Ajusta el color del encabezado del menú
       textTransform: 'uppercase',
       padding: `${spacing.xs} ${spacing.md}`,
-      letterSpacing: '1px'
+      letterSpacing: '1px',
     },
     menuItemIcon: {
       marginRight: spacing.sm,
