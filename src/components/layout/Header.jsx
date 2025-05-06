@@ -2,9 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
+import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 
 const Header = () => {
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme(); // Obtén el estado del modo oscuro
 
   // Estados existentes
   const [isScrolled, setIsScrolled] = useState(false);
@@ -15,7 +18,6 @@ const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState('');
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-  const [isDarkMode, setIsDarkMode] = useState(false); // Nuevo estado para el modo oscuro
 
   // Nuevo estado para el modal de confirmación
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -107,29 +109,17 @@ const Header = () => {
     return location.pathname.startsWith(path);
   };
 
-  // Función para alternar el modo oscuro
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.body.style.backgroundColor = isDarkMode ? colors.white : colors.black;
-    document.body.style.color = isDarkMode ? colors.textPrimary : colors.white;
-  };
-
-  // Estilos del header (modificados para incluir modo oscuro)
+  // Estilos del header
   const styles = {
     header: {
-      backgroundColor: isDarkMode
-        ? "rgba(0, 0, 0, 0.95)"
-        : isScrolled
-        ? "rgba(240, 248, 247, 0.95)"
-        : colors.white,
-      color: isDarkMode ? colors.white : colors.textPrimary,
-      padding: `${spacing.md} 0`,
-      boxShadow: isScrolled ? shadows.md : shadows.sm,
-      position: "fixed",
-      top: isVisible ? 0 : '-100px',
-      width: "100%",
-      zIndex: 100,
-      transition: transitions.default
+      backgroundColor: isDarkMode ? '#333' : '#fff', // Cambia el color según el modo
+      color: isDarkMode ? '#fff' : '#000', // Cambia el color del texto
+      padding: '16px',
+      position: 'fixed',
+      top: 0,
+      width: '100%',
+      zIndex: 1000,
+      transition: 'background-color 0.3s ease, color 0.3s ease', // Transición suave
     },
     headerSpacer: {
       height: "80px",
@@ -403,26 +393,14 @@ const Header = () => {
       transition: 'all 0.2s ease',
       outline: 'none'
     },
+    userName: {
+      fontWeight: typography.fontWeight.bold,
+      color: colors.primary
+    },
     waveAnimation: {
       display: 'inline-block',
       animation: 'waveHand 0.5s ease-in-out 2',
       transformOrigin: '70% 70%'
-    },
-    darkModeButton: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: isDarkMode ? colors.primary : colors.secondary,
-      color: isDarkMode ? colors.white : colors.primary,
-      border: "none",
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
-      cursor: "pointer",
-      transition: transitions.default,
-      marginLeft: spacing.md,
-      '&:hover': {
-        backgroundColor: isDarkMode ? colors.primaryDark : colors.primary,
-        color: colors.white
-      }
     }
   };
 
@@ -581,74 +559,24 @@ const Header = () => {
                 >
                   <span style={styles.menuItemIcon}>⚙️</span> Configuración
                 </Link>
-                {userRole === 'admin' && (
-                  <Link
-                    to="/admin/dashboard"
-                    style={getMenuItemStyle(2)}
-                    onMouseEnter={() => setHoveredItem('menu-2')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span style={styles.menuItemIcon}>📊</span> Panel de Control
-                  </Link>
-                )}
-
-                <div style={styles.menuSeparator}></div>
-
-                <div style={styles.menuHeader}>Contenido</div>
-                <Link
-                  to="/admin/post"
-                  style={getMenuItemStyle(3)}
-                  onMouseEnter={() => setHoveredItem('menu-3')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span style={styles.menuItemIcon}>✏️</span> Crear Post
-                </Link>
-                <Link
-                  to="/my-posts"
-                  style={getMenuItemStyle(4)}
-                  onMouseEnter={() => setHoveredItem('menu-4')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span style={styles.menuItemIcon}>📝</span> Mis Publicaciones
-                </Link>
-                <Link
-                  to="/favorites"
-                  style={getMenuItemStyle(5)}
-                  onMouseEnter={() => setHoveredItem('menu-5')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span style={styles.menuItemIcon}>⭐</span> Favoritos
-                </Link>
 
                 <div style={styles.menuSeparator}></div>
 
                 {/* Botón de modo oscuro dentro del menú */}
-                <button
-                  style={{
-                    ...styles.darkModeButton,
-                    width: '100%',
-                    textAlign: 'left',
-                    padding: `${spacing.sm} ${spacing.md}`,
-                  }}
-                  onClick={toggleDarkMode}
-                >
-                  {isDarkMode ? "🌞 Modo Claro" : "🌙 Modo Oscuro"}
-                </button>
+                <div style={{ padding: '8px 12px' }}>
+                  <ThemeToggle inMenu={true} />
+                </div>
 
                 <div style={styles.menuSeparator}></div>
 
                 <a
                   href="#"
                   style={getMenuItemStyle(6)}
-                  onMouseEnter={() => setHoveredItem('menu-6')}
+                  onMouseEnter={() => setHoveredItem('menu-')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
-                    initiateLogout(); // Ahora muestra el modal de confirmación
+                    initiateLogout();
                   }}
                 >
                   <span style={styles.menuItemIcon}>🚪</span> Cerrar Sesión
@@ -676,25 +604,26 @@ const Header = () => {
                 <Link to="/register" style={getMenuItemStyle(4)} onMouseEnter={() => setHoveredItem('menu-4')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}>📝</span> Registrarse
                 </Link>
+
+                <div style={styles.menuSeparator}></div>
+
+                {/* Botón de modo oscuro */}
+                <div
+                  style={{
+                    ...getMenuItemStyle(5), // Aplica el mismo estilo que los demás elementos del menú
+                    padding: '8px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={() => setHoveredItem('menu-5')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <ThemeToggle inMenu={true} />
+                </div>
               </>
             )}
           </div>
-
-          {/* Botón de modo oscuro */}
-          <button
-            style={styles.darkModeButton}
-            onClick={toggleDarkMode}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? colors.primaryDark : colors.primary;
-              e.currentTarget.style.color = colors.white;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? colors.primary : colors.secondary;
-              e.currentTarget.style.color = isDarkMode ? colors.white : colors.primary;
-            }}
-          >
-            {isDarkMode ? "Modo Claro" : "Modo Oscuro"}
-          </button>
         </div>
       </header>
       {/* Añadimos un div espaciador para compensar la altura del header fijo */}
