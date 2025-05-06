@@ -1,12 +1,16 @@
 // src/components/auth/LoginPage.jsx
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
+import { login } from '../../services/authService';
+import AuthContext from '../../context/AuthContext';
 
 const LoginPage = () => {
-    const navigate = useNavigate(); // Usar useNavigate en lugar de window.location
+    const navigate = useNavigate();
+    const { updateAuthState } = useContext(AuthContext);
+    
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -15,7 +19,8 @@ const LoginPage = () => {
 
     const [errors, setErrors] = useState({
         email: '',
-        password: ''
+        password: '',
+        general: ''
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,7 +43,7 @@ const LoginPage = () => {
 
     const validateForm = () => {
         let valid = true;
-        const newErrors = { email: '', password: '' };
+        const newErrors = { email: '', password: '', general: '' };
 
         // Validar email
         if (!formData.email) {
@@ -52,9 +57,6 @@ const LoginPage = () => {
         // Validar contraseña
         if (!formData.password) {
             newErrors.password = 'La contraseña es requerida';
-            valid = false;
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
             valid = false;
         }
 
@@ -70,17 +72,16 @@ const LoginPage = () => {
         setIsSubmitting(true);
 
         try {
-            // Aquí realizarías la llamada a tu API de autenticación
-            // Por ahora, simularemos un inicio de sesión exitoso
-
-            // Simulación de petición a servidor
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Guardar token en localStorage (en un caso real)
-            localStorage.setItem('userToken', 'sample-token-12345');
-            localStorage.setItem('userName', 'Usuario Demo');
-
-            // Redireccionar a la página principal usando navigate en lugar de window.location
+            // Llamar a la API de login
+            const userData = await login({
+                email: formData.email,
+                password: formData.password
+            });
+            
+            // Actualizar el estado de autenticación
+            updateAuthState(userData);
+            
+            // Redireccionar a la página principal
             navigate('/');
         } catch (error) {
             console.error('Error al iniciar sesión:', error);

@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
+import { register } from '../../services/authService';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -22,7 +23,8 @@ const RegisterPage = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        termsAccepted: ''
+        termsAccepted: '',
+        general: ''
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,7 +53,8 @@ const RegisterPage = () => {
             email: '',
             password: '',
             confirmPassword: '',
-            termsAccepted: ''
+            termsAccepted: '',
+            general: ''
         };
 
         // Validar nombre
@@ -114,12 +117,19 @@ const RegisterPage = () => {
         setIsSubmitting(true);
 
         try {
-            // Aquí realizarías la llamada a tu API para registrar al usuario
-            // Por ahora, simularemos un registro exitoso
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Simular un registro exitoso
-            navigate('/login'); // Redirigir al login después del registro
+            // Llamar a la API para registrar al usuario
+            await register({
+                email: formData.email,
+                password: formData.password,
+                confirmPassword: formData.confirmPassword,
+                firstName: formData.firstName,
+                lastName: formData.lastName
+            });
+            
+            // Redirigir al login después del registro exitoso
+            navigate('/login', { 
+                state: { message: '¡Registro exitoso! Ahora puedes iniciar sesión.' } 
+            });
         } catch (error) {
             console.error('Error al registrar usuario:', error);
             setErrors({
