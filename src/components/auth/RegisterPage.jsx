@@ -111,19 +111,20 @@ const RegisterPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!validateForm()) return;
-
+    
         setIsSubmitting(true);
-
+    
         try {
             // Llamar a la API para registrar al usuario
             await register({
+                username: formData.email, // El backend espera un username que es el email
                 email: formData.email,
                 password: formData.password,
-                confirmPassword: formData.confirmPassword,
-                firstName: formData.firstName,
-                lastName: formData.lastName
+                password2: formData.confirmPassword,
+                first_name: formData.firstName,
+                last_name: formData.lastName
             });
             
             // Redirigir al login después del registro exitoso
