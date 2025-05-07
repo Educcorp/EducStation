@@ -1,6 +1,6 @@
-// src/context/AuthContext.jsx (updated)
+// src/context/AuthContext.jsx - Actualizado
 import React, { createContext, useState, useEffect } from 'react';
-import { login as loginService, logout as logoutService, refreshToken as refreshTokenService } from '../services/authService';
+import { login, logout, refreshToken } from '../services/authService';
 
 export const AuthContext = createContext();
 
@@ -11,13 +11,13 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Verificar si hay un token almacenado al cargar la aplicación
+    // Verificar si hay un token en localStorage cuando la aplicación se carga
     const checkAuth = async () => {
       const token = localStorage.getItem('userToken');
       
       if (token) {
         try {
-          // Intentar obtener información del usuario
+          // Intentar obtener información del usuario usando el token
           const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
           const response = await fetch(`${API_URL}/api/auth/user/`, {
             headers: {
@@ -30,10 +30,10 @@ export const AuthProvider = ({ children }) => {
             setUser(userData);
             setIsAuth(true);
           } else {
-            // El token puede estar vencido, intentar refrescarlo
+            // El token puede estar expirado, intentar refrescarlo
             try {
-              await refreshTokenService();
-              // Si se refresca exitosamente, reintentamos obtener los datos
+              await refreshToken();
+              // Si el refresco es exitoso, intentar obtener datos del usuario nuevamente
               const newResponse = await fetch(`${API_URL}/api/auth/user/`, {
                 headers: {
                   'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
@@ -46,20 +46,20 @@ export const AuthProvider = ({ children }) => {
                 setIsAuth(true);
               } else {
                 // Si aún no funciona, limpiar tokens
-                logoutService();
+                logout();
                 setUser(null);
                 setIsAuth(false);
               }
             } catch (error) {
-              // Error al refrescar el token
-              logoutService();
+              // Error al refrescar token
+              logout();
               setUser(null);
               setIsAuth(false);
             }
           }
         } catch (error) {
           console.error('Error al verificar autenticación:', error);
-          logoutService();
+          logout();
           setUser(null);
           setIsAuth(false);
         }
@@ -78,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await loginService(credentials);
+      const result = await login(credentials);
       setUser(result.user);
       setIsAuth(true);
       return result;
@@ -91,7 +91,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logoutUser = () => {
-    logoutService();
+    logout();
     setUser(null);
     setIsAuth(false);
   };

@@ -1,12 +1,16 @@
 // src/components/auth/LoginPage.jsx
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
+import { AuthContext } from '../../context/AuthContext';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 
 const LoginPage = () => {
-    const navigate = useNavigate(); // Usar useNavigate en lugar de window.location
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { login, isAuth, loading, error: authError } = useContext(AuthContext);
+    
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -15,10 +19,40 @@ const LoginPage = () => {
 
     const [errors, setErrors] = useState({
         email: '',
-        password: ''
+        password: '',
+        general: ''
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Redirigir si ya está autenticado
+    useEffect(() => {
+        if (isAuth && !loading) {
+            navigate('/');
+        }
+    }, [isAuth, loading, navigate]);
+    
+    // Manejar mensajes de la página anterior (por ejemplo, después del registro)
+    useEffect(() => {
+        if (location.state?.message) {
+            setErrors(prev => ({
+                ...prev,
+                general: location.state.message
+            }));
+            // Limpiar el mensaje de estado para que no persista en la navegación
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
+
+    // Actualizar errores cuando cambia el error de autenticación
+    useEffect(() => {
+        if (authError) {
+            setErrors(prev => ({
+                ...prev,
+                general: authError
+            }));
+        }
+    }, [authError]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -38,7 +72,7 @@ const LoginPage = () => {
 
     const validateForm = () => {
         let valid = true;
-        const newErrors = { email: '', password: '' };
+        const newErrors = { email: '', password: '', general: '' };
 
         // Validar email
         if (!formData.email) {
@@ -53,9 +87,6 @@ const LoginPage = () => {
         if (!formData.password) {
             newErrors.password = 'La contraseña es requerida';
             valid = false;
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
-            valid = false;
         }
 
         setErrors(newErrors);
@@ -64,29 +95,24 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!validateForm()) return;
-
+    
         setIsSubmitting(true);
-
+        setErrors(prev => ({ ...prev, general: '' }));
+    
         try {
-            // Aquí realizarías la llamada a tu API de autenticación
-            // Por ahora, simularemos un inicio de sesión exitoso
-
-            // Simulación de petición a servidor
-            await new Promise(resolve => setTimeout(resolve, 1500));
-
-            // Guardar token en localStorage (en un caso real)
-            localStorage.setItem('userToken', 'sample-token-12345');
-            localStorage.setItem('userName', 'Usuario Demo');
-
-            // Redireccionar a la página principal usando navigate en lugar de window.location
-            navigate('/');
+            await login({
+                email: formData.email,
+                password: formData.password
+            });
+            
+            // No es necesario navegar aquí, el useEffect se encargará de eso cuando isAuth cambie
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
             setErrors({
                 ...errors,
-                general: 'Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.'
+                general: error.message || 'Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.'
             });
         } finally {
             setIsSubmitting(false);
@@ -239,10 +265,6 @@ const LoginPage = () => {
             color: colors.primary,
             textDecoration: 'none',
             transition: 'color 0.3s ease',
-            '&:hover': {
-                color: colors.secondary,
-                textDecoration: 'underline',
-            }
         },
         loginButton: {
             width: '100%',
@@ -256,17 +278,6 @@ const LoginPage = () => {
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             marginBottom: spacing.md,
-            '&:hover': {
-                background: `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.primary} 100%)`,
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(11, 68, 68, 0.2)',
-            },
-            '&:disabled': {
-                opacity: 0.7,
-                cursor: 'not-allowed',
-                transform: 'none',
-                boxShadow: 'none',
-            }
         },
         registerLink: {
             textAlign: 'center',
@@ -279,14 +290,19 @@ const LoginPage = () => {
             fontWeight: typography.fontWeight.semiBold,
             textDecoration: 'none',
             transition: 'color 0.3s ease',
-            '&:hover': {
-                color: colors.secondary,
-                textDecoration: 'underline',
-            }
         },
         generalError: {
             backgroundColor: `${colors.error}15`,
             color: colors.error,
+            padding: spacing.md,
+            borderRadius: '6px',
+            marginBottom: spacing.lg,
+            textAlign: 'center',
+            fontSize: typography.fontSize.sm,
+        },
+        successMessage: {
+            backgroundColor: `rgba(76, 175, 80, 0.1)`,
+            color: '#4CAF50',
             padding: spacing.md,
             borderRadius: '6px',
             marginBottom: spacing.lg,
@@ -385,13 +401,8 @@ const LoginPage = () => {
                                     />
                                     Recordar sesión
                                 </label>
-                                <Link to="/forgot-password" style={{
-                                    ...styles.forgotLink,
-                                    "&:hover": {
-                                        color: colors.secondary,
-                                        textDecoration: 'underline',
-                                    }
-                                }}
+                                <Link to="/forgot-password" 
+                                    style={styles.forgotLink}
                                     onMouseEnter={(e) => {
                                         e.target.style.color = colors.secondary;
                                         e.target.style.textDecoration = 'underline';
@@ -399,7 +410,8 @@ const LoginPage = () => {
                                     onMouseLeave={(e) => {
                                         e.target.style.color = colors.primary;
                                         e.target.style.textDecoration = 'none';
-                                    }}>
+                                    }}
+                                >
                                     ¿Olvidaste tu contraseña?
                                 </Link>
                             </div>
@@ -427,13 +439,9 @@ const LoginPage = () => {
                             </button>
 
                             <div style={styles.registerLink}>
-                                ¿No tienes una cuenta? <Link to="/register" style={{
-                                    ...styles.registerLinkText,
-                                    "&:hover": {
-                                        color: colors.secondary,
-                                        textDecoration: 'underline',
-                                    }
-                                }}
+                                ¿No tienes una cuenta? 
+                                <Link to="/register" 
+                                    style={styles.registerLinkText}
                                     onMouseEnter={(e) => {
                                         e.target.style.color = colors.secondary;
                                         e.target.style.textDecoration = 'underline';
@@ -441,7 +449,9 @@ const LoginPage = () => {
                                     onMouseLeave={(e) => {
                                         e.target.style.color = colors.primary;
                                         e.target.style.textDecoration = 'none';
-                                    }}>Regístrate ahora</Link>
+                                    }}
+                                > Regístrate ahora
+                                </Link>
                             </div>
                         </form>
                     </div>

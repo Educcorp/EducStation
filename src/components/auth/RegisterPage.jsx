@@ -1,10 +1,10 @@
-// src/components/auth/RegisterPage.jsx
+// src/components/auth/RegisterPage.jsx - Actualizado
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { register } from '../../services/authService';
 import { colors, spacing, typography } from '../../styles/theme';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
-import { register } from '../../services/authService';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
@@ -117,9 +117,9 @@ const RegisterPage = () => {
         setIsSubmitting(true);
     
         try {
-            // Llamar a la API para registrar al usuario
+            // Llamar a la API de registro
             await register({
-                username: formData.email, // El backend espera un username que es el email
+                username: formData.email, // El backend espera el email como username
                 email: formData.email,
                 password: formData.password,
                 password2: formData.confirmPassword,
@@ -127,7 +127,7 @@ const RegisterPage = () => {
                 last_name: formData.lastName
             });
             
-            // Redirigir al login después del registro exitoso
+            // Redirigir al login con mensaje de éxito
             navigate('/login', { 
                 state: { message: '¡Registro exitoso! Ahora puedes iniciar sesión.' } 
             });
@@ -135,7 +135,7 @@ const RegisterPage = () => {
             console.error('Error al registrar usuario:', error);
             setErrors({
                 ...errors,
-                general: 'Error al registrar. Por favor intenta nuevamente más tarde.'
+                general: error.message || 'Error al registrar. Por favor intenta nuevamente más tarde.'
             });
         } finally {
             setIsSubmitting(false);

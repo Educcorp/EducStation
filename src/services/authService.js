@@ -1,10 +1,12 @@
-// src/services/authService.js
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
+// src/services/authService.js - Actualizado
 
-// Export the functions explicitly with named exports
+// Obtener la URL base de la API desde variables de entorno o usar una predeterminada
+const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
+
+// Registro de usuario
 export const register = async (userData) => {
   try {
-    const response = await fetch(`${API_URL}/auth/register/`, {
+    const response = await fetch(`${API_URL}/api/auth/register/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,9 +26,10 @@ export const register = async (userData) => {
   }
 };
 
+// Inicio de sesión de usuario - Actualizado con manejo de errores adecuado
 export const login = async (credentials) => {
   try {
-    const response = await fetch(`${API_URL}/auth/token/`, {
+    const response = await fetch(`${API_URL}/api/auth/token/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -49,7 +52,7 @@ export const login = async (credentials) => {
     localStorage.setItem('refreshToken', data.refresh);
     
     // Obtener información del usuario
-    const userResponse = await fetch(`${API_URL}/auth/user/`, {
+    const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
       headers: {
         'Authorization': `Bearer ${data.access}`,
       },
@@ -73,12 +76,14 @@ export const login = async (credentials) => {
   }
 };
 
+// Cerrar sesión - limpiar datos de usuario del almacenamiento local
 export const logout = () => {
   localStorage.removeItem('userToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userName');
 };
 
+// Refrescar el token de acceso
 export const refreshToken = async () => {
   const refreshToken = localStorage.getItem('refreshToken');
   
@@ -87,7 +92,7 @@ export const refreshToken = async () => {
   }
   
   try {
-    const response = await fetch(`${API_URL}/auth/token/refresh/`, {
+    const response = await fetch(`${API_URL}/api/auth/token/refresh/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -113,7 +118,7 @@ export const refreshToken = async () => {
   }
 };
 
-// Also provide default exports for backward compatibility
+// Exportación predeterminada para compatibilidad con versiones anteriores
 export default {
   register,
   login,
