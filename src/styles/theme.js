@@ -148,6 +148,23 @@ export const applyHoverStyles = (styleObj) => {
   return newStyles;
 };
 
-// Para mantener compatibilidad con el código existente, también exportamos lightColors como colors
-export const colorsark = darkColors;
-export const colors = lightColors;
+// Reemplaza la exportación de colors
+let currentTheme = 'light';
+
+// Función para obtener el tema currente
+export const getCurrentTheme = () => currentTheme;
+
+// Función para establecer el tema currente
+export const setCurrentTheme = (theme) => {
+  currentTheme = theme;
+  // Si quieres que esta función realmente cambie los colores exportados,
+  // necesitarías implementar un sistema más complejo con getters/setters
+  console.log('Tema actual cambiado a:', theme);
+};
+
+// Exportar colors como un getter dinámico
+Object.defineProperty(exports, 'colors', {
+  get: function() {
+    return currentTheme === 'dark' ? darkColors : lightColors;
+  }
+});

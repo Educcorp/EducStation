@@ -3,10 +3,16 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import FeaturedPost from '../components/blog/FeaturedPost';
 import PostCard from '../components/blog/PostCard';
-import { colors, spacing, typography, transitions, applyHoverStyles } from '../styles/theme';
+// Elimina la importación de colors y solo importa lo que necesitas
+import { spacing, typography, transitions, applyHoverStyles } from '../styles/theme';
+// Importamos el hook useTheme
+import { useTheme } from '../context/ThemeContext';
 
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
+  // Usamos useTheme para obtener los colores según el tema actual
+  const { colors } = useTheme();
+  
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredElement, setHoveredElement] = useState(null);
   const carouselRef = useRef(null);
@@ -62,7 +68,7 @@ const NewsCarousel = ({ notes }) => {
       borderRadius: "16px",
       marginTop: spacing.xl,
       marginBottom: spacing.xxl,
-      boxShadow: "0 10px 30px rgba(11, 68, 68, 0.15)",
+      boxShadow: `0 10px 30px ${colors.primary}33`,
       cursor: "pointer", // Añadido para indicar que todo el carrusel es clickeable
     },
     carouselInner: {
@@ -230,6 +236,9 @@ const NewsCarousel = ({ notes }) => {
 };
 
 const HomePage = () => {
+  // Añadimos el hook useTheme en el componente principal
+  const { colors } = useTheme();
+  
   // Estado para la categoría activa
   const [activeCategory, setActiveCategory] = useState('Todos');
   // Estado para la categoría sobre la que se está haciendo hover

@@ -1,5 +1,6 @@
 // src/context/ThemeContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
+import { lightColors, darkColors } from '../styles/theme';
 
 // Crear el contexto del tema
 export const ThemeContext = createContext();
@@ -25,16 +26,37 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
     
+    // Actualizar el tema actual en theme.js si existe la función
+    try {
+      if (require('../styles/theme').setCurrentTheme) {
+        require('../styles/theme').setCurrentTheme(isDarkMode ? 'dark' : 'light');
+      }
+    } catch (err) {
+      console.warn('No se pudo actualizar el tema en theme.js:', err.message);
+    }
+    
     // Actualizar la clase en el elemento HTML para estilos globales
     if (isDarkMode) {
       document.documentElement.classList.add('dark-mode');
+      document.documentElement.classList.remove('light-mode');
     } else {
+      document.documentElement.classList.add('light-mode');
       document.documentElement.classList.remove('dark-mode');
     }
-  }, [isDarkMode]);
+
+    // También cambiar colores básicos del body
+    const colors = isDarkMode ? darkColors : lightColors;
+    if (colors) {
+      document.body.style.backgroundColor = colors.background;
+      document.body.style.color = colors.textPrimary;
+    }
+  }, [isDarkMode]); // Eliminamos colors de las dependencias
+
+  // Obtener los colores correctos según el modo
+  const colors = isDarkMode ? darkColors : lightColors;
 
   return (
-    <ThemeContext.Provider value={{ isDarkMode, toggleTheme }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, colors }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -47,4 +69,12 @@ export const useTheme = () => {
     throw new Error('useTheme debe ser usado dentro de un ThemeProvider');
   }
   return context;
+};
+
+// Función de envoltorio para componentes que no pueden usar hooks
+export const withTheme = (Component) => {
+  return (props) => {
+    const { isDarkMode, colors } = useTheme();
+    return <Component {...props} isDarkMode={isDarkMode} themeColors={colors} />;
+  };
 };
