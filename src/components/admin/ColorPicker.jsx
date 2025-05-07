@@ -4,10 +4,6 @@ import Tooltip from '../ui/Tooltip';
 import { borderRadius } from '../../styles/theme';
 
 const ColorPicker = ({ onSelectColor, onCloseColorPicker }) => {
-// Estado para colores guardados y el color actual
-const [savedColors, setSavedColors] = useState([
-'#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a', '#3a6ea5', '#ff6b6b', '#ffe66d'
-]);
 // Intentar recuperar el último color usado desde localStorage
 const [currentColor, setCurrentColor] = useState(() => {
 try {
@@ -20,6 +16,15 @@ try {
 const [activeTooltip, setActiveTooltip] = useState(null);
 const [animateColor, setAnimateColor] = useState(false);
 const [justCopied, setJustCopied] = useState(false);
+
+// Estado para manejar el color pendiente de aplicar
+const [pendingColor, setPendingColor] = useState(currentColor);
+
+// Estado para mostrar u ocultar el botón flotante
+const [showApplyButton, setShowApplyButton] = useState(false);
+
+// Añadir estos estados para controlar mejor el selector de color
+const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
 
 // Mostrar tooltip
 const showTooltip = (id) => {
@@ -35,28 +40,6 @@ const hideTooltip = () => {
 const handleKeyPress = (e) => {
   if (e.key === 'Enter') {
     selectColor(currentColor);
-  }
-};
-
-// Función para guardar automáticamente un nuevo color
-const saveColor = (colorToSave) => {
-  if (!savedColors.includes(colorToSave)) {
-    // Crear una copia del array actual sin mutar el estado original
-    const newColors = [...savedColors];
-    // Eliminar el color más antiguo si ya tenemos 8
-    if (newColors.length >= 8) {
-      newColors.shift();
-    }
-    // Añadir el nuevo color
-    newColors.push(colorToSave);
-    setSavedColors(newColors);
-    
-    // Guardar en localStorage para persistencia
-    try {
-      localStorage.setItem('savedTextColors', JSON.stringify(newColors));
-    } catch (e) {
-      console.warn('No se pudo guardar colores en localStorage:', e);
-    }
   }
 };
 
@@ -80,12 +63,6 @@ const selectColor = (color) => {
   } catch (e) {
     console.warn('No se pudo guardar el último color usado:', e);
   }
-  
-  // Guardar automáticamente el color (excepto los predeterminados)
-  const defaultColors = ['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a', '#3a6ea5', '#ff6b6b', '#ffe66d'];
-  if (!defaultColors.includes(color)) {
-    saveColor(color);
-  }
 };
 
 // Estado para mostrar el tooltip de copiado
@@ -108,25 +85,6 @@ const copyHexColor = () => {
       console.warn('Error al copiar color:', err);
     });
 };
-
-// Cargar colores guardados desde localStorage al iniciar
-useEffect(() => {
-  try {
-    const storedColors = localStorage.getItem('savedTextColors');
-    // Si hay colores guardados, usarlos; de lo contrario, mantener los predeterminados
-    if (storedColors) {
-      const parsedColors = JSON.parse(storedColors);
-      // Verificar que tengamos un array válido de colores
-      if (Array.isArray(parsedColors) && parsedColors.length > 0) {
-        setSavedColors(parsedColors);
-      }
-    }
-  } catch (e) {
-    console.warn('Error al cargar colores desde localStorage:', e);
-    // En caso de error, asegurémonos de usar los colores predeterminados
-    setSavedColors(['#91a8a4', '#0b4444', '#4c7977', '#f0f8f7', '#d2b99a', '#3a6ea5', '#ff6b6b', '#ffe66d']);
-  }
-}, []);
 
 // Función para obtener un color de texto contrastante para el fondo
 const getContrastText = (bgColor) => {
@@ -245,38 +203,6 @@ applyButton: {
     animation: 'fadeIn 0.2s ease',
     boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
   },
-  savedColorsContainer: {
-    marginTop: '8px',
-    padding: '14px',
-    borderRadius: '14px',
-    backgroundColor: '#f5f7fa',
-    boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.04)',
-    border: '1px solid rgba(200, 210, 220, 0.3)',
-  },
-  savedColorsLabel: {
-    fontSize: '14px', 
-    color: '#333', 
-    marginBottom: '10px',
-    fontWeight: '600',
-    borderBottom: '1px solid rgba(200, 210, 220, 0.5)',
-    paddingBottom: '5px',
-  },
-  savedColorsGrid: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '10px',
-    marginTop: '8px',
-    justifyContent: 'center',
-  },
-  savedColorItem: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '10px',
-    border: 'none',
-    cursor: 'pointer',
-    boxShadow: '0 3px 5px rgba(0, 0, 0, 0.1)',
-    transition: 'all 0.2s ease',
-  },
   closeButton: {
     position: 'absolute',
     top: '12px',
@@ -340,7 +266,7 @@ const cssAnimation = `
   }
   
   @keyframes borderPulse {
-    0% { box-shadow: 0 0 0 0 rgba(27, 79, 217, 0.5); }
+    0% { box-shadow: 0 0 0 0 rgba(25, 68, 186, 0.5); }
     70% { box-shadow: 0 0 0 6px rgba(27, 79, 217, 0); }
     100% { box-shadow: 0 0 0 0 rgba(27, 79, 217, 0); }
   }
@@ -349,10 +275,73 @@ const cssAnimation = `
 // Manejar cambio de color en el input
 const handleColorChange = (e) => {
   const newColor = e.target.value;
-  setCurrentColor(newColor);
-  // No aplicamos el color inmediatamente, solo actualizamos la visualización
-  // Esto permite manipular el selector sin interferir con la selección de texto
+  setPendingColor(newColor); // Actualizar el color pendiente
 };
+
+// Manejar la apertura del botón flotante al hacer clic en la barra de selección de colores
+const handleColorBarClick = () => {
+  setIsColorPickerOpen(true);
+  setShowApplyButton(true);
+};
+
+// Manejar el cierre del botón flotante
+const handleCloseApplyButton = () => {
+  setShowApplyButton(false);
+};
+
+// Modificar la función handleColorPickerBlur para ser más agresiva
+const handleColorPickerBlur = (e) => {
+  // Comprobar si el foco se está moviendo al botón "Aplicar color"
+  const relatedTarget = e.relatedTarget;
+  if (relatedTarget && relatedTarget.innerText === "Aplicar color") {
+    // Si el foco va al botón, no hacer nada
+    return;
+  }
+  
+  // En caso contrario, cerrar todo
+  setTimeout(() => {
+    setIsColorPickerOpen(false);
+    setShowApplyButton(false);
+  }, 100); // Reducir el tiempo para que sea más rápido
+};
+
+// Función para aplicar el color pendiente
+const applyColor = () => {
+  selectColor(pendingColor); // Aplicar el color pendiente
+};
+
+// Añadir un useEffect para sincronizar los estados
+useEffect(() => {
+  if (!isColorPickerOpen) {
+    // Si el selector se cierra, cerrar también el botón
+    setShowApplyButton(false);
+  }
+}, [isColorPickerOpen]);
+
+// Mejorar la detección del cierre del selector RGB añadiendo este efecto
+useEffect(() => {
+  // Función para detectar clics fuera del selector que podrían cerrarlo
+  const handleGlobalClick = () => {
+    // Comprobar si el selector de color está abierto
+    const colorInputs = document.querySelectorAll('input[type="color"]');
+    const isAnyColorInputOpen = Array.from(colorInputs).some(input => document.activeElement === input);
+    
+    if (!isAnyColorInputOpen && isColorPickerOpen) {
+      setIsColorPickerOpen(false);
+      setShowApplyButton(false);
+    }
+  };
+
+  // Añadir el evento global
+  document.addEventListener('click', handleGlobalClick);
+  document.addEventListener('touchend', handleGlobalClick);
+  
+  // Limpiar
+  return () => {
+    document.removeEventListener('click', handleGlobalClick);
+    document.removeEventListener('touchend', handleGlobalClick);
+  };
+}, [isColorPickerOpen]);
 
 return (
   <>
@@ -368,7 +357,10 @@ return (
     >
       <button 
         style={styles.closeButton} 
-        onClick={onCloseColorPicker}
+        onClick={() => {
+          handleCloseApplyButton(); // Cerrar el botón flotante al cerrar el selector
+          onCloseColorPicker();
+        }}
         onMouseEnter={(e) => {
           e.currentTarget.style.backgroundColor = '#e0e0e0';
           e.currentTarget.style.transform = 'scale(1.1)';
@@ -391,13 +383,13 @@ return (
         <div style={styles.colorSelectLabel}>Seleccionar color:</div>
         <input 
           type="color" 
-          value={currentColor}
-          onChange={handleColorChange}
+          value={pendingColor} // Usar el color pendiente
+          onChange={handleColorChange} // Actualizar el color pendiente
+          onClick={handleColorBarClick} // Mostrar el botón flotante al hacer clic
+          onFocus={() => setIsColorPickerOpen(true)}
+          onBlur={handleColorPickerBlur}
           onMouseDown={(e) => e.stopPropagation()}
           onPointerDown={(e) => e.stopPropagation()}
-          onClick={(e) => e.stopPropagation()}
-          onBlur={(e) => selectColor(e.target.value)}
-          onKeyPress={handleKeyPress}
           style={styles.colorInput}
         />
         <div style={styles.colorPreview}>
@@ -406,12 +398,12 @@ return (
             <div 
               style={{
                 ...styles.colorBox,
-                backgroundColor: currentColor
+                backgroundColor: pendingColor // Mostrar el color pendiente
               }}
             ></div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={styles.hexValue}>{currentColor.toUpperCase()}</span>
+            <span style={styles.hexValue}>{pendingColor.toUpperCase()}</span>
             <button 
               onClick={copyHexColor}
               style={styles.copyButton}
@@ -434,69 +426,33 @@ return (
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Colores guardados mejorados visualmente */}
-      <div style={styles.savedColorsContainer}>
-        <div style={styles.savedColorsLabel}>
-          Colores guardados:
-        </div>
-        <div style={styles.savedColorsGrid}>
-          {savedColors.map((color, idx) => {
-            const contrastText = getContrastText(color);
-            return (
-              <div 
-                key={idx} 
-                style={{
-                  ...styles.savedColorItem,
-                  backgroundColor: color,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  selectColor(color);
-                }}
-                title={color}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'scale(1.12)';
-                  e.currentTarget.style.boxShadow = '0 5px 10px rgba(0, 0, 0, 0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'scale(1)';
-                  e.currentTarget.style.boxShadow = '0 3px 5px rgba(0, 0, 0, 0.1)';
-                }}
-              >
-                {currentColor === color && (
-                  <span style={{ color: contrastText, fontSize: '20px' }}>✓</span>
-                )}
-              </div>
-
-            );
-
-            
-          })}
-          
-          <button 
-            style={styles.applyButton}
-            onClick={() => selectColor(currentColor)}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = '#3a6ea5';
-              e.currentTarget.style.transform = 'scale(1.02)';
-              showTooltip('applyColor');
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = '#4c7977';
-              e.currentTarget.style.transform = 'scale(1)';
-              hideTooltip();
-            }}
-          >
-            Aplicar color <span style={{fontSize: '16px'}}>✓</span>
-
-          </button>
-          
-        </div>
+        {/* Botón normal integrado dentro del contenedor - NO flotante */}
+        <button 
+          style={{
+            ...styles.applyButton,
+            position: 'static', // Crucial: posición normal en el flujo del documento
+            margin: '180px 0 15px 0',
+            width: '100%',
+            padding: '12px 14px',
+          }}
+          onClick={() => {
+            applyColor();
+            setIsColorPickerOpen(false);
+            setShowApplyButton(false);
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#3a6ea5';
+            e.currentTarget.style.transform = 'scale(1.02)';
+            showTooltip('applyColor');
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#4c7977';
+            e.currentTarget.style.transform = 'scale(1)';
+            hideTooltip();
+          }}
+        >
+          Aplicar color
+        </button>
       </div>
     </div>
   </>
