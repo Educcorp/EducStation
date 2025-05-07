@@ -111,15 +111,15 @@ const RegisterPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+    
         if (!validateForm()) return;
-        
+    
         setIsSubmitting(true);
-        
+    
         try {
-            // Asegurarse de que los nombres de los campos coincidan exactamente
+            // Llamar a la API para registrar al usuario
             await register({
-                username: formData.email, // Backend espera un username
+                username: formData.email, // El backend espera un username que es el email
                 email: formData.email,
                 password: formData.password,
                 password2: formData.confirmPassword,
@@ -133,11 +133,9 @@ const RegisterPage = () => {
             });
         } catch (error) {
             console.error('Error al registrar usuario:', error);
-            
-            // Mejorar manejo de errores en la UI
             setErrors({
                 ...errors,
-                general: error.message || 'Error al registrar. Por favor intenta nuevamente.'
+                general: 'Error al registrar. Por favor intenta nuevamente más tarde.'
             });
         } finally {
             setIsSubmitting(false);

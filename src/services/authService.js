@@ -3,36 +3,27 @@ const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
 // Export the functions explicitly with named exports
 export const register = async (userData) => {
-    try {
-      const response = await fetch(`${API_URL}/auth/register/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-        credentials: 'include' // Añadir esto para manejar cookies si es necesario
-      });
+  try {
+    const response = await fetch(`${API_URL}/auth/register/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
     
-// Obtener los datos JSON independientemente del éxito o fracaso
-const data = await response.json();
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Error en el registro');
+    }
     
-if (!response.ok) {
-  // Manejar tanto formatos de error de array como de mensaje único
-  if (data.errors) {
-    throw new Error(data.errors.map(err => err.msg).join(', '));
-  } else if (data.detail) {
-    throw new Error(data.detail);
-  } else {
-    throw new Error('Error en el registro');
+    return await response.json();
+  } catch (error) {
+    console.error('Error en el registro:', error);
+    throw error;
   }
-}
-
-return data;
-} catch (error) {
-console.error('Error en el registro:', error);
-throw error;
-}
 };
+
 export const login = async (credentials) => {
   try {
     const response = await fetch(`${API_URL}/auth/token/`, {
