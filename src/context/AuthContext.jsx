@@ -2,8 +2,10 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { login, logout, refreshToken } from '../services/authService';
 
+// Creamos el contexto
 export const AuthContext = createContext();
 
+// Componente proveedor
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
@@ -107,3 +109,6 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
+
+// Exportar el contexto como default export para compatibilidad
+export default AuthContext;
