@@ -1,5 +1,5 @@
 // src/components/admin/ColorPicker.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Tooltip from '../ui/Tooltip';
 import { borderRadius } from '../../styles/theme';
 
@@ -24,7 +24,10 @@ const [pendingColor, setPendingColor] = useState(currentColor);
 const [showApplyButton, setShowApplyButton] = useState(false);
 
 // Añadir estos estados para controlar mejor el selector de color
-const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+const [isColorPickerOpen, setIsColorPickerOpen] = useState(true);
+
+// Añade esta referencia para el input de color
+const colorInputRef = useRef(null);
 
 // Mostrar tooltip
 const showTooltip = (id) => {
@@ -126,7 +129,7 @@ applyButton: {
     position: 'absolute',
     top: '170%',
     right: '0%', // Posicionar a la izquierda del botón
-    marginRight: '-130px', // Espacio entre el botón y el selector
+    marginRight: '-10px', // Espacio entre el botón y el selector
     backgroundColor: 'white',
     borderRadius: '16px',
     boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15), 0 2px 5px rgba(0, 0, 0, 0.1)',
@@ -343,6 +346,70 @@ useEffect(() => {
   };
 }, [isColorPickerOpen]);
 
+// Añade este efecto para abrir automáticamente el selector
+useEffect(() => {
+  // Pequeña espera para asegurar que todo está renderizado
+  const timer = setTimeout(() => {
+    if (colorInputRef.current) {
+      colorInputRef.current.focus();
+      colorInputRef.current.click(); // Esto intenta abrir el selector de color
+      setIsColorPickerOpen(true);
+      setShowApplyButton(true);
+    }
+  }, 300);
+  
+  return () => clearTimeout(timer);
+}, []);
+
+// Modificar el efecto para que se ejecute en cada reinicio
+useEffect(() => {
+  // Función que abre el selector de color
+  const openColorPicker = () => {
+    if (colorInputRef.current) {
+      colorInputRef.current.focus();
+      colorInputRef.current.click(); // Intenta abrir el selector de color nativo
+      setIsColorPickerOpen(true);
+      setShowApplyButton(true);
+    }
+  };
+
+  // Abrir el selector cuando se monte el componente
+  const timer = setTimeout(openColorPicker, 300);
+  
+  // Suscribirse al evento de visibilidad para detectar cuando la pestaña se activa
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      openColorPicker();
+    }
+  };
+  
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+  // También reabrir cuando el componente recibe foco
+  window.addEventListener('focus', openColorPicker);
+  
+  return () => {
+    clearTimeout(timer);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('focus', openColorPicker); // Corregido: era addEventListener
+  };
+}, []);
+
+// Añadir este nuevo método al componente para poder reabrirlo manualmente si es necesario
+const reopenColorPicker = () => {
+  if (colorInputRef.current) {
+    colorInputRef.current.focus();
+    colorInputRef.current.click();
+    setIsColorPickerOpen(true);
+    setShowApplyButton(true);
+  }
+};
+
+// 2. Añadir una función específica para abrir el selector al hacer clic en cualquier parte
+const handleContainerClick = () => {
+  reopenColorPicker();
+};
+
 return (
   <>
     {/* Estilos CSS para animaciones */}
@@ -350,7 +417,10 @@ return (
     
     <div 
       style={styles.colorPickerContainer} 
-      onClick={(e) => e.stopPropagation()} 
+      onClick={(e) => {
+        e.stopPropagation();
+        handleContainerClick(); // Añadir esta línea para abrir al hacer clic en cualquier parte
+      }} 
       onMouseDown={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       className="color-picker-container"
@@ -382,6 +452,7 @@ return (
       <div style={styles.inputContainer}>
         <div style={styles.colorSelectLabel}>Seleccionar color:</div>
         <input 
+          ref={colorInputRef}
           type="color" 
           value={pendingColor} // Usar el color pendiente
           onChange={handleColorChange} // Actualizar el color pendiente
@@ -392,46 +463,12 @@ return (
           onPointerDown={(e) => e.stopPropagation()}
           style={styles.colorInput}
         />
-        <div style={styles.colorPreview}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={styles.colorLabel}>‎   Color actual:</span>
-            <div 
-              style={{
-                ...styles.colorBox,
-                backgroundColor: pendingColor // Mostrar el color pendiente
-              }}
-            ></div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={styles.hexValue}>{pendingColor.toUpperCase()}</span>
-            <button 
-              onClick={copyHexColor}
-              style={styles.copyButton}
-              title="Copiar código de color"
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#f0f0f0';
-                e.currentTarget.style.transform = 'scale(1.1)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.transform = 'scale(1)';
-              }}
-            >
-              {justCopied ? '✓' : '     ❏ '}
-              {showCopiedTooltip && (
-                <div style={styles.copyTooltip}>
-                  ¡Copiado!
-                </div>
-              )}
-            </button>
-          </div>
-        </div>
         {/* Botón normal integrado dentro del contenedor - NO flotante */}
         <button 
           style={{
             ...styles.applyButton,
             position: 'static', // Crucial: posición normal en el flujo del documento
-            margin: '180px 0 15px 0',
+            margin: '260px 0 15px 0',
             width: '100%',
             padding: '12px 14px',
           }}
