@@ -131,14 +131,13 @@ applyButton: {
     top: '170%',
     right: '0%', // Posicionar a la izquierda del botón
     marginRight: '-10px', // Espacio entre el botón y el selector
-    backgroundColor: 'white',
+    backgroundColor: 'none',
     borderRadius: '16px',
-    boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15), 0 2px 5px rgba(0, 0, 0, 0.1)',
-    padding: '18px',
+    boxShadow: 'none',
+    padding: '0',
     width: '280px',
     zIndex: 1002,
-    border: '1px solid rgba(200, 210, 220, 0.5)',
-    backdropFilter: 'blur(10px)',
+    border: 'none',
     animation: 'fadeIn 0.3s ease',
   },
   inputContainer: {
