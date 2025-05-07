@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Tooltip from '../ui/Tooltip';
 import { borderRadius } from '../../styles/theme';
+import CustomColorPicker from './CustomColorPicker';
 
 const ColorPicker = ({ onSelectColor, onCloseColorPicker }) => {
 // Intentar recuperar el último color usado desde localStorage
@@ -144,8 +145,13 @@ applyButton: {
     marginBottom: '16px',
     borderRadius: '12px',
     background: '#f5f7fa',
-    padding: '12px',
+    padding: '18px 12px', // Aumentar el padding vertical
     boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.04)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center', // Añadir justificación vertical
+    width: '100%', // Asegurar que ocupa todo el ancho disponible
   },
   colorPreview: {
     display: 'flex',
@@ -157,9 +163,6 @@ applyButton: {
     padding: '10px 14px',
     boxShadow: 'inset 0 1px 3px rgba(0, 0, 0, 0.01)',
     transition: 'all 0.3s ease',
-    transform: animateColor ? 'scale(1.02)' : 'scale(1)',
-  },
-  colorBox: {
     position: 'absolute',
     top: '25%',
     right: '112%', // Posicionar a la izquierda del botón
@@ -191,6 +194,8 @@ applyButton: {
     fontWeight: '600',
     marginBottom: '8px',
     display: 'block',
+    width: '90%',
+    textAlign: 'center',
   },
   copyTooltip: {
     position: 'absolute',
@@ -238,7 +243,7 @@ applyButton: {
     opacity: justCopied ? 0.5 : 1,
   },
   colorInput: {
-    width: '100%', 
+    width: '100%', // Aumentar de 90% a 100% para aprovechar todo el ancho disponible
     height: '40px', 
     cursor: 'pointer',
     appearance: 'none',
@@ -247,11 +252,12 @@ applyButton: {
     borderRadius: '8px',
     border: '1px solid #ddd',
     outline: 'none',
-    padding: '3px',
+    padding: '0', // Eliminar padding para evitar desplazamientos
     transition: 'all 0.2s ease',
     boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05) inset',
     pointerEvents: 'auto', // Asegurar que los eventos del ratón funcionan
     touchAction: 'none', // Mejorar soporte táctil
+    margin: '0 auto', // Centrar el elemento
   },
 };
 
@@ -292,59 +298,25 @@ const handleCloseApplyButton = () => {
   setShowApplyButton(false);
 };
 
-// Modificar la función handleColorPickerBlur para ser más agresiva
-const handleColorPickerBlur = (e) => {
-  // Comprobar si el foco se está moviendo al botón "Aplicar color"
-  const relatedTarget = e.relatedTarget;
-  if (relatedTarget && relatedTarget.innerText === "Aplicar color") {
-    // Si el foco va al botón, no hacer nada
-    return;
-  }
-  
-  // En caso contrario, cerrar todo
-  setTimeout(() => {
-    setIsColorPickerOpen(false);
-    setShowApplyButton(false);
-  }, 100); // Reducir el tiempo para que sea más rápido
-};
+// MODIFICADO: Eliminar la función handleColorPickerBlur que cerraba automáticamente el selector
+// Ya no necesitamos esta función que cierra el selector al perder el foco
 
 // Función para aplicar el color pendiente
 const applyColor = () => {
   selectColor(pendingColor); // Aplicar el color pendiente
 };
 
-// Añadir un useEffect para sincronizar los estados
+// MODIFICADO: Este useEffect ya no sincroniza el cierre del picker
 useEffect(() => {
   if (!isColorPickerOpen) {
-    // Si el selector se cierra, cerrar también el botón
+    // Si el selector se cierra externamente (por el botón de cerrar),
+    // cerrar también el botón flotante
     setShowApplyButton(false);
   }
 }, [isColorPickerOpen]);
 
-// Mejorar la detección del cierre del selector RGB añadiendo este efecto
-useEffect(() => {
-  // Función para detectar clics fuera del selector que podrían cerrarlo
-  const handleGlobalClick = () => {
-    // Comprobar si el selector de color está abierto
-    const colorInputs = document.querySelectorAll('input[type="color"]');
-    const isAnyColorInputOpen = Array.from(colorInputs).some(input => document.activeElement === input);
-    
-    if (!isAnyColorInputOpen && isColorPickerOpen) {
-      setIsColorPickerOpen(false);
-      setShowApplyButton(false);
-    }
-  };
-
-  // Añadir el evento global
-  document.addEventListener('click', handleGlobalClick);
-  document.addEventListener('touchend', handleGlobalClick);
-  
-  // Limpiar
-  return () => {
-    document.removeEventListener('click', handleGlobalClick);
-    document.removeEventListener('touchend', handleGlobalClick);
-  };
-}, [isColorPickerOpen]);
+// MODIFICADO: Eliminar el efecto que detectaba clics fuera del selector
+// Esta función era la que cerraba el selector al hacer clic fuera
 
 // Añade este efecto para abrir automáticamente el selector
 useEffect(() => {
@@ -361,7 +333,7 @@ useEffect(() => {
   return () => clearTimeout(timer);
 }, []);
 
-// Modificar el efecto para que se ejecute en cada reinicio
+// MODIFICADO: Este efecto ahora solo controla la apertura, no el cierre
 useEffect(() => {
   // Función que abre el selector de color
   const openColorPicker = () => {
@@ -391,7 +363,7 @@ useEffect(() => {
   return () => {
     clearTimeout(timer);
     document.removeEventListener('visibilitychange', handleVisibilityChange);
-    window.removeEventListener('focus', openColorPicker); // Corregido: era addEventListener
+    window.removeEventListener('focus', openColorPicker);
   };
 }, []);
 
@@ -405,9 +377,20 @@ const reopenColorPicker = () => {
   }
 };
 
-// 2. Añadir una función específica para abrir el selector al hacer clic en cualquier parte
+// Función específica para abrir el selector al hacer clic en cualquier parte
 const handleContainerClick = () => {
   reopenColorPicker();
+};
+
+// NUEVO: Función para manejar el cierre explícito del selector
+const handleCloseColorPicker = () => {
+  // Solo cerramos cuando el usuario lo indica explícitamente
+  setIsColorPickerOpen(false);
+  
+  // Si hay una función de cierre proporcionada, la llamamos
+  if (typeof onCloseColorPicker === 'function') {
+    onCloseColorPicker();
+  }
 };
 
 return (
@@ -418,79 +401,32 @@ return (
     <div 
       style={styles.colorPickerContainer} 
       onClick={(e) => {
+        // Evitar que los clics se propaguen fuera del contenedor
         e.stopPropagation();
-        handleContainerClick(); // Añadir esta línea para abrir al hacer clic en cualquier parte
+        handleContainerClick();
       }} 
       onMouseDown={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
       className="color-picker-container"
     >
-      <button 
-        style={styles.closeButton} 
-        onClick={() => {
-          handleCloseApplyButton(); // Cerrar el botón flotante al cerrar el selector
-          onCloseColorPicker();
+      <CustomColorPicker 
+        initialColor={pendingColor}
+        onSelectColor={(color) => {
+          setPendingColor(color);
+          // Aplicar el color inmediatamente al texto
+          if (typeof onSelectColor === 'function') {
+            onSelectColor(color);
+          }
+          // Guardar en localStorage
+          try {
+            localStorage.setItem('lastUsedTextColor', color);
+          } catch (e) {
+            console.warn('No se pudo guardar el último color usado:', e);
+          }
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = '#e0e0e0';
-          e.currentTarget.style.transform = 'scale(1.1)';
-          showTooltip('closeColorPicker');
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = '#f0f0f0';
-          e.currentTarget.style.transform = 'scale(1)';
-          hideTooltip();
-        }}
-      >
-        ✕
-        <Tooltip
-          isVisible={activeTooltip === 'closeColorPicker'}
-          text="Cerrar selector de color"
-        />
-      </button>
-      
-      <div style={styles.inputContainer}>
-        <div style={styles.colorSelectLabel}>Seleccionar color:</div>
-        <input 
-          ref={colorInputRef}
-          type="color" 
-          value={pendingColor} // Usar el color pendiente
-          onChange={handleColorChange} // Actualizar el color pendiente
-          onClick={handleColorBarClick} // Mostrar el botón flotante al hacer clic
-          onFocus={() => setIsColorPickerOpen(true)}
-          onBlur={handleColorPickerBlur}
-          onMouseDown={(e) => e.stopPropagation()}
-          onPointerDown={(e) => e.stopPropagation()}
-          style={styles.colorInput}
-        />
-        {/* Botón normal integrado dentro del contenedor - NO flotante */}
-        <button 
-          style={{
-            ...styles.applyButton,
-            position: 'static', // Crucial: posición normal en el flujo del documento
-            margin: '260px 0 15px 0',
-            width: '100%',
-            padding: '12px 14px',
-          }}
-          onClick={() => {
-            applyColor();
-            setIsColorPickerOpen(false);
-            setShowApplyButton(false);
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#3a6ea5';
-            e.currentTarget.style.transform = 'scale(1.02)';
-            showTooltip('applyColor');
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = '#4c7977';
-            e.currentTarget.style.transform = 'scale(1)';
-            hideTooltip();
-          }}
-        >
-          Aplicar color
-        </button>
-      </div>
+        onClose={handleCloseColorPicker} // Usar nuestra función de cierre explícito
+        keepOpenUntilSubmit={true} // NUEVO: Propiedad para indicar que se mantenga abierto
+      />
     </div>
   </>
 );
