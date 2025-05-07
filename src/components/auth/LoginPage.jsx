@@ -73,13 +73,10 @@ const LoginPage = () => {
 
         try {
             // Llamar a la API de login
-            const userData = await login({
+            await login({
                 email: formData.email,
                 password: formData.password
             });
-            
-            // Actualizar el estado de autenticación
-            updateAuthState(userData);
             
             // Redireccionar a la página principal
             navigate('/');

@@ -1,9 +1,9 @@
-// src/App.jsx
-import React from 'react';
+// src/App.jsx (corregido)
+import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ScrollToTop from './components/utils/ScrollToTop';
 import { ThemeProvider } from './context/ThemeContext';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, AuthContext } from './context/AuthContext';
 import './styles/darkMode.css';
 
 // Importación de páginas
@@ -19,6 +19,31 @@ import RegisterPage from './components/auth/RegisterPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
+
+// Componente LoadingSpinner que faltaba
+const LoadingSpinner = () => (
+  <div style={{ 
+    display: 'flex', 
+    justifyContent: 'center', 
+    alignItems: 'center', 
+    height: '100vh' 
+  }}>
+    <div style={{
+      width: '50px',
+      height: '50px',
+      borderRadius: '50%',
+      border: '5px solid #f3f3f3',
+      borderTop: '5px solid #0b4444',
+      animation: 'spin 1s linear infinite'
+    }}></div>
+    <style>{`
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    `}</style>
+  </div>
+);
 
 // Componente para rutas protegidas
 const PrivateRoute = ({ children, requiredRole = null }) => {

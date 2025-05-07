@@ -109,37 +109,39 @@ const RegisterPage = () => {
         return valid;
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+// En el handleSubmit de RegisterPage.jsx (reemplazar la función existente)
+const handleSubmit = async (e) => {
+    e.preventDefault();
 
-        if (!validateForm()) return;
+    if (!validateForm()) return;
 
-        setIsSubmitting(true);
+    setIsSubmitting(true);
 
-        try {
-            // Llamar a la API para registrar al usuario
-            await register({
-                email: formData.email,
-                password: formData.password,
-                confirmPassword: formData.confirmPassword,
-                firstName: formData.firstName,
-                lastName: formData.lastName
-            });
-            
-            // Redirigir al login después del registro exitoso
-            navigate('/login', { 
-                state: { message: '¡Registro exitoso! Ahora puedes iniciar sesión.' } 
-            });
-        } catch (error) {
-            console.error('Error al registrar usuario:', error);
-            setErrors({
-                ...errors,
-                general: 'Error al registrar. Por favor intenta nuevamente más tarde.'
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+    try {
+        // Llamar a la API para registrar al usuario
+        await register({
+            username: formData.email, // El backend espera un username que es el email
+            email: formData.email,
+            password: formData.password,
+            password2: formData.confirmPassword,
+            first_name: formData.firstName,
+            last_name: formData.lastName
+        });
+        
+        // Redirigir al login después del registro exitoso
+        navigate('/login', { 
+            state: { message: '¡Registro exitoso! Ahora puedes iniciar sesión.' } 
+        });
+    } catch (error) {
+        console.error('Error al registrar usuario:', error);
+        setErrors({
+            ...errors,
+            general: 'Error al registrar. Por favor intenta nuevamente más tarde.'
+        });
+    } finally {
+        setIsSubmitting(false);
+    }
+};
 
     const styles = {
         registerContainer: {
