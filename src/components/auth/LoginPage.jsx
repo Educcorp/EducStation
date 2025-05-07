@@ -7,11 +7,16 @@ import Footer from '../layout/Footer';
 import { login } from '../../services/authService';
 import AuthContext from '../../context/AuthContext';
 
-
+// src/components/auth/LoginPage.jsx (updated)
+import React, { useState, useContext, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { colors, spacing, typography } from '../../styles/theme';
+import { AuthContext } from '../../context/AuthContext';
 
 const LoginPage = () => {
     const navigate = useNavigate();
-    const { updateAuthState } = useContext(AuthContext);
+    const location = useLocation();
+    const { login, isAuth, loading, error: authError } = useContext(AuthContext);
     
     const [formData, setFormData] = useState({
         email: '',
@@ -26,6 +31,25 @@ const LoginPage = () => {
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    // Redirigir si ya está autenticado
+    useEffect(() => {
+        if (isAuth && !loading) {
+            navigate('/');
+        }
+    }, [isAuth, loading, navigate]);
+    
+    // Manejar mensajes de la página anterior (por ejemplo, después del registro)
+    useEffect(() => {
+        if (location.state?.message) {
+            setErrors({
+                ...errors,
+                general: location.state.message
+            });
+            // Limpiar el mensaje de estado para que no persista en la navegación
+            window.history.replaceState({}, document.title);
+        }
+    }, [location]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -74,24 +98,32 @@ const LoginPage = () => {
         setIsSubmitting(true);
     
         try {
-            // Usar el método login del contexto, no del servicio directamente
             await login({
                 email: formData.email,
                 password: formData.password
             });
             
-            // Redireccionar a la página principal
-            navigate('/');
+            // No es necesario navegar aquí, el useEffect se encargará de eso
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
             setErrors({
                 ...errors,
-                general: 'Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.'
+                general: error.message || 'Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.'
             });
         } finally {
             setIsSubmitting(false);
         }
     }; 
+
+    // Actualizar errores cuando cambia el error de autenticación
+    useEffect(() => {
+        if (authError) {
+            setErrors(prev => ({
+                ...prev,
+                general: authError
+            }));
+        }
+    }, [authError]);
 
     const styles = {
         loginContainer: {

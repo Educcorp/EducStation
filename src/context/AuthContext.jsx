@@ -1,6 +1,6 @@
-// src/context/AuthContext.js
+// src/context/AuthContext.jsx (updated)
 import React, { createContext, useState, useEffect } from 'react';
-import { login, logout, refreshToken } from '../services/authService';
+import { login as loginService, logout as logoutService, refreshToken as refreshTokenService } from '../services/authService';
 
 // Creamos el contexto
 export const AuthContext = createContext();
@@ -10,6 +10,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     // Verificar si hay un token almacenado al cargar la aplicación
@@ -19,7 +20,8 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           // Intentar obtener información del usuario
-          const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000/api'}/auth/user/`, {
+          const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
+          const response = await fetch(`${API_URL}/api/auth/user/`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
@@ -32,9 +34,9 @@ export const AuthProvider = ({ children }) => {
           } else {
             // El token puede estar vencido, intentar refrescarlo
             try {
-              await refreshToken();
+              await refreshTokenService();
               // Si se refresca exitosamente, reintentamos obtener los datos
-              const newResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000/api'}/auth/user/`, {
+              const newResponse = await fetch(`${API_URL}/api/auth/user/`, {
                 headers: {
                   'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
                 },
@@ -46,23 +48,26 @@ export const AuthProvider = ({ children }) => {
                 setIsAuth(true);
               } else {
                 // Si aún no funciona, limpiar tokens
-                logout();
+                logoutService();
                 setUser(null);
                 setIsAuth(false);
               }
             } catch (error) {
               // Error al refrescar el token
-              logout();
+              logoutService();
               setUser(null);
               setIsAuth(false);
             }
           }
         } catch (error) {
           console.error('Error al verificar autenticación:', error);
-          logout();
+          logoutService();
           setUser(null);
           setIsAuth(false);
         }
+      } else {
+        setIsAuth(false);
+        setUser(null);
       }
       
       setLoading(false);
@@ -73,12 +78,14 @@ export const AuthProvider = ({ children }) => {
 
   const loginUser = async (credentials) => {
     setLoading(true);
+    setError(null);
     try {
-      const result = await login(credentials);
+      const result = await loginService(credentials);
       setUser(result.user);
       setIsAuth(true);
       return result;
     } catch (error) {
+      setError(error.message);
       throw error;
     } finally {
       setLoading(false);
@@ -86,7 +93,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logoutUser = () => {
-    logout();
+    logoutService();
     setUser(null);
     setIsAuth(false);
   };
@@ -101,6 +108,7 @@ export const AuthProvider = ({ children }) => {
       user, 
       isAuth, 
       loading, 
+      error,
       login: loginUser, 
       logout: logoutUser, 
       updateAuthState 
