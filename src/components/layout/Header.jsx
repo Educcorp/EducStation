@@ -2,9 +2,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
+import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 
 const Header = () => {
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme(); // Obtén el estado del modo oscuro
 
   // Estados existentes
   const [isScrolled, setIsScrolled] = useState(false);
@@ -109,14 +112,14 @@ const Header = () => {
   // Estilos del header
   const styles = {
     header: {
-      backgroundColor: isScrolled ? "rgba(240, 248, 247, 0.95)" : colors.white,
-      padding: `${spacing.md} 0`,
-      boxShadow: isScrolled ? shadows.md : shadows.sm,
-      position: "fixed",
-      top: isVisible ? 0 : '-100px',
-      width: "100%",
-      zIndex: 100,
-      transition: transitions.default
+      backgroundColor: isDarkMode ? '#333' : '#fff', // Cambia el color de fondo según el modo
+      color: isDarkMode ? '#fff' : '#000', // Cambia el color del texto según el modo
+      padding: '16px',
+      position: 'fixed',
+      top: 0,
+      width: '100%',
+      zIndex: 1000,
+      transition: 'background-color 0.3s ease, color 0.3s ease', // Transición suave
     },
     headerSpacer: {
       height: "80px",
@@ -157,12 +160,12 @@ const Header = () => {
       gap: spacing.xl
     },
     navLink: (isActivePath) => ({
-      color: isActivePath ? colors.primary : colors.textSecondary,
-      textDecoration: "none",
+      color: isDarkMode ? (isActivePath ? '#ffd700' : '#fff') : (isActivePath ? '#333' : '#000'), // Texto blanco en modo oscuro
+      textDecoration: 'none',
       fontWeight: typography.fontWeight.medium,
-      position: "relative",
+      position: 'relative',
       padding: `${spacing.xs} 0`,
-      transition: transitions.default
+      transition: transitions.default,
     }),
     profileIcon: {
       width: "40px",
@@ -184,25 +187,27 @@ const Header = () => {
       position: "absolute",
       top: "50px",
       right: "0",
-      backgroundColor: colors.white,
+      backgroundColor: isDarkMode ? "#444" : colors.white, // Fondo más oscuro en modo oscuro
+      color: isDarkMode ? "#fff" : colors.textPrimary, // Texto más claro en modo oscuro
       boxShadow: shadows.md,
       borderRadius: borderRadius.md,
       padding: spacing.md,
       display: isMenuOpen ? "block" : "none",
       zIndex: 200,
-      minWidth: "200px"
+      minWidth: "200px",
+      transition: "background-color 0.3s ease, color 0.3s ease", // Transición suave
     },
     menuItem: {
       padding: `${spacing.sm} ${spacing.md}`,
-      color: colors.textSecondary,
-      textDecoration: "none",
-      display: "block",
-      cursor: "pointer",
+      color: isDarkMode ? '#fff' : colors.textPrimary, // Texto blanco en modo oscuro
+      textDecoration: 'none',
+      display: 'block',
+      cursor: 'pointer',
       transition: transitions.default,
-      '&:hover': {
-        backgroundColor: colors.background,
-        color: colors.primary
-      }
+      "&:hover": {
+        backgroundColor: isDarkMode ? "#555" : colors.background, // Fondo más oscuro al pasar el mouse
+        color: isDarkMode ? "#ffd700" : colors.primary, // Color de texto al pasar el mouse
+      },
     },
     loginButton: {
       padding: `${spacing.sm} ${spacing.md}`,
@@ -264,18 +269,18 @@ const Header = () => {
       marginBottom: spacing.sm
     },
     menuSeparator: {
-      height: '1px',
-      backgroundColor: colors.gray200,
+      height: "1px",
+      backgroundColor: isDarkMode ? "#555" : colors.gray200, // Línea más oscura en modo oscuro
       margin: `${spacing.xs} 0`,
-      width: '100%'
+      width: "100%",
     },
     menuHeader: {
       fontSize: typography.fontSize.xs,
       fontWeight: typography.fontWeight.semiBold,
-      color: colors.textSecondary,
-      textTransform: 'uppercase',
+      color: isDarkMode ? "#ccc" : colors.textSecondary, // Cambia el color del encabezado
+      textTransform: "uppercase",
       padding: `${spacing.xs} ${spacing.md}`,
-      letterSpacing: '1px'
+      letterSpacing: "1px",
     },
     menuItemIcon: {
       marginRight: spacing.sm,
@@ -403,8 +408,8 @@ const Header = () => {
 
   const getMenuItemStyle = (index) => ({
     ...styles.menuItem,
-    backgroundColor: hoveredItem === `menu-${index}` ? colors.background : 'transparent',
-    color: hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary
+    backgroundColor: hoveredItem === `menu-${index}` ? (isDarkMode ? "#555" : colors.background) : "transparent", // Fondo al pasar el mouse
+    color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#ffd700" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Texto blanco en modo oscuro
   });
 
   const navItems = [
@@ -556,59 +561,24 @@ const Header = () => {
                 >
                   <span style={styles.menuItemIcon}>⚙️</span> Configuración
                 </Link>
-                {userRole === 'admin' && (
-                  <Link
-                    to="/admin/dashboard"
-                    style={getMenuItemStyle(2)}
-                    onMouseEnter={() => setHoveredItem('menu-2')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <span style={styles.menuItemIcon}>📊</span> Panel de Control
-                  </Link>
-                )}
 
                 <div style={styles.menuSeparator}></div>
 
-                <div style={styles.menuHeader}>Contenido</div>
-                <Link
-                  to="/admin/post"
-                  style={getMenuItemStyle(3)}
-                  onMouseEnter={() => setHoveredItem('menu-3')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span style={styles.menuItemIcon}>✏️</span> Crear Post
-                </Link>
-                <Link
-                  to="/my-posts"
-                  style={getMenuItemStyle(4)}
-                  onMouseEnter={() => setHoveredItem('menu-4')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span style={styles.menuItemIcon}>📝</span> Mis Publicaciones
-                </Link>
-                <Link
-                  to="/favorites"
-                  style={getMenuItemStyle(5)}
-                  onMouseEnter={() => setHoveredItem('menu-5')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <span style={styles.menuItemIcon}>⭐</span> Favoritos
-                </Link>
+                {/* Botón de modo oscuro dentro del menú */}
+                <div style={{ padding: '8px 12px' }}>
+                  <ThemeToggle inMenu={true} />
+                </div>
 
                 <div style={styles.menuSeparator}></div>
 
                 <a
                   href="#"
                   style={getMenuItemStyle(6)}
-                  onMouseEnter={() => setHoveredItem('menu-6')}
+                  onMouseEnter={() => setHoveredItem('menu-')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
-                    initiateLogout(); // Ahora muestra el modal de confirmación
+                    initiateLogout();
                   }}
                 >
                   <span style={styles.menuItemIcon}>🚪</span> Cerrar Sesión
@@ -636,6 +606,23 @@ const Header = () => {
                 <Link to="/register" style={getMenuItemStyle(4)} onMouseEnter={() => setHoveredItem('menu-4')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}>📝</span> Registrarse
                 </Link>
+
+                <div style={styles.menuSeparator}></div>
+
+                {/* Botón de modo oscuro */}
+                <div
+                  style={{
+                    ...getMenuItemStyle(5), // Aplica el mismo estilo que los demás elementos del menú
+                    padding: '8px 12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={() => setHoveredItem('menu-5')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <ThemeToggle inMenu={true} />
+                </div>
               </>
             )}
           </div>

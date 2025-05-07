@@ -1,41 +1,44 @@
 // src/components/layout/Footer.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { colors, spacing, typography, transitions } from '../../styles/theme';
 
 const Footer = () => {
+  const { isDarkMode } = useTheme(); // Obtén el estado del modo oscuro
   const [emailValue, setEmailValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (emailValue.trim() === '') return;
-    
+
     setIsSubmitting(true);
-    
+
     // Simulación de envío (reemplazar con llamada a API real)
     setTimeout(() => {
       setIsSubmitting(false);
       setIsSuccess(true);
       setEmailValue('');
-      
+
       // Reiniciar el mensaje de éxito después de 3 segundos
       setTimeout(() => setIsSuccess(false), 3000);
     }, 1500);
   };
-  
+
   const styles = {
     footer: {
-      backgroundColor: colors.primary,
-      color: colors.white,
+      backgroundColor: isDarkMode ? '#222' : colors.primary, // Fondo más oscuro en modo oscuro
+      color: isDarkMode ? '#ccc' : colors.white, // Texto más claro en modo oscuro
       padding: `${spacing.xxl} 0 ${spacing.xl}`,
-      marginTop: spacing.xxl
+      marginTop: spacing.xxl,
+      transition: 'background-color 0.3s ease, color 0.3s ease', // Transición suave
     },
     container: {
-      maxWidth: "1200px",
-      margin: "0 auto",
-      padding: `0 ${spacing.md}`
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: `0 ${spacing.md}`,
     },
     grid: {
       display: "grid",
@@ -63,7 +66,7 @@ const Footer = () => {
       borderRadius: "8px"
     },
     description: {
-      color: colors.gray200,
+      color: isDarkMode ? '#aaa' : colors.gray200, // Cambia el color de la descripción
       marginBottom: spacing.xl,
       lineHeight: "1.6",
       fontSize: typography.fontSize.sm
@@ -93,7 +96,7 @@ const Footer = () => {
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.semiBold,
       marginBottom: spacing.md,
-      color: colors.white
+      color: isDarkMode ? '#fff' : colors.white, // Cambia el color del título
     },
     links: {
       listStyle: "none",
@@ -117,7 +120,7 @@ const Footer = () => {
       }
     },
     linkAnchor: {
-      color: colors.gray200,
+      color: isDarkMode ? '#aaa' : colors.gray200, // Cambia el color de los enlaces
       textDecoration: "none",
       transition: transitions.default,
       '&:hover': {
@@ -148,14 +151,14 @@ const Footer = () => {
     },
     button: {
       padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary,
-      color: colors.primary,
+      backgroundColor: isDarkMode ? '#444' : colors.secondary, // Botón más oscuro en modo oscuro
+      color: isDarkMode ? '#fff' : colors.primary,
       border: "none",
       borderRadius: "0 4px 4px 0",
       cursor: "pointer",
       transition: transitions.default,
       '&:hover': {
-        backgroundColor: colors.white
+        backgroundColor: isDarkMode ? '#555' : colors.white,
       },
       '&:disabled': {
         backgroundColor: colors.gray300,
@@ -170,7 +173,7 @@ const Footer = () => {
     bottom: {
       marginTop: spacing.xxl,
       paddingTop: spacing.md,
-      borderTop: `1px solid rgba(240, 248, 247, 0.1)`,
+      borderTop: `1px solid ${isDarkMode ? '#444' : 'rgba(240, 248, 247, 0.1)'}`, // Línea más oscura en modo oscuro
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -178,7 +181,7 @@ const Footer = () => {
       gap: spacing.md
     },
     copyright: {
-      color: colors.gray200,
+      color: isDarkMode ? '#aaa' : colors.gray200, // Cambia el color del texto de copyright
       fontSize: typography.fontSize.sm
     },
     bottomLinks: {
@@ -206,7 +209,7 @@ const Footer = () => {
               style={styles.logo} 
               onClick={() => (window.location.href = "/")} // Redirect to homepage
               onMouseEnter={(e) => (e.currentTarget.style.color = colors.secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = colors.white)}
+              onMouseLeave={(e) => (e.currentTarget.style.color = isDarkMode ? '#fff' : colors.white)}
             >
               <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
               EducStation
