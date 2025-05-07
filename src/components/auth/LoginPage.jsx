@@ -3,8 +3,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
 import { AuthContext } from '../../context/AuthContext';
-import Header from '../layout/Header';
-import Footer from '../layout/Footer';
+import '@fortawesome/fontawesome-free/css/all.css';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -22,6 +21,9 @@ const LoginPage = () => {
         password: '',
         general: ''
     });
+
+    // Estado para controlar la visibilidad de la contraseña
+    const [showPassword, setShowPassword] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -68,6 +70,11 @@ const LoginPage = () => {
                 [name]: ''
             }));
         }
+    };
+
+    // Función para alternar la visibilidad de la contraseña
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
     };
 
     const validateForm = () => {
@@ -239,6 +246,36 @@ const LoginPage = () => {
             transition: 'all 0.3s ease',
             backgroundColor: colors.white,
         },
+        passwordInput: {
+            width: '100%',
+            padding: `${spacing.sm} ${spacing.md}`,
+            paddingRight: '40px', // Espacio para el icono
+            border: `1px solid ${colors.gray200}`,
+            borderRadius: '6px',
+            fontSize: typography.fontSize.md,
+            transition: 'all 0.3s ease',
+            backgroundColor: colors.white,
+        },
+        passwordWrapper: {
+            position: 'relative',
+            width: '100%',
+        },
+        eyeIcon: {
+            position: 'absolute',
+            right: '12px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            cursor: 'pointer',
+            color: colors.primaryLight,
+            fontSize: '20px',
+            zIndex: 10,
+            background: 'none',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '4px',
+        },
         errorText: {
             color: colors.error,
             fontSize: typography.fontSize.xs,
@@ -308,6 +345,28 @@ const LoginPage = () => {
             marginBottom: spacing.lg,
             textAlign: 'center',
             fontSize: typography.fontSize.sm,
+        },
+        // Estilos para navegación superior (reemplazando header)
+        navContainer: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: `${spacing.md} ${spacing.xl}`,
+            backgroundColor: 'transparent',
+        },
+        logo: {
+            display: 'flex',
+            alignItems: 'center',
+            textDecoration: 'none',
+        },
+        logoImg: {
+            height: '36px',
+            marginRight: spacing.sm,
+        },
+        logoText: {
+            fontSize: typography.fontSize.lg,
+            fontWeight: typography.fontWeight.bold,
+            color: colors.primary,
         }
     };
 
@@ -318,6 +377,12 @@ const LoginPage = () => {
         boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
     });
 
+    const getPasswordInputStyle = () => ({
+        ...styles.passwordInput,
+        borderColor: errors.password ? colors.error : colors.gray200,
+        boxShadow: errors.password ? `0 0 0 1px ${colors.error}` : 'none',
+    });
+
     // Estilos para aplicar hover en el botón
     const getButtonStyle = () => ({
         ...styles.loginButton,
@@ -326,7 +391,13 @@ const LoginPage = () => {
 
     return (
         <div style={styles.loginContainer}>
-            <Header />
+            {/* Logo simplificado en lugar del Header */}
+            <div style={styles.navContainer}>
+                <Link to="/" style={styles.logo}>
+                    <img src="/assets/images/Icon.png" alt="EducStation Logo" style={styles.logoImg} />
+                    <span style={styles.logoText}>EducStation</span>
+                </Link>
+            </div>
 
             <main style={styles.mainContent}>
                 <div style={styles.formContainer}>
@@ -377,15 +448,25 @@ const LoginPage = () => {
 
                             <div style={styles.formGroup}>
                                 <label style={styles.label} htmlFor="password">Contraseña</label>
-                                <input
-                                    type="password"
-                                    id="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="Ingresa tu contraseña"
-                                    style={getInputStyle('password')}
-                                />
+                                <div style={styles.passwordWrapper}>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        id="password"
+                                        name="password"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        placeholder="Ingresa tu contraseña"
+                                        style={getPasswordInputStyle()}
+                                    />
+                                    <button 
+                                        type="button"
+                                        onClick={togglePasswordVisibility}
+                                        style={styles.eyeIcon}
+                                        aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                    >
+                                         {showPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}
+                                    </button>
+                                </div>
                                 {errors.password && <div style={styles.errorText}>{errors.password}</div>}
                             </div>
 
@@ -458,7 +539,7 @@ const LoginPage = () => {
                 </div>
             </main>
 
-            <Footer />
+            {/* El Footer ha sido eliminado */}
         </div>
     );
 };
