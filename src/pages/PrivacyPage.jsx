@@ -2,11 +2,13 @@
 import React from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
+import { spacing, typography, shadows, borderRadius } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 
 const PrivacyPage = () => {
   // Fecha de última actualización
   const lastUpdated = "15 de febrero de 2025";
+  const { colors } = useTheme(); // Obtenemos los colores del tema actual
 
   const styles = {
     container: {

@@ -2,12 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
-import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
+import { spacing, typography, shadows, borderRadius } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 import '../styles/animations.css'; // Importa la animación CSS
 
 const AboutPage = () => {
   const [animate, setAnimate] = useState(false);
-
+  const { colors } = useTheme(); // Obtenemos los colores del tema actual
 
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 0);
