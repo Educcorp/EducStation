@@ -7,6 +7,8 @@ import Footer from '../layout/Footer';
 import { login } from '../../services/authService';
 import AuthContext from '../../context/AuthContext';
 
+
+
 const LoginPage = () => {
     const navigate = useNavigate();
     const { updateAuthState } = useContext(AuthContext);
@@ -66,13 +68,13 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+    
         if (!validateForm()) return;
-
+    
         setIsSubmitting(true);
-
+    
         try {
-            // Llamar a la API de login
+            // Usar el método login del contexto, no del servicio directamente
             await login({
                 email: formData.email,
                 password: formData.password
@@ -89,7 +91,7 @@ const LoginPage = () => {
         } finally {
             setIsSubmitting(false);
         }
-    };
+    }; 
 
     const styles = {
         loginContainer: {

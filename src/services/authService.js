@@ -1,102 +1,122 @@
-// src/context/AuthContext.js
-import React, { createContext, useState, useEffect } from 'react';
-import { login as loginService, logout as logoutService, refreshToken } from '../services/authService';
+// src/services/authService.js
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
-export const AuthContext = createContext();
-
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isAuth, setIsAuth] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Verificar si hay un token almacenado al cargar la aplicación
-    const checkAuth = async () => {
-      const token = localStorage.getItem('userToken');
-      
-      if (token) {
-        try {
-          // Intentar obtener información del usuario
-          const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000/api'}/auth/user/`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
-          
-          if (response.ok) {
-            const userData = await response.json();
-            setUser(userData);
-            setIsAuth(true);
-          } else {
-            // El token puede estar vencido, intentar refrescarlo
-            try {
-              await refreshToken();
-              // Si se refresca exitosamente, reintentamos obtener los datos
-              const newResponse = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000/api'}/auth/user/`, {
-                headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
-                },
-              });
-              
-              if (newResponse.ok) {
-                const userData = await newResponse.json();
-                setUser(userData);
-                setIsAuth(true);
-              } else {
-                // Si aún no funciona, limpiar tokens
-                logoutService();
-                setUser(null);
-                setIsAuth(false);
-              }
-            } catch (error) {
-              // Error al refrescar el token
-              logoutService();
-              setUser(null);
-              setIsAuth(false);
-            }
-          }
-        } catch (error) {
-          console.error('Error al verificar autenticación:', error);
-          logoutService();
-          setUser(null);
-          setIsAuth(false);
-        }
-      }
-      
-      setLoading(false);
-    };
+// Export the functions explicitly with named exports
+export const register = async (userData) => {
+  try {
+    const response = await fetch(`${API_URL}/auth/register/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
     
-    checkAuth();
-  }, []);
-
-  const login = async (credentials) => {
-    setLoading(true);
-    try {
-      const result = await loginService(credentials);
-      setUser(result.user);
-      setIsAuth(true);
-      return result;
-    } catch (error) {
-      throw error;
-    } finally {
-      setLoading(false);
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Error en el registro');
     }
-  };
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error en el registro:', error);
+    throw error;
+  }
+};
 
-  const logout = () => {
-    logoutService();
-    setUser(null);
-    setIsAuth(false);
-  };
+export const login = async (credentials) => {
+  try {
+    const response = await fetch(`${API_URL}/auth/token/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: credentials.email,
+        password: credentials.password,
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Error en el inicio de sesión');
+    }
+    
+    const data = await response.json();
+    
+    // Guardar tokens en localStorage
+    localStorage.setItem('userToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+    
+    // Obtener información del usuario
+    const userResponse = await fetch(`${API_URL}/auth/user/`, {
+      headers: {
+        'Authorization': `Bearer ${data.access}`,
+      },
+    });
+    
+    if (!userResponse.ok) {
+      throw new Error('Error al obtener información del usuario');
+    }
+    
+    const userData = await userResponse.json();
+    localStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
+    
+    return {
+      user: userData,
+      token: data.access,
+      refresh: data.refresh,
+    };
+  } catch (error) {
+    console.error('Error en el login:', error);
+    throw error;
+  }
+};
 
-  const updateAuthState = (userData) => {
-    setUser(userData);
-    setIsAuth(true);
-  };
+export const logout = () => {
+  localStorage.removeItem('userToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('userName');
+};
 
-  return (
-    <AuthContext.Provider value={{ user, isAuth, loading, login, logout, updateAuthState }}>
-      {children}
-    </AuthContext.Provider>
-  );
+export const refreshToken = async () => {
+  const refreshToken = localStorage.getItem('refreshToken');
+  
+  if (!refreshToken) {
+    throw new Error('No hay token de refresco');
+  }
+  
+  try {
+    const response = await fetch(`${API_URL}/auth/token/refresh/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        refresh: refreshToken,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error('Token de refresco inválido');
+    }
+    
+    const data = await response.json();
+    localStorage.setItem('userToken', data.access);
+    localStorage.setItem('refreshToken', data.refresh);
+    
+    return data.access;
+  } catch (error) {
+    console.error('Error al refrescar token:', error);
+    logout();
+    throw error;
+  }
+};
+
+// Also provide default exports for backward compatibility
+export default {
+  register,
+  login,
+  logout,
+  refreshToken
 };
