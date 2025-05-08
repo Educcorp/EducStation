@@ -88,7 +88,7 @@ const Header = () => {
     showNotification(`¡Hasta pronto, ${currentUser}! Has cerrado sesión correctamente.`);
 
     // Redireccionar a inicio
-    navigate('/');
+    navigate('/login');
   };
 
   // Función para cancelar el cierre de sesión
@@ -98,8 +98,8 @@ const Header = () => {
 
   // Verificar si la ruta está activa
   const isActive = (path) => {
-    if (path === '/') {
-      return location.pathname === '/';
+    if (path === '/login') {
+      return location.pathname === '/login';
     }
     if (path === '/blog') {
       return location.pathname.startsWith('/blog') ||
@@ -481,10 +481,25 @@ const Header = () => {
           </nav>
 
           {/* Botón condicional: Inicio de Sesión o Cerrar Sesión */}
-          {isAuthenticated ? (
+          {!isAuthenticated ? (
+            <button
+              style={styles.loginButton}
+              onClick={() => navigate('/login')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.primary;
+                e.currentTarget.style.color = colors.white;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.secondary;
+                e.currentTarget.style.color = colors.primary;
+              }}
+            >
+              Inicio de Sesión
+            </button>
+          ) : (
             <button
               style={styles.logoutButton}
-              onClick={initiateLogout} // Ahora muestra el modal de confirmación
+              onClick={confirmLogoutAction}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.primary;
                 e.currentTarget.style.color = colors.white;
@@ -496,22 +511,6 @@ const Header = () => {
             >
               Cerrar Sesión
             </button>
-          ) : (
-            <Link to="/login">
-              <button
-                style={styles.loginButton}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary;
-                  e.currentTarget.style.color = colors.white;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.secondary;
-                  e.currentTarget.style.color = colors.primary;
-                }}
-              >
-                Inicio de Sesión
-              </button>
-            </Link>
           )}
 
           <div
