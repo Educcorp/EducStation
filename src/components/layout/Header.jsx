@@ -499,7 +499,7 @@ const Header = () => {
           ) : (
             <button
               style={styles.logoutButton}
-              onClick={confirmLogoutAction}
+              onClick={initiateLogout}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.primary;
                 e.currentTarget.style.color = colors.white;
