@@ -290,26 +290,7 @@ const AboutPage = () => {
         </button> 
       ),
     },
-    {
-      name: 'Ruben Lavariega',
-      role: 'Desarrollador Web',
-      image: '/assets/images/faces/Ruben.png',
-      bio: (
-        <button
-          onClick={() => window.open('https://github.com/RubenLavariega', '_blank')}
-          style={{
-            color: colors.primary,
-            padding: spacing.sm,
-            borderRadius: borderRadius.sm,
-            cursor: 'pointer',
-            fontSize: typography.fontSize.sm,
-            background: 'none',
-          }}
-        >
-          Promueve la participación colectiva, trabajo en equipo y construcción de redes entre diversos actores educativos. Ir a Google
-        </button>
-      ),
-    }
+
   ];
 
   // Datos de timeline
