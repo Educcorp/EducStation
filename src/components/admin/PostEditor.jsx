@@ -1,6 +1,7 @@
 // src/components/admin/PostEditor.jsx
 import React, { useState, useEffect } from 'react';
-import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
 
 // Componentes para el editor
 import DualModeEditor from './DualModeEditor';
@@ -35,6 +36,7 @@ const loadPostFromLocalStorage = () => {
 // Componente para la etiqueta de Contenido animada
 const ContentLabel = () => {
   const [isAnimated, setIsAnimated] = useState(false);
+  const { colors, isDarkMode } = useTheme(); // Obtener colores del tema
   
   useEffect(() => {
     // Activar animación después de un breve retraso
@@ -63,7 +65,7 @@ const ContentLabel = () => {
     label: {
       fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.semiBold,
-      color: colors.primary,
+      color: isDarkMode ? colors.textLight : colors.primary, // Ajustar color según el tema
       position: 'relative',
       paddingBottom: '3px'
     },
@@ -105,6 +107,9 @@ const ContentLabel = () => {
 };
 
 const PostEditor = () => {
+  // Obtener los colores del tema actual
+  const { colors, isDarkMode } = useTheme();
+  
   const [post, setPost] = useState({
     title: '',
     category: '',
@@ -450,9 +455,9 @@ const PostEditor = () => {
               gap: spacing.xs,
               marginBottom: spacing.xs,
               fontWeight: typography.fontWeight.medium,
-              color: colors.primary
+              color: isDarkMode ? colors.textLight : colors.primary
             }} htmlFor="title">
-              <span style={{color: colors.primary, fontSize: '1.4em'}}>📝</span> Título del post
+              <span style={{color: isDarkMode ? colors.textLight : colors.primary, fontSize: '1.4em'}}>📝</span> Título del post
             </label>
             <input
               type="text"
@@ -469,7 +474,9 @@ const PostEditor = () => {
                 transition: "all 0.3s ease",
                 marginBottom: spacing.md,
                 fontWeight: typography.fontWeight.semiBold,
-                borderLeft: `4px solid ${colors.primary}`
+                borderLeft: `4px solid ${colors.primary}`,
+                backgroundColor: colors.white,
+                color: isDarkMode ? colors.textPrimary : "#000000",
               }}
               placeholder="Escribe un título atractivo"
               onFocus={(e) => {

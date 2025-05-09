@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
-import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
 
 const PostMetadata = ({ post, categories, onChange }) => {
+  // Obtener colores del tema actual
+  const { colors, isDarkMode } = useTheme();
+  
   // State to track which category is being hovered
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
@@ -154,12 +158,12 @@ const PostMetadata = ({ post, categories, onChange }) => {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      color: "#000000"
+      color: isDarkMode ? colors.textPrimary : "#000000" // Texto blanco en modo oscuro
     },
     dropdownIcon: {
       marginLeft: spacing.sm,
       transition: "transform 0.3s ease",
-      color: "#000000"
+      color: isDarkMode ? colors.textPrimary : "#000000" // Flecha blanca en modo oscuro
     },
     optionsContainer: {
       position: "absolute",
@@ -181,7 +185,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
       borderBottom: `1px solid ${colors.gray100}`,
       transition: "background-color 0.2s ease",
       position: "relative",
-      color: "#000000"  // Cambiamos solo el color del texto a negro
+      color: isDarkMode ? colors.textPrimary : "#000000"  // Texto blanco en modo oscuro para las opciones
     },
     // Estilo para los tooltips de descripción
     optionDescription: {
@@ -306,7 +310,13 @@ const PostMetadata = ({ post, categories, onChange }) => {
           name="publishDate"
           value={post.publishDate}
           onChange={onChange}
-          style={styles.input}
+          style={{
+            ...styles.input,
+            backgroundColor: colors.white,
+            color: isDarkMode ? colors.textPrimary : "#000000",
+            // Personalizar los elementos internos del calendario
+            colorScheme: isDarkMode ? "dark" : "light"
+          }}
           min={new Date().toISOString().split('T')[0]}
           onFocus={(e) => {
             e.target.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
