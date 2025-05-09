@@ -327,7 +327,7 @@ const ContactPage = () => {
     submitButton: {
       padding: `${spacing.md} ${spacing.xl}`,
       backgroundColor: colors.secondary,
-      color: colors.primary,
+      color: isDarkMode ? '#333' : colors.primary, // Texto más oscuro en modo oscuro
       border: "none",
       borderRadius: borderRadius.md,
       fontSize: typography.fontSize.md,
@@ -579,13 +579,14 @@ const ContactPage = () => {
                   onMouseEnter={(e) => {
                     if (!formStatus.submitting) {
                       e.currentTarget.style.backgroundColor = colors.primary;
-                      e.currentTarget.style.color = colors.white;
+                      // Mantener el color del texto igual en modo oscuro
+                      e.currentTarget.style.color = isDarkMode ? '#333' : colors.white;
                     }
                   }}
                   onMouseLeave={(e) => {
                     if (!formStatus.submitting) {
                       e.currentTarget.style.backgroundColor = colors.secondary;
-                      e.currentTarget.style.color = colors.primary;
+                      e.currentTarget.style.color = isDarkMode ? '#333' : colors.primary;
                     }
                   }}
                 >
