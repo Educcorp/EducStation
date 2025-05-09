@@ -76,8 +76,8 @@ const Header = () => {
     const currentUser = localStorage.getItem('userName') || 'Usuario';
 
     // Eliminar datos de autenticación
-    localStorage.removeItem('userToken');
-    localStorage.removeItem('userName');
+    localStorage.clear(); // Limpiamos todo el localStorage
+    sessionStorage.clear(); // Limpiamos también el sessionStorage por si acaso
 
     // Actualizar estado
     setIsAuthenticated(false);
@@ -87,8 +87,10 @@ const Header = () => {
     // Mostrar mensaje
     showNotification(`¡Hasta pronto, ${currentUser}! Has cerrado sesión correctamente.`);
 
-    // Redireccionar a inicio
-    navigate('/');
+    // Redireccionar a login después de un breve delay para que se vea la notificación
+    setTimeout(() => {
+      window.location.href = '/login'; // Forzamos un refresh completo
+    }, 1500);
   };
 
   // Función para cancelar el cierre de sesión
@@ -98,8 +100,8 @@ const Header = () => {
 
   // Verificar si la ruta está activa
   const isActive = (path) => {
-    if (path === '/') {
-      return location.pathname === '/';
+    if (path === '/logout') {
+      return location.pathname === '/logout';
     }
     if (path === '/blog') {
       return location.pathname.startsWith('/blog') ||
