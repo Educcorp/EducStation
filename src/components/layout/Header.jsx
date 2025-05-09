@@ -201,31 +201,15 @@ const Header = () => {
     },
     menuItem: {
       padding: `${spacing.sm} ${spacing.md}`,
-      color: isDarkMode ? '#fff' : colors.textPrimary, // Texto blanco en modo oscuro
+      color: isDarkMode ? '#fff' : colors.textPrimary,
       textDecoration: 'none',
       display: 'block',
       cursor: 'pointer',
       transition: transitions.default,
       "&:hover": {
-        backgroundColor: isDarkMode ? "#555" : colors.background, // Fondo más oscuro al pasar el mouse
-        color: isDarkMode ? "#ffd700" : colors.primary, // Color de texto al pasar el mouse
+        backgroundColor: isDarkMode ? "#555" : colors.background,
+        color: isDarkMode ? "#ffd700" : colors.primary,
       },
-    },
-    loginButton: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary,
-      color: colors.primary,
-      border: "none",
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
-      cursor: "pointer",
-      transition: transitions.default,
-      marginLeft: spacing.md,
-      '&:hover': {
-        backgroundColor: colors.primary,
-        color: colors.white
-      }
     },
     logoutButton: {
       padding: `${spacing.sm} ${spacing.md}`,
@@ -482,8 +466,8 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Botón condicional: Inicio de Sesión o Cerrar Sesión */}
-          {isAuthenticated ? (
+          {/* Solo mostrar el botón de Cerrar Sesión cuando esté autenticado */}
+          {isAuthenticated && (
             <button
               style={styles.logoutButton}
               onClick={initiateLogout}
@@ -498,26 +482,6 @@ const Header = () => {
             >
               Cerrar Sesión
             </button>
-          ) : (
-            <Link to="/login">
-              <button
-                style={{
-                  ...styles.loginButton,
-                  backgroundColor: isActive('/login') ? colors.primary : colors.secondary,
-                  color: isActive('/login') ? colors.white : colors.primary,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary;
-                  e.currentTarget.style.color = colors.white;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isActive('/login') ? colors.primary : colors.secondary;
-                  e.currentTarget.style.color = isActive('/login') ? colors.white : colors.primary;
-                }}
-              >
-                Inicio de Sesión
-              </button>
-            </Link>
           )}
 
           <div
