@@ -36,7 +36,7 @@ const ReactionSection = ({ postId }) => {
     } else {
       // Si el usuario ya tiene 1 reaccion, no permitir más
       if (Object.keys(newUserReactions).length >= 1) {
-        showNotification('¡Máximo 3 reacciones por post!', 'warning');
+        showNotification('¡Máximo 1 reacciones por post!', 'warning');
         return;
       }
       newReactions[emoji]++;
