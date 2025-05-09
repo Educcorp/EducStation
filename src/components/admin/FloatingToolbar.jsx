@@ -149,7 +149,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   const styles = {
     floatingBar: {
       position: 'absolute',
-      zIndex: 1000,
+      zIndex: 100, // Reducir el z-index para que sea menor que el del header
       display: visible ? 'flex' : 'none',
       alignItems: 'center',
       backgroundColor: 'rgb(245, 247, 250)',
@@ -341,6 +341,9 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     // Calcular la posición de la barra
     const editorRect = editorRef.current.getBoundingClientRect();
     
+    // Altura estimada del header (ajusta este valor según la altura real de tu header)
+    const headerHeight = 60;
+    
     // Calculamos la altura de la barra (se estima en 50px si aún no está renderizada)
     const toolbarHeight = toolbarRef.current ? toolbarRef.current.offsetHeight : 50;
     // Calculamos el ancho de la barra (se estima en 320px si aún no está renderizada)
@@ -366,7 +369,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       
       newPosition = {
         // Posicionamos la barra debajo de la línea de texto
-        top: rect.bottom - editorRect.top + 10,
+        top: Math.max(rect.bottom - editorRect.top + 10, headerHeight), // Asegurar que no sube más que el header
         // Alineamos con el inicio de la selección
         left: rect.left - editorRect.left
       };
@@ -376,14 +379,14 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       
       // Siempre colocar la barra debajo del cursor
       newPosition = {
-        top: rect.bottom - editorRect.top + 10, // Debajo del cursor
+        top: Math.max(rect.bottom - editorRect.top + 10, headerHeight), // Asegurar que no sube más que el header
         left: rect.left - editorRect.left // Alineado con el cursor
       };
       
       // Si no tenemos dimensiones válidas, usar posición por defecto dentro del editor
       if (rect.width === 0 && rect.height === 0) {
         newPosition = {
-          top: 30 + lineHeight, // Debajo de la primera línea
+          top: Math.max(30 + lineHeight, headerHeight), // Usar como mínimo la altura del header
           left: 50 // Desde el borde izquierdo
         };
       }

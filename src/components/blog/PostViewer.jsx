@@ -5,6 +5,7 @@ import { useParams, Link } from 'react-router-dom';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import CommentSection from './CommentSection';
 
 const PostViewer = () => {
   const { postId } = useParams(); // Obtiene el ID del post de la URL
@@ -190,6 +191,8 @@ const PostViewer = () => {
             />
           )}
         </div>
+        
+        <CommentSection />
       </main>
       
       <Footer />

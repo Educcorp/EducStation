@@ -3,12 +3,14 @@ import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostCard from '../components/blog/PostCard';
-import { colors, spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
+import { spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 
 const BlogDetailPage = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(128);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const { colors } = useTheme(); // Obtenemos los colores del tema actual
   
   // Simulación de post detallado
   const post = {

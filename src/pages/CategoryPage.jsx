@@ -4,11 +4,13 @@ import { useParams } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostCard from '../components/blog/PostCard';
-import { colors, spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
+import { spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
+import { useTheme } from '../context/ThemeContext';
 import '../styles/animations.css';
 
 const CategoryPage = () => {  
     const [animate, setAnimate] = useState(false);
+    const { colors } = useTheme(); // Obtenemos los colores del tema actual
   
     useEffect(() => {
       const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente

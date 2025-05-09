@@ -313,7 +313,7 @@ const AboutPage = () => {
           <div style={styles.container}>
             <h1 
               className={animate ?"page-animation" : ""}
-              style={styles.title}>Sobre EducStation</h1>
+              style={styles.title}>Testeo</h1>
             <p 
               className={animate ? "page-animation" : ""}
               style={styles.subtitle}>
