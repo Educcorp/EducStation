@@ -1,7 +1,7 @@
 // src/components/auth/RegisterPage.jsx - Actualizado
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { register } from '../../services/authService';
+import { register, checkUsernameAvailability } from '../../services/authService';
 import { colors, spacing, typography } from '../../styles/theme';
 import '@fortawesome/fontawesome-free/css/all.css';
 
@@ -11,6 +11,7 @@ const RegisterPage = () => {
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
+        username: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -20,6 +21,7 @@ const RegisterPage = () => {
     const [errors, setErrors] = useState({
         firstName: '',
         lastName: '',
+        username: '',
         email: '',
         password: '',
         confirmPassword: '',
@@ -31,13 +33,21 @@ const RegisterPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+    // Estado para controlar la validación del username
+    const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+    const [usernameAvailable, setUsernameAvailable] = useState(null);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+
+        // Convertir username a minúsculas automáticamente
+        const processedValue = name === 'username' ? value.toLowerCase() : value;
+
         setFormData(prev => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : processedValue
         }));
 
         // Limpiar error al cambiar el valor
@@ -46,6 +56,11 @@ const RegisterPage = () => {
                 ...prev,
                 [name]: ''
             }));
+        }
+
+        // Validar username en tiempo real
+        if (name === 'username') {
+            validateUsername(processedValue);
         }
     };
 
@@ -58,11 +73,51 @@ const RegisterPage = () => {
         setShowConfirmPassword(!showConfirmPassword);
     };
 
+    // Función para validar el formato del username
+    const validateUsernameFormat = (username) => {
+        const usernameRegex = /^[a-z0-9._]+$/;
+        return usernameRegex.test(username);
+    };
+
+    // Función para verificar disponibilidad del username
+    const validateUsername = async (username) => {
+        if (!username) {
+            setErrors(prev => ({ ...prev, username: 'El nombre de usuario es requerido' }));
+            setUsernameAvailable(null);
+            return;
+        }
+
+        if (!validateUsernameFormat(username)) {
+            setErrors(prev => ({
+                ...prev,
+                username: 'Solo se permiten letras minúsculas, números, punto y guion bajo'
+            }));
+            setUsernameAvailable(null);
+            return;
+        }
+
+        setIsCheckingUsername(true);
+        try {
+            await checkUsernameAvailability(username);
+            setUsernameAvailable(true);
+            setErrors(prev => ({ ...prev, username: '' }));
+        } catch (error) {
+            setUsernameAvailable(false);
+            setErrors(prev => ({
+                ...prev,
+                username: 'Este nombre de usuario ya está en uso'
+            }));
+        } finally {
+            setIsCheckingUsername(false);
+        }
+    };
+
     const validateForm = () => {
         let valid = true;
         const newErrors = {
             firstName: '',
             lastName: '',
+            username: '',
             email: '',
             password: '',
             confirmPassword: '',
@@ -118,31 +173,41 @@ const RegisterPage = () => {
             valid = false;
         }
 
+        // Validar nombre de usuario
+        if (!formData.username) {
+            newErrors.username = 'El nombre de usuario es requerido';
+            valid = false;
+        } else if (!validateUsernameFormat(formData.username)) {
+            newErrors.username = 'Solo se permiten letras minúsculas, números, punto y guion bajo';
+            valid = false;
+        } else if (usernameAvailable === false) {
+            newErrors.username = 'Este nombre de usuario ya está en uso';
+            valid = false;
+        }
+
         setErrors(newErrors);
         return valid;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (!validateForm()) return;
-    
+
         setIsSubmitting(true);
-    
+
         try {
-            // Llamar a la API de registro
             await register({
-                username: formData.email, // El backend espera el email como username
+                username: formData.username,
                 email: formData.email,
                 password: formData.password,
                 password2: formData.confirmPassword,
                 first_name: formData.firstName,
                 last_name: formData.lastName
             });
-            
-            // Redirigir al login con mensaje de éxito
-            navigate('/login', { 
-                state: { message: '¡Registro exitoso! Ahora puedes iniciar sesión.' } 
+
+            navigate('/login', {
+                state: { message: '¡Registro exitoso! Ahora puedes iniciar sesión.' }
             });
         } catch (error) {
             console.error('Error al registrar usuario:', error);
@@ -508,6 +573,40 @@ const RegisterPage = () => {
                             </div>
 
                             <div style={styles.formGroup}>
+                                <label style={styles.label} htmlFor="username">Nombre de usuario</label>
+                                <div style={styles.passwordWrapper}>
+                                    <input
+                                        type="text"
+                                        id="username"
+                                        name="username"
+                                        value={formData.username}
+                                        onChange={handleChange}
+                                        placeholder="usuario123"
+                                        style={getInputStyle('username')}
+                                    />
+                                    {isCheckingUsername && (
+                                        <div style={{ ...styles.eyeIcon, right: '40px' }}>
+                                            <i className="fa-solid fa-spinner fa-spin"></i>
+                                        </div>
+                                    )}
+                                    {usernameAvailable === true && (
+                                        <div style={{ ...styles.eyeIcon, right: '40px', color: colors.success }}>
+                                            <i className="fa-solid fa-check"></i>
+                                        </div>
+                                    )}
+                                    {usernameAvailable === false && (
+                                        <div style={{ ...styles.eyeIcon, right: '40px', color: colors.error }}>
+                                            <i className="fa-solid fa-times"></i>
+                                        </div>
+                                    )}
+                                </div>
+                                {errors.username && <div style={styles.errorText}>{errors.username}</div>}
+                                <div style={styles.passwordRequirements}>
+                                    Usa solo letras minúsculas, números, punto y guion bajo
+                                </div>
+                            </div>
+
+                            <div style={styles.formGroup}>
                                 <label style={styles.label} htmlFor="email">Correo electrónico</label>
                                 <input
                                     type="email"
@@ -533,7 +632,7 @@ const RegisterPage = () => {
                                         placeholder="Crea una contraseña segura"
                                         style={getPasswordInputStyle('password')}
                                     />
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={togglePasswordVisibility}
                                         style={styles.eyeIcon}
@@ -561,7 +660,7 @@ const RegisterPage = () => {
                                         placeholder="Repite tu contraseña"
                                         style={getPasswordInputStyle('confirmPassword')}
                                     />
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={toggleConfirmPasswordVisibility}
                                         style={styles.eyeIcon}
