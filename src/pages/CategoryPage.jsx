@@ -8,26 +8,45 @@ import { spacing, typography, shadows, borderRadius, transitions } from '../styl
 import { useTheme } from '../context/ThemeContext';
 import '../styles/animations.css';
 
-const CategoryPage = () => {  
-    const [animate, setAnimate] = useState(false);
-    const { colors } = useTheme(); // Obtenemos los colores del tema actual
-  
-    useEffect(() => {
-      const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
-      return () => clearTimeout(timeout); // Limpia el timeout al desmontar
-    }, []);
+// En CategoryPage.jsx
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      // Endpoint para obtener categorías con sus conteos
+      const response = await fetch('/api/categorias?conConteo=true');
+      const data = await response.json();
+
+      if (data && Array.isArray(data)) {
+        setCategories(data); // Actualiza el estado con los datos reales
+      }
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+    }
+  };
+
+  fetchCategories();
+}, []);
+
+const CategoryPage = () => {
+  const [animate, setAnimate] = useState(false);
+  const { colors } = useTheme(); // Obtenemos los colores del tema actual
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
+    return () => clearTimeout(timeout); // Limpia el timeout al desmontar
+  }, []);
   // Obtenemos el parámetro de categoría de la URL
   const { categoryName } = useParams();
-  
+
   // Estado para la búsqueda
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Estado para los filtros
   const [selectedFilter, setSelectedFilter] = useState('reciente');
-  
+
   // Estado para el número de página
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Categorías disponibles (para la navegación de categorías relacionadas)
   const categories = [
     { id: 'noticias', name: 'Noticias', count: 23 },
@@ -38,20 +57,20 @@ const CategoryPage = () => {
     { id: 'desarrollo-docente', name: 'Desarrollo Docente', count: 29 },
     { id: 'comunidad', name: 'Comunidad', count: 16 }
   ];
-  
+
   // Obtener información de la categoría actual
   const currentCategory = categories.find(cat => cat.id === categoryName) || {
     id: categoryName,
     name: categoryName?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
     count: 0
   };
-  
+
   // Categorías relacionadas (todas excepto la actual)
   const relatedCategories = categories.filter(cat => cat.id !== categoryName);
-  
+
   // Lista de artículos simulada para esta categoría
   const [posts, setPosts] = useState([]);
-  
+
   // Generar datos de posts simulados
   useEffect(() => {
     // Función para generar un array de posts aleatorios
@@ -73,7 +92,7 @@ const CategoryPage = () => {
         'Comunicación efectiva con padres y tutores',
         'Desarrollo profesional continuo para educadores'
       ];
-      
+
       return Array.from({ length: count }, (_, i) => ({
         id: i + 1,
         title: postTitles[Math.floor(Math.random() * postTitles.length)],
@@ -90,17 +109,17 @@ const CategoryPage = () => {
         }
       }));
     };
-    
+
     // Generar entre 12 y 30 posts para la categoría actual
     const numPosts = Math.floor(Math.random() * 18) + 12;
     setPosts(generatePosts(numPosts, currentCategory.name));
   }, [categoryName, currentCategory.name]);
-  
+
   // Filtrar posts por búsqueda
-  const filteredPosts = posts.filter(post => 
+  const filteredPosts = posts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  
+
   // Ordenar posts según el filtro seleccionado
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     switch (selectedFilter) {
@@ -116,24 +135,24 @@ const CategoryPage = () => {
         return 0;
     }
   });
-  
+
   // Paginación
   const postsPerPage = 9;
   const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = sortedPosts.slice(indexOfFirstPost, indexOfLastPost);
-  
+
   // Cambiar página
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  
+
   // Ir a la página anterior
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
-  
+
   // Ir a la página siguiente
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -152,7 +171,7 @@ const CategoryPage = () => {
     if (!email) return;
 
     setIsSubscribing(true);
-    
+
     // Simulación de suscripción exitosa
     setTimeout(() => {
       setIsSubscribing(false);
@@ -161,14 +180,14 @@ const CategoryPage = () => {
         text: '¡Gracias por suscribirte! Recibirás nuestros artículos en tu correo.'
       });
       setEmail('');
-      
+
       // Limpiar el mensaje después de unos segundos
       setTimeout(() => {
         setSubscribeMessage(null);
       }, 4000);
     }, 1500);
   };
-  
+
   // Estilos CSS
   const styles = {
     container: {
@@ -523,47 +542,47 @@ const CategoryPage = () => {
   return (
     <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
       <Header />
-      
+
       <main>
         {/* Hero Section */}
         <section style={styles.hero}>
           <div style={styles.container}>
             <div style={styles.heroContent}>
               <div style={styles.breadcrumb}>
-                <a 
+                <a
                   href="/"
                   style={styles.breadcrumbLink}
-                  onMouseEnter={(e) => e.target.style.color = colors.primary} 
+                  onMouseEnter={(e) => e.target.style.color = colors.primary}
                   onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
                 >Inicio</a>
-                <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
-                <a 
+                <span style={{ color: colors.gray300, fontSize: '10px' }}>►</span>
+                <a
                   href="/category/tecnicas-de-estudio"
                   style={styles.breadcrumbLink}
-                  onMouseEnter={(e) => e.target.style.color = colors.primary} 
+                  onMouseEnter={(e) => e.target.style.color = colors.primary}
                   onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
                 >Blog</a>
-                <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
+                <span style={{ color: colors.gray300, fontSize: '10px' }}>►</span>
                 <span>{currentCategory.name}</span>
-                
+
               </div>
-              
-              <h1 
-              className={animate ? "page-animation" : ""}
-              style={styles.title}>{currentCategory.name}</h1>
+
+              <h1
+                className={animate ? "page-animation" : ""}
+                style={styles.title}>{currentCategory.name}</h1>
               <p className={animate ? "page-animation" : ""} style={styles.subtitle}>
-                Explora nuestra colección de artículos sobre {currentCategory.name.toLowerCase()}. 
-                Aquí encontrarás consejos, estrategias y recursos para mejorar tu práctica educativa 
+                Explora nuestra colección de artículos sobre {currentCategory.name.toLowerCase()}.
+                Aquí encontrarás consejos, estrategias y recursos para mejorar tu práctica educativa
                 en esta área específica.
               </p>
-              
+
               <div style={styles.categoryTag}>
                 {currentCategory.name} <span style={styles.categoryCount}>{currentCategory.count || posts.length}</span>
               </div>
             </div>
           </div>
         </section>
-        
+
         <div style={styles.container}>
           <div style={styles.contentWrapper}>
             {/* Main Content */}
@@ -572,9 +591,9 @@ const CategoryPage = () => {
               <div style={styles.filterBar}>
                 <div style={styles.searchBox}>
                   <span style={styles.searchIcon}>🔍</span>
-                  <input 
-                    type="text" 
-                    placeholder="Buscar en esta categoría..." 
+                  <input
+                    type="text"
+                    placeholder="Buscar en esta categoría..."
                     style={styles.searchInput}
                     value={searchQuery}
                     onChange={(e) => {
@@ -585,8 +604,8 @@ const CategoryPage = () => {
                     onBlur={(e) => e.target.style.boxShadow = 'none'}
                   />
                 </div>
-                
-                <select 
+
+                <select
                   style={styles.filterDropdown}
                   value={selectedFilter}
                   onChange={(e) => {
@@ -602,7 +621,7 @@ const CategoryPage = () => {
                   <option value="alfabetico">Alfabéticamente</option>
                 </select>
               </div>
-              
+
               {/* Posts Grid */}
               {currentPosts.length > 0 ? (
                 <div style={styles.postsGrid}>
@@ -615,11 +634,11 @@ const CategoryPage = () => {
                   No se encontraron artículos que coincidan con tu búsqueda.
                 </div>
               )}
-              
+
               {/* Pagination */}
               {totalPages > 1 && (
                 <div style={styles.pagination}>
-                  <button 
+                  <button
                     style={styles.pageButton}
                     onClick={prevPage}
                     disabled={currentPage === 1}
@@ -634,7 +653,7 @@ const CategoryPage = () => {
                   >
                     ←
                   </button>
-                  
+
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
                     <button
                       key={number}
@@ -661,8 +680,8 @@ const CategoryPage = () => {
                       {number}
                     </button>
                   ))}
-                  
-                  <button 
+
+                  <button
                     style={styles.pageButton}
                     onClick={nextPage}
                     disabled={currentPage === totalPages}
@@ -680,12 +699,12 @@ const CategoryPage = () => {
                 </div>
               )}
             </div>
-            
+
             {/* Sidebar */}
             <div style={styles.sidebar}>
               {/* Categories Section */}
               <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
+                <h3 style={{ ...styles.sidebarTitle, '&:after': { ...styles.sidebarTitle['&:after'], content: '""' } }}>
                   Categorías
                   <span style={{
                     position: "absolute",
@@ -698,7 +717,7 @@ const CategoryPage = () => {
                 </h3>
                 <div style={styles.categoriesList}>
                   {categories.map((cat) => (
-                    <a 
+                    <a
                       key={cat.id}
                       href={`/category/${cat.id}`}
                       style={styles.categoryItem}
@@ -723,10 +742,10 @@ const CategoryPage = () => {
                   ))}
                 </div>
               </div>
-              
+
               {/* Popular Posts Section */}
               <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
+                <h3 style={{ ...styles.sidebarTitle, '&:after': { ...styles.sidebarTitle['&:after'], content: '""' } }}>
                   Artículos Populares
                   <span style={{
                     position: "absolute",
@@ -737,10 +756,10 @@ const CategoryPage = () => {
                     backgroundColor: colors.primary
                   }}></span>
                 </h3>
-                
+
                 {/* Generate some popular posts from the current category */}
                 {posts.slice(0, 3).map((post) => (
-                  <div 
+                  <div
                     key={post.id}
                     style={styles.popularPost}
                     onMouseEnter={(e) => {
@@ -751,14 +770,14 @@ const CategoryPage = () => {
                     }}
                   >
                     <div style={styles.popularPostImage}>
-                      <img 
-                        src={post.image} 
-                        alt={post.title} 
-                        style={styles.popularPostImg} 
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        style={styles.popularPostImg}
                       />
                     </div>
                     <div>
-                      <h4 
+                      <h4
                         style={styles.popularPostTitle}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.color = colors.primary;
@@ -778,10 +797,10 @@ const CategoryPage = () => {
                   </div>
                 ))}
               </div>
-              
+
               {/* Tags Section */}
               <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
+                <h3 style={{ ...styles.sidebarTitle, '&:after': { ...styles.sidebarTitle['&:after'], content: '""' } }}>
                   Etiquetas Populares
                   <span style={{
                     position: "absolute",
@@ -792,32 +811,32 @@ const CategoryPage = () => {
                     backgroundColor: colors.primary
                   }}></span>
                 </h3>
-                
+
                 <div style={styles.tagCloud}>
-                  {['Innovación', 'Tecnología', 'Metodologías', 'Evaluación', 'Inclusión', 
-                    'Motivación', 'Recursos', 'Digital', 'Proyectos', 'Gamificación', 
+                  {['Innovación', 'Tecnología', 'Metodologías', 'Evaluación', 'Inclusión',
+                    'Motivación', 'Recursos', 'Digital', 'Proyectos', 'Gamificación',
                     'Colaboración', 'Aprendizaje', 'Didáctica'].map((tag, index) => (
-                    <div 
-                      key={index}
-                      style={styles.tag}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.primary;
-                        e.currentTarget.style.color = colors.white;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.gray100;
-                        e.currentTarget.style.color = colors.textSecondary;
-                      }}
-                    >
-                      {tag}
-                    </div>
-                  ))}
+                      <div
+                        key={index}
+                        style={styles.tag}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.primary;
+                          e.currentTarget.style.color = colors.white;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = colors.gray100;
+                          e.currentTarget.style.color = colors.textSecondary;
+                        }}
+                      >
+                        {tag}
+                      </div>
+                    ))}
                 </div>
               </div>
-              
+
               {/* Newsletter Section */}
               <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
+                <h3 style={{ ...styles.sidebarTitle, '&:after': { ...styles.sidebarTitle['&:after'], content: '""' } }}>
                   Suscríbete
                   <span style={{
                     position: "absolute",
@@ -828,16 +847,16 @@ const CategoryPage = () => {
                     backgroundColor: colors.primary
                   }}></span>
                 </h3>
-                
+
                 <div style={styles.newsletter}>
                   <p style={styles.newsletterText}>
                     Recibe nuestros mejores artículos y novedades directamente en tu bandeja de entrada.
                   </p>
-                  
+
                   <form style={styles.newsletterForm} onSubmit={handleSubscribe}>
-                    <input 
-                      type="email" 
-                      placeholder="Tu email" 
+                    <input
+                      type="email"
+                      placeholder="Tu email"
                       style={styles.newsletterInput}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -845,8 +864,8 @@ const CategoryPage = () => {
                       onBlur={(e) => e.target.style.boxShadow = 'none'}
                       required
                     />
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       style={styles.newsletterButton}
                       disabled={isSubscribing}
                       onMouseEnter={(e) => {
@@ -863,7 +882,7 @@ const CategoryPage = () => {
                       {isSubscribing ? 'Procesando...' : 'Suscribirse'}
                     </button>
                   </form>
-                  
+
                   {subscribeMessage && (
                     <div style={subscribeMessage.type === 'success' ? styles.successMessage : styles.errorMessage}>
                       {subscribeMessage.text}
@@ -875,7 +894,7 @@ const CategoryPage = () => {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
