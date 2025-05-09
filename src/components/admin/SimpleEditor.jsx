@@ -1,10 +1,14 @@
 // src/components/admin/SimpleEditor.jsx
 
 import React, { useState, useRef, useEffect } from 'react';
-import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext'; // Importar useTheme
 import FloatingToolbar from './FloatingToolbar';
 
 const SimpleEditor = ({ content, onChange }) => {
+  // Obtener colores del tema actual
+  const { colors, isDarkMode } = useTheme();
+  
   const editorRef = useRef(null);
   const [internalContent, setInternalContent] = useState(content || '');
   // Estado compartido para el tamaño de fuente - importante para sincronización
@@ -326,7 +330,7 @@ const SimpleEditor = ({ content, onChange }) => {
       position: 'relative',
       width: '100%',
       height: '100%',
-      backgroundColor: colors.white,
+      backgroundColor: isDarkMode ? colors.white : colors.white, // Usar color del tema
       borderRadius: borderRadius.md
     },
     editor: {
@@ -335,7 +339,7 @@ const SimpleEditor = ({ content, onChange }) => {
       padding: spacing.xl,
       outline: 'none',
       overflow: 'auto',
-      color: colors.textPrimary,
+      color: isDarkMode ? colors.textPrimary : colors.textPrimary, // Usar color del tema
       fontFamily: typography.fontFamily,
       fontSize: typography.fontSize.md,
       lineHeight: 1.6,
@@ -347,7 +351,7 @@ const SimpleEditor = ({ content, onChange }) => {
       position: 'absolute',
       top: spacing.xl,
       left: spacing.xl,
-      color: colors.gray300,
+      color: isDarkMode ? colors.gray300 : colors.gray300, // Usar color del tema
       pointerEvents: 'none'
     }
   };
@@ -381,7 +385,12 @@ const SimpleEditor = ({ content, onChange }) => {
       {/* Editable content area */}
       <div
         ref={editorRef}
-        style={{...styles.editor, fontSize: '12px' }}
+        style={{
+          ...styles.editor,
+          fontSize: '12px',
+          backgroundColor: isDarkMode ? colors.white : colors.white,
+          color: isDarkMode ? colors.textPrimary : colors.textPrimary
+        }}
         onInput={handleContentChange}
         onBlur={handleContentChange}
         onKeyDown={handleKeyDown}

@@ -94,7 +94,7 @@ const CategoryPage = () => {
     // Generar entre 12 y 30 posts para la categoría actual
     const numPosts = Math.floor(Math.random() * 18) + 12;
     setPosts(generatePosts(numPosts, currentCategory.name));
-  }, [categoryName, currentCategory.name]);
+  }, [categoryName, currentCategory.name, colors]);
   
   // Filtrar posts por búsqueda
   const filteredPosts = posts.filter(post => 
