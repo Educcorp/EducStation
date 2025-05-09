@@ -6,6 +6,9 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-pr
 // Verificar disponibilidad del nombre de usuario
 export const checkUsernameAvailability = async (username) => {
   try {
+    // Agregar logs para depuración
+    console.log('Verificando disponibilidad de username:', username);
+
     const response = await fetch(`${API_URL}/api/auth/user/${username}/check`, {
       method: 'GET',
       headers: {
@@ -13,17 +16,30 @@ export const checkUsernameAvailability = async (username) => {
       },
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Error al verificar el nombre de usuario');
-    }
+    // Log de la respuesta para depuración
+    console.log('Status de respuesta:', response.status);
 
     const data = await response.json();
-    if (!data.available) {
-      throw new Error(data.message || 'El nombre de usuario ya está en uso');
+    console.log('Respuesta del servidor:', data);
+
+    // Si la API responde con un error específico
+    if (!response.ok) {
+      console.error('Error API:', data);
+      throw new Error(data.detail || 'Error al verificar el nombre de usuario');
     }
 
-    return data;
+    // Verificar explícitamente la disponibilidad
+    if (data.hasOwnProperty('available')) {
+      if (!data.available) {
+        throw new Error(data.message || 'El nombre de usuario ya está en uso');
+      }
+      return data;
+    } else {
+      console.error('Respuesta inesperada de la API:', data);
+      // Si la respuesta no tiene el campo 'available', asumimos que está disponible
+      // para evitar bloquear el registro injustamente
+      return { available: true, message: 'Nombre de usuario disponible (asumido)' };
+    }
   } catch (error) {
     console.error('Error al verificar nombre de usuario:', error);
     throw error;

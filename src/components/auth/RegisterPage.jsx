@@ -98,15 +98,39 @@ const RegisterPage = () => {
 
         setIsCheckingUsername(true);
         try {
+            console.log('Iniciando verificación para:', username);
+
+            // Validación temporal - REMOVER EN PRODUCCIÓN
+            // Esta es una solución temporal hasta que se arregle el backend
+            const bypassValidation = localStorage.getItem('bypassUsernameValidation') === 'true';
+            if (bypassValidation) {
+                console.log('Bypass de validación activado - asumiendo username disponible');
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
+                setIsCheckingUsername(false);
+                return;
+            }
+
             await checkUsernameAvailability(username);
+            console.log('Username disponible:', username);
             setUsernameAvailable(true);
             setErrors(prev => ({ ...prev, username: '' }));
         } catch (error) {
+            console.error('Error en validación de username:', error.message);
             setUsernameAvailable(false);
             setErrors(prev => ({
                 ...prev,
-                username: 'Este nombre de usuario ya está en uso'
+                username: error.message || 'Este nombre de usuario ya está en uso'
             }));
+
+            // Para depuración - Muestra un botón temporal para bypassear la validación
+            // Solo visible en modo desarrollo
+            if (process.env.NODE_ENV === 'development') {
+                console.log(
+                    'DEPURACIÓN: Para bypassear temporalmente la validación, ejecuta en consola: ' +
+                    'localStorage.setItem("bypassUsernameValidation", "true"); y recarga la página'
+                );
+            }
         } finally {
             setIsCheckingUsername(false);
         }
@@ -192,11 +216,30 @@ const RegisterPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Validación del formulario
         if (!validateForm()) return;
+
+        // Si hay bypass de validación de username o el username está disponible, continuar
+        if (localStorage.getItem('bypassUsernameValidation') !== 'true' && usernameAvailable === false) {
+            // Mostrar mensaje específico
+            setErrors(prev => ({
+                ...prev,
+                username: 'Este nombre de usuario ya está en uso. Intenta con otro.'
+            }));
+            return;
+        }
 
         setIsSubmitting(true);
 
         try {
+            console.log('Iniciando registro con datos:', {
+                username: formData.username,
+                email: formData.email,
+                // Omitiendo contraseña por seguridad
+                first_name: formData.firstName,
+                last_name: formData.lastName
+            });
+
             await register({
                 username: formData.username,
                 email: formData.email,
@@ -206,15 +249,32 @@ const RegisterPage = () => {
                 last_name: formData.lastName
             });
 
+            console.log('Registro exitoso');
             navigate('/login', {
                 state: { message: '¡Registro exitoso! Ahora puedes iniciar sesión.' }
             });
         } catch (error) {
             console.error('Error al registrar usuario:', error);
-            setErrors({
-                ...errors,
-                general: error.message || 'Error al registrar. Por favor intenta nuevamente más tarde.'
-            });
+
+            // Manejo específico de errores
+            if (error.message.includes('usuario ya existe') || error.message.includes('ya está en uso')) {
+                setErrors(prev => ({
+                    ...prev,
+                    username: error.message,
+                    general: 'Error en el registro. Verifica los datos e intenta nuevamente.'
+                }));
+            } else if (error.message.includes('correo') || error.message.includes('email')) {
+                setErrors(prev => ({
+                    ...prev,
+                    email: error.message,
+                    general: 'Error en el registro. Verifica los datos e intenta nuevamente.'
+                }));
+            } else {
+                setErrors(prev => ({
+                    ...prev,
+                    general: error.message || 'Error al registrar. Por favor intenta nuevamente más tarde.'
+                }));
+            }
         } finally {
             setIsSubmitting(false);
         }
