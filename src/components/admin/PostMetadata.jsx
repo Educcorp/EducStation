@@ -310,7 +310,13 @@ const PostMetadata = ({ post, categories, onChange }) => {
           name="publishDate"
           value={post.publishDate}
           onChange={onChange}
-          style={styles.input}
+          style={{
+            ...styles.input,
+            backgroundColor: colors.white,
+            color: isDarkMode ? colors.textPrimary : "#000000",
+            // Personalizar los elementos internos del calendario
+            colorScheme: isDarkMode ? "dark" : "light"
+          }}
           min={new Date().toISOString().split('T')[0]}
           onFocus={(e) => {
             e.target.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
