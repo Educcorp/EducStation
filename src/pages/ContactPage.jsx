@@ -1,5 +1,5 @@
 // src/pages/ContactPage.jsx
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
@@ -9,7 +9,7 @@ import '../styles/animations.css';
 const ContactPage = () => {
   // Estado para el formulario
   const [animate, setAnimate] = useState(false);
-  const { colors } = useTheme(); // Obtenemos los colores del tema actual
+  const { colors, isDarkMode } = useTheme(); // Obtenemos los colores y el modo del tema actual
 
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
@@ -283,9 +283,11 @@ const ContactPage = () => {
     input: {
       padding: spacing.md,
       borderRadius: borderRadius.md,
-      border: `1px solid ${colors.gray200}`,
+      border: `1px solid ${isDarkMode ? colors.gray300 : colors.gray200}`,
       fontSize: typography.fontSize.md,
       transition: transitions.default,
+      backgroundColor: isDarkMode ? '#333' : colors.white,
+      color: isDarkMode ? '#fff' : colors.textPrimary,
       '&:focus': {
         outline: "none",
         borderColor: colors.primary,
