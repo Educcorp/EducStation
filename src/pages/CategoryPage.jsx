@@ -8,33 +8,16 @@ import { spacing, typography, shadows, borderRadius, transitions } from '../styl
 import { useTheme } from '../context/ThemeContext';
 import '../styles/animations.css';
 
-// En CategoryPage.jsx
-useEffect(() => {
-  const fetchCategories = async () => {
-    try {
-      // Endpoint para obtener categorías con sus conteos
-      const response = await fetch('/api/categorias?conConteo=true');
-      const data = await response.json();
-
-      if (data && Array.isArray(data)) {
-        setCategories(data); // Actualiza el estado con los datos reales
-      }
-    } catch (error) {
-      console.error('Error al cargar categorías:', error);
-    }
-  };
-
-  fetchCategories();
-}, []);
-
 const CategoryPage = () => {
   const [animate, setAnimate] = useState(false);
   const { colors } = useTheme(); // Obtenemos los colores del tema actual
+  const [loadingCategories, setLoadingCategories] = useState(true); // Añadimos estado para la carga
 
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
     return () => clearTimeout(timeout); // Limpia el timeout al desmontar
   }, []);
+
   // Obtenemos el parámetro de categoría de la URL
   const { categoryName } = useParams();
 
@@ -47,16 +30,47 @@ const CategoryPage = () => {
   // Estado para el número de página
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Categorías disponibles (para la navegación de categorías relacionadas)
-  const categories = [
-    { id: 'noticias', name: 'Noticias', count: 23 },
-    { id: 'tecnicas-de-estudio', name: 'Técnicas de Estudio', count: 45 },
-    { id: 'problematicas', name: 'Problemáticas', count: 18 },
-    { id: 'educacion-de-calidad', name: 'Educación de Calidad', count: 32 },
-    { id: 'herramientas', name: 'Herramientas', count: 37 },
-    { id: 'desarrollo-docente', name: 'Desarrollo Docente', count: 29 },
-    { id: 'comunidad', name: 'Comunidad', count: 16 }
-  ];
+  // Cambiar de constante a estado
+  const [categories, setCategories] = useState([
+    // Valores iniciales para mostrar mientras carga
+    { id: 'noticias', name: 'Noticias', count: 0 },
+    { id: 'tecnicas-de-estudio', name: 'Técnicas de Estudio', count: 0 },
+    { id: 'problematicas', name: 'Problemáticas', count: 0 },
+    { id: 'educacion-de-calidad', name: 'Educación de Calidad', count: 0 },
+    { id: 'herramientas', name: 'Herramientas', count: 0 },
+    { id: 'desarrollo-docente', name: 'Desarrollo Docente', count: 0 },
+    { id: 'comunidad', name: 'Comunidad', count: 0 }
+  ]);
+
+  // Nuevo efecto para cargar categorías desde el backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      setLoadingCategories(true);
+      try {
+        // Endpoint para obtener categorías con sus conteos
+        const response = await fetch('/api/categorias?conConteo=true');
+        const data = await response.json();
+
+        if (data && Array.isArray(data)) {
+          // Formatea los datos para que coincidan con la estructura esperada
+          const formattedCategories = data.map(cat => ({
+            id: cat.slug || cat.id_categoria?.toString().toLowerCase() || cat.id?.toString().toLowerCase(),
+            name: cat.nombre || cat.name,
+            count: cat.conteo || cat.count || 0
+          }));
+
+          setCategories(formattedCategories);
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        // Si hay un error, se mantienen las categorías predeterminadas
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Obtener información de la categoría actual
   const currentCategory = categories.find(cat => cat.id === categoryName) || {
@@ -73,6 +87,7 @@ const CategoryPage = () => {
 
   // Generar datos de posts simulados
   useEffect(() => {
+
     // Función para generar un array de posts aleatorios
     const generatePosts = (count, category) => {
       const postTitles = [
