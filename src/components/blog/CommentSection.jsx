@@ -32,6 +32,7 @@ const CommentSection = () => {
       padding: '10px',
       marginBottom: '10px',
       fontSize: '1em',
+      resize: 'none',
     },
     button: {
       backgroundColor: '#007bff',
