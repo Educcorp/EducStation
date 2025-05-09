@@ -1,13 +1,16 @@
 // src/components/layout/Header.jsx modificado
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
+import { AuthContext } from '../../context/AuthContext'; // Importa el contexto de autenticación
 
 const Header = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme(); // Obtén el estado del modo oscuro
+  const { logout } = useContext(AuthContext);
+  const menuRef = useRef(null);
 
   // Estados existentes
   const [isScrolled, setIsScrolled] = useState(false);
@@ -406,6 +409,28 @@ const Header = () => {
     { path: '/admin/post', label: 'Crear Post', admin: true }
   ];
 
+  const handleNavigation = (path) => {
+    window.location.href = path;
+  };
+
+  // Manejador de clics fuera del menú
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        // Verificar si el clic no fue en el botón de perfil
+        const profileButton = document.querySelector('[data-profile-button]');
+        if (!profileButton?.contains(event.target)) {
+          setIsMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <>
       <header style={styles.header}>
@@ -442,12 +467,16 @@ const Header = () => {
             {navItems.map((item, index) => (
               // Solo mostrar enlaces de admin a usuarios con rol admin
               (!item.admin || userRole === 'admin') && (
-                <Link
+                <a
                   key={index}
-                  to={item.path}
+                  href={item.path}
                   style={styles.navLink(isActive(item.path))}
                   onMouseEnter={() => setHoveredItem(`nav-${index}`)}
                   onMouseLeave={() => setHoveredItem(null)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavigation(item.path);
+                  }}
                 >
                   {item.label}
                   <span
@@ -461,7 +490,7 @@ const Header = () => {
                       transition: transitions.default
                     }}
                   ></span>
-                </Link>
+                </a>
               )
             ))}
           </nav>
@@ -485,6 +514,7 @@ const Header = () => {
           )}
 
           <div
+            data-profile-button
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
@@ -499,7 +529,7 @@ const Header = () => {
           </div>
 
           {/* Menú desplegable con perfil del usuario */}
-          <div style={styles.menu}>
+          <div ref={menuRef} style={styles.menu}>
             {isAuthenticated ? (
               <>
                 {/* Sección de perfil del usuario */}

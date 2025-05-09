@@ -36,7 +36,7 @@ const ReactionSection = ({ postId }) => {
     } else {
       // Si el usuario ya tiene 1 reaccion, no permitir más
       if (Object.keys(newUserReactions).length >= 1) {
-        showNotification('¡Máximo 1 reacciones por post!', 'warning');
+        showNotification('¡Máximo 1 reaccion por post!', 'warning');
         return;
       }
       newReactions[emoji]++;
@@ -115,11 +115,12 @@ const ReactionSection = ({ postId }) => {
       fontSize: '24px',
       marginBottom: spacing.xs,
     },
-    count: {
+    count: (isSelected) => ({
       fontSize: typography.fontSize.sm,
-      color: colors.textSecondary,
-      fontWeight: typography.fontWeight.medium,
-    },
+      color: isSelected ? colors.white : colors.textSecondary,
+      fontWeight: isSelected ? typography.fontWeight.bold : typography.fontWeight.medium,
+      transition: 'all 0.3s ease',
+    }),
     info: {
       fontSize: typography.fontSize.sm,
       color: colors.textSecondary,
@@ -147,7 +148,7 @@ const ReactionSection = ({ postId }) => {
             }}
           >
             <span style={styles.emoji}>{emoji}</span>
-            <span style={styles.count}>{count}</span>
+            <span style={styles.count(userReactions[emoji])}>{count}</span>
           </div>
         ))}
       </div>
