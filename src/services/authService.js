@@ -6,7 +6,7 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-pr
 // Verificar disponibilidad del nombre de usuario
 export const checkUsernameAvailability = async (username) => {
   try {
-    const response = await fetch(`${API_URL}/api/auth/check-username/${username}/`, {
+    const response = await fetch(`${API_URL}/api/auth/user/${username}/check`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -18,7 +18,12 @@ export const checkUsernameAvailability = async (username) => {
       throw new Error(errorData.detail || 'Error al verificar el nombre de usuario');
     }
 
-    return await response.json();
+    const data = await response.json();
+    if (!data.available) {
+      throw new Error(data.message || 'El nombre de usuario ya está en uso');
+    }
+
+    return data;
   } catch (error) {
     console.error('Error al verificar nombre de usuario:', error);
     throw error;
@@ -34,17 +39,38 @@ export const register = async (userData) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        ...userData,
-        username: userData.username.toLowerCase(), // Aseguramos que el username esté en minúsculas
+        username: userData.username.toLowerCase(),
+        email: userData.email,
+        password: userData.password,
+        password2: userData.password2,
+        first_name: userData.first_name,
+        last_name: userData.last_name
       }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Error en el registro');
+      // Si hay un error específico del backend, lo lanzamos
+      if (data.detail) {
+        throw new Error(data.detail);
+      }
+      // Si hay errores de validación, los formateamos
+      if (data.errors) {
+        const errorMessage = Object.values(data.errors).join(', ');
+        throw new Error(errorMessage);
+      }
+      // Si hay un error de usuario existente
+      if (data.username) {
+        throw new Error('El nombre de usuario ya está en uso');
+      }
+      if (data.email) {
+        throw new Error('El correo electrónico ya está en uso');
+      }
+      throw new Error('Error en el registro');
     }
 
-    return await response.json();
+    return data;
   } catch (error) {
     console.error('Error en el registro:', error);
     throw error;
