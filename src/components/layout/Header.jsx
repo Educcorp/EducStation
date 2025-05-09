@@ -100,15 +100,15 @@ const Header = () => {
 
   // Verificar si la ruta está activa
   const isActive = (path) => {
-    if (path === '/logout') {
-      return location.pathname === '/logout';
+    if (path === '/login') {
+      return location.pathname === '/login';
     }
     if (path === '/blog') {
       return location.pathname.startsWith('/blog') ||
         location.pathname.includes('/post/') ||
         location.pathname.includes('/category/');
     }
-    return location.pathname.startsWith(path);
+    return location.pathname === path;
   };
 
   // Estilos del header
@@ -486,7 +486,7 @@ const Header = () => {
           {isAuthenticated ? (
             <button
               style={styles.logoutButton}
-              onClick={initiateLogout} // Ahora muestra el modal de confirmación
+              onClick={initiateLogout}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.primary;
                 e.currentTarget.style.color = colors.white;
@@ -501,14 +501,18 @@ const Header = () => {
           ) : (
             <Link to="/login">
               <button
-                style={styles.loginButton}
+                style={{
+                  ...styles.loginButton,
+                  backgroundColor: isActive('/login') ? colors.primary : colors.secondary,
+                  color: isActive('/login') ? colors.white : colors.primary,
+                }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.backgroundColor = colors.primary;
                   e.currentTarget.style.color = colors.white;
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.secondary;
-                  e.currentTarget.style.color = colors.primary;
+                  e.currentTarget.style.backgroundColor = isActive('/login') ? colors.primary : colors.secondary;
+                  e.currentTarget.style.color = isActive('/login') ? colors.white : colors.primary;
                 }}
               >
                 Inicio de Sesión
