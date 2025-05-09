@@ -297,9 +297,11 @@ const ContactPage = () => {
     select: {
       padding: spacing.md,
       borderRadius: borderRadius.md,
-      border: `1px solid ${colors.gray200}`,
+      border: `1px solid ${isDarkMode ? colors.gray300 : colors.gray200}`,
       fontSize: typography.fontSize.md,
       transition: transitions.default,
+      backgroundColor: isDarkMode ? '#333' : colors.white,
+      color: isDarkMode ? '#fff' : colors.textPrimary,
       '&:focus': {
         outline: "none",
         borderColor: colors.primary,
