@@ -552,15 +552,19 @@ const Header = () => {
                 >
                   <span style={styles.menuItemIcon}>👤</span> Mi Perfil
                 </Link>
-                <Link
-                  to="/settings"
+                <a
+                  href="/settings"
                   style={getMenuItemStyle(1)}
                   onMouseEnter={() => setHoveredItem('menu-1')}
                   onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    window.location.href = '/settings';
+                  }}
                 >
                   <span style={styles.menuItemIcon}>⚙️</span> Configuración
-                </Link>
+                </a>
 
                 <div style={styles.menuSeparator}></div>
 

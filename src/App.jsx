@@ -19,6 +19,7 @@ import RegisterPage from './components/auth/RegisterPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
+import SettingsPage from './pages/SettingsPage';
 
 // Componente LoadingSpinner
 const LoadingSpinner = () => (
@@ -184,6 +185,14 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <CategoryPage />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/settings" 
+                element={
+                  <PrivateRoute>
+                    <SettingsPage />
                   </PrivateRoute>
                 } 
               />
