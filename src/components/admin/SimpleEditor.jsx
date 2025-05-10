@@ -7,7 +7,6 @@ import FloatingToolbar from './FloatingToolbar';
 const SimpleEditor = ({ content, onChange }) => {
   const editorRef = useRef(null);
   const [internalContent, setInternalContent] = useState(content || '');
-  // Estado compartido para el tamaño de fuente - importante para sincronización
   const [currentFontSize, setCurrentFontSize] = useState(12); // Valor predeterminado
   
   const [activeFormats, setActiveFormats] = useState({
@@ -22,6 +21,10 @@ const SimpleEditor = ({ content, onChange }) => {
     link: false,
   });
 
+  // Variable para imagen seleccionada
+  const [hasSelectedImage, setHasSelectedImage] = useState(false);
+  const [isImageMenuOpen, setIsImageMenuOpen] = useState(false);
+  
   // Initialize the editor with content
   useEffect(() => {
     if (editorRef.current) {
@@ -48,13 +51,27 @@ const SimpleEditor = ({ content, onChange }) => {
       editorRef.current.style.minHeight = '600px';
       editorRef.current.style.position = 'relative';
       
+      // IMPORTANTE: Configuración crítica para permitir selección de texto
+      editorRef.current.style.userSelect = 'text';
+      editorRef.current.style.WebkitUserSelect = 'text';
+      editorRef.current.style.MozUserSelect = 'text';
+      editorRef.current.style.msUserSelect = 'text';
+      
+      // Habilitar selección en elementos hijos
+      Array.from(editorRef.current.querySelectorAll('p, div:not(.image-container), span, h1, h2, h3')).forEach(el => {
+        el.style.userSelect = 'text';
+        el.style.WebkitUserSelect = 'text';
+        el.style.MozUserSelect = 'text';
+        el.style.msUserSelect = 'text';
+      });
+      
       return () => {
         document.removeEventListener('selectionchange', checkActiveFormats);
       };
     }
   }, [content]);
 
-  // Track content changes and notify parent
+  // Rastrear cambios de contenido y notificar al padre
   const handleContentChange = () => {
     if (editorRef.current) {
       const newContent = editorRef.current.innerHTML;
@@ -63,14 +80,14 @@ const SimpleEditor = ({ content, onChange }) => {
     }
   };
 
-  // Check which formats are currently active
+  // Verificar qué formatos están activos actualmente
   const checkActiveFormats = () => {
     if (!document.activeElement || document.activeElement !== editorRef.current) {
       return;
     }
     
     try {
-      // Basic formatting commands
+      // Comandos básicos de formato
       const formats = {
         bold: document.queryCommandState('bold'),
         italic: document.queryCommandState('italic'),
@@ -80,18 +97,18 @@ const SimpleEditor = ({ content, onChange }) => {
         link: document.queryCommandState('createLink')
       };
       
-      // Check for headings
+      // Verificar encabezados
       const selection = window.getSelection();
       if (selection && selection.rangeCount > 0) {
         const range = selection.getRangeAt(0);
         let element = range.commonAncestorContainer;
         
-        // Navigate to element node if we're in a text node
+        // Navegar al nodo elemento si estamos en un nodo de texto
         if (element.nodeType === 3) {
           element = element.parentNode;
         }
         
-        // Check parent nodes for heading tags
+        // Verificar nodos padre para etiquetas de encabezado
         let currentNode = element;
         while (currentNode && currentNode !== editorRef.current) {
           const tagName = currentNode.tagName?.toLowerCase();
@@ -112,7 +129,7 @@ const SimpleEditor = ({ content, onChange }) => {
       
       setActiveFormats(formats);
     } catch (e) {
-      console.error('Error checking active formats:', e);
+      console.error('Error al verificar formatos activos:', e);
     }
   };
 
@@ -270,7 +287,7 @@ const SimpleEditor = ({ content, onChange }) => {
             // Después de insertar, agregamos event listeners para manipulación
             setTimeout(() => {
               addImageEventListeners();
-              handleContentChange();
+          handleContentChange();
               
               // Posicionar el cursor después de la imagen insertada
               const imageContainers = editorRef.current.querySelectorAll('.image-container');
@@ -747,7 +764,7 @@ const SimpleEditor = ({ content, onChange }) => {
             // Añadir event listeners
             setTimeout(() => {
               addImageEventListeners();
-              handleContentChange();
+            handleContentChange();
               
               // Posicionar el cursor después de la imagen pegada
               const imageContainers = editorRef.current.querySelectorAll('.image-container');
@@ -806,7 +823,7 @@ const SimpleEditor = ({ content, onChange }) => {
           // Añadir event listeners
           setTimeout(() => {
             addImageEventListeners();
-            handleContentChange();
+          handleContentChange();
             
             // Posicionar el cursor después de la imagen arrastrada
             const imageContainers = editorRef.current.querySelectorAll('.image-container');
@@ -864,7 +881,7 @@ const SimpleEditor = ({ content, onChange }) => {
       }
     }
   };
-
+  
   // Mostrar la barra flotante al hacer clic en el editor
   const handleEditorClick = (e) => {
     // Aseguramos que el clic directo en el editor (no en elementos dentro) posicione el cursor
@@ -931,11 +948,6 @@ const SimpleEditor = ({ content, onChange }) => {
     checkActiveFormats();
   };
 
-  // Variable para saber si hay una imagen seleccionada
-  const [hasSelectedImage, setHasSelectedImage] = useState(false);
-  // Variable para saber si el menú de opciones de la imagen está abierto
-  const [isImageMenuOpen, setIsImageMenuOpen] = useState(false);
-
   // Función para verificar si hay una imagen seleccionada
   const checkForSelectedImage = () => {
     const selectedImage = editorRef.current?.querySelector('.selected-image');
@@ -969,7 +981,7 @@ const SimpleEditor = ({ content, onChange }) => {
     },
     editor: {
       width: '100%',
-      height: '100%', // Aprovechamos toda la altura disponible al eliminar la barra estática
+      height: '100%',
       padding: spacing.xl,
       outline: 'none',
       overflow: 'auto',
@@ -979,8 +991,13 @@ const SimpleEditor = ({ content, onChange }) => {
       lineHeight: 1.6,
       transition: 'box-shadow 0.2s ease',
       cursor: 'text',
-      minHeight: '600px', // Garantizamos una altura mínima adecuada
-      position: 'relative' // Importante para el posicionamiento absoluto dentro del editor
+      minHeight: '600px',
+      position: 'relative',
+      // Propiedades críticas para solucionar el problema de selección
+      userSelect: 'text',
+      WebkitUserSelect: 'text',
+      MozUserSelect: 'text',
+      msUserSelect: 'text'
     },
     placeholder: {
       position: 'absolute',
@@ -999,9 +1016,46 @@ const SimpleEditor = ({ content, onChange }) => {
     }
   }, [content]);
 
+  // Mejorar la selección de texto dentro del editor
+  const enableTextSelection = () => {
+    if (!editorRef.current) return;
+    
+    // Asegurarnos de que el editor tenga las propiedades correctas para selección
+    editorRef.current.style.userSelect = 'text';
+    editorRef.current.style.WebkitUserSelect = 'text'; // Para Safari
+    editorRef.current.style.MozUserSelect = 'text'; // Para Firefox
+    editorRef.current.style.msUserSelect = 'text'; // Para IE/Edge
+    
+    // Asegurar que se pueda seleccionar texto dentro del editor
+    const handleMouseUp = (e) => {
+      const selection = window.getSelection();
+      
+      // Solo actualizar si hay una selección real (no un simple clic)
+      if (selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+        checkActiveFormats();
+      }
+    };
+    
+    // Agregar el evento para capturar selecciones de texto
+    editorRef.current.addEventListener('mouseup', handleMouseUp);
+    
+    // Retornar una función de limpieza para cuando el componente se desmonte
+    return () => {
+      if (editorRef.current) {
+        editorRef.current.removeEventListener('mouseup', handleMouseUp);
+      }
+    };
+  };
+  
+  // Activar la selección de texto cuando el editor está listo
+  useEffect(() => {
+    const cleanup = enableTextSelection();
+    return cleanup;
+  }, []);
+
   return (
     <div style={styles.container}>
-      {/* Barra de herramientas flotante - ahora es la única barra */}
+      {/* Barra de herramientas flotante */}
       {!hasSelectedImage && !isImageMenuOpen && (
         <FloatingToolbar 
           onFormatText={applyFormat}
@@ -1012,21 +1066,25 @@ const SimpleEditor = ({ content, onChange }) => {
         />
       )}
       
-      {/* Placeholder text when editor is empty */}
+      {/* Texto de marcador de posición cuando el editor está vacío */}
       {(!internalContent || internalContent === '<p><br></p>' || internalContent === '<br>') && (
         <div style={styles.placeholder}>
           Comienza a escribir...
         </div>
       )}
       
-      {/* Editable content area */}
+      {/* Área de contenido editable */}
       <div
         ref={editorRef}
         id="editorContent"
         style={{
           ...styles.editor, 
           fontSize: '12px',
-          position: 'relative'
+          position: 'relative',
+          userSelect: 'text',
+          WebkitUserSelect: 'text',
+          MozUserSelect: 'text',
+          msUserSelect: 'text'
         }}
         onInput={handleContentChange}
         onBlur={handleContentChange}
@@ -1038,12 +1096,69 @@ const SimpleEditor = ({ content, onChange }) => {
         onDrop={handleDrop}
         onDragOver={(e) => e.preventDefault()}
       >
-        {/* Initial content will be set from the content prop */}
+        {/* El contenido inicial se establecerá desde la prop content */}
       </div>
 
-      {/* Estilos para imágenes redimensionables */}
+      {/* Estilos para mejorar la selección de texto */}
       <style>
         {`
+          /* Estilos críticos para selección de texto */
+          #editorContent {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+            cursor: text;
+          }
+          
+          /* Permitir selección en elementos de texto */
+          #editorContent p,
+          #editorContent span, 
+          #editorContent div:not(.image-container),
+          #editorContent h1, 
+          #editorContent h2, 
+          #editorContent h3,
+          #editorContent ul,
+          #editorContent ol,
+          #editorContent li {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+            position: relative;
+            z-index: 1;
+          }
+          
+          /* Imagen no seleccionable pero manipulable */
+          .image-container {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            position: relative;
+            z-index: 0;
+          }
+          
+          /* Correcciones para diferentes navegadores */
+          @-moz-document url-prefix() {
+            #editorContent * {
+              -moz-user-select: text !important;
+            }
+            .image-container, .image-container * {
+              -moz-user-select: none !important;
+            }
+          }
+          
+          @media screen and (-webkit-min-device-pixel-ratio:0) {
+            #editorContent * {
+              -webkit-user-select: text !important;
+            }
+            .image-container, .image-container * {
+              -webkit-user-select: none !important;
+            }
+          }
+          
+          /* Resto de estilos existentes */
           .image-container img {
             transition: box-shadow 0.2s ease;
             vertical-align: middle;
@@ -1052,164 +1167,62 @@ const SimpleEditor = ({ content, onChange }) => {
           .image-container:hover img {
             box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
           }
+          
+          /* Controlador de redimensionamiento */
           .resize-handle {
             opacity: 0;
             transition: opacity 0.2s ease;
             z-index: 10;
           }
+          
           .image-container:hover .resize-handle {
             opacity: 1;
           }
-          /* Estilos para el flujo de texto alrededor de la imagen */
-          .image-container.float-left {
-            float: left;
-            margin-right: 15px;
-            margin-bottom: 10px;
-            shape-outside: content-box;
-            shape-margin: 10px;
-            overflow: visible;
-          }
-          .image-container.float-right {
-            float: right;
-            margin-left: 15px;
-            margin-bottom: 10px;
-            shape-outside: content-box;
-            shape-margin: 10px;
-            overflow: visible;
-          }
-          /* Estilos para diferentes modos de wrapping como en Word */
-          .image-container.wrap-inline {
-            display: inline-block;
-            vertical-align: middle;
-            float: none;
-            margin: 0 10px;
-            z-index: 0;
-            overflow: visible;
-          }
-          .image-container.wrap-square {
-            float: left;
-            shape-outside: content-box;
-            shape-margin: 10px;
-            margin: 0 15px 10px 0;
-            overflow: visible;
-            z-index: 0;
-          }
-          .image-container.wrap-tight {
-            float: left;
-            shape-outside: margin-box;
-            shape-margin: 10px;
-            margin: 0 15px 10px 0;
-            overflow: visible;
-            z-index: 0;
-          }
-          /* Eliminamos esta clase que podría causar problemas */
-          .image-container.wrap-behind-text {
-            display: none;
-          }
-          /* Aseguramos que las imágenes siempre estén detrás del texto */
-          .image-container {
-            z-index: 0;
-            position: relative;
-            overflow: visible;
-          }
-          /* Damos mayor prioridad al texto para que siempre esté visible */
-          #editorContent p, 
-          #editorContent span, 
-          #editorContent div:not(.image-container), 
-          #editorContent h1, 
-          #editorContent h2, 
-          #editorContent h3, 
-          #editorContent ul, 
-          #editorContent ol, 
-          #editorContent li {
-            position: relative;
-            z-index: 1;
-          }
-          /* Estilos para los controles de wrapping */
-          .wrap-control-button {
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            user-select: none;
-            pointer-events: auto;
-          }
-          .image-container:hover .wrap-control-button {
-            opacity: 1;
-          }
-          .text-wrap-controls {
-            user-select: none;
-            pointer-events: auto;
-          }
-          .text-wrap-controls button {
-            user-select: none;
-          }
-          .text-wrap-controls button:hover {
-            background-color: #f0f0f0 !important;
-          }
-          .text-wrap-controls button:active {
-            background-color: #e0e0e0 !important;
-          }
-          /* Se añaden estilos para mejorar la selección y el posicionado */
-          .image-container {
-            user-select: none;
-          }
-          .image-container::after {
-            content: '';
-            display: inline;
-            width: 1px;
-            height: 1em;
-          }
-          /* Asegurar que el texto continúe correctamente después de imágenes */
-          p:after {
-            content: "";
-            display: table;
-            clear: both;
-          }
-          /* Estilos para los botones de control */
-          .image-controls button:hover {
-            background-color: #f0f0f0 !important;
-          }
-          .image-controls button:active {
-            background-color: #e0e0e0 !important;
-          }
-          /* Estilo para imagen seleccionada */
+          
+          /* Imagen seleccionada */
           .selected-image img {
             box-shadow: 0 0 0 2px #007BFF, 0 0 10px rgba(0, 123, 255, 0.7) !important;
           }
-          /* Nuevos estilos para indicador de arrastre */
-          .image-container.dragging {
-            opacity: 0.7;
-            cursor: grabbing !important;
+          
+          /* Botón de menú de imagen */
+          .image-menu-button {
+            opacity: 0;
+            transition: opacity 0.2s ease;
           }
-          .image-container {
-            cursor: grab;
+          
+          .image-container:hover .image-menu-button {
+            opacity: 1;
           }
-          .image-container.dragging::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 2px dashed #007BFF;
-            pointer-events: none;
+          
+          /* Opciones de ajuste de imagen */
+          .image-options-menu button:hover {
+            background-color: #f0f0f0;
           }
-          /* Indicador de guía de alineación */
-          .alignment-guide {
-            position: absolute;
-            background-color: #007BFF;
-            z-index: 1000;
-            pointer-events: none;
-            opacity: 0.6;
+          
+          /* Opciones de alineación de imagen */
+          .image-container.align-left {
+            float: left;
+            margin: 0 15px 10px 0;
           }
-          .alignment-guide.horizontal {
-            height: 1px;
-            left: 0;
-            right: 0;
+          
+          .image-container.align-right {
+            float: right;
+            margin: 0 0 10px 15px;
           }
-          .alignment-guide.vertical {
-            width: 1px;
-            top: 0;
-            bottom: 0;
+          
+          .image-container.align-center {
+            display: block;
+            margin: 10px auto;
+            text-align: center;
+          }
+          
+          /* Asegurar que el cursor funcione correctamente */
+          #editorContent::selection {
+            background: rgba(0, 123, 255, 0.2);
+          }
+          
+          #editorContent::-moz-selection {
+            background: rgba(0, 123, 255, 0.2);
           }
         `}
       </style>
