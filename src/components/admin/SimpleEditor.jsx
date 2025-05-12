@@ -318,7 +318,66 @@ const SimpleEditor = ({ content, onChange }) => {
   };
   
   // Mostrar la barra flotante al hacer clic en el editor
-  const handleEditorClick = () => {
+  const handleEditorClick = (e) => {
+    // Aseguramos que el clic directo en el editor (no en elementos dentro) posicione el cursor
+    if (e.target === editorRef.current) {
+      const clickX = e.clientX;
+      const clickY = e.clientY;
+      const editorRect = editorRef.current.getBoundingClientRect();
+      
+      // Calculamos la posición relativa dentro del editor
+      const relativeX = clickX - editorRect.left;
+      const relativeY = clickY - editorRect.top;
+      
+      // Intentamos encontrar el punto más cercano para insertar el cursor
+      const range = document.createRange();
+      const selection = window.getSelection();
+      
+      // Crear un nodo de texto invisible si el editor está vacío
+      if (!editorRef.current.childNodes.length) {
+        const textNode = document.createTextNode('\u00A0'); // Espacio no rompible
+        editorRef.current.appendChild(textNode);
+      }
+      
+      // Encontrar la posición para el cursor usando el API de caretPositionFromPoint (o sus equivalentes)
+      let position;
+      if (document.caretPositionFromPoint) {
+        position = document.caretPositionFromPoint(clickX, clickY);
+        if (position) {
+          range.setStart(position.offsetNode, position.offset);
+        }
+      } else if (document.caretRangeFromPoint) {
+        // Para navegadores WebKit
+        position = document.caretRangeFromPoint(clickX, clickY);
+        if (position) {
+          range.setStart(position.startContainer, position.startOffset);
+        }
+      }
+      
+      // Si no podemos encontrar una posición específica, insertar al final del editor
+      if (!position) {
+        // Insertar un nodo de texto al final si no hay uno
+        if (editorRef.current.lastChild && editorRef.current.lastChild.nodeType === 1) { // Es un elemento
+          const textNode = document.createTextNode('\u00A0');
+          editorRef.current.appendChild(textNode);
+          range.setStart(textNode, 0);
+        } else if (editorRef.current.lastChild) {
+          range.setStart(editorRef.current.lastChild, editorRef.current.lastChild.length || 0);
+        } else {
+          const textNode = document.createTextNode('\u00A0');
+          editorRef.current.appendChild(textNode);
+          range.setStart(textNode, 0);
+        }
+      }
+      
+      range.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(range);
+      
+      // Enfocar el editor
+      editorRef.current.focus();
+    }
+    
     // Este evento será capturado por FloatingToolbar 
     // pero añadimos la función aquí para dar feedback visual si es necesario
     editorRef.current?.focus();
@@ -345,7 +404,8 @@ const SimpleEditor = ({ content, onChange }) => {
       lineHeight: 1.6,
       transition: 'box-shadow 0.2s ease',
       cursor: 'text',
-      minHeight: '600px'
+      minHeight: '600px', // Garantizamos una altura mínima adecuada
+      position: 'relative' // Importante para el posicionamiento absoluto dentro del editor
     },
     placeholder: {
       position: 'absolute',
@@ -406,6 +466,179 @@ const SimpleEditor = ({ content, onChange }) => {
       >
         {/* Initial content will be set from the content prop */}
       </div>
+
+      {/* Estilos para imágenes redimensionables */}
+      <style>
+        {`
+          .image-container img {
+            transition: box-shadow 0.2s ease;
+            vertical-align: middle;
+            max-width: 100%;
+          }
+          .image-container:hover img {
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+          }
+          .resize-handle {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 10;
+          }
+          .image-container:hover .resize-handle {
+            opacity: 1;
+          }
+          /* Estilos para el flujo de texto alrededor de la imagen */
+          .image-container.float-left {
+            float: left;
+            margin-right: 15px;
+            margin-bottom: 10px;
+            shape-outside: content-box;
+            shape-margin: 10px;
+            overflow: visible;
+          }
+          .image-container.float-right {
+            float: right;
+            margin-left: 15px;
+            margin-bottom: 10px;
+            shape-outside: content-box;
+            shape-margin: 10px;
+            overflow: visible;
+          }
+          /* Estilos para diferentes modos de wrapping como en Word */
+          .image-container.wrap-inline {
+            display: inline-block;
+            vertical-align: middle;
+            float: none;
+            margin: 0 10px;
+            z-index: 0;
+            overflow: visible;
+          }
+          .image-container.wrap-square {
+            float: left;
+            shape-outside: content-box;
+            shape-margin: 10px;
+            margin: 0 15px 10px 0;
+            overflow: visible;
+            z-index: 0;
+          }
+          .image-container.wrap-tight {
+            float: left;
+            shape-outside: margin-box;
+            shape-margin: 10px;
+            margin: 0 15px 10px 0;
+            overflow: visible;
+            z-index: 0;
+          }
+          /* Eliminamos esta clase que podría causar problemas */
+          .image-container.wrap-behind-text {
+            display: none;
+          }
+          /* Aseguramos que las imágenes siempre estén detrás del texto */
+          .image-container {
+            z-index: 0;
+            position: relative;
+            overflow: visible;
+          }
+          /* Damos mayor prioridad al texto para que siempre esté visible */
+          #editorContent p, 
+          #editorContent span, 
+          #editorContent div:not(.image-container), 
+          #editorContent h1, 
+          #editorContent h2, 
+          #editorContent h3, 
+          #editorContent ul, 
+          #editorContent ol, 
+          #editorContent li {
+            position: relative;
+            z-index: 1;
+          }
+          /* Estilos para los controles de wrapping */
+          .wrap-control-button {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            user-select: none;
+            pointer-events: auto;
+          }
+          .image-container:hover .wrap-control-button {
+            opacity: 1;
+          }
+          .text-wrap-controls {
+            user-select: none;
+            pointer-events: auto;
+          }
+          .text-wrap-controls button {
+            user-select: none;
+          }
+          .text-wrap-controls button:hover {
+            background-color: #f0f0f0 !important;
+          }
+          .text-wrap-controls button:active {
+            background-color: #e0e0e0 !important;
+          }
+          /* Se añaden estilos para mejorar la selección y el posicionado */
+          .image-container {
+            user-select: none;
+          }
+          .image-container::after {
+            content: '';
+            display: inline;
+            width: 1px;
+            height: 1em;
+          }
+          /* Asegurar que el texto continúe correctamente después de imágenes */
+          p:after {
+            content: "";
+            display: table;
+            clear: both;
+          }
+          /* Estilos para los botones de control */
+          .image-controls button:hover {
+            background-color: #f0f0f0 !important;
+          }
+          .image-controls button:active {
+            background-color: #e0e0e0 !important;
+          }
+          /* Estilo para imagen seleccionada */
+          .selected-image img {
+            box-shadow: 0 0 0 2px #007BFF, 0 0 10px rgba(0, 123, 255, 0.7) !important;
+          }
+          /* Nuevos estilos para indicador de arrastre */
+          .image-container.dragging {
+            opacity: 0.7;
+            cursor: grabbing !important;
+          }
+          .image-container {
+            cursor: grab;
+          }
+          .image-container.dragging::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 2px dashed #007BFF;
+            pointer-events: none;
+          }
+          /* Indicador de guía de alineación */
+          .alignment-guide {
+            position: absolute;
+            background-color: #007BFF;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0.6;
+          }
+          .alignment-guide.horizontal {
+            height: 1px;
+            left: 0;
+            right: 0;
+          }
+          .alignment-guide.vertical {
+            width: 1px;
+            top: 0;
+            bottom: 0;
+          }
+        `}
+      </style>
     </div>
   );
 };
