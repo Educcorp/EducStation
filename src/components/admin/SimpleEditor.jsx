@@ -330,28 +330,28 @@ const SimpleEditor = ({ content, onChange }) => {
       position: 'relative',
       width: '100%',
       height: '100%',
-      backgroundColor: isDarkMode ? colors.white : colors.white, // Usar color del tema
+      backgroundColor: '#f0f8f7', // Blanco hueso del modo claro
       borderRadius: borderRadius.md
     },
     editor: {
       width: '100%',
-      height: '100%', // Aprovechamos toda la altura disponible al eliminar la barra estática
+      height: '100%',
       padding: spacing.xl,
       outline: 'none',
       overflow: 'auto',
-      color: isDarkMode ? colors.textPrimary : colors.textPrimary, // Usar color del tema
+      color: '#0b4444', // Color de texto del modo claro
       fontFamily: typography.fontFamily,
       fontSize: typography.fontSize.md,
       lineHeight: 1.6,
       transition: 'box-shadow 0.2s ease',
       cursor: 'text',
-      minHeight: '600px' // Garantizamos una altura mínima adecuada
+      minHeight: '600px'
     },
     placeholder: {
       position: 'absolute',
       top: spacing.xl,
       left: spacing.xl,
-      color: isDarkMode ? colors.gray300 : colors.gray300, // Usar color del tema
+      color: '#a7b9b6', // Color de texto secundario del modo claro
       pointerEvents: 'none'
     }
   };
@@ -388,8 +388,8 @@ const SimpleEditor = ({ content, onChange }) => {
         style={{
           ...styles.editor,
           fontSize: '12px',
-          backgroundColor: isDarkMode ? colors.white : colors.white,
-          color: isDarkMode ? colors.textPrimary : colors.textPrimary
+          backgroundColor: '#f0f8f7', // Siempre blanco hueso del tema claro
+          color: '#0b4444' // Siempre texto oscuro del tema claro
         }}
         onInput={handleContentChange}
         onBlur={handleContentChange}
