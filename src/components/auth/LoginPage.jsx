@@ -3,12 +3,14 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
 import { AuthContext } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login, isAuth, loading, error: authError } = useContext(AuthContext);
+    const { isDarkMode } = useTheme();
     
     const [formData, setFormData] = useState({
         email: '',
@@ -375,12 +377,20 @@ const LoginPage = () => {
         ...styles.input,
         borderColor: errors[fieldName] ? colors.error : colors.gray200,
         boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
+        color: '#FFFFFF', // Color de texto blanco
+        '&::placeholder': {
+            color: 'rgba(255, 255, 255, 0.6)', // También hacemos el placeholder más visible
+        }
     });
 
     const getPasswordInputStyle = () => ({
         ...styles.passwordInput,
         borderColor: errors.password ? colors.error : colors.gray200,
         boxShadow: errors.password ? `0 0 0 1px ${colors.error}` : 'none',
+        color: '#FFFFFF', // Color de texto blanco
+        '&::placeholder': {
+            color: 'rgba(255, 255, 255, 0.6)', // También hacemos el placeholder más visible
+        }
     });
 
     // Estilos para aplicar hover en el botón
