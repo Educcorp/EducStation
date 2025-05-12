@@ -8,7 +8,7 @@ import '../styles/animations.css'; // Importa la animación CSS
 
 const AboutPage = () => {
   const [animate, setAnimate] = useState(false);
-  const { colors } = useTheme(); // Obtenemos los colores del tema actual
+  const { colors, isDarkMode } = useTheme(); // Asegúrate de obtener isDarkMode del contexto
 
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 0);
@@ -116,20 +116,17 @@ const AboutPage = () => {
       top: "50px",
       width: "40px",
       height: "40px",
-      backgroundColor: colors.secondary,
-      color: colors.primary,
+      backgroundColor: isDarkMode ? '#D2B99A' : colors.secondary, // Cambiamos a un color más visible en modo oscuro
+      color: isDarkMode ? '#000' : colors.primary, // Texto negro para mayor contraste con el nuevo fondo
+      fontWeight: typography.fontWeight.bold,
+      fontSize: typography.fontSize.md,
       borderRadius: "50%",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontWeight: typography.fontWeight.bold,
-      boxShadow: shadows.sm
-    },
-    timelineTitle: {
-      fontSize: typography.fontSize.lg,
-      fontWeight: typography.fontWeight.semiBold,
-      marginBottom: spacing.sm,
-      color: colors.primary
+      boxShadow: isDarkMode ? '0 0 10px rgba(210, 185, 154, 0.5)' : shadows.sm, // Añadimos un brillo sutil
+      border: isDarkMode ? '2px solid #D2B99A' : 'none', // Borde del mismo color para reforzar
+      transition: 'background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease', // Transición suave
     },
     team: {
       display: "grid",

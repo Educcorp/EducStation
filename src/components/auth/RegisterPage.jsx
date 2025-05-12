@@ -4,9 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { register, checkUsernameAvailability } from '../../services/authService';
 import { colors, spacing, typography } from '../../styles/theme';
 import '@fortawesome/fontawesome-free/css/all.css';
-
+import { useTheme } from '../../context/ThemeContext';
 
 const RegisterPage = () => {
+    // Obtener el estado del modo oscuro
+    const { isDarkMode } = useTheme();
+    
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: '',
@@ -347,6 +350,7 @@ const RegisterPage = () => {
         logoText: {
             fontSize: '28px',
             fontWeight: typography.fontWeight.bold,
+            color: '#043333', // Color más oscuro y saturado que el primary
         },
         imageText: {
             fontSize: typography.fontSize.lg,
@@ -406,7 +410,10 @@ const RegisterPage = () => {
             borderRadius: '6px',
             fontSize: typography.fontSize.md,
             transition: 'all 0.3s ease',
-            backgroundColor: colors.white,
+            backgroundColor: 'transparent', // Cambiamos a transparente para usar el del container
+            '&::placeholder': {
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)', // Placeholder visible en ambos modos
+            }
         },
         passwordInput: {
             width: '100%',
@@ -535,22 +542,26 @@ const RegisterPage = () => {
         logoText: {
             fontSize: typography.fontSize.lg,
             fontWeight: typography.fontWeight.bold,
-            color: colors.primary,
+            color: '#043333', // Color más oscuro para mejor visibilidad
         }
     };
 
-    // Definir estilos específicos para bordes de inputs con error
+    // Modificar la función getInputStyle para mantener el fondo original y solo cambiar el color del texto
     const getInputStyle = (fieldName) => ({
         ...styles.input,
         borderColor: errors[fieldName] ? colors.error : colors.gray200,
         boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
+        color: isDarkMode ? '#FFFFFF' : colors.textPrimary, // Color de texto blanco en modo oscuro
+        // Eliminamos la línea que cambiaba el color de fondo para mantener el original
     });
 
-    // Estilos para los inputs de contraseña
+    // Modificar la función getPasswordInputStyle para hacer lo mismo
     const getPasswordInputStyle = (fieldName) => ({
         ...styles.passwordInput,
         borderColor: errors[fieldName] ? colors.error : colors.gray200,
         boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
+        color: isDarkMode ? '#FFFFFF' : colors.textPrimary, // Color de texto blanco en modo oscuro
+        // Mantenemos el fondo original
     });
 
     // Estilos para aplicar hover en el botón
