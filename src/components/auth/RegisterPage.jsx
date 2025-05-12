@@ -225,6 +225,7 @@ const RegisterPage = () => {
         logoText: {
             fontSize: '28px',
             fontWeight: typography.fontWeight.bold,
+            color: '#043333', // Color más oscuro y saturado que el primary
         },
         imageText: {
             fontSize: typography.fontSize.lg,
@@ -416,7 +417,7 @@ const RegisterPage = () => {
         logoText: {
             fontSize: typography.fontSize.lg,
             fontWeight: typography.fontWeight.bold,
-            color: colors.primary,
+            color: '#043333', // Color más oscuro para mejor visibilidad
         }
     };
 
