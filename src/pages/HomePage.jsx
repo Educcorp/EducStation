@@ -7,10 +7,6 @@ import PostCard from '../components/blog/PostCard';
 import { spacing, typography, transitions, applyHoverStyles } from '../styles/theme';
 // Importamos el hook useTheme
 import { useTheme } from '../context/ThemeContext';
-// Importación del servicio de búsqueda
-import { searchPublicaciones } from '../services/searchService';
-// Importación del componente SearchBox
-import SearchBox from '../components/common/SearchBox';
 
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
@@ -249,8 +245,6 @@ const HomePage = () => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   // Estado para el valor de búsqueda
   const [searchValue, setSearchValue] = useState('');
-  // Nuevo estado para el loading de búsqueda
-  const [loading, setLoading] = useState(false);
 
   // Categorías de los artículos
   const categories = [
@@ -275,8 +269,8 @@ const HomePage = () => {
     excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
   };
 
-  // Convertimos posts a un estado para poder actualizarlo con la búsqueda
-  const [posts, setPosts] = useState([
+  // Lista de artículos
+  const posts = [
     {
       id: 1,
       title: 'Herramientas Tecnológicas para la Educación',
@@ -313,67 +307,7 @@ const HomePage = () => {
       number: '05',
       likes: 112
     }
-  ]);
-
-  // Función para manejar la búsqueda
-  const handleSearch = async (term) => {
-    try {
-      setLoading(true);
-      setSearchValue(term);
-
-      if (!term.trim()) {
-        // Si la búsqueda está vacía, restaurar los posts originales
-        setPosts([
-          {
-            id: 1,
-            title: 'Herramientas Tecnológicas para la Educación',
-            image: '/assets/images/tecnologia.jpg',
-            category: 'herramientas',
-            time: '4 horas atrás',
-            number: '02',
-            likes: 124
-          },
-          {
-            id: 2,
-            title: 'Comunidad y Colaboración en la Educación',
-            image: '/assets/images/humanos.jpg',
-            category: 'técnicas de estudio',
-            time: '4 horas atrás',
-            number: '03',
-            likes: 89
-          },
-          {
-            id: 3,
-            title: 'Problemas a enfrentar en la actualidad',
-            image: '/assets/images/desafio.jpg',
-            category: 'comunidad',
-            time: '4 horas atrás',
-            number: '04',
-            likes: 76
-          },
-          {
-            id: 4,
-            title: 'Desarrollo Profesional Docente',
-            image: '/assets/images/maestro.jpg',
-            category: 'educación de calidad',
-            time: '4 horas atrás',
-            number: '05',
-            likes: 112
-          }
-        ]);
-        setLoading(false);
-        return;
-      }
-
-      const results = await searchPublicaciones(term);
-      // Actualizar los posts con los resultados de la búsqueda
-      setPosts(results);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error en la búsqueda:', error);
-      setLoading(false);
-    }
-  };
+  ];
 
   // NUEVO: Notas para el carrusel
   const carouselNotes = [
@@ -654,12 +588,12 @@ const HomePage = () => {
       <main style={{ ...styles.container, ...styles.noOverflow }}>
         {/* Breadcrumb */}
         <div style={styles.breadcrumb}>
-
-          href="#"
-          style={styles.breadcrumbLink}
-          onMouseEnter={(e) => e.target.style.color = colors.primary}
-          onMouseLeave={(e) => e.target.style.color = colors.primaryLight}
-          <a>Inicio</a>
+          <a
+            href="#"
+            style={styles.breadcrumbLink}
+            onMouseEnter={(e) => e.target.style.color = colors.primary}
+            onMouseLeave={(e) => e.target.style.color = colors.primaryLight}
+          >Inicio</a>
           <span style={{ color: colors.secondary, fontSize: '10px' }}>►</span>
           <span>Blogs y Artículos</span>
         </div>
@@ -712,15 +646,18 @@ const HomePage = () => {
             </button>
           ))}
 
-          {/* Reemplazamos el input comentado por nuestro SearchBox */}
-          <div style={styles.searchBox}>
-            <SearchBox
-              onSearch={handleSearch}
-              initialValue={searchValue}
+          {/* <div style={styles.searchBox}>
+            <span style={styles.searchIcon}>🔍</span>
+            <input
+              type="text"
               placeholder="Buscar un artículo..."
-              loading={loading}
+              style={searchValue !== '' ? applyHoverStyles(styles.searchInput) : styles.searchInput}
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px rgba(11, 68, 68, 0.1), inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
+              onBlur={(e) => e.target.style.boxShadow = 'inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
             />
-          </div>
+          </div> */}
         </div>
 
         {/* Featured Post and Posts Grid - CORREGIDO */}
