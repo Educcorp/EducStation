@@ -420,20 +420,22 @@ const RegisterPage = () => {
         }
     };
 
-    // Definir estilos específicos para bordes de inputs con error
+    // Modificar la función getInputStyle para mantener el fondo original y solo cambiar el color del texto
     const getInputStyle = (fieldName) => ({
         ...styles.input,
         borderColor: errors[fieldName] ? colors.error : colors.gray200,
         boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
         color: isDarkMode ? '#FFFFFF' : colors.textPrimary, // Color de texto blanco en modo oscuro
-        backgroundColor: isDarkMode ? '#333333' : colors.white, // Fondo oscuro en modo oscuro
+        // Eliminamos la línea que cambiaba el color de fondo para mantener el original
     });
 
-    // Estilos para los inputs de contraseña
+    // Modificar la función getPasswordInputStyle para hacer lo mismo
     const getPasswordInputStyle = (fieldName) => ({
         ...styles.passwordInput,
         borderColor: errors[fieldName] ? colors.error : colors.gray200,
         boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
+        color: isDarkMode ? '#FFFFFF' : colors.textPrimary, // Color de texto blanco en modo oscuro
+        // Mantenemos el fondo original
     });
 
     // Estilos para aplicar hover en el botón
