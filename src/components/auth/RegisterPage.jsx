@@ -4,9 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../../services/authService';
 import { colors, spacing, typography } from '../../styles/theme';
 import '@fortawesome/fontawesome-free/css/all.css';
-
+import { useTheme } from '../../context/ThemeContext';
 
 const RegisterPage = () => {
+    // Obtener el estado del modo oscuro
+    const { isDarkMode } = useTheme();
+    
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: '',
@@ -281,7 +284,10 @@ const RegisterPage = () => {
             borderRadius: '6px',
             fontSize: typography.fontSize.md,
             transition: 'all 0.3s ease',
-            backgroundColor: colors.white,
+            backgroundColor: 'transparent', // Cambiamos a transparente para usar el del container
+            '&::placeholder': {
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)', // Placeholder visible en ambos modos
+            }
         },
         passwordInput: {
             width: '100%',
@@ -419,6 +425,8 @@ const RegisterPage = () => {
         ...styles.input,
         borderColor: errors[fieldName] ? colors.error : colors.gray200,
         boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
+        color: isDarkMode ? '#FFFFFF' : colors.textPrimary, // Color de texto blanco en modo oscuro
+        backgroundColor: isDarkMode ? '#333333' : colors.white, // Fondo oscuro en modo oscuro
     });
 
     // Estilos para los inputs de contraseña
