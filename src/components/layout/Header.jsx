@@ -1,13 +1,16 @@
 // src/components/layout/Header.jsx modificado
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
+import { AuthContext } from '../../context/AuthContext'; // Importa el contexto de autenticación
 
 const Header = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme(); // Obtén el estado del modo oscuro
+  const { logout } = useContext(AuthContext);
+  const menuRef = useRef(null);
 
   // Estados existentes
   const [isScrolled, setIsScrolled] = useState(false);
@@ -100,15 +103,15 @@ const Header = () => {
 
   // Verificar si la ruta está activa
   const isActive = (path) => {
-    if (path === '/logout') {
-      return location.pathname === '/logout';
+    if (path === '/login') {
+      return location.pathname === '/login';
     }
     if (path === '/blog') {
       return location.pathname.startsWith('/blog') ||
         location.pathname.includes('/post/') ||
         location.pathname.includes('/category/');
     }
-    return location.pathname.startsWith(path);
+    return location.pathname === path;
   };
 
   // Estilos del header
@@ -201,31 +204,15 @@ const Header = () => {
     },
     menuItem: {
       padding: `${spacing.sm} ${spacing.md}`,
-      color: isDarkMode ? '#fff' : colors.textPrimary, // Texto blanco en modo oscuro
+      color: isDarkMode ? '#fff' : colors.textPrimary,
       textDecoration: 'none',
       display: 'block',
       cursor: 'pointer',
       transition: transitions.default,
       "&:hover": {
-        backgroundColor: isDarkMode ? "#555" : colors.background, // Fondo más oscuro al pasar el mouse
-        color: isDarkMode ? "#ffd700" : colors.primary, // Color de texto al pasar el mouse
+        backgroundColor: isDarkMode ? "#555" : colors.background,
+        color: isDarkMode ? "#ffd700" : colors.primary,
       },
-    },
-    loginButton: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary,
-      color: colors.primary,
-      border: "none",
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
-      cursor: "pointer",
-      transition: transitions.default,
-      marginLeft: spacing.md,
-      '&:hover': {
-        backgroundColor: colors.primary,
-        color: colors.white
-      }
     },
     logoutButton: {
       padding: `${spacing.sm} ${spacing.md}`,
@@ -422,6 +409,28 @@ const Header = () => {
     { path: '/admin/post', label: 'Crear Post', admin: true }
   ];
 
+  const handleNavigation = (path) => {
+    window.location.href = path;
+  };
+
+  // Manejador de clics fuera del menú
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        // Verificar si el clic no fue en el botón de perfil
+        const profileButton = document.querySelector('[data-profile-button]');
+        if (!profileButton?.contains(event.target)) {
+          setIsMenuOpen(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
     <>
       <header style={styles.header}>
@@ -458,12 +467,16 @@ const Header = () => {
             {navItems.map((item, index) => (
               // Solo mostrar enlaces de admin a usuarios con rol admin
               (!item.admin || userRole === 'admin') && (
-                <Link
+                <a
                   key={index}
-                  to={item.path}
+                  href={item.path}
                   style={styles.navLink(isActive(item.path))}
                   onMouseEnter={() => setHoveredItem(`nav-${index}`)}
                   onMouseLeave={() => setHoveredItem(null)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handleNavigation(item.path);
+                  }}
                 >
                   {item.label}
                   <span
@@ -477,16 +490,16 @@ const Header = () => {
                       transition: transitions.default
                     }}
                   ></span>
-                </Link>
+                </a>
               )
             ))}
           </nav>
 
-          {/* Botón condicional: Inicio de Sesión o Cerrar Sesión */}
-          {isAuthenticated ? (
+          {/* Solo mostrar el botón de Cerrar Sesión cuando esté autenticado */}
+          {isAuthenticated && (
             <button
               style={styles.logoutButton}
-              onClick={initiateLogout} // Ahora muestra el modal de confirmación
+              onClick={initiateLogout}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.primary;
                 e.currentTarget.style.color = colors.white;
@@ -498,25 +511,10 @@ const Header = () => {
             >
               Cerrar Sesión
             </button>
-          ) : (
-            <Link to="/login">
-              <button
-                style={styles.loginButton}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary;
-                  e.currentTarget.style.color = colors.white;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.secondary;
-                  e.currentTarget.style.color = colors.primary;
-                }}
-              >
-                Inicio de Sesión
-              </button>
-            </Link>
           )}
 
           <div
+            data-profile-button
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
@@ -531,7 +529,7 @@ const Header = () => {
           </div>
 
           {/* Menú desplegable con perfil del usuario */}
-          <div style={styles.menu}>
+          <div ref={menuRef} style={styles.menu}>
             {isAuthenticated ? (
               <>
                 {/* Sección de perfil del usuario */}
@@ -554,15 +552,19 @@ const Header = () => {
                 >
                   <span style={styles.menuItemIcon}>👤</span> Mi Perfil
                 </Link>
-                <Link
-                  to="/settings"
+                <a
+                  href="/settings"
                   style={getMenuItemStyle(1)}
                   onMouseEnter={() => setHoveredItem('menu-1')}
                   onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    window.location.href = '/settings';
+                  }}
                 >
                   <span style={styles.menuItemIcon}>⚙️</span> Configuración
-                </Link>
+                </a>
 
                 <div style={styles.menuSeparator}></div>
 

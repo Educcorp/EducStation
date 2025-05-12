@@ -6,6 +6,7 @@ import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import CommentSection from './CommentSection';
+import ReactionSection from './ReactionSection';
 
 const PostViewer = () => {
   const { postId } = useParams(); // Obtiene el ID del post de la URL
@@ -184,11 +185,14 @@ const PostViewer = () => {
               </div>
             </div>
           ) : (
-            <div
-              dangerouslySetInnerHTML={createPostComponent()}
-              style={{ width: "100%" }}
-              className="post-content"
-            />
+            <>
+              <div
+                dangerouslySetInnerHTML={createPostComponent()}
+                style={{ width: "100%" }}
+                className="post-content"
+              />
+              <ReactionSection postId={postId} />
+            </>
           )}
         </div>
         

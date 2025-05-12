@@ -9,15 +9,15 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login, isAuth, loading, error: authError } = useContext(AuthContext);
-    
+
     const [formData, setFormData] = useState({
-        email: '',
+        usernameOrEmail: '',
         password: '',
         remember: false
     });
 
     const [errors, setErrors] = useState({
-        email: '',
+        usernameOrEmail: '',
         password: '',
         general: ''
     });
@@ -26,14 +26,14 @@ const LoginPage = () => {
     const [showPassword, setShowPassword] = useState(false);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     // Redirigir si ya está autenticado
     useEffect(() => {
         if (isAuth && !loading) {
             navigate('/');
         }
     }, [isAuth, loading, navigate]);
-    
+
     // Manejar mensajes de la página anterior (por ejemplo, después del registro)
     useEffect(() => {
         if (location.state?.message) {
@@ -79,14 +79,11 @@ const LoginPage = () => {
 
     const validateForm = () => {
         let valid = true;
-        const newErrors = { email: '', password: '', general: '' };
+        const newErrors = { usernameOrEmail: '', password: '', general: '' };
 
-        // Validar email
-        if (!formData.email) {
-            newErrors.email = 'El correo electrónico es requerido';
-            valid = false;
-        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Ingresa un correo electrónico válido';
+        // Validar username/email
+        if (!formData.usernameOrEmail) {
+            newErrors.usernameOrEmail = 'El nombre de usuario o correo electrónico es requerido';
             valid = false;
         }
 
@@ -102,18 +99,18 @@ const LoginPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-    
+
         if (!validateForm()) return;
-    
+
         setIsSubmitting(true);
         setErrors(prev => ({ ...prev, general: '' }));
-    
+
         try {
             await login({
-                email: formData.email,
+                username: formData.usernameOrEmail,
                 password: formData.password
             });
-            
+
             // No es necesario navegar aquí, el useEffect se encargará de eso cuando isAuth cambie
         } catch (error) {
             console.error('Error al iniciar sesión:', error);
@@ -433,17 +430,17 @@ const LoginPage = () => {
 
                         <form onSubmit={handleSubmit}>
                             <div style={styles.formGroup}>
-                                <label style={styles.label} htmlFor="email">Correo electrónico</label>
+                                <label style={styles.label} htmlFor="usernameOrEmail">Nombre de usuario o correo electrónico</label>
                                 <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
+                                    type="text"
+                                    id="usernameOrEmail"
+                                    name="usernameOrEmail"
+                                    value={formData.usernameOrEmail}
                                     onChange={handleChange}
-                                    placeholder="correo@ejemplo.com"
-                                    style={getInputStyle('email')}
+                                    placeholder="usuario123 o correo@ejemplo.com"
+                                    style={getInputStyle('usernameOrEmail')}
                                 />
-                                {errors.email && <div style={styles.errorText}>{errors.email}</div>}
+                                {errors.usernameOrEmail && <div style={styles.errorText}>{errors.usernameOrEmail}</div>}
                             </div>
 
                             <div style={styles.formGroup}>
@@ -458,13 +455,13 @@ const LoginPage = () => {
                                         placeholder="Ingresa tu contraseña"
                                         style={getPasswordInputStyle()}
                                     />
-                                    <button 
+                                    <button
                                         type="button"
                                         onClick={togglePasswordVisibility}
                                         style={styles.eyeIcon}
                                         aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                                     >
-                                         {showPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}
+                                        {showPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}
                                     </button>
                                 </div>
                                 {errors.password && <div style={styles.errorText}>{errors.password}</div>}
@@ -482,7 +479,7 @@ const LoginPage = () => {
                                     />
                                     Recordar sesión
                                 </label>
-                                <Link to="/forgot-password" 
+                                <Link to="/forgot-password"
                                     style={styles.forgotLink}
                                     onMouseEnter={(e) => {
                                         e.target.style.color = colors.secondary;
@@ -520,8 +517,8 @@ const LoginPage = () => {
                             </button>
 
                             <div style={styles.registerLink}>
-                                ¿No tienes una cuenta? 
-                                <Link to="/register" 
+                                ¿No tienes una cuenta?
+                                <Link to="/register"
                                     style={styles.registerLinkText}
                                     onMouseEnter={(e) => {
                                         e.target.style.color = colors.secondary;

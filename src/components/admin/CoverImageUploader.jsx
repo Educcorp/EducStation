@@ -1,7 +1,11 @@
 import React from 'react';
-import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const CoverImageUploader = ({ coverImagePreview, onChange }) => {
+  // Usar el hook useTheme para obtener los colores según el tema actual
+  const { colors } = useTheme();
+
   const styles = {
     card: {
       backgroundColor: colors.white,

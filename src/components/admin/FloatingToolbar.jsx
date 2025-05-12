@@ -463,6 +463,31 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     if (isTyping && !hasTextSelection) return;
     
     try {
+      // Verificar si se está interactuando con una imagen
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let element = range.commonAncestorContainer;
+        
+        // Si estamos en un nodo de texto, obtener el elemento padre
+        if (element.nodeType === 3) {
+          element = element.parentNode;
+        }
+        
+        // Verificar si estamos dentro de un contenedor de imagen o sus controles
+        let current = element;
+        while (current) {
+          if (current.classList && 
+              (current.classList.contains('image-container') || 
+               current.classList.contains('resize-handle'))) {
+            // Si estamos dentro de una imagen o sus controles, no mostrar la barra
+            setVisible(false);
+            return;
+          }
+          if (current === editorRef.current) break;
+          current = current.parentNode;
+        }
+      }
+      
       // Evitar ocultar la barra si estamos interactuando con elementos de la barra
       if (
         toolbarRef.current &&
@@ -636,7 +661,22 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
 
   // Mostrar la barra al hacer clic en el editor
   useEffect(() => {
-    const handleEditorClick = () => {
+    const handleEditorClick = (e) => {
+      // Verificar si se hizo clic en una imagen o sus controles
+      let targetElement = e.target;
+      
+      // Comprobar si el clic fue en una imagen o sus controles
+      while (targetElement && targetElement !== editorRef.current) {
+        if (targetElement.classList && 
+            (targetElement.classList.contains('image-container') || 
+             targetElement.classList.contains('resize-handle'))) {
+          // Si se hizo clic en una imagen, no mostrar la barra
+          setVisible(false);
+          return;
+        }
+        targetElement = targetElement.parentNode;
+      }
+      
       if (editorRef.current && editorRef.current === document.activeElement && !isTyping) {
         checkSelection();
       }
@@ -737,6 +777,37 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       
       // Si hay una selección de texto (no colapsada), siempre mostrar la barra
       const hasTextSelection = selection && !selection.isCollapsed && selection.toString().trim() !== '';
+      
+      // Verificar si se seleccionó una imagen
+      if (selection && selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        let element = range.commonAncestorContainer;
+        
+        // Si estamos en un nodo de texto, obtener el elemento padre
+        if (element.nodeType === 3) {
+          element = element.parentNode;
+        }
+        
+        // Verificar si estamos dentro de un contenedor de imagen o sus controles
+        let isImageSelection = false;
+        let current = element;
+        while (current) {
+          if (current.classList && 
+              (current.classList.contains('image-container') || 
+               current.classList.contains('resize-handle'))) {
+            isImageSelection = true;
+            break;
+          }
+          if (current === editorRef.current) break;
+          current = current.parentNode;
+        }
+        
+        // Si la selección es una imagen, ocultar la barra y salir
+        if (isImageSelection) {
+          setVisible(false);
+          return;
+        }
+      }
       
       // Si hay texto seleccionado o no estamos escribiendo, verificar la selección
       if (hasTextSelection || !isTyping) {
