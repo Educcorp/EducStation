@@ -1,58 +1,94 @@
 // src/services/searchService.js
+const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
 
-// Puedes usar process.env.REACT_APP_API_URL que ya tienes configurado en .env
-const API_URL = process.env.REACT_APP_API_URL;
-
-// Búsqueda simple
-export const simpleSearch = async (term) => {
+// Búsqueda general
+export const searchPublicaciones = async (term, limite = 10, offset = 0) => {
     try {
-        const response = await fetch(`${API_URL}/search?q=${encodeURIComponent(term)}`);
-        const data = await response.json();
-        return data;
+        const response = await fetch(`${API_URL}/api/publicaciones/search?term=${term}&limite=${limite}&offset=${offset}`);
+        if (!response.ok) {
+            throw new Error('Error en la búsqueda');
+        }
+        return await response.json();
     } catch (error) {
-        console.error('Error en búsqueda simple:', error);
+        console.error('Error en searchPublicaciones:', error);
+        throw error;
+    }
+};
+
+// Búsqueda por título
+export const searchByTitle = async (term, limite = 10, offset = 0) => {
+    try {
+        const response = await fetch(`${API_URL}/api/publicaciones/search/title?term=${term}&limite=${limite}&offset=${offset}`);
+        if (!response.ok) {
+            throw new Error('Error en la búsqueda por título');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error en searchByTitle:', error);
+        throw error;
+    }
+};
+
+// Búsqueda por contenido
+export const searchByContent = async (term, limite = 10, offset = 0) => {
+    try {
+        const response = await fetch(`${API_URL}/api/publicaciones/search/content?term=${term}&limite=${limite}&offset=${offset}`);
+        if (!response.ok) {
+            throw new Error('Error en la búsqueda por contenido');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error en searchByContent:', error);
+        throw error;
+    }
+};
+
+// Búsqueda por etiquetas/categorías
+export const searchByTags = async (categorias, limite = 10, offset = 0) => {
+    try {
+        const response = await fetch(`${API_URL}/api/publicaciones/search/tags?categorias=${categorias}&limite=${limite}&offset=${offset}`);
+        if (!response.ok) {
+            throw new Error('Error en la búsqueda por etiquetas');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('Error en searchByTags:', error);
         throw error;
     }
 };
 
 // Búsqueda avanzada
-export const advancedSearch = async (searchParams) => {
+export const advancedSearch = async (criteria, limite = 10, offset = 0) => {
+    // Construir query string a partir de los criterios
+    const params = new URLSearchParams();
+
+    if (criteria.titulo) params.append('titulo', criteria.titulo);
+    if (criteria.contenido) params.append('contenido', criteria.contenido);
+    if (criteria.fechaDesde) params.append('fechaDesde', criteria.fechaDesde);
+    if (criteria.fechaHasta) params.append('fechaHasta', criteria.fechaHasta);
+    if (criteria.estado) params.append('estado', criteria.estado);
+    if (criteria.categorias) params.append('categorias', criteria.categorias.join(','));
+    if (criteria.ordenarPor) params.append('ordenarPor', criteria.ordenarPor);
+
+    params.append('limite', limite);
+    params.append('offset', offset);
+
     try {
-        const response = await fetch(`${API_URL}/search/advanced`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(searchParams)
-        });
-        const data = await response.json();
-        return data;
+        const response = await fetch(`${API_URL}/api/publicaciones/search/advanced?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error('Error en la búsqueda avanzada');
+        }
+        return await response.json();
     } catch (error) {
-        console.error('Error en búsqueda avanzada:', error);
+        console.error('Error en advancedSearch:', error);
         throw error;
     }
 };
 
-// Búsqueda por categoría/etiqueta
-export const searchByTag = async (tagId) => {
-    try {
-        const response = await fetch(`${API_URL}/search/tag/${tagId}`);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error en búsqueda por etiqueta:', error);
-        throw error;
-    }
-};
-
-// Obtener etiquetas populares
-export const getTrendingTags = async () => {
-    try {
-        const response = await fetch(`${API_URL}/search/trending-tags`);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error al obtener etiquetas populares:', error);
-        throw error;
-    }
+export default {
+    searchPublicaciones,
+    searchByTitle,
+    searchByContent,
+    searchByTags,
+    advancedSearch
 };
