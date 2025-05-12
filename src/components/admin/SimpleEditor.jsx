@@ -867,63 +867,66 @@ const SimpleEditor = ({ content, onChange }) => {
 
   // Mostrar la barra flotante al hacer clic en el editor
   const handleEditorClick = (e) => {
-    // Aseguramos que el clic directo en el editor (no en elementos dentro) posicione el cursor
-    if (e.target === editorRef.current) {
-      const clickX = e.clientX;
-      const clickY = e.clientY;
-      const editorRect = editorRef.current.getBoundingClientRect();
-      
-      // Calculamos la posición relativa dentro del editor
-      const relativeX = clickX - editorRect.left;
-      const relativeY = clickY - editorRect.top;
-      
-      // Intentamos encontrar el punto más cercano para insertar el cursor
-      const range = document.createRange();
-      const selection = window.getSelection();
-      
-      // Crear un nodo de texto invisible si el editor está vacío
-      if (!editorRef.current.childNodes.length) {
-        const textNode = document.createTextNode('\u00A0'); // Espacio no rompible
-        editorRef.current.appendChild(textNode);
-      }
-      
-      // Encontrar la posición para el cursor usando el API de caretPositionFromPoint (o sus equivalentes)
-      let position;
-      if (document.caretPositionFromPoint) {
-        position = document.caretPositionFromPoint(clickX, clickY);
-        if (position) {
-          range.setStart(position.offsetNode, position.offset);
-        }
-      } else if (document.caretRangeFromPoint) {
-        // Para navegadores WebKit
-        position = document.caretRangeFromPoint(clickX, clickY);
-        if (position) {
-          range.setStart(position.startContainer, position.startOffset);
-        }
-      }
-      
-      // Si no podemos encontrar una posición específica, insertar al final del editor
-      if (!position) {
-        // Insertar un nodo de texto al final si no hay uno
-        if (editorRef.current.lastChild && editorRef.current.lastChild.nodeType === 1) { // Es un elemento
-          const textNode = document.createTextNode('\u00A0');
+    // Solo posicionar el cursor si no hay texto seleccionado actualmente
+    const selection = window.getSelection();
+    if (selection.toString().length === 0) {
+      // Aseguramos que el clic directo en el editor (no en elementos dentro) posicione el cursor
+      if (e.target === editorRef.current) {
+        const clickX = e.clientX;
+        const clickY = e.clientY;
+        const editorRect = editorRef.current.getBoundingClientRect();
+        
+        // Calculamos la posición relativa dentro del editor
+        const relativeX = clickX - editorRect.left;
+        const relativeY = clickY - editorRect.top;
+        
+        // Intentamos encontrar el punto más cercano para insertar el cursor
+        const range = document.createRange();
+        
+        // Crear un nodo de texto invisible si el editor está vacío
+        if (!editorRef.current.childNodes.length) {
+          const textNode = document.createTextNode('\u00A0'); // Espacio no rompible
           editorRef.current.appendChild(textNode);
-          range.setStart(textNode, 0);
-        } else if (editorRef.current.lastChild) {
-          range.setStart(editorRef.current.lastChild, editorRef.current.lastChild.length || 0);
-        } else {
-          const textNode = document.createTextNode('\u00A0');
-          editorRef.current.appendChild(textNode);
-          range.setStart(textNode, 0);
         }
+        
+        // Encontrar la posición para el cursor usando el API de caretPositionFromPoint (o sus equivalentes)
+        let position;
+        if (document.caretPositionFromPoint) {
+          position = document.caretPositionFromPoint(clickX, clickY);
+          if (position) {
+            range.setStart(position.offsetNode, position.offset);
+          }
+        } else if (document.caretRangeFromPoint) {
+          // Para navegadores WebKit
+          position = document.caretRangeFromPoint(clickX, clickY);
+          if (position) {
+            range.setStart(position.startContainer, position.startOffset);
+          }
+        }
+        
+        // Si no podemos encontrar una posición específica, insertar al final del editor
+        if (!position) {
+          // Insertar un nodo de texto al final si no hay uno
+          if (editorRef.current.lastChild && editorRef.current.lastChild.nodeType === 1) { // Es un elemento
+            const textNode = document.createTextNode('\u00A0');
+            editorRef.current.appendChild(textNode);
+            range.setStart(textNode, 0);
+          } else if (editorRef.current.lastChild) {
+            range.setStart(editorRef.current.lastChild, editorRef.current.lastChild.length || 0);
+          } else {
+            const textNode = document.createTextNode('\u00A0');
+            editorRef.current.appendChild(textNode);
+            range.setStart(textNode, 0);
+          }
+        }
+        
+        range.collapse(true);
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // Enfocar el editor
+        editorRef.current.focus();
       }
-      
-      range.collapse(true);
-      selection.removeAllRanges();
-      selection.addRange(range);
-      
-      // Enfocar el editor
-      editorRef.current.focus();
     }
     
     // Este evento será capturado por FloatingToolbar 
@@ -980,7 +983,8 @@ const SimpleEditor = ({ content, onChange }) => {
       transition: 'box-shadow 0.2s ease',
       cursor: 'text',
       minHeight: '600px', // Garantizamos una altura mínima adecuada
-      position: 'relative' // Importante para el posicionamiento absoluto dentro del editor
+      position: 'relative', // Importante para el posicionamiento absoluto dentro del editor
+      userSelect: 'text' // Asegurar que el texto sea seleccionable explícitamente
     },
     placeholder: {
       position: 'absolute',
@@ -1210,6 +1214,19 @@ const SimpleEditor = ({ content, onChange }) => {
             width: 1px;
             top: 0;
             bottom: 0;
+          }
+          /* Prevenir que se pierda la selección */
+          #editorContent {
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+          }
+          #editorContent *:not(.image-container) {
+            user-select: text;
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
           }
         `}
       </style>
