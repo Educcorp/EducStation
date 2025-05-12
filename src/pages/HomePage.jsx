@@ -12,7 +12,7 @@ import { useTheme } from '../context/ThemeContext';
 const NewsCarousel = ({ notes }) => {
   // Usamos useTheme para obtener los colores según el tema actual
   const { colors } = useTheme();
-  
+
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredElement, setHoveredElement] = useState(null);
   const carouselRef = useRef(null);
@@ -238,7 +238,7 @@ const NewsCarousel = ({ notes }) => {
 const HomePage = () => {
   // Añadimos el hook useTheme en el componente principal
   const { colors } = useTheme();
-  
+
   // Estado para la categoría activa
   const [activeCategory, setActiveCategory] = useState('Todos');
   // Estado para la categoría sobre la que se está haciendo hover
