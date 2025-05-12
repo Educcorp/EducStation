@@ -1,150 +1,191 @@
 // src/pages/CategoryPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostCard from '../components/blog/PostCard';
+import CategoryFilter from '../components/common/CategoryFilter';
+import SearchBox from '../components/common/SearchBox';
 import { spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
+import { getCategoriaById, getPublicacionesByCategoria, getAllCategorias } from '../services/categoriasService';
+import { searchByTitle, advancedSearch } from '../services/searchService';
 import '../styles/animations.css';
 
-const CategoryPage = () => {  
-    const [animate, setAnimate] = useState(false);
-    const { colors } = useTheme(); // Obtenemos los colores del tema actual
-  
-    useEffect(() => {
-      const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
-      return () => clearTimeout(timeout); // Limpia el timeout al desmontar
-    }, []);
-  // Obtenemos el parámetro de categoría de la URL
+const CategoryPage = () => {
+  // Navegación y parámetros
   const { categoryName } = useParams();
-  
-  // Estado para la búsqueda
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Estado para los filtros
-  const [selectedFilter, setSelectedFilter] = useState('reciente');
-  
-  // Estado para el número de página
-  const [currentPage, setCurrentPage] = useState(1);
-  
-  // Categorías disponibles (para la navegación de categorías relacionadas)
-  const categories = [
-    { id: 'noticias', name: 'Noticias', count: 23 },
-    { id: 'tecnicas-de-estudio', name: 'Técnicas de Estudio', count: 45 },
-    { id: 'problematicas', name: 'Problemáticas', count: 18 },
-    { id: 'educacion-de-calidad', name: 'Educación de Calidad', count: 32 },
-    { id: 'herramientas', name: 'Herramientas', count: 37 },
-    { id: 'desarrollo-docente', name: 'Desarrollo Docente', count: 29 },
-    { id: 'comunidad', name: 'Comunidad', count: 16 }
-  ];
-  
-  // Obtener información de la categoría actual
-  const currentCategory = categories.find(cat => cat.id === categoryName) || {
-    id: categoryName,
-    name: categoryName?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-    count: 0
-  };
-  
-  // Categorías relacionadas (todas excepto la actual)
-  const relatedCategories = categories.filter(cat => cat.id !== categoryName);
-  
-  // Lista de artículos simulada para esta categoría
-  const [posts, setPosts] = useState([]);
-  
-  // Generar datos de posts simulados
-  useEffect(() => {
-    // Función para generar un array de posts aleatorios
-    const generatePosts = (count, category) => {
-      const postTitles = [
-        'Estrategias innovadoras para el aula digital',
-        'Cómo fomentar la participación activa de los estudiantes',
-        'Herramientas tecnológicas esenciales para educadores',
-        'El impacto de la gamificación en el aprendizaje',
-        'Evaluación formativa: más allá de las calificaciones',
-        'Inclusión en el aula: estrategias prácticas',
-        'El papel de la inteligencia emocional en la educación',
-        'Metodologías activas para el aprendizaje significativo',
-        'Cómo crear contenido educativo atractivo',
-        'La neurociencia aplicada a la enseñanza',
-        'Gestión del tiempo en entornos educativos',
-        'El futuro de la educación: tendencias y perspectivas',
-        'Educación personalizada en grupos numerosos',
-        'Comunicación efectiva con padres y tutores',
-        'Desarrollo profesional continuo para educadores'
-      ];
-      
-      return Array.from({ length: count }, (_, i) => ({
-        id: i + 1,
-        title: postTitles[Math.floor(Math.random() * postTitles.length)],
-        image: `/api/placeholder/350/200?text=${category}`,
-        category: category.toLowerCase(),
-        time: Math.floor(Math.random() * 10) + 1 + ' días atrás',
-        number: String(i + 1).padStart(2, '0'),
-        likes: Math.floor(Math.random() * 200) + 50,
-        excerpt: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        author: {
-          name: 'María Rodríguez',
-          avatar: '/api/placeholder/40/40',
-          role: 'Docente'
-        }
-      }));
-    };
-    
-    // Generar entre 12 y 30 posts para la categoría actual
-    const numPosts = Math.floor(Math.random() * 18) + 12;
-    setPosts(generatePosts(numPosts, currentCategory.name));
-  }, [categoryName, currentCategory.name, colors]);
-  
-  // Filtrar posts por búsqueda
-  const filteredPosts = posts.filter(post => 
-    post.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  // Ordenar posts según el filtro seleccionado
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
-    switch (selectedFilter) {
-      case 'reciente':
-        return parseInt(a.time) - parseInt(b.time);
-      case 'antiguo':
-        return parseInt(b.time) - parseInt(a.time);
-      case 'popular':
-        return b.likes - a.likes;
-      case 'alfabetico':
-        return a.title.localeCompare(b.title);
-      default:
-        return 0;
-    }
-  });
-  
-  // Paginación
-  const postsPerPage = 9;
-  const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
-  const indexOfLastPost = currentPage * postsPerPage;
-  const indexOfFirstPost = indexOfLastPost - postsPerPage;
-  const currentPosts = sortedPosts.slice(indexOfFirstPost, indexOfLastPost);
-  
-  // Cambiar página
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  
-  // Ir a la página anterior
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-  
-  // Ir a la página siguiente
-  const nextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
+  const navigate = useNavigate();
 
-  // Estado para el newsletter
+  // Estados para el tema y animación
+  const [animate, setAnimate] = useState(false);
+  const { colors } = useTheme();
+
+  // Estados para datos
+  const [currentCategory, setCurrentCategory] = useState(null);
+  const [categories, setCategories] = useState([]);
+  const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [relatedCategories, setRelatedCategories] = useState([]);
+
+  // Estados para UI
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('reciente');
+  const [currentPage, setCurrentPage] = useState(1);
   const [email, setEmail] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [subscribeMessage, setSubscribeMessage] = useState(null);
+
+  // Activar la animación al montar
+  useEffect(() => {
+    const timeout = setTimeout(() => setAnimate(true), 0);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  // Cargar categorías al iniciar
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const allCategories = await getAllCategorias();
+        setCategories(allCategories);
+
+        // Encontrar la categoría actual
+        const current = allCategories.find(cat =>
+          cat.ID_categoria.toString() === categoryName ||
+          cat.Nombre_categoria.toLowerCase().replace(/\s+/g, '-') === categoryName.toLowerCase()
+        );
+
+        if (current) {
+          setCurrentCategory(current);
+          // Relacionadas: todas menos la actual
+          setRelatedCategories(allCategories.filter(cat => cat.ID_categoria !== current.ID_categoria));
+        } else {
+          // Si no encuentra la categoría, intentar buscarla por ID
+          try {
+            const categoryData = await getCategoriaById(categoryName);
+            setCurrentCategory(categoryData);
+            setRelatedCategories(allCategories.filter(cat => cat.ID_categoria !== categoryData.ID_categoria));
+          } catch (err) {
+            setError('Categoría no encontrada');
+            setCurrentCategory({
+              ID_categoria: categoryName,
+              Nombre_categoria: categoryName.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+              Descripcion: 'Categoría no encontrada'
+            });
+          }
+        }
+      } catch (err) {
+        setError('Error al cargar categorías');
+        console.error(err);
+      }
+    };
+
+    fetchCategories();
+  }, [categoryName]);
+
+  // Cargar publicaciones cuando cambia la categoría
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        if (!currentCategory) return;
+
+        let results;
+
+        // Si hay búsqueda, usar búsqueda avanzada
+        if (searchQuery) {
+          results = await advancedSearch({
+            titulo: searchQuery,
+            categorias: [currentCategory.ID_categoria],
+            ordenarPor: selectedFilter
+          });
+        } else {
+          // Si no hay búsqueda, obtener publicaciones de la categoría
+          results = await getPublicacionesByCategoria(currentCategory.ID_categoria);
+        }
+
+        setPosts(results || []);
+        setFilteredPosts(results || []);
+        setLoading(false);
+      } catch (err) {
+        setError('Error al cargar publicaciones');
+        setLoading(false);
+        console.error(err);
+      }
+    };
+
+    fetchPosts();
+  }, [currentCategory, searchQuery, selectedFilter]);
+
+  // Aplicar filtros a las publicaciones
+  useEffect(() => {
+    if (!posts.length) {
+      setFilteredPosts([]);
+      return;
+    }
+
+    // Filtrar por búsqueda si es necesario
+    let filtered = [...posts];
+    if (searchQuery) {
+      filtered = filtered.filter(post =>
+        post.Titulo?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Ordenar según el filtro seleccionado
+    switch (selectedFilter) {
+      case 'reciente':
+        filtered.sort((a, b) => new Date(b.Fecha_creacion) - new Date(a.Fecha_creacion));
+        break;
+      case 'antiguo':
+        filtered.sort((a, b) => new Date(a.Fecha_creacion) - new Date(b.Fecha_creacion));
+        break;
+      case 'alfabetico':
+        filtered.sort((a, b) => a.Titulo.localeCompare(b.Titulo));
+        break;
+      default:
+        break;
+    }
+
+    setFilteredPosts(filtered);
+    // Resetear a la primera página cuando cambian los filtros
+    setCurrentPage(1);
+  }, [posts, searchQuery, selectedFilter]);
+
+  // Paginación
+  const postsPerPage = 9;
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+
+  // Funciones para la paginación
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const prevPage = () => currentPage > 1 && setCurrentPage(currentPage - 1);
+  const nextPage = () => currentPage < totalPages && setCurrentPage(currentPage + 1);
+
+  // Manejar búsqueda
+  const handleSearch = (term) => {
+    setSearchQuery(term);
+    setCurrentPage(1); // Resetear a la primera página
+  };
+
+  // Manejar cambio de filtro
+  const handleFilterChange = (filter) => {
+    setSelectedFilter(filter);
+    setCurrentPage(1); // Resetear a la primera página
+  };
+
+  // Manejar cambio de categoría
+  const handleCategoryChange = (categoryId) => {
+    const category = categories.find(cat => cat.ID_categoria.toString() === categoryId);
+    if (category) {
+      const slug = category.Nombre_categoria.toLowerCase().replace(/\s+/g, '-');
+      navigate(`/category/${slug}`);
+    }
+  };
 
   // Manejar suscripción al newsletter
   const handleSubscribe = (e) => {
@@ -152,7 +193,7 @@ const CategoryPage = () => {
     if (!email) return;
 
     setIsSubscribing(true);
-    
+
     // Simulación de suscripción exitosa
     setTimeout(() => {
       setIsSubscribing(false);
@@ -161,14 +202,14 @@ const CategoryPage = () => {
         text: '¡Gracias por suscribirte! Recibirás nuestros artículos en tu correo.'
       });
       setEmail('');
-      
-      // Limpiar el mensaje después de unos segundos
+
+      // Limpiar mensaje después de 4 segundos
       setTimeout(() => {
         setSubscribeMessage(null);
       }, 4000);
     }, 1500);
   };
-  
+
   // Estilos CSS
   const styles = {
     container: {
@@ -258,32 +299,6 @@ const CategoryPage = () => {
       flexWrap: "wrap",
       gap: spacing.md
     },
-    searchBox: {
-      flex: "1",
-      maxWidth: "350px",
-      position: "relative"
-    },
-    searchInput: {
-      width: "100%",
-      padding: `${spacing.sm} ${spacing.md} ${spacing.sm} ${spacing.xxl}`,
-      borderRadius: borderRadius.md,
-      border: `1px solid ${colors.gray200}`,
-      fontSize: typography.fontSize.sm,
-      transition: transitions.default,
-      '&:focus': {
-        outline: "none",
-        borderColor: colors.primary,
-        boxShadow: `0 0 0 2px ${colors.primary}30`
-      }
-    },
-    searchIcon: {
-      position: "absolute",
-      left: spacing.md,
-      top: "50%",
-      transform: "translateY(-50%)",
-      color: colors.textSecondary,
-      fontSize: "16px"
-    },
     filterDropdown: {
       padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: borderRadius.md,
@@ -301,11 +316,17 @@ const CategoryPage = () => {
     },
     postsGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
       gap: spacing.xl,
       marginBottom: spacing.xl
     },
     noResults: {
+      textAlign: "center",
+      padding: `${spacing.xxl} 0`,
+      color: colors.textSecondary,
+      fontSize: typography.fontSize.lg
+    },
+    loading: {
       textAlign: "center",
       padding: `${spacing.xxl} 0`,
       color: colors.textSecondary,
@@ -401,63 +422,6 @@ const CategoryPage = () => {
       fontSize: typography.fontSize.xs,
       transition: transitions.default
     },
-    popularPost: {
-      display: "flex",
-      gap: spacing.md,
-      padding: spacing.md,
-      marginBottom: spacing.md,
-      borderRadius: borderRadius.md,
-      transition: transitions.default,
-      '&:hover': {
-        backgroundColor: colors.gray100
-      }
-    },
-    popularPostImage: {
-      width: "80px",
-      height: "80px",
-      borderRadius: borderRadius.sm,
-      overflow: "hidden"
-    },
-    popularPostImg: {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover"
-    },
-    popularPostTitle: {
-      fontSize: typography.fontSize.md,
-      fontWeight: typography.fontWeight.medium,
-      marginBottom: spacing.xs,
-      color: colors.textPrimary,
-      transition: transitions.default,
-      '&:hover': {
-        color: colors.primary
-      }
-    },
-    popularPostMeta: {
-      display: "flex",
-      alignItems: "center",
-      gap: spacing.sm,
-      fontSize: typography.fontSize.xs,
-      color: colors.textSecondary
-    },
-    tagCloud: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: spacing.sm
-    },
-    tag: {
-      padding: `${spacing.xs} ${spacing.md}`,
-      backgroundColor: colors.gray100,
-      borderRadius: borderRadius.round,
-      fontSize: typography.fontSize.xs,
-      color: colors.textSecondary,
-      transition: transitions.default,
-      cursor: "pointer",
-      '&:hover': {
-        backgroundColor: colors.primary,
-        color: colors.white
-      }
-    },
     newsletter: {
       display: "flex",
       flexDirection: "column",
@@ -517,175 +481,210 @@ const CategoryPage = () => {
       color: '#a94442',
       borderRadius: borderRadius.sm,
       fontSize: typography.fontSize.sm
+    },
+    error: {
+      padding: spacing.xl,
+      backgroundColor: '#f2dede',
+      color: '#a94442',
+      borderRadius: borderRadius.md,
+      margin: `${spacing.xl} 0`,
+      textAlign: 'center'
     }
   };
 
   return (
     <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
       <Header />
-      
+
       <main>
         {/* Hero Section */}
         <section style={styles.hero}>
           <div style={styles.container}>
             <div style={styles.heroContent}>
               <div style={styles.breadcrumb}>
-                <a 
+                <a
                   href="/"
                   style={styles.breadcrumbLink}
-                  onMouseEnter={(e) => e.target.style.color = colors.primary} 
+                  onMouseEnter={(e) => e.target.style.color = colors.primary}
                   onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
                 >Inicio</a>
-                <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
-                <a 
-                  href="/category/tecnicas-de-estudio"
+                <span style={{ color: colors.gray300, fontSize: '10px' }}>►</span>
+                <a
+                  href="/category"
                   style={styles.breadcrumbLink}
-                  onMouseEnter={(e) => e.target.style.color = colors.primary} 
+                  onMouseEnter={(e) => e.target.style.color = colors.primary}
                   onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
                 >Blog</a>
-                <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
-                <span>{currentCategory.name}</span>
-                
+                <span style={{ color: colors.gray300, fontSize: '10px' }}>►</span>
+                <span>{currentCategory?.Nombre_categoria || 'Categoría'}</span>
               </div>
-              
-              <h1 
-              className={animate ? "page-animation" : ""}
-              style={styles.title}>{currentCategory.name}</h1>
-              <p className={animate ? "page-animation" : ""} style={styles.subtitle}>
-                Explora nuestra colección de artículos sobre {currentCategory.name.toLowerCase()}. 
-                Aquí encontrarás consejos, estrategias y recursos para mejorar tu práctica educativa 
-                en esta área específica.
+
+              <h1
+                className={animate ? "page-animation" : ""}
+                style={styles.title}
+              >
+                {currentCategory?.Nombre_categoria || 'Categoría'}
+              </h1>
+
+              <p
+                className={animate ? "page-animation" : ""}
+                style={styles.subtitle}
+              >
+                {currentCategory?.Descripcion ||
+                  `Explora nuestra colección de artículos sobre ${(currentCategory?.Nombre_categoria || 'esta categoría').toLowerCase()}. 
+                   Aquí encontrarás consejos, estrategias y recursos para mejorar tu práctica educativa 
+                   en esta área específica.`
+                }
               </p>
-              
-              <div style={styles.categoryTag}>
-                {currentCategory.name} <span style={styles.categoryCount}>{currentCategory.count || posts.length}</span>
-              </div>
+
+              {currentCategory && (
+                <div style={styles.categoryTag}>
+                  {currentCategory.Nombre_categoria}
+                  <span style={styles.categoryCount}>{filteredPosts.length || 0}</span>
+                </div>
+              )}
             </div>
           </div>
         </section>
-        
+
         <div style={styles.container}>
+          {/* Filtro de categorías */}
+          <CategoryFilter
+            onCategorySelect={handleCategoryChange}
+            selectedCategory={currentCategory?.ID_categoria?.toString()}
+          />
+
+          {error && (
+            <div style={styles.error}>{error}</div>
+          )}
+
           <div style={styles.contentWrapper}>
             {/* Main Content */}
             <div style={styles.mainContent}>
               {/* Filter Bar */}
               <div style={styles.filterBar}>
-                <div style={styles.searchBox}>
-                  <span style={styles.searchIcon}>🔍</span>
-                  <input 
-                    type="text" 
-                    placeholder="Buscar en esta categoría..." 
-                    style={styles.searchInput}
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setCurrentPage(1); // Reset to first page on new search
-                    }}
-                    onFocus={(e) => e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`}
-                    onBlur={(e) => e.target.style.boxShadow = 'none'}
-                  />
-                </div>
-                
-                <select 
+                <SearchBox
+                  onSearch={handleSearch}
+                  placeholder="Buscar en esta categoría..."
+                  initialValue={searchQuery}
+                />
+
+                <select
                   style={styles.filterDropdown}
                   value={selectedFilter}
-                  onChange={(e) => {
-                    setSelectedFilter(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
-                  }}
+                  onChange={(e) => handleFilterChange(e.target.value)}
                   onFocus={(e) => e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`}
                   onBlur={(e) => e.target.style.boxShadow = 'none'}
                 >
                   <option value="reciente">Más recientes</option>
                   <option value="antiguo">Más antiguos</option>
-                  <option value="popular">Más populares</option>
                   <option value="alfabetico">Alfabéticamente</option>
                 </select>
               </div>
-              
-              {/* Posts Grid */}
-              {currentPosts.length > 0 ? (
-                <div style={styles.postsGrid}>
-                  {currentPosts.map((post) => (
-                    <PostCard key={post.id} post={post} />
-                  ))}
-                </div>
+
+              {/* Loading Indicator */}
+              {loading ? (
+                <div style={styles.loading}>Cargando publicaciones...</div>
               ) : (
-                <div style={styles.noResults}>
-                  No se encontraron artículos que coincidan con tu búsqueda.
-                </div>
-              )}
-              
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div style={styles.pagination}>
-                  <button 
-                    style={styles.pageButton}
-                    onClick={prevPage}
-                    disabled={currentPage === 1}
-                    onMouseEnter={(e) => {
-                      if (currentPage !== 1) {
-                        e.currentTarget.style.backgroundColor = colors.gray100;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    ←
-                  </button>
-                  
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                    <button
-                      key={number}
-                      style={{
-                        ...styles.pageButton,
-                        ...(number === currentPage ? styles.activePageButton : {})
-                      }}
-                      onClick={() => paginate(number)}
-                      onMouseEnter={(e) => {
-                        if (number !== currentPage) {
-                          e.currentTarget.style.backgroundColor = colors.gray100;
-                        } else {
-                          e.currentTarget.style.backgroundColor = colors.primaryDark;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (number !== currentPage) {
+                <>
+                  {/* Posts Grid */}
+                  {currentPosts.length > 0 ? (
+                    <div style={styles.postsGrid}>
+                      {currentPosts.map((post) => (
+                        <PostCard key={post.ID_publicaciones} post={{
+                          id: post.ID_publicaciones,
+                          title: post.Titulo,
+                          image: post.Imagen_destacada_ID ? `/api/imagenes/${post.Imagen_destacada_ID}` : '/api/placeholder/350/200',
+                          category: currentCategory?.Nombre_categoria?.toLowerCase() || 'categoría',
+                          time: new Date(post.Fecha_creacion).toLocaleDateString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          }),
+                          number: post.ID_publicaciones.toString().padStart(2, '0'),
+                          likes: 100, // Valor simulado
+                          excerpt: post.Resumen || post.Contenido.substring(0, 100) + '...'
+                        }} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={styles.noResults}>
+                      No se encontraron artículos que coincidan con tu búsqueda.
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div style={styles.pagination}>
+                      <button
+                        style={styles.pageButton}
+                        onClick={prevPage}
+                        disabled={currentPage === 1}
+                        onMouseEnter={(e) => {
+                          if (currentPage !== 1) {
+                            e.currentTarget.style.backgroundColor = colors.gray100;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
                           e.currentTarget.style.backgroundColor = 'transparent';
-                        } else {
-                          e.currentTarget.style.backgroundColor = colors.primary;
-                        }
-                      }}
-                    >
-                      {number}
-                    </button>
-                  ))}
-                  
-                  <button 
-                    style={styles.pageButton}
-                    onClick={nextPage}
-                    disabled={currentPage === totalPages}
-                    onMouseEnter={(e) => {
-                      if (currentPage !== totalPages) {
-                        e.currentTarget.style.backgroundColor = colors.gray100;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    →
-                  </button>
-                </div>
+                        }}
+                      >
+                        ←
+                      </button>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
+                        <button
+                          key={number}
+                          style={{
+                            ...styles.pageButton,
+                            ...(number === currentPage ? styles.activePageButton : {})
+                          }}
+                          onClick={() => paginate(number)}
+                          onMouseEnter={(e) => {
+                            if (number !== currentPage) {
+                              e.currentTarget.style.backgroundColor = colors.gray100;
+                            } else {
+                              e.currentTarget.style.backgroundColor = colors.primaryDark;
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (number !== currentPage) {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            } else {
+                              e.currentTarget.style.backgroundColor = colors.primary;
+                            }
+                          }}
+                        >
+                          {number}
+                        </button>
+                      ))}
+
+                      <button
+                        style={styles.pageButton}
+                        onClick={nextPage}
+                        disabled={currentPage === totalPages}
+                        onMouseEnter={(e) => {
+                          if (currentPage !== totalPages) {
+                            e.currentTarget.style.backgroundColor = colors.gray100;
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        →
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-            
+
             {/* Sidebar */}
             <div style={styles.sidebar}>
               {/* Categories Section */}
               <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
+                <h3 style={{ ...styles.sidebarTitle, '&:after': { ...styles.sidebarTitle['&:after'], content: '""' } }}>
                   Categorías
                   <span style={{
                     position: "absolute",
@@ -698,126 +697,41 @@ const CategoryPage = () => {
                 </h3>
                 <div style={styles.categoriesList}>
                   {categories.map((cat) => (
-                    <a 
-                      key={cat.id}
-                      href={`/category/${cat.id}`}
+                    <a
+                      key={cat.ID_categoria}
+                      href={`/category/${cat.Nombre_categoria.toLowerCase().replace(/\s+/g, '-')}`}
                       style={styles.categoryItem}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = colors.gray100;
                         e.currentTarget.style.transform = "translateX(5px)";
-                        e.currentTarget.querySelector('.category-count').style.backgroundColor = colors.primary;
-                        e.currentTarget.querySelector('.category-count').style.color = colors.white;
+                        const countElement = e.currentTarget.querySelector('.category-count');
+                        if (countElement) {
+                          countElement.style.backgroundColor = colors.primary;
+                          countElement.style.color = colors.white;
+                        }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = 'transparent';
                         e.currentTarget.style.transform = "translateX(0)";
-                        e.currentTarget.querySelector('.category-count').style.backgroundColor = colors.gray100;
-                        e.currentTarget.querySelector('.category-count').style.color = colors.textSecondary;
+                        const countElement = e.currentTarget.querySelector('.category-count');
+                        if (countElement) {
+                          countElement.style.backgroundColor = colors.gray100;
+                          countElement.style.color = colors.textSecondary;
+                        }
                       }}
                     >
-                      {cat.name}
+                      {cat.Nombre_categoria}
                       <span className="category-count" style={styles.categoryItemCount}>
-                        {cat.count}
+                        0
                       </span>
                     </a>
                   ))}
                 </div>
               </div>
-              
-              {/* Popular Posts Section */}
-              <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
-                  Artículos Populares
-                  <span style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    width: "40px",
-                    height: "2px",
-                    backgroundColor: colors.primary
-                  }}></span>
-                </h3>
-                
-                {/* Generate some popular posts from the current category */}
-                {posts.slice(0, 3).map((post) => (
-                  <div 
-                    key={post.id}
-                    style={styles.popularPost}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.gray100;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    <div style={styles.popularPostImage}>
-                      <img 
-                        src={post.image} 
-                        alt={post.title} 
-                        style={styles.popularPostImg} 
-                      />
-                    </div>
-                    <div>
-                      <h4 
-                        style={styles.popularPostTitle}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = colors.primary;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = colors.textPrimary;
-                        }}
-                      >
-                        {post.title}
-                      </h4>
-                      <div style={styles.popularPostMeta}>
-                        <span>{post.time}</span>
-                        <span>•</span>
-                        <span>{post.likes} likes</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Tags Section */}
-              <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
-                  Etiquetas Populares
-                  <span style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    width: "40px",
-                    height: "2px",
-                    backgroundColor: colors.primary
-                  }}></span>
-                </h3>
-                
-                <div style={styles.tagCloud}>
-                  {['Innovación', 'Tecnología', 'Metodologías', 'Evaluación', 'Inclusión', 
-                    'Motivación', 'Recursos', 'Digital', 'Proyectos', 'Gamificación', 
-                    'Colaboración', 'Aprendizaje', 'Didáctica'].map((tag, index) => (
-                    <div 
-                      key={index}
-                      style={styles.tag}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.primary;
-                        e.currentTarget.style.color = colors.white;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.gray100;
-                        e.currentTarget.style.color = colors.textSecondary;
-                      }}
-                    >
-                      {tag}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
+
               {/* Newsletter Section */}
               <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
+                <h3 style={{ ...styles.sidebarTitle, '&:after': { ...styles.sidebarTitle['&:after'], content: '""' } }}>
                   Suscríbete
                   <span style={{
                     position: "absolute",
@@ -828,16 +742,16 @@ const CategoryPage = () => {
                     backgroundColor: colors.primary
                   }}></span>
                 </h3>
-                
+
                 <div style={styles.newsletter}>
                   <p style={styles.newsletterText}>
                     Recibe nuestros mejores artículos y novedades directamente en tu bandeja de entrada.
                   </p>
-                  
+
                   <form style={styles.newsletterForm} onSubmit={handleSubscribe}>
-                    <input 
-                      type="email" 
-                      placeholder="Tu email" 
+                    <input
+                      type="email"
+                      placeholder="Tu email"
                       style={styles.newsletterInput}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -845,8 +759,8 @@ const CategoryPage = () => {
                       onBlur={(e) => e.target.style.boxShadow = 'none'}
                       required
                     />
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       style={styles.newsletterButton}
                       disabled={isSubscribing}
                       onMouseEnter={(e) => {
@@ -863,7 +777,7 @@ const CategoryPage = () => {
                       {isSubscribing ? 'Procesando...' : 'Suscribirse'}
                     </button>
                   </form>
-                  
+
                   {subscribeMessage && (
                     <div style={subscribeMessage.type === 'success' ? styles.successMessage : styles.errorMessage}>
                       {subscribeMessage.text}
@@ -875,9 +789,10 @@ const CategoryPage = () => {
           </div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
 };
+
 export default CategoryPage;
