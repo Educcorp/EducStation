@@ -1,5 +1,5 @@
 // src/pages/BlogDetailPage.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostCard from '../components/blog/PostCard';
@@ -10,10 +10,7 @@ const BlogDetailPage = () => {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(128);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const { colors, isDarkMode } = useTheme(); // Obtenemos los colores y el modo del tema actual
-  
-  // Referencia al artículo para aplicar estilos dinámicamente
-  const articleRef = useRef(null);
+  const { colors } = useTheme(); // Obtenemos los colores del tema actual
   
   // Simulación de post detallado
   const post = {
@@ -105,59 +102,6 @@ const BlogDetailPage = () => {
     }
     setIsLiked(!isLiked);
   };
-  
-  // Aplicar estilos basados en el tema actual al contenido HTML
-  useEffect(() => {
-    if (articleRef.current) {
-      // Aplicar estilos globales al contenedor
-      articleRef.current.style.color = colors.textPrimary;
-      articleRef.current.style.lineHeight = '1.8';
-      articleRef.current.style.fontSize = typography.fontSize.md;
-      
-      // Aplicar estilos a los párrafos
-      const paragraphs = articleRef.current.querySelectorAll('p');
-      paragraphs.forEach(p => {
-        p.style.marginBottom = spacing.lg;
-        p.style.color = colors.textPrimary;
-      });
-
-      // Aplicar estilos a los encabezados h2
-      const headings = articleRef.current.querySelectorAll('h2');
-      headings.forEach(h => {
-        h.style.fontSize = typography.fontSize.xl;
-        h.style.fontWeight = typography.fontWeight.semiBold;
-        h.style.marginTop = spacing.xl;
-        h.style.marginBottom = spacing.md;
-        h.style.color = colors.textPrimary;
-      });
-
-      // Aplicar estilos a las listas ul
-      const lists = articleRef.current.querySelectorAll('ul');
-      lists.forEach(list => {
-        list.style.paddingLeft = spacing.xl;
-        list.style.marginBottom = spacing.lg;
-      });
-
-      // Aplicar estilos a los elementos li
-      const listItems = articleRef.current.querySelectorAll('li');
-      listItems.forEach(item => {
-        item.style.marginBottom = spacing.sm;
-        item.style.color = colors.textPrimary;
-      });
-
-      // Aplicar estilos a las citas
-      const blockquotes = articleRef.current.querySelectorAll('blockquote');
-      blockquotes.forEach(quote => {
-        quote.style.borderLeft = `4px solid ${colors.primary}`;
-        quote.style.padding = `${spacing.md} ${spacing.lg}`;
-        quote.style.backgroundColor = isDarkMode ? colors.gray800 : colors.gray100;
-        quote.style.fontStyle = "italic";
-        quote.style.margin = `${spacing.lg} 0`;
-        quote.style.borderRadius = `0 ${borderRadius.md} ${borderRadius.md} 0`;
-        quote.style.color = colors.textPrimary;
-      });
-    }
-  }, [colors, spacing, typography, borderRadius, isDarkMode]); // Las dependencias incluyen isDarkMode para reaccionar a cambios de tema
   
   // Estilos CSS
   const styles = {
@@ -479,10 +423,8 @@ const BlogDetailPage = () => {
           {/* Featured Image */}
           <img src={post.image} alt={post.title} style={styles.featuredImage} />
           
-          {/* Article Content - Ahora con ref y sin estilos inline que no funcionan con dangerouslySetInnerHTML */}
+          {/* Article Content */}
           <article 
-            ref={articleRef}
-            className="blog-content"
             style={styles.content}
             dangerouslySetInnerHTML={{ __html: post.content }}
           />

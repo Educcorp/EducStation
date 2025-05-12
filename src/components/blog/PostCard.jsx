@@ -1,127 +1,129 @@
 // src/components/blog/PostCard.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
-import { useTheme } from '../../context/ThemeContext';
+import { colors, spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
 
 const PostCard = ({ post }) => {
-  // Usar el hook useTheme para obtener los colores según el tema actual
-  const { colors, isDarkMode } = useTheme();
-  
-  const [isHovered, setIsHovered] = React.useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   
   const styles = {
-    card: {
+    postCard: {
+      display: "flex",
+      gap: spacing.lg,
+      marginBottom: spacing.lg,
+      backgroundColor: colors.white,
       borderRadius: borderRadius.lg,
-      overflow: 'hidden',
+      padding: spacing.md,
       boxShadow: shadows.sm,
       transition: transitions.default,
-      backgroundColor: colors.white, // Usar colores del tema actual
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100%',
-      transform: isHovered ? 'translateY(-5px)' : 'translateY(0)',
-      boxShadow: isHovered ? shadows.md : shadows.sm,
+      '&:hover': {
+        transform: "translateY(-5px)",
+        boxShadow: shadows.md
+      }
     },
-    imageContainer: {
-      position: 'relative',
-      overflow: 'hidden',
-      height: '200px',
+    postImage: {
+      flex: "0 0 150px",
+      height: "100px",
+      overflow: "hidden",
+      borderRadius: borderRadius.md
     },
-    image: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',
-      transition: 'transform 0.5s ease',
-      transform: isHovered ? 'scale(1.05)' : 'scale(1)'
+    postLink: {
+      textDecoration: "none",
+      display: "flex",
+      width: "100%",
+      gap: spacing.lg
     },
-    content: {
-      padding: spacing.lg,
-      flexGrow: 1,
-      display: 'flex',
-      flexDirection: 'column'
+    postImg: {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      transition: transitions.slow,
+      '&:hover': {
+        transform: "scale(1.1)"
+      }
     },
-    category: {
-      display: 'inline-block',
-      backgroundColor: colors.primary,
-      color: colors.white,
-      padding: `${spacing.xs} ${spacing.sm}`,
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.xs,
-      textTransform: 'uppercase',
-      fontWeight: typography.fontWeight.medium,
-      marginBottom: spacing.sm
+    postContent: {
+      flex: "1"
     },
-    title: {
-      fontSize: typography.fontSize.lg,
-      fontWeight: typography.fontWeight.semiBold,
-      marginBottom: spacing.md,
-      lineHeight: 1.3,
-      color: colors.textPrimary, // Usar colores del tema actual
-      transition: transitions.default,
-      textDecoration: 'none'
+    postMeta: {
+      display: "flex",
+      alignItems: "center",
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+      flexWrap: "wrap"
     },
-    meta: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginTop: 'auto',
-      color: colors.textSecondary // Usar colores del tema actual
-    },
-    time: {
-      fontSize: typography.fontSize.sm,
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.xs
-    },
-    likes: {
-      fontSize: typography.fontSize.sm,
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.xs
-    },
-    number: {
-      position: 'absolute',
-      top: spacing.md,
-      left: spacing.md,
-      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-      color: colors.primary,
-      width: '32px',
-      height: '32px',
-      borderRadius: '50%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
+    postNumber: {
       fontWeight: typography.fontWeight.bold,
-      fontSize: typography.fontSize.sm
+      fontSize: typography.fontSize.sm,
+      color: colors.primary
+    },
+    postCategory: {
+      color: colors.white,
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.medium,
+      backgroundColor: colors.primary,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.round,
+      textTransform: "capitalize"
+    },
+    postTime: {
+      color: colors.textSecondary,
+      fontSize: typography.fontSize.xs,
+      display: "flex",
+      alignItems: "center",
+      gap: spacing.xs
+    },
+    postLikes: {
+      color: colors.textSecondary,
+      fontSize: typography.fontSize.xs,
+      display: "flex",
+      alignItems: "center",
+      gap: spacing.xs,
+      marginLeft: "auto"
+    },
+    postTitle: {
+      fontSize: typography.fontSize.lg,
+      color: colors.textPrimary,
+      marginBottom: spacing.sm,
+      fontWeight: typography.fontWeight.semiBold,
+      transition: transitions.default,
+      '&:hover': {
+        color: colors.primary
+      }
     }
   };
 
   return (
-    <Link to={`/blog/${post.id}`} style={{ textDecoration: 'none' }}>
-      <div 
-        style={styles.card}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div style={styles.imageContainer}>
-          <img src={post.image} alt={post.title} style={styles.image} />
-          <div style={styles.number}>{post.number}</div>
+    <div 
+      style={isHovered ? applyHoverStyles(styles.postCard) : styles.postCard}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Link to={`/blog/${post.id}`} style={styles.postLink}>
+        <div style={styles.postImage}>
+          <img
+            src={post.image}
+            alt={post.title}
+            style={isHovered ? applyHoverStyles(styles.postImg) : styles.postImg}
+          />
         </div>
-        <div style={styles.content}>
-          <div style={styles.category}>{post.category}</div>
-          <h3 style={styles.title}>{post.title}</h3>
-          <div style={styles.meta}>
-            <div style={styles.time}>
-              <span style={{color: colors.gray300}}>⏱</span> {post.time}
+        <div style={styles.postContent}>
+          <div style={styles.postMeta}>
+            <div style={styles.postNumber}>#{post.number}</div>
+            <div style={styles.postCategory}>{post.category}</div>
+            <div style={styles.postTime}>
+              <span style={{fontSize: '10px', marginRight: '2px'}}>⏱</span> {post.time}
             </div>
-            <div style={styles.likes}>
-              <span style={{color: colors.error}}>♥</span> {post.likes}
+            <div style={styles.postLikes}>
+              <span style={{fontSize: '10px', marginRight: '2px', color: colors.secondary}}>♥</span> {post.likes}
             </div>
           </div>
+          <h3 
+            style={isHovered ? applyHoverStyles(styles.postTitle) : styles.postTitle}
+          >{post.title}</h3>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 };
 
