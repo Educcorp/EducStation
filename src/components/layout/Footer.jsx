@@ -238,7 +238,11 @@ const Footer = () => {
               onMouseLeave={(e) => (e.currentTarget.style.color = isDarkMode ? '#fff' : colors.white)}
             >
               <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
-              EducStation
+              <span style={{
+                color: isDarkMode ? '#fff' : colors.white,
+                marginLeft: spacing.sm,
+                fontWeight: typography.fontWeight.bold
+              }}>EducStation</span>
             </div>
             <p style={styles.description}>
               Plataforma educativa dedicada al desarrollo profesional y personal
