@@ -211,7 +211,7 @@ const Header = () => {
       transition: transitions.default,
       "&:hover": {
         backgroundColor: isDarkMode ? "#555" : colors.background,
-        color: isDarkMode ? "#79bd9e" : colors.primary,
+        color: isDarkMode ? "#d8d0a9" : colors.primary, // Cambiado de #ffd700 a #d8d0a9
       },
     },
     logoutButton: {
