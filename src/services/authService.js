@@ -185,10 +185,87 @@ export const refreshToken = async () => {
   }
 };
 
+// Solicitar restablecimiento de contraseña
+export const requestPasswordReset = async (email) => {
+  try {
+    const response = await fetch(`${API_URL}/api/auth/password-reset/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: email
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Error al solicitar el restablecimiento de contraseña');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error al solicitar restablecimiento de contraseña:', error);
+    throw error;
+  }
+};
+
+// Verificar token de restablecimiento de contraseña
+export const verifyResetToken = async (token) => {
+  try {
+    const response = await fetch(`${API_URL}/api/auth/password-reset/verify/${token}/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Token inválido o expirado');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error al verificar token de restablecimiento:', error);
+    throw error;
+  }
+};
+
+// Establecer nueva contraseña
+export const resetPassword = async (token, newPassword) => {
+  try {
+    const response = await fetch(`${API_URL}/api/auth/password-reset/confirm/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        token: token,
+        password: newPassword,
+        password2: newPassword
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Error al restablecer la contraseña');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error al restablecer contraseña:', error);
+    throw error;
+  }
+};
+
 // Exportación predeterminada para compatibilidad con versiones anteriores
 export default {
   register,
   login,
   logout,
-  refreshToken
+  refreshToken,
+  requestPasswordReset,
+  verifyResetToken,
+  resetPassword
 };

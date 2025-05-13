@@ -181,12 +181,16 @@ const Header = () => {
       boxShadow: shadows.sm,
       border: `2px solid ${colors.white}`,
       transition: transitions.default,
-      cursor: "pointer"
+      cursor: "pointer",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center"
     },
     profileImg: {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover"
+      width: "85%",
+      height: "85%",
+      objectFit: "contain",
+      borderRadius: borderRadius.circle
     },
     menu: {
       position: "absolute",
@@ -244,7 +248,11 @@ const Header = () => {
       marginBottom: spacing.sm,
       border: `2px solid ${colors.primary}`,
       padding: '2px',
-      backgroundColor: colors.white
+      backgroundColor: colors.white,
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      overflow: "hidden"
     },
     userName: {
       fontSize: typography.fontSize.md,
