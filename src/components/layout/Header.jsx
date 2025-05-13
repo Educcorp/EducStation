@@ -556,7 +556,11 @@ const Header = () => {
                   style={getMenuItemStyle(0)}
                   onMouseEnter={() => setHoveredItem('menu-0')}
                   onMouseLeave={() => setHoveredItem(null)}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    window.location.href = '/profile';
+                  }}
                 >
                   <span style={styles.menuItemIcon}>👤</span> Mi Perfil
                 </Link>
