@@ -165,7 +165,7 @@ const Header = () => {
       gap: spacing.xl
     },
     navLink: (isActivePath) => ({
-      color: isDarkMode ? (isActivePath ? '#ffd700' : '#fff') : (isActivePath ? '#333' : '#000'), // Texto blanco en modo oscuro
+      color: isDarkMode ? (isActivePath ? '#d8d0a9' : '#fff') : (isActivePath ? '#333' : '#000'), // Texto blanco en modo oscuro
       textDecoration: 'none',
       fontWeight: typography.fontWeight.medium,
       position: 'relative',
