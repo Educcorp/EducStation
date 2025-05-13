@@ -57,29 +57,28 @@ const ThemeToggle = ({ inMenu = false }) => {
       fontWeight: '500',
       display: inMenu ? 'block' : 'none'
     },
+    // Eliminamos el efecto de rayos solares para el modo claro
     sunRays: {
       position: 'absolute',
       width: '100%',
       height: '100%',
       top: 0,
       left: 0,
-      opacity: isDarkMode ? 0 : (isHovered ? 0.8 : 0.2),
-      transition: 'opacity 0.3s ease',
-      animation: isHovered && !isDarkMode ? 'pulse 2s infinite' : 'none',
+      opacity: 0, // Establecemos la opacidad a 0 para ocultar completamente
       pointerEvents: 'none'
     },
+    // Mantenemos el brillo lunar para el modo oscuro pero moderado
     moonGlow: {
       position: 'absolute',
       width: '100%',
       height: '100%',
       top: 0,
       left: 0,
-      opacity: isDarkMode ? (isHovered ? 0.8 : 0.2) : 0,
+      opacity: isDarkMode ? (isHovered ? 0 : 0) : 0, // Reducimos la opacidad
       transition: 'opacity 0.3s ease',
-      animation: isHovered && isDarkMode ? 'pulse 2s infinite' : 'none',
       pointerEvents: 'none',
       borderRadius: '50%',
-      boxShadow: '0 0 15px 5px rgba(210, 185, 154, 0.7)'
+      boxShadow: '0 0 10px 3px rgba(210, 185, 154, 0.4)' // Reducimos la intensidad del brillo
     }
   };
 

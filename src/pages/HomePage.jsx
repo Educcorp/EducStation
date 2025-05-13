@@ -11,8 +11,8 @@ import { useTheme } from '../context/ThemeContext';
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
   // Usamos useTheme para obtener los colores según el tema actual
-  const { colors } = useTheme();
-
+  const { lightColors, colors } = useTheme(); // Importamos los colores del modo claro
+  
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredElement, setHoveredElement] = useState(null);
   const carouselRef = useRef(null);
@@ -68,8 +68,8 @@ const NewsCarousel = ({ notes }) => {
       borderRadius: "16px",
       marginTop: spacing.xl,
       marginBottom: spacing.xxl,
-      boxShadow: `0 10px 30px ${colors.primary}33`,
-      cursor: "pointer", // Añadido para indicar que todo el carrusel es clickeable
+      boxShadow: `0 10px 30px ${lightColors.primary}33`, // Usamos lightColors
+      cursor: "pointer",
     },
     carouselInner: {
       whiteSpace: "nowrap",
@@ -97,7 +97,7 @@ const NewsCarousel = ({ notes }) => {
       width: "100%",
       padding: spacing.xl,
       background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
-      color: colors.white,
+      color: "#fff", // Color blanco fijo para el texto
       whiteSpace: "normal",
     },
     carouselTitle: {
@@ -105,15 +105,17 @@ const NewsCarousel = ({ notes }) => {
       fontWeight: typography.fontWeight.bold,
       marginBottom: spacing.sm,
       textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+      color: "#fff", // Color blanco fijo para el título
     },
     carouselExcerpt: {
       fontSize: typography.fontSize.md,
-      marginBottom: 0, // Cambiado de spacing.lg a 0 ya que no hay botón después
+      marginBottom: 0,
       opacity: "0.9",
+      color: "#f0f8f7", // Color claro fijo para el extracto
     },
     carouselCategory: {
-      backgroundColor: colors.primary,
-      color: colors.white,
+      backgroundColor: lightColors.primary, // Usamos lightColors para la categoría
+      color: "#fff", // Color blanco fijo
       padding: `${spacing.xs} ${spacing.md}`,
       borderRadius: "16px",
       fontSize: typography.fontSize.xs,
@@ -143,7 +145,7 @@ const NewsCarousel = ({ notes }) => {
       cursor: "pointer",
       border: "none",
       fontSize: "24px",
-      color: colors.white,
+      color: "#fff", // Color blanco fijo
       backdropFilter: "blur(3px)",
       transition: transitions.default,
       '&:hover': {
@@ -164,11 +166,11 @@ const NewsCarousel = ({ notes }) => {
       width: isActive ? "30px" : "12px",
       height: "12px",
       borderRadius: isActive ? "6px" : "50%",
-      backgroundColor: isActive ? colors.primary : "rgba(255,255,255,0.5)",
+      backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.5)", // Usamos lightColors
       cursor: "pointer",
       transition: transitions.default,
       '&:hover': {
-        backgroundColor: isActive ? colors.primary : "rgba(255,255,255,0.8)",
+        backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.8)", 
       }
     })
   };
@@ -238,7 +240,7 @@ const NewsCarousel = ({ notes }) => {
 const HomePage = () => {
   // Añadimos el hook useTheme en el componente principal
   const { colors } = useTheme();
-
+  
   // Estado para la categoría activa
   const [activeCategory, setActiveCategory] = useState('Todos');
   // Estado para la categoría sobre la que se está haciendo hover

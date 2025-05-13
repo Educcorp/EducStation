@@ -165,7 +165,7 @@ const Header = () => {
       gap: spacing.xl
     },
     navLink: (isActivePath) => ({
-      color: isDarkMode ? (isActivePath ? '#ffd700' : '#fff') : (isActivePath ? '#333' : '#000'), // Texto blanco en modo oscuro
+      color: isDarkMode ? (isActivePath ? '#d8d0a9' : '#fff') : (isActivePath ? '#333' : '#000'), // Texto blanco en modo oscuro
       textDecoration: 'none',
       fontWeight: typography.fontWeight.medium,
       position: 'relative',
@@ -211,7 +211,7 @@ const Header = () => {
       transition: transitions.default,
       "&:hover": {
         backgroundColor: isDarkMode ? "#555" : colors.background,
-        color: isDarkMode ? "#ffd700" : colors.primary,
+        color: isDarkMode ? "#d8d0a9" : colors.primary, // Cambiado de #ffd700 a #d8d0a9
       },
     },
     logoutButton: {
@@ -398,7 +398,7 @@ const Header = () => {
   const getMenuItemStyle = (index) => ({
     ...styles.menuItem,
     backgroundColor: hoveredItem === `menu-${index}` ? (isDarkMode ? "#555" : colors.background) : "transparent", // Fondo al pasar el mouse
-    color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#ffd700" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Texto blanco en modo oscuro
+    color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#79bd9e" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Cambiado de #ffd700 a #d8d0a9
   });
 
   const navItems = [
@@ -456,7 +456,7 @@ const Header = () => {
               />
             </div>
             <span style={{
-              color: colors.primary,
+              color: isDarkMode ? '#76a594' : colors.primary, // Color menta más opaco para modo oscuro
               fontWeight: typography.fontWeight.bold
             }}>
               EducStation
