@@ -211,7 +211,7 @@ const Header = () => {
       transition: transitions.default,
       "&:hover": {
         backgroundColor: isDarkMode ? "#555" : colors.background,
-        color: isDarkMode ? "#ffd700" : colors.primary,
+        color: isDarkMode ? "#79bd9e" : colors.primary,
       },
     },
     logoutButton: {
@@ -398,7 +398,7 @@ const Header = () => {
   const getMenuItemStyle = (index) => ({
     ...styles.menuItem,
     backgroundColor: hoveredItem === `menu-${index}` ? (isDarkMode ? "#555" : colors.background) : "transparent", // Fondo al pasar el mouse
-    color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#ffd700" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Texto blanco en modo oscuro
+    color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#79bd9e" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Cambiado de #ffd700 a #d8d0a9
   });
 
   const navItems = [
