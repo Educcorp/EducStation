@@ -1,14 +1,31 @@
 // src/components/layout/Footer.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
-import { colors, spacing, typography, transitions } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext';
+import { spacing, typography, transitions } from '../../styles/theme';
 
 const Footer = () => {
-  const { isDarkMode } = useTheme(); // Obtén el estado del modo oscuro
+  const { isDarkMode, colors } = useTheme(); // Obtener colores actualizados del contexto
   const [emailValue, setEmailValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const footerRef = useRef(null);
+  const buttonRef = useRef(null);
+  
+  // Actualizar todos los estilos dependientes del tema cuando cambie isDarkMode
+  useEffect(() => {
+    // Aplicar directamente los estilos al elemento del footer
+    if (footerRef.current) {
+      footerRef.current.style.backgroundColor = isDarkMode ? '#222' : colors.primary;
+      footerRef.current.style.color = isDarkMode ? '#ccc' : colors.white;
+    }
+    
+    // Actualizar también el color del botón de suscripción
+    if (buttonRef.current) {
+      buttonRef.current.style.backgroundColor = isDarkMode ? '#444' : colors.secondary;
+      buttonRef.current.style.color = isDarkMode ? '#fff' : colors.primary;
+    }
+  }, [isDarkMode, colors]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -27,13 +44,22 @@ const Footer = () => {
     }, 1500);
   };
 
+  // Manejadores de eventos para el botón con referencias al tema actual
+  const handleButtonMouseEnter = (e) => {
+    e.target.style.backgroundColor = isDarkMode ? '#555' : colors.white;
+  };
+
+  const handleButtonMouseLeave = (e) => {
+    e.target.style.backgroundColor = isDarkMode ? '#444' : colors.secondary;
+    e.target.style.color = isDarkMode ? '#fff' : colors.primary;
+  };
+
   const styles = {
+    // Quitamos backgroundColor y color del objeto de estilo
+    // porque ahora lo aplicamos directamente al elemento con useEffect
     footer: {
-      backgroundColor: isDarkMode ? '#222' : colors.primary, // Fondo más oscuro en modo oscuro
-      color: isDarkMode ? '#ccc' : colors.white, // Texto más claro en modo oscuro
       padding: `${spacing.xxl} 0 ${spacing.xl}`,
       marginTop: spacing.xxl,
-      transition: 'background-color 0.3s ease, color 0.3s ease', // Transición suave
     },
     container: {
       maxWidth: '1200px',
@@ -200,7 +226,7 @@ const Footer = () => {
   };
 
   return (
-    <footer style={styles.footer}>
+    <footer ref={footerRef} style={styles.footer}>
       <div style={styles.container}>
         <div style={styles.grid}>
           {/* About Section */}
@@ -488,8 +514,9 @@ const Footer = () => {
                 type="submit"
                 disabled={isSubmitting}
                 style={styles.button}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.white}
-                onMouseLeave={(e) => e.target.style.backgroundColor = colors.secondary}
+                onMouseEnter={handleButtonMouseEnter}
+                onMouseLeave={handleButtonMouseLeave}
+                ref={buttonRef}
               >
                 {isSubmitting ? '...' : 'OK'}
               </button>
