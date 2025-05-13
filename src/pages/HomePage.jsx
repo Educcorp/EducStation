@@ -11,7 +11,7 @@ import { useTheme } from '../context/ThemeContext';
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
   // Usamos useTheme para obtener los colores según el tema actual
-  const { lightColors, colors } = useTheme(); // Importamos los colores del modo claro
+  const { colors } = useTheme();
   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredElement, setHoveredElement] = useState(null);
@@ -68,8 +68,8 @@ const NewsCarousel = ({ notes }) => {
       borderRadius: "16px",
       marginTop: spacing.xl,
       marginBottom: spacing.xxl,
-      boxShadow: `0 10px 30px ${lightColors.primary}33`, // Usamos lightColors
-      cursor: "pointer",
+      boxShadow: `0 10px 30px ${colors.primary}33`,
+      cursor: "pointer", // Añadido para indicar que todo el carrusel es clickeable
     },
     carouselInner: {
       whiteSpace: "nowrap",
@@ -97,7 +97,7 @@ const NewsCarousel = ({ notes }) => {
       width: "100%",
       padding: spacing.xl,
       background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
-      color: "#fff", // Color blanco fijo para el texto
+      color: colors.white,
       whiteSpace: "normal",
     },
     carouselTitle: {
@@ -105,17 +105,15 @@ const NewsCarousel = ({ notes }) => {
       fontWeight: typography.fontWeight.bold,
       marginBottom: spacing.sm,
       textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-      color: "#fff", // Color blanco fijo para el título
     },
     carouselExcerpt: {
       fontSize: typography.fontSize.md,
-      marginBottom: 0,
+      marginBottom: 0, // Cambiado de spacing.lg a 0 ya que no hay botón después
       opacity: "0.9",
-      color: "#f0f8f7", // Color claro fijo para el extracto
     },
     carouselCategory: {
-      backgroundColor: lightColors.primary, // Usamos lightColors para la categoría
-      color: "#fff", // Color blanco fijo
+      backgroundColor: colors.primary,
+      color: colors.white,
       padding: `${spacing.xs} ${spacing.md}`,
       borderRadius: "16px",
       fontSize: typography.fontSize.xs,
@@ -145,7 +143,7 @@ const NewsCarousel = ({ notes }) => {
       cursor: "pointer",
       border: "none",
       fontSize: "24px",
-      color: "#fff", // Color blanco fijo
+      color: colors.white,
       backdropFilter: "blur(3px)",
       transition: transitions.default,
       '&:hover': {
@@ -166,11 +164,11 @@ const NewsCarousel = ({ notes }) => {
       width: isActive ? "30px" : "12px",
       height: "12px",
       borderRadius: isActive ? "6px" : "50%",
-      backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.5)", // Usamos lightColors
+      backgroundColor: isActive ? colors.primary : "rgba(255,255,255,0.5)",
       cursor: "pointer",
       transition: transitions.default,
       '&:hover': {
-        backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.8)", 
+        backgroundColor: isActive ? colors.primary : "rgba(255,255,255,0.8)",
       }
     })
   };

@@ -3,12 +3,7 @@ import React, { createContext, useState, useEffect } from 'react';
 import { lightColors, darkColors } from '../styles/theme';
 
 // Crear el contexto del tema
-export const ThemeContext = createContext({
-  isDarkMode: false,
-  toggleTheme: () => {},
-  colors: {},
-  lightColors: {}, // Agregamos lightColors
-});
+export const ThemeContext = createContext();
 
 // Proveedor del contexto del tema
 export const ThemeProvider = ({ children }) => {
@@ -61,12 +56,7 @@ export const ThemeProvider = ({ children }) => {
   const colors = isDarkMode ? darkColors : lightColors;
 
   return (
-    <ThemeContext.Provider value={{ 
-      isDarkMode, 
-      toggleTheme, 
-      colors: isDarkMode ? darkColors : lightColors,
-      lightColors // Exportamos los colores claros siempre
-    }}>
+    <ThemeContext.Provider value={{ isDarkMode, toggleTheme, colors }}>
       {children}
     </ThemeContext.Provider>
   );

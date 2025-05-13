@@ -1,17 +1,12 @@
 // src/components/blog/FeaturedPost.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
-import { useTheme } from '../../context/ThemeContext';
+import { colors, spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
 
 const FeaturedPost = ({ post }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isButtonHovered, setIsButtonHovered] = useState(false);
   
-  // Obtener tanto los colores actuales como los colores del tema claro
-  const { lightColors } = useTheme();
-  
-  // Usamos lightColors (colores del tema claro) en lugar de colors
   const styles = {
     featuredImage: {
       position: "relative",
@@ -40,37 +35,35 @@ const FeaturedPost = ({ post }) => {
       width: "100%",
       background: "linear-gradient(to top, rgba(11, 68, 68, 0.9), transparent)",
       padding: `${spacing.xl} ${spacing.lg} ${spacing.lg}`,
-      color: lightColors.white // Usar colores claros
+      color: colors.white
     },
     featuredTitle: {
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.semiBold,
       marginBottom: spacing.md,
-      lineHeight: "1.3",
-      color: "#fff" // Asegurar que el título sea siempre blanco
+      lineHeight: "1.3"
     },
     featuredExcerpt: {
       fontSize: typography.fontSize.sm,
       opacity: "0.9",
       marginBottom: spacing.lg,
-      lineHeight: "1.5",
-      color: "#f0f8f7" // Asegurar que el extracto sea siempre claro
+      lineHeight: "1.5"
     },
     featuredNumber: {
       position: "absolute",
       left: spacing.lg,
       top: spacing.lg,
-      backgroundColor: lightColors.secondary, // Usar colores claros
+      backgroundColor: colors.secondary,
       padding: `${spacing.xs} ${spacing.md}`,
       borderRadius: borderRadius.round,
       fontWeight: typography.fontWeight.bold,
       fontSize: typography.fontSize.sm,
-      color: lightColors.primary, // Usar colores claros
+      color: colors.primary,
       boxShadow: shadows.sm,
       zIndex: 1
     },
     featuredNumberSpan: {
-      color: lightColors.primary, // Usar colores claros
+      color: colors.primary,
       marginRight: spacing.xs,
       fontWeight: typography.fontWeight.bold
     },
@@ -84,12 +77,11 @@ const FeaturedPost = ({ post }) => {
       display: "flex",
       alignItems: "center",
       gap: spacing.xs,
-      fontSize: typography.fontSize.sm,
-      color: "#fff" // Asegurar que el meta sea siempre blanco o claro
+      fontSize: typography.fontSize.sm
     },
     button: {
-      backgroundColor: lightColors.secondary, // Usar colores claros
-      color: lightColors.primary, // Usar colores claros
+      backgroundColor: colors.secondary,
+      color: colors.primary,
       border: "none",
       borderRadius: borderRadius.round,
       padding: `${spacing.sm} ${spacing.md}`,
@@ -103,7 +95,7 @@ const FeaturedPost = ({ post }) => {
       transition: transitions.default,
       textDecoration: "none",
       '&:hover': {
-        backgroundColor: "#fff", // Siempre blanco en hover
+        backgroundColor: colors.white,
         transform: "translateY(-2px)",
         boxShadow: "0 6px 15px rgba(210, 185, 154, 0.4)"
       }
@@ -127,16 +119,16 @@ const FeaturedPost = ({ post }) => {
       <div style={styles.featuredContent}>
         <div style={styles.featuredMeta}>
           <div style={styles.metaItem}>
-            <span style={{color: lightColors.secondary}}>◆</span> {post.category}
+            <span style={{color: colors.secondary}}>◆</span> {post.category}
           </div>
           <div style={styles.metaItem}>
-            <span style={{color: "#ccc"}}>⏱</span> {post.time}
+            <span style={{color: colors.gray200}}>⏱</span> {post.time}
           </div>
         </div>
         <h2 style={styles.featuredTitle}>{post.title}</h2>
         <p style={styles.featuredExcerpt}>{post.excerpt}</p>
         <Link 
-          to={`/blog/${post.id}`}
+          to="/blog/featured"
           style={isButtonHovered ? applyHoverStyles(styles.button) : styles.button}
           onMouseEnter={() => setIsButtonHovered(true)}
           onMouseLeave={() => setIsButtonHovered(false)}
