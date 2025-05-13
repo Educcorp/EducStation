@@ -59,7 +59,7 @@ const PostCard = ({ post }) => {
       color: "white",
       fontSize: typography.fontSize.xs,
       fontWeight: typography.fontWeight.medium,
-      backgroundColor: "#41815f",
+      backgroundColor: "#507c74",
       padding: `${spacing.xs} ${spacing.md}`,
       borderRadius: borderRadius.round,
       textTransform: "capitalize",
