@@ -9,8 +9,10 @@ import { useTheme } from '../context/ThemeContext';
 import '../styles/animations.css';
 
 const CategoryPage = () => {  
+    // Añade isDarkMode a la desestructuración del contexto
+    const { colors, isDarkMode } = useTheme(); // Obtenemos los colores y el estado del modo oscuro
+    
     const [animate, setAnimate] = useState(false);
-    const { colors } = useTheme(); // Obtenemos los colores del tema actual
   
     useEffect(() => {
       const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
@@ -476,12 +478,18 @@ const CategoryPage = () => {
     newsletterInput: {
       padding: spacing.md,
       borderRadius: borderRadius.md,
-      border: `1px solid ${colors.gray200}`,
+      border: `1px solid ${isDarkMode ? colors.gray300 : colors.gray200}`,
       fontSize: typography.fontSize.sm,
+      backgroundColor: isDarkMode ? '#333' : colors.white,
+      color: isDarkMode ? '#fff' : colors.textPrimary,
+      transition: transitions.default,
       '&:focus': {
         outline: "none",
         borderColor: colors.primary,
         boxShadow: `0 0 0 2px ${colors.primary}30`
+      },
+      '&::placeholder': {
+        color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'
       }
     },
     newsletterButton: {
@@ -575,7 +583,15 @@ const CategoryPage = () => {
                   <input 
                     type="text" 
                     placeholder="Buscar en esta categoría..." 
-                    style={styles.searchInput}
+                    style={{
+                      ...styles.searchInput,
+                      backgroundColor: isDarkMode ? '#333' : colors.white,
+                      color: isDarkMode ? '#fff' : colors.textPrimary,
+                      border: `1px solid ${isDarkMode ? colors.gray300 : colors.gray200}`,
+                      '&::placeholder': {
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'
+                      }
+                    }}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -838,7 +854,12 @@ const CategoryPage = () => {
                     <input 
                       type="email" 
                       placeholder="Tu email" 
-                      style={styles.newsletterInput}
+                      style={{
+                        ...styles.newsletterInput,
+                        backgroundColor: isDarkMode ? '#333' : colors.white,
+                        color: isDarkMode ? '#fff' : colors.textPrimary,
+                        border: `1px solid ${isDarkMode ? colors.gray300 : colors.gray200}`
+                      }}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={(e) => e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`}
