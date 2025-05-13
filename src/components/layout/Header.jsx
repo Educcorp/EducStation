@@ -456,7 +456,7 @@ const Header = () => {
               />
             </div>
             <span style={{
-              color: colors.primary,
+              color: isDarkMode ? '#76a594' : colors.primary, // Color menta más opaco para modo oscuro
               fontWeight: typography.fontWeight.bold
             }}>
               EducStation
