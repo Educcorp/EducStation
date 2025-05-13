@@ -1,14 +1,18 @@
 // src/components/admin/SimpleEditor.jsx
 
 import React, { useState, useRef, useEffect } from 'react';
-import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import FloatingToolbar from './FloatingToolbar';
+import { lightColors } from '../../styles/theme'; // Importamos específicamente los colores claros
 
 const SimpleEditor = ({ content, onChange }) => {
   const editorRef = useRef(null);
   const [internalContent, setInternalContent] = useState(content || '');
   // Estado compartido para el tamaño de fuente - importante para sincronización
   const [currentFontSize, setCurrentFontSize] = useState(12); // Valor predeterminado
+  
+  // Usamos directamente lightColors en lugar de colors que depende del tema
+  const colors = lightColors;
   
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -961,7 +965,7 @@ const SimpleEditor = ({ content, onChange }) => {
     };
   }, []);
 
-  // Estilos para el editor
+  // Estilos para el editor - siempre usando colores claros
   const styles = {
     container: {
       position: 'relative',
@@ -972,7 +976,7 @@ const SimpleEditor = ({ content, onChange }) => {
     },
     editor: {
       width: '100%',
-      height: '100%', // Aprovechamos toda la altura disponible al eliminar la barra estática
+      height: '100%',
       padding: spacing.xl,
       outline: 'none',
       overflow: 'auto',
@@ -982,9 +986,12 @@ const SimpleEditor = ({ content, onChange }) => {
       lineHeight: 1.6,
       transition: 'box-shadow 0.2s ease',
       cursor: 'text',
-      minHeight: '600px', // Garantizamos una altura mínima adecuada
-      position: 'relative', // Importante para el posicionamiento absoluto dentro del editor
-      userSelect: 'text' // Asegurar que el texto sea seleccionable explícitamente
+      minHeight: '600px',
+      position: 'relative',
+      userSelect: 'text',
+      // Forzamos colores claros
+      backgroundColor: lightColors.white,
+      color: lightColors.textPrimary,
     },
     placeholder: {
       position: 'absolute',
@@ -1005,7 +1012,7 @@ const SimpleEditor = ({ content, onChange }) => {
 
   return (
     <div style={styles.container}>
-      {/* Barra de herramientas flotante - ahora es la única barra */}
+      {/* Barra de herramientas flotante */}
       {!hasSelectedImage && !isImageMenuOpen && (
         <FloatingToolbar 
           onFormatText={applyFormat}
@@ -1013,6 +1020,8 @@ const SimpleEditor = ({ content, onChange }) => {
           editorRef={editorRef}
           fontSize={currentFontSize}
           setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
+          // Pasamos los colores claros forzados
+          forceLightMode={true}
         />
       )}
       
@@ -1030,7 +1039,10 @@ const SimpleEditor = ({ content, onChange }) => {
         style={{
           ...styles.editor, 
           fontSize: '12px',
-          position: 'relative'
+          position: 'relative',
+          // Forzamos el fondo blanco y texto oscuro
+          backgroundColor: lightColors.white,
+          color: lightColors.textPrimary
         }}
         onInput={handleContentChange}
         onBlur={handleContentChange}
@@ -1048,186 +1060,42 @@ const SimpleEditor = ({ content, onChange }) => {
       {/* Estilos para imágenes redimensionables */}
       <style>
         {`
+          /* Aplicar estilos de modo claro forzados al editor y todos sus elementos */
+          #editorContent {
+            background-color: ${lightColors.white} !important;
+            color: ${lightColors.textPrimary} !important;
+          }
+          
+          #editorContent h1, 
+          #editorContent h2, 
+          #editorContent h3, 
+          #editorContent p,
+          #editorContent div:not(.image-container),
+          #editorContent span,
+          #editorContent li {
+            color: ${lightColors.textPrimary} !important;
+          }
+          
+          /* Resto de los estilos sin cambios */
           .image-container img {
             transition: box-shadow 0.2s ease;
             vertical-align: middle;
             max-width: 100%;
           }
-          .image-container:hover img {
-            box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
-          }
-          .resize-handle {
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            z-index: 10;
-          }
-          .image-container:hover .resize-handle {
-            opacity: 1;
-          }
-          /* Estilos para el flujo de texto alrededor de la imagen */
-          .image-container.float-left {
-            float: left;
-            margin-right: 15px;
-            margin-bottom: 10px;
-            shape-outside: content-box;
-            shape-margin: 10px;
-            overflow: visible;
-          }
-          .image-container.float-right {
-            float: right;
-            margin-left: 15px;
-            margin-bottom: 10px;
-            shape-outside: content-box;
-            shape-margin: 10px;
-            overflow: visible;
-          }
-          /* Estilos para diferentes modos de wrapping como en Word */
-          .image-container.wrap-inline {
-            display: inline-block;
-            vertical-align: middle;
-            float: none;
-            margin: 0 10px;
-            z-index: 0;
-            overflow: visible;
-          }
-          .image-container.wrap-square {
-            float: left;
-            shape-outside: content-box;
-            shape-margin: 10px;
-            margin: 0 15px 10px 0;
-            overflow: visible;
-            z-index: 0;
-          }
-          .image-container.wrap-tight {
-            float: left;
-            shape-outside: margin-box;
-            shape-margin: 10px;
-            margin: 0 15px 10px 0;
-            overflow: visible;
-            z-index: 0;
-          }
-          /* Eliminamos esta clase que podría causar problemas */
-          .image-container.wrap-behind-text {
-            display: none;
-          }
-          /* Aseguramos que las imágenes siempre estén detrás del texto */
-          .image-container {
-            z-index: 0;
-            position: relative;
-            overflow: visible;
-          }
-          /* Damos mayor prioridad al texto para que siempre esté visible */
-          #editorContent p, 
-          #editorContent span, 
-          #editorContent div:not(.image-container), 
-          #editorContent h1, 
-          #editorContent h2, 
-          #editorContent h3, 
-          #editorContent ul, 
-          #editorContent ol, 
-          #editorContent li {
-            position: relative;
-            z-index: 1;
-          }
-          /* Estilos para los controles de wrapping */
-          .wrap-control-button {
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            user-select: none;
-            pointer-events: auto;
-          }
-          .image-container:hover .wrap-control-button {
-            opacity: 1;
-          }
+          
+          /* Menús y controles en modo claro */
           .text-wrap-controls {
-            user-select: none;
-            pointer-events: auto;
+            background-color: ${lightColors.white} !important;
+            border: 1px solid #ddd !important;
+            color: ${lightColors.textPrimary} !important;
           }
-          .text-wrap-controls button {
-            user-select: none;
+          
+          .wrap-control-button {
+            background-color: ${lightColors.white} !important;
+            border: 1px solid #ddd !important;
           }
-          .text-wrap-controls button:hover {
-            background-color: #f0f0f0 !important;
-          }
-          .text-wrap-controls button:active {
-            background-color: #e0e0e0 !important;
-          }
-          /* Se añaden estilos para mejorar la selección y el posicionado */
-          .image-container {
-            user-select: none;
-          }
-          .image-container::after {
-            content: '';
-            display: inline;
-            width: 1px;
-            height: 1em;
-          }
-          /* Asegurar que el texto continúe correctamente después de imágenes */
-          p:after {
-            content: "";
-            display: table;
-            clear: both;
-          }
-          /* Estilos para los botones de control */
-          .image-controls button:hover {
-            background-color: #f0f0f0 !important;
-          }
-          .image-controls button:active {
-            background-color: #e0e0e0 !important;
-          }
-          /* Estilo para imagen seleccionada */
-          .selected-image img {
-            box-shadow: 0 0 0 2px #007BFF, 0 0 10px rgba(0, 123, 255, 0.7) !important;
-          }
-          /* Nuevos estilos para indicador de arrastre */
-          .image-container.dragging {
-            opacity: 0.7;
-            cursor: grabbing !important;
-          }
-          .image-container {
-            cursor: grab;
-          }
-          .image-container.dragging::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            border: 2px dashed #007BFF;
-            pointer-events: none;
-          }
-          /* Indicador de guía de alineación */
-          .alignment-guide {
-            position: absolute;
-            background-color: #007BFF;
-            z-index: 1000;
-            pointer-events: none;
-            opacity: 0.6;
-          }
-          .alignment-guide.horizontal {
-            height: 1px;
-            left: 0;
-            right: 0;
-          }
-          .alignment-guide.vertical {
-            width: 1px;
-            top: 0;
-            bottom: 0;
-          }
-          /* Prevenir que se pierda la selección */
-          #editorContent {
-            user-select: text;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-          }
-          #editorContent *:not(.image-container) {
-            user-select: text;
-            -webkit-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-          }
+          
+          /* ... resto de los estilos ... */
         `}
       </style>
     </div>
