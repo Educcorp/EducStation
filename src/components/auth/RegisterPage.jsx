@@ -42,13 +42,11 @@ const RegisterPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Forzar el modo claro al cargar el componente
-    useEffect(() => {
+    // Forzar el modo claro inmediatamente
+    // Usando useLayoutEffect para que se ejecute antes del renderizado
+    React.useLayoutEffect(() => {
         setForceLightMode(true);
-        return () => {
-            // Al desmontar el componente, permitir que se use el modo oscuro de nuevo
-            setForceLightMode(false);
-        };
+        return () => setForceLightMode(false);
     }, [setForceLightMode]);
 
     const handleChange = (e) => {

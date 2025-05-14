@@ -13,6 +13,9 @@ export const ThemeContext = createContext({
 
 // Proveedor del contexto del tema
 export const ThemeProvider = ({ children }) => {
+  // Estado para forzar el modo claro en ciertas páginas
+  const [forceLightMode, setForceLightMode] = useState(false);
+  
   // Verificar si hay una preferencia guardada en localStorage
   const getSavedTheme = () => {
     const savedTheme = localStorage.getItem('theme');
@@ -22,8 +25,6 @@ export const ThemeProvider = ({ children }) => {
 
   // Estado para controlar si el tema es oscuro o claro
   const [isDarkMode, setIsDarkMode] = useState(getSavedTheme());
-  // Estado para forzar el modo claro en ciertas páginas
-  const [forceLightMode, setForceLightMode] = useState(false);
 
   // Función para cambiar entre tema oscuro y claro
   const toggleTheme = () => {
@@ -32,7 +33,34 @@ export const ThemeProvider = ({ children }) => {
     }
   };
 
-  // Actualizar localStorage cuando cambia el tema
+  // Aplicar el tema correcto inmediatamente
+  const applyTheme = (darkMode, forceLight) => {
+    // Determinar si debemos usar el tema claro
+    const useLightTheme = forceLight || !darkMode;
+    
+    // Actualizar clases en el documento
+    if (useLightTheme) {
+      document.documentElement.classList.add('light-mode');
+      document.documentElement.classList.remove('dark-mode');
+    } else {
+      document.documentElement.classList.add('dark-mode');
+      document.documentElement.classList.remove('light-mode');
+    }
+
+    // Actualizar colores básicos del body
+    const colors = useLightTheme ? lightColors : darkColors;
+    if (colors) {
+      document.body.style.backgroundColor = colors.background;
+      document.body.style.color = colors.textPrimary;
+    }
+  };
+
+  // Aplicar el tema inmediatamente al montar el componente
+  useEffect(() => {
+    applyTheme(isDarkMode, forceLightMode);
+  }, []);
+
+  // Actualizar localStorage y aplicar tema cuando cambian las preferencias
   useEffect(() => {
     // Solo guardamos la preferencia si no estamos forzando el modo claro
     if (!forceLightMode) {
@@ -48,21 +76,9 @@ export const ThemeProvider = ({ children }) => {
       console.warn('No se pudo actualizar el tema en theme.js:', err.message);
     }
     
-    // Actualizar la clase en el elemento HTML para estilos globales
-    if (forceLightMode || !isDarkMode) {
-      document.documentElement.classList.add('light-mode');
-      document.documentElement.classList.remove('dark-mode');
-    } else {
-      document.documentElement.classList.add('dark-mode');
-      document.documentElement.classList.remove('light-mode');
-    }
-
-    // También cambiar colores básicos del body
-    const colors = (forceLightMode || !isDarkMode) ? lightColors : darkColors;
-    if (colors) {
-      document.body.style.backgroundColor = colors.background;
-      document.body.style.color = colors.textPrimary;
-    }
+    // Aplicar el tema
+    applyTheme(isDarkMode, forceLightMode);
+    
   }, [isDarkMode, forceLightMode]); // Agregamos forceLightMode como dependencia
 
   // Obtener los colores correctos según el modo
