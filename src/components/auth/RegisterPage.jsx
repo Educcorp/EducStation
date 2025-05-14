@@ -1,13 +1,16 @@
 // src/components/auth/RegisterPage.jsx - Actualizado
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { register, checkUsernameAvailability } from '../../services/authService';
+import { checkUsernameAvailability } from '../../services/authService';
 import { colors, spacing, typography } from '../../styles/theme';
 import '@fortawesome/fontawesome-free/css/all.css';
-
+import { AuthContext } from '../../context/AuthContext';
+import { ThemeContext } from '../../context/ThemeContext';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
+    const { register } = useContext(AuthContext);
+    const { setForceLightMode } = useContext(ThemeContext);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -38,6 +41,15 @@ const RegisterPage = () => {
     const [usernameAvailable, setUsernameAvailable] = useState(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Forzar el modo claro al cargar el componente
+    useEffect(() => {
+        setForceLightMode(true);
+        return () => {
+            // Al desmontar el componente, permitir que se use el modo oscuro de nuevo
+            setForceLightMode(false);
+        };
+    }, [setForceLightMode]);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;

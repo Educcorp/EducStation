@@ -3,12 +3,23 @@ import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
 import { AuthContext } from '../../context/AuthContext';
+import { ThemeContext } from '../../context/ThemeContext';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login, isAuth, loading, error: authError } = useContext(AuthContext);
+    const { setForceLightMode } = useContext(ThemeContext);
+
+    // Forzar el modo claro al cargar el componente
+    useEffect(() => {
+        setForceLightMode(true);
+        return () => {
+            // Al desmontar el componente, permitir que se use el modo oscuro de nuevo
+            setForceLightMode(false);
+        };
+    }, [setForceLightMode]);
 
     const [formData, setFormData] = useState({
         usernameOrEmail: '',
