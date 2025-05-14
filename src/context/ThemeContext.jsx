@@ -19,8 +19,8 @@ export const ThemeProvider = ({ children }) => {
   // Verificar si hay una preferencia guardada en localStorage
   const getSavedTheme = () => {
     const savedTheme = localStorage.getItem('theme');
-    return savedTheme === 'dark' || 
-           (savedTheme === null && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    // Siempre retornamos false (modo claro) por defecto, ignorando preferencia del sistema
+    return savedTheme === 'dark';
   };
 
   // Estado para controlar si el tema es oscuro o claro

@@ -1,0 +1,46 @@
+/* src/styles/lightMode.css */
+/* Estilos para el modo claro (predeterminado) */
+
+:root {
+  --primary: #0b4444;
+  --primary-light: #4c7977;
+  --primary-dark: #083636;
+  --secondary: #d2b99a;
+  --background: #f0f8f7;
+  --white: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --text-light: #666666;
+  --accent: #d2b99a;
+  --gray100: #f9f9f9;
+  --gray200: #e1e1e1;
+  --gray300: #c8c8c8;
+  --error: #ff5722;
+  --success: #4db6ac;
+  --warning: #ffb74d;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+}
+
+.light-mode {
+  /* Si se define explícitamente la clase .light-mode */
+  --primary: #0b4444;
+  --primary-light: #4c7977;
+  --primary-dark: #083636;
+  --secondary: #d2b99a;
+  --background: #f0f8f7;
+  --white: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #555555;
+  --text-light: #666666;
+  --accent: #d2b99a;
+  --gray100: #f9f9f9;
+  --gray200: #e1e1e1;
+  --gray300: #c8c8c8;
+  --error: #ff5722;
+  --success: #4db6ac;
+  --warning: #ffb74d;
+} 

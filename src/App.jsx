@@ -1,10 +1,10 @@
 // src/App.jsx (updated)
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ScrollToTop from './components/utils/ScrollToTop';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
-import './styles/darkMode.css';
+import './styles/darkMode.css'; // Los estilos oscuros solo se aplicarán cuando se active la clase .dark-mode
 
 // Importación de páginas
 import HomePage from './pages/HomePage';
@@ -82,6 +82,12 @@ const PublicRoute = ({ children }) => {
 };
 
 const App = () => {
+  // Forzar modo claro como predeterminado
+  useEffect(() => {
+    document.documentElement.classList.add('light-mode');
+    document.documentElement.classList.remove('dark-mode');
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>

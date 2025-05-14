@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EducStation</title>
+    <script>
+      // Forzar modo claro por defecto
+      document.documentElement.classList.add('light-mode');
+      document.documentElement.classList.remove('dark-mode');
+      
+      // Asegurarse de que localStorage tenga el tema claro
+      if (localStorage.getItem('theme') !== 'dark') {
+        localStorage.setItem('theme', 'light');
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
