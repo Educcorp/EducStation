@@ -293,7 +293,7 @@ const RegisterPage = () => {
     const styles = {
         registerContainer: {
             minHeight: '100vh',
-            backgroundColor: colors.background,
+            backgroundColor: '#93ABA3', // Color verde menta como en la imagen
             display: 'flex',
             flexDirection: 'column',
         },
@@ -315,9 +315,7 @@ const RegisterPage = () => {
         },
         registerImage: {
             flex: 1,
-            backgroundImage: "url('/assets/images/humanos.jpg')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundColor: '#1F4E4E', // Color verde oscuro para el panel lateral
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
@@ -327,39 +325,47 @@ const RegisterPage = () => {
             }
         },
         imageOverlay: {
-            position: 'absolute',
-            top: 0,
-            left: 0,
+            position: 'relative',
             width: '100%',
             height: '100%',
-            background: `linear-gradient(135deg, ${colors.primary}e6 0%, ${colors.primaryLight}cc 100%)`,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             padding: spacing.xl,
             color: colors.white,
         },
-        logoContainer: {
+        raccoonContainer: {
             display: 'flex',
-            alignItems: 'center',
-            marginBottom: spacing.lg,
-        },
-        logoIcon: {
-            width: '48px',
-            height: '48px',
-            backgroundColor: colors.white,
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
             justifyContent: 'center',
-            marginRight: spacing.sm,
+            marginBottom: spacing.xl,
+        },
+        raccoonImage: {
+            width: '64px',
+            height: '64px',
+            borderRadius: '12px',
+            marginRight: spacing.md, // Espacio entre imagen y texto
+        },
+        raccoonLogoRow: {
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            marginBottom: spacing.xl,
         },
         logoText: {
             fontSize: '28px',
             fontWeight: typography.fontWeight.bold,
+            color: '#91a8a9',
+            margin: 0,
+        },
+        logoText2: {
+            fontSize: '28px',
+            fontWeight: typography.fontWeight.bold,
+            color: '#d2b99a',
+            margin: 0,
         },
         imageText: {
-            fontSize: typography.fontSize.lg,
+            fontSize: typography.fontSize.md,
             lineHeight: 1.6,
             marginBottom: spacing.xl,
         },
@@ -542,11 +548,6 @@ const RegisterPage = () => {
             height: '36px',
             marginRight: spacing.sm,
         },
-        logoText: {
-            fontSize: typography.fontSize.lg,
-            fontWeight: typography.fontWeight.bold,
-            color: colors.primary,
-        }
     };
 
     // Definir estilos específicos para bordes de inputs con error
@@ -571,13 +572,15 @@ const RegisterPage = () => {
 
     return (
         <div style={styles.registerContainer}>
-            {/* El logo de navegación superior ha sido eliminado */}
-
             <main style={styles.mainContent}>
                 <div style={styles.formContainer}>
                     <div style={styles.registerImage}>
                         <div style={styles.imageOverlay}>
-                            {/* El logo del lado izquierdo ha sido eliminado */}
+                        <div style={styles.raccoonLogoRow}>
+                            <img src="/assets/images/educstation-logo.png" alt="logo" style={styles.raccoonImage}  />
+                            <span style={styles.logoText}>Educ</span>
+                            <span style={styles.logoText2}>Station</span>
+                        </div>
                             <p style={styles.imageText}>
                                 Únete a nuestra comunidad educativa y descubre un mundo de
                                 oportunidades para tu crecimiento profesional y personal.
@@ -776,18 +779,22 @@ const RegisterPage = () => {
 
                             <button
                                 type="submit"
-                                style={getButtonStyle()}
+                                style={{
+                                    ...getButtonStyle(),
+                                    backgroundColor: '#1F4E4E', // Color verde oscuro para el botón
+                                    background: 'linear-gradient(135deg, #1F4E4E 0%, #2C7171 100%)'
+                                }}
                                 disabled={isSubmitting}
                                 onMouseEnter={(e) => {
                                     if (!isSubmitting) {
-                                        e.target.style.background = `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.primary} 100%)`;
+                                        e.target.style.background = 'linear-gradient(135deg, #173A3A 0%, #1F4E4E 100%)';
                                         e.target.style.transform = 'translateY(-2px)';
                                         e.target.style.boxShadow = '0 4px 12px rgba(11, 68, 68, 0.2)';
                                     }
                                 }}
                                 onMouseLeave={(e) => {
                                     if (!isSubmitting) {
-                                        e.target.style.background = `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)`;
+                                        e.target.style.background = 'linear-gradient(135deg, #1F4E4E 0%, #2C7171 100%)';
                                         e.target.style.transform = 'none';
                                         e.target.style.boxShadow = 'none';
                                     }
@@ -799,17 +806,14 @@ const RegisterPage = () => {
                             <div style={styles.loginLink}>
                                 ¿Ya tienes una cuenta? <Link to="/login" style={{
                                     ...styles.loginLinkText,
-                                    "&:hover": {
-                                        color: colors.secondary,
-                                        textDecoration: 'underline',
-                                    }
+                                    color: '#1F4E4E' // Color verde oscuro para el enlace
                                 }}
                                     onMouseEnter={(e) => {
-                                        e.target.style.color = colors.secondary;
+                                        e.target.style.color = '#2C7171';
                                         e.target.style.textDecoration = 'underline';
                                     }}
                                     onMouseLeave={(e) => {
-                                        e.target.style.color = colors.primary;
+                                        e.target.style.color = '#1F4E4E';
                                         e.target.style.textDecoration = 'none';
                                     }}>Inicia sesión</Link>
                             </div>
@@ -817,8 +821,6 @@ const RegisterPage = () => {
                     </div>
                 </div>
             </main>
-
-            {/* El Footer ha sido eliminado */}
         </div>
     );
 };
