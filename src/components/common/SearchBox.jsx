@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, transitions } from '../../styles/theme';
+import { Search } from 'lucide-react';
 
 const SearchBox = ({ onSearch, placeholder = "Buscar...", initialValue = "" }) => {
     const [searchTerm, setSearchTerm] = useState(initialValue);
@@ -67,7 +68,7 @@ const SearchBox = ({ onSearch, placeholder = "Buscar...", initialValue = "" }) =
 
     return (
         <form onSubmit={handleSearch} style={styles.searchForm}>
-            <span style={styles.searchIcon}>🔍</span>
+            <span style={styles.searchIcon}><Search size={20} /></span>
             <input
                 type="text"
                 placeholder={placeholder}

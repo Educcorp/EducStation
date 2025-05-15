@@ -1,22 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EducStation</title>
-    <link  rel ="icon" href = "/assets/images/Mapachito.png"/>
-    <script>
-      // Forzar modo claro por defecto
-      document.documentElement.classList.add('light-mode');
-      document.documentElement.classList.remove('dark-mode');
-      
-      // Asegurarse de que localStorage tenga el tema claro
-      if (localStorage.getItem('theme') !== 'dark') {
-        localStorage.setItem('theme', 'light');
-      }
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="EducStation - Plataforma educativa" />
+  <link rel="icon" href="/assets/images/Mapachito.png">
+  <link rel="apple-touch-icon" href="/assets/images/Mapachito.png" />
+  <title>EducStation</title>
+  <script>
+    // Forzar modo claro por defecto
+    localStorage.setItem('theme', 'light');
+    document.documentElement.setAttribute('data-theme', 'light');
+  </script>
+</head>
+
+<body>
+  <noscript>Necesitas habilitar JavaScript para ejecutar esta aplicación.</noscript>
+  <div id="root"></div>
+</body>
+
 </html>
