@@ -198,12 +198,18 @@ export const requestPasswordReset = async (email) => {
       }),
     });
 
+    const data = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Error al solicitar el restablecimiento de contraseña');
+      // Manejar específicamente el error 404 (correo no encontrado)
+      if (response.status === 404) {
+        throw new Error(data.detail || 'No existe ninguna cuenta con este correo electrónico.');
+      }
+      // Otros errores
+      throw new Error(data.detail || 'Error al solicitar el restablecimiento de contraseña');
     }
 
-    return await response.json();
+    return data;
   } catch (error) {
     console.error('Error al solicitar restablecimiento de contraseña:', error);
     throw error;

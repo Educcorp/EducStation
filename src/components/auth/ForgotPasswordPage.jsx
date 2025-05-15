@@ -12,6 +12,8 @@ const ForgotPasswordPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [step, setStep] = useState('form'); // 'form', 'success', 'error'
     const [error, setError] = useState('');
+    const [debugInfo, setDebugInfo] = useState(null);
+    const isDev = process.env.NODE_ENV === 'development';
 
     // Forzar el modo claro inmediatamente
     // Usando useLayoutEffect para que se ejecute antes del renderizado
@@ -45,12 +47,27 @@ const ForgotPasswordPage = () => {
 
         setIsSubmitting(true);
         setError('');
+        setDebugInfo(null);
 
         try {
-            await requestPasswordReset(email);
+            const response = await requestPasswordReset(email);
+            
+            // Si estamos en desarrollo y hay información de depuración, la guardamos
+            if (isDev && response.debug_info) {
+                setDebugInfo(response.debug_info);
+            }
+            
             setStep('success');
         } catch (error) {
-            setError(error.message || 'Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.');
+            console.error('Error al solicitar restablecimiento:', error);
+            
+            // Manejar específicamente el error de correo no encontrado
+            if (error.message.includes('No existe ninguna cuenta con este correo')) {
+                setError('No existe ninguna cuenta con este correo electrónico. Por favor, verifica que has introducido el correo correcto.');
+            } else {
+                setError(error.message || 'Ha ocurrido un error. Por favor, inténtalo de nuevo más tarde.');
+            }
+            
             setStep('error');
         } finally {
             setIsSubmitting(false);
@@ -204,6 +221,34 @@ const ForgotPasswordPage = () => {
             textAlign: 'center',
             fontSize: typography.fontSize.sm,
         },
+        debugInfo: {
+            marginTop: spacing.lg,
+            padding: spacing.md,
+            backgroundColor: `${colors.gray200}15`,
+            borderRadius: '6px',
+            textAlign: 'left',
+        },
+        debugTitle: {
+            color: colors.primary,
+            fontSize: typography.fontSize.md,
+            fontWeight: typography.fontWeight.bold,
+            marginBottom: spacing.xs,
+        },
+        debugText: {
+            color: colors.primaryLight,
+            fontSize: typography.fontSize.sm,
+            marginBottom: spacing.xs,
+        },
+        debugLink: {
+            color: colors.primary,
+            textDecoration: 'none',
+            transition: 'color 0.3s ease',
+        },
+        debugNote: {
+            color: colors.primaryLight,
+            fontSize: typography.fontSize.sm,
+            marginTop: spacing.xs,
+        },
     };
 
     // Función para manejar el estilo del botón en hover
@@ -315,6 +360,23 @@ const ForgotPasswordPage = () => {
                             <p style={styles.successMessage}>
                                 Si no ves el correo en tu bandeja de entrada, revisa tu carpeta de spam.
                             </p>
+                            
+                            {/* Información de depuración en desarrollo */}
+                            {isDev && debugInfo && (
+                                <div style={styles.debugInfo}>
+                                    <h3 style={styles.debugTitle}>Información de depuración</h3>
+                                    <p style={styles.debugText}>
+                                        <strong>Token:</strong> {debugInfo.token}
+                                    </p>
+                                    <p style={styles.debugText}>
+                                        <strong>URL:</strong> <a href={debugInfo.reset_url} target="_blank" rel="noopener noreferrer" style={styles.debugLink}>{debugInfo.reset_url}</a>
+                                    </p>
+                                    <p style={styles.debugNote}>
+                                        {debugInfo.note}
+                                    </p>
+                                </div>
+                            )}
+                            
                             <div style={styles.divider}></div>
                             <div style={styles.backLink}>
                                 <Link to="/login"
