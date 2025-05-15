@@ -1,14 +1,12 @@
 {
-  "name": "educstation",
+  "name": "web-blog",
   "version": "1.0.0",
   "description": "A web blog application for EducStation",
   "main": "src/index.js",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "server": "node server.js",
-    "dev": "concurrently \"npm run start\" \"npm run server\"",
-    "setup-db": "node db-setup.js",
+    "serve": "node server/server.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -18,14 +16,9 @@
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
-    "bcryptjs": "^2.4.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.2",
+    "express": "^4.17.1",
     "lucide-react": "^0.510.0",
-    "multer": "^1.4.5-lts.1",
-    "mysql2": "^3.6.1",
+    "mongoose": "^5.10.9",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "react-icons": "^5.5.0",
@@ -33,7 +26,7 @@
     "react-router-dom": "6.3.0",
     "rehype-raw": "^6.1.1"
   },
-  "proxy": "http://localhost:3001",
+  "proxy": "http://localhost:3000",
   "author": "EducStation",
   "license": "MIT",
   "browserslist": {
@@ -49,8 +42,6 @@
     ]
   },
   "devDependencies": {
-    "concurrently": "^8.2.2",
-    "nodemon": "^3.0.1",
     "react-scripts": "5.0.1",
     "webpack": "5.75.0",
     "webpack-dev-server": "4.9.3"

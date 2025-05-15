@@ -265,24 +265,6 @@ export const resetPassword = async (token, newPassword) => {
   }
 };
 
-// Eliminar cuenta del usuario autenticado
-export const deleteAccount = async () => {
-  const token = localStorage.getItem('userToken');
-  if (!token) throw new Error('No autenticado');
-  const response = await fetch(`${API_URL}/api/auth/user/`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.detail || 'Error al eliminar la cuenta');
-  }
-  return data;
-};
-
 // Exportación predeterminada para compatibilidad con versiones anteriores
 export default {
   register,
@@ -291,6 +273,5 @@ export default {
   refreshToken,
   requestPasswordReset,
   verifyResetToken,
-  resetPassword,
-  deleteAccount
+  resetPassword
 };
