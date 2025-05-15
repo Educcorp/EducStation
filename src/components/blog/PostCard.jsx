@@ -111,7 +111,6 @@ const PostCard = ({ post }) => {
             alt={post.title}
             style={styles.cardImage}
           />
-          <div style={styles.cardNumber}>#{post.number}</div>
         </div>
         
         <div style={styles.postContent}>
@@ -124,9 +123,6 @@ const PostCard = ({ post }) => {
           <div style={styles.postMeta}>
             <div style={styles.postTime}>
               <span style={{fontSize: '14px', marginRight: '2px', opacity: 0.8}}>⏱</span> {post.time}
-            </div>
-            <div style={styles.postLikes}>
-              <span style={{...styles.heartIcon, fontSize: '14px', marginRight: '2px'}}>❤</span> {post.likes}
             </div>
           </div>
         </div>

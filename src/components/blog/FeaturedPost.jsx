@@ -129,9 +129,6 @@ const FeaturedPost = ({ post }) => {
           style={isHovered ? applyHoverStyles(styles.featuredImg) : styles.featuredImg}
         />
       </div>
-      <div style={styles.featuredNumber}>
-        <span style={styles.featuredNumberSpan}>#{post.number}</span> Destacado
-      </div>
       <div style={styles.featuredContent}>
         <div style={styles.featuredMeta}>
           <div style={styles.metaItem}>
@@ -143,6 +140,7 @@ const FeaturedPost = ({ post }) => {
         </div>
         <h2 style={styles.featuredTitle}>{post.title}</h2>
         <p style={styles.featuredExcerpt}>{post.excerpt}</p>
+        
         <Link 
           to={`/blog/${post.id}`}
           style={isButtonHovered ? applyHoverStyles(styles.button) : styles.button}
