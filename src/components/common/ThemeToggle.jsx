@@ -1,36 +1,45 @@
 // src/components/common/ThemeToggle.jsx
 import React, { useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { transitions, getThemeColors, colors } from '../../styles/theme';
+import { transitions, getThemeColors, colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { FaSun, FaMoon } from 'react-icons/fa';
 
 const ThemeToggle = ({ inMenu = false }) => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [isHovered, setIsHovered] = useState(false);
-  
+
   const colors = getThemeColors(isDarkMode);
-  
+
   // Definimos los estilos base para el botón
   const styles = {
     toggleButton: {
       display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center',
-      width: inMenu ? 'auto' : '40px',
-      height: inMenu ? 'auto' : '40px',
+      justifyContent: 'flex-start',
+      width: '100%',
       backgroundColor: 'transparent',
       border: 'none',
-      borderRadius: '50%',
+      borderRadius: '0',
       cursor: 'pointer',
       color: colors.textPrimary,
       position: 'relative',
-      padding: inMenu ? '8px 12px' : '0',
-      transition: transitions.default
+      padding: '10px 16px',
+      transition: transitions.default,
+      boxSizing: 'border-box',
+      minHeight: '44px',
+      gap: '12px',
     },
     icon: {
       fontSize: '20px',
       transition: `transform 0.5s ease, opacity 0.3s ease`,
       transform: isHovered ? 'rotate(30deg) scale(1.2)' : 'rotate(0deg) scale(1)',
-      opacity: isHovered ? 1 : 0.8
+      opacity: isHovered ? 1 : 0.8,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: colors.textPrimary,
+      minWidth: '24px',
+      minHeight: '24px',
     },
     tooltip: {
       position: 'absolute',
@@ -53,9 +62,13 @@ const ThemeToggle = ({ inMenu = false }) => {
     },
     label: {
       marginLeft: '8px',
-      fontSize: '14px',
-      fontWeight: '500',
-      display: inMenu ? 'block' : 'none'
+      fontSize: '16px',
+      fontWeight: 500,
+      fontFamily: "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: colors.textPrimary,
+      display: inMenu ? 'inline' : 'none',
+      verticalAlign: 'middle',
+      lineHeight: '24px',
     },
     // Eliminamos el efecto de rayos solares para el modo claro
     sunRays: {
@@ -102,7 +115,7 @@ const ThemeToggle = ({ inMenu = false }) => {
       <div style={styles.sunRays}></div>
       <div style={styles.moonGlow}></div>
       <span style={styles.icon}>
-        {isDarkMode ? "🌙" : "☀️"}
+        {isDarkMode ? <FaSun size={20} /> : <FaMoon size={20} />}
       </span>
       <span style={styles.label}>
         {isDarkMode ? "Modo Claro" : "Modo Oscuro"}
