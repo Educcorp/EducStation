@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
 import { verifyResetToken, resetPassword } from '../../services/authService';
 import '@fortawesome/fontawesome-free/css/all.css';
+import { ThemeContext } from '../../context/ThemeContext';
 
 const ResetPasswordPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { setForceLightMode } = useContext(ThemeContext);
     const [formData, setFormData] = useState({
         password: '',
         confirmPassword: ''
@@ -21,6 +23,13 @@ const ResetPasswordPage = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [token, setToken] = useState('');
+
+    // Forzar el modo claro inmediatamente
+    // Usando useLayoutEffect para que se ejecute antes del renderizado
+    React.useLayoutEffect(() => {
+        setForceLightMode(true);
+        return () => setForceLightMode(false);
+    }, [setForceLightMode]);
 
     // Extraer token de la URL - puede estar en diferentes formatos:
     // 1. Como parámetro: /reset-password/:token

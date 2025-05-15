@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { colors, spacing, typography, borderRadius, shadows } from '../../styles/theme';
 
 const CommentSection = () => {
   const [comments, setComments] = useState([]);
@@ -12,65 +13,132 @@ const CommentSection = () => {
     }
   };
 
+  // Estilos actualizados para mantener consistencia con el diseño general
   const styles = {
     container: {
-      marginTop: '20px',
-      padding: '20px',
-      border: '1px solid #ccc',
-      borderRadius: '8px',
-      backgroundColor: '#f9f9f9',
+      width: '100%',
+      backgroundColor: colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      boxShadow: shadows.md,
+      marginBottom: spacing.xxl,
+      boxSizing: 'border-box',
     },
     title: {
-      fontSize: '1.5em',
-      marginBottom: '10px',
+      fontSize: typography.fontSize.xl,
+      color: colors.primary,
+      fontWeight: typography.fontWeight.semiBold,
+      marginBottom: spacing.lg,
+    },
+    textareaContainer: {
+      marginBottom: spacing.md,
     },
     textarea: {
       width: '100%',
-      height: '80px',
-      borderRadius: '4px',
-      border: '1px solid #ccc',
-      padding: '10px',
-      marginBottom: '10px',
-      fontSize: '1em',
-      resize: 'none',
+      minHeight: '120px',
+      padding: spacing.md,
+      borderRadius: borderRadius.md,
+      border: `1px solid ${colors.gray200}`,
+      fontSize: typography.fontSize.md,
+      color: colors.textPrimary,
+      resize: 'vertical',
+      boxSizing: 'border-box',
+      transition: 'border-color 0.3s ease',
+      '&:focus': {
+        borderColor: colors.primary,
+        outline: 'none',
+      }
     },
     button: {
-      backgroundColor: '#007bff',
-      color: 'white',
+      backgroundColor: colors.primary,
+      color: colors.white,
       border: 'none',
-      borderRadius: '4px',
-      padding: '10px 15px',
+      borderRadius: borderRadius.md,
+      padding: `${spacing.sm} ${spacing.lg}`,
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.medium,
       cursor: 'pointer',
-      fontSize: '1em',
+      transition: 'all 0.3s ease',
+      '&:hover': {
+        backgroundColor: colors.primaryDark,
+        transform: 'translateY(-2px)',
+      }
     },
     commentList: {
+      marginTop: spacing.xl,
+      padding: 0,
       listStyleType: 'none',
-      padding: '0',
     },
     commentItem: {
-      padding: '10px',
-      borderBottom: '1px solid #ddd',
+      padding: spacing.md,
+      borderBottom: `1px solid ${colors.gray200}`,
+      marginBottom: spacing.md,
+      fontSize: typography.fontSize.md,
+      color: colors.textPrimary,
+      lineHeight: 1.6,
     },
+    emptyMessage: {
+      textAlign: 'center',
+      color: colors.textSecondary,
+      padding: spacing.lg,
+      fontStyle: 'italic',
+    }
   };
 
   return (
     <div style={styles.container}>
       <h3 style={styles.title}>Comentarios</h3>
       <form onSubmit={handleCommentSubmit}>
-        <textarea
-          style={styles.textarea}
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Escribe tu comentario aquí..."
-          required
-        />
-        <button type="submit" style={styles.button}>Enviar</button>
+        <div style={styles.textareaContainer}>
+          <textarea
+            style={{
+              ...styles.textarea,
+              '&:focus': {
+                borderColor: colors.primary,
+                outline: 'none',
+              }
+            }}
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            placeholder="Escribe tu comentario aquí..."
+            required
+            onFocus={(e) => {
+              e.target.style.borderColor = colors.primary;
+              e.target.style.boxShadow = `0 0 0 1px ${colors.primary}`;
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = colors.gray200;
+              e.target.style.boxShadow = 'none';
+            }}
+          />
+        </div>
+        <button 
+          type="submit" 
+          style={styles.button}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = colors.primaryDark;
+            e.target.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = colors.primary;
+            e.target.style.transform = 'none';
+          }}
+        >
+          Enviar
+        </button>
       </form>
-      <ul style={styles.commentList}>
-        {comments.map((c, index) => (
-          <li key={index} style={styles.commentItem}>{c}</li>
-        ))}
-      </ul>
+      
+      {comments.length > 0 ? (
+        <ul style={styles.commentList}>
+          {comments.map((c, index) => (
+            <li key={index} style={styles.commentItem}>{c}</li>
+          ))}
+        </ul>
+      ) : (
+        <div style={styles.emptyMessage}>
+          No hay comentarios todavía. ¡Sé el primero en comentar!
+        </div>
+      )}
     </div>
   );
 };

@@ -9,7 +9,7 @@ import '../styles/animations.css';
 const ContactPage = () => {
   // Estado para el formulario
   const [animate, setAnimate] = useState(false);
-  const { colors } = useTheme(); // Obtenemos los colores del tema actual
+  const { colors, isDarkMode } = useTheme(); // Obtenemos los colores del tema actual
 
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
@@ -507,7 +507,12 @@ const ContactPage = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
-                      style={styles.input}
+                      style={{
+                        ...styles.input,
+                        backgroundColor: isDarkMode ? '#333' : colors.white,
+                        color: isDarkMode ? '#fff' : colors.textPrimary,
+                        border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`
+                      }}
                       placeholder="Tu nombre"
                       required
                     />
@@ -523,7 +528,12 @@ const ContactPage = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      style={styles.input}
+                      style={{
+                        ...styles.input,
+                        backgroundColor: isDarkMode ? '#333' : colors.white,
+                        color: isDarkMode ? '#fff' : colors.textPrimary,
+                        border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`
+                      }}
                       placeholder="tu@email.com"
                       required
                     />
@@ -539,7 +549,12 @@ const ContactPage = () => {
                     name="subject"
                     value={formData.subject}
                     onChange={handleChange}
-                    style={styles.select}
+                    style={{
+                      ...styles.select,
+                      backgroundColor: isDarkMode ? '#333' : colors.white,
+                      color: isDarkMode ? '#fff' : colors.textPrimary,
+                      border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`
+                    }}
                     required
                   >
                     <option value="">Selecciona un asunto</option>
@@ -560,7 +575,12 @@ const ContactPage = () => {
                     name="message"
                     value={formData.message}
                     onChange={handleChange}
-                    style={styles.textarea}
+                    style={{
+                      ...styles.textarea,
+                      backgroundColor: isDarkMode ? '#333' : colors.white,
+                      color: isDarkMode ? '#fff' : colors.textPrimary,
+                      border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`
+                    }}
                     placeholder="¿Cómo podemos ayudarte?"
                     required
                   ></textarea>
@@ -568,7 +588,11 @@ const ContactPage = () => {
                 
                 <button 
                   type="submit"
-                  style={styles.submitButton}
+                  style={{
+                    ...styles.submitButton,
+                    // Hacer el texto más oscuro en modo oscuro para que resalte mejor
+                    color: isDarkMode ? '#0a1919' : colors.primary
+                  }}
                   disabled={formStatus.submitting}
                   onMouseEnter={(e) => {
                     if (!formStatus.submitting) {
@@ -579,7 +603,8 @@ const ContactPage = () => {
                   onMouseLeave={(e) => {
                     if (!formStatus.submitting) {
                       e.currentTarget.style.backgroundColor = colors.secondary;
-                      e.currentTarget.style.color = colors.primary;
+                      // Restaurar al color original según el modo
+                      e.currentTarget.style.color = isDarkMode ? '#0a1919' : colors.primary;
                     }
                   }}
                 >

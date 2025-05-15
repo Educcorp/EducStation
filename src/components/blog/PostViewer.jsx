@@ -7,6 +7,8 @@ import Footer from '../layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import CommentSection from './CommentSection';
 import ReactionSection from './ReactionSection';
+// Importamos el archivo CSS específico para posts
+import '../../styles/posts.css';
 
 const PostViewer = () => {
   const { postId } = useParams(); // Obtiene el ID del post de la URL
@@ -45,21 +47,35 @@ const PostViewer = () => {
     }
   }, [postId]);
 
+  // Estilos modificados para corregir la alineación
   const styles = {
-    container: {
-      maxWidth: "1200px",
-      margin: "0 auto",
-      padding: `100px ${spacing.md} ${spacing.xxl}`,
+    pageWrapper: {
+      width: "100%",
+      fontFamily: typography.fontFamily,
+      backgroundColor: colors.background,
+      display: "flex",
+      flexDirection: "column",
+      minHeight: "100vh", // Asegura que la página ocupe al menos la altura de la ventana
+    },
+    mainContainer: {
+      width: "100%",
+      maxWidth: "1200px", // Este ancho máximo se aplicará a todo
+      margin: "0 auto", // Centrado horizontal
+      padding: `0 ${spacing.md}`, // Padding horizontal consistente
+      boxSizing: "border-box",
+      flex: "1 0 auto", // Hace que el contenedor principal ocupe el espacio disponible
+    },
+    contentContainer: {
+      padding: `100px 0 ${spacing.xxl}`,
       position: "relative",
       width: "100%",
-      boxSizing: "border-box"
     },
     postContainer: {
       backgroundColor: colors.white,
       borderRadius: borderRadius.lg,
       padding: spacing.xl,
       boxShadow: shadows.md,
-      marginBottom: spacing.xxl,
+      marginBottom: spacing.xl,
       width: "100%",
       boxSizing: "border-box"
     },
@@ -135,70 +151,77 @@ const PostViewer = () => {
   };
 
   return (
-    <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background, width: "100%" }}>
+    <div style={styles.pageWrapper}>
+      {/* Header fuera del contenedor principal para que ocupe todo el ancho */}
       <Header />
       
-      <main style={styles.container}>
-        {/* Breadcrumb */}
-        <div style={styles.breadcrumb}>
-          <Link 
-            to="/"
-            style={styles.breadcrumbLink}
-            onMouseEnter={(e) => e.target.style.color = colors.primary} 
-            onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
-          >Inicio</Link>
-          <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
-          <Link 
-            to="/blog"
-            style={styles.breadcrumbLink}
-            onMouseEnter={(e) => e.target.style.color = colors.primary} 
-            onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
-          >Blog</Link>
-          <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
-          <span>Post {postId}</span>
-        </div>
-        
-        <div style={styles.postContainer}>
-          {loading ? (
-            <div style={styles.loadingMessage}>
-              Cargando contenido del post...
-            </div>
-          ) : error ? (
-            <div style={styles.errorMessage}>
-              <div>Error: {error}</div>
-              <div style={styles.errorDetails}>
-                No se pudo cargar el contenido del post solicitado.
+      {/* Contenedor principal que limita el ancho máximo y centra el contenido */}
+      <div style={styles.mainContainer}>
+        <main style={styles.contentContainer}>
+          {/* Breadcrumb */}
+          <div style={styles.breadcrumb}>
+            <Link 
+              to="/"
+              style={styles.breadcrumbLink}
+              onMouseEnter={(e) => e.target.style.color = colors.primary} 
+              onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
+            >Inicio</Link>
+            <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
+            <Link 
+              to="/blog"
+              style={styles.breadcrumbLink}
+              onMouseEnter={(e) => e.target.style.color = colors.primary} 
+              onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
+            >Blog</Link>
+            <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
+            <span>Post {postId}</span>
+          </div>
+          
+          <div style={styles.postContainer}>
+            {loading ? (
+              <div style={styles.loadingMessage}>
+                Cargando contenido del post...
               </div>
-              <div style={styles.errorHelp}>
-                <p><strong>Posibles soluciones:</strong></p>
-                <ul>
-                  <li>Verifica que el archivo HTML del post exista en la carpeta 'public/post/'</li>
-                  <li>El nombre del archivo debe ser 'post{postId}.html'</li>
-                  <li>Si estás en desarrollo local, reinicia el servidor</li>
-                </ul>
-                <Link
-                  to="/"
-                  style={styles.returnButton}
-                >
-                  ← Volver a la página principal
-                </Link>
+            ) : error ? (
+              <div style={styles.errorMessage}>
+                <div>Error: {error}</div>
+                <div style={styles.errorDetails}>
+                  No se pudo cargar el contenido del post solicitado.
+                </div>
+                <div style={styles.errorHelp}>
+                  <p><strong>Posibles soluciones:</strong></p>
+                  <ul>
+                    <li>Verifica que el archivo HTML del post exista en la carpeta 'public/post/'</li>
+                    <li>El nombre del archivo debe ser 'post{postId}.html'</li>
+                    <li>Si estás en desarrollo local, reinicia el servidor</li>
+                  </ul>
+                  <Link
+                    to="/"
+                    style={styles.returnButton}
+                  >
+                    ← Volver a la página principal
+                  </Link>
+                </div>
               </div>
-            </div>
-          ) : (
-            <>
-              <div
-                dangerouslySetInnerHTML={createPostComponent()}
-                style={{ width: "100%" }}
-                className="post-content"
-              />
-              <ReactionSection postId={postId} />
-            </>
-          )}
-        </div>
-        
-        <CommentSection />
-      </main>
+            ) : (
+              <>
+                <div
+                  dangerouslySetInnerHTML={createPostComponent()}
+                  style={{ width: "100%" }}
+                  className="post-content"
+                />
+                <ReactionSection postId={postId} />
+              </>
+            )}
+          </div>
+          
+          {/* La sección de comentarios debe estar dentro del mismo contenedor principal */}
+          <CommentSection />
+        </main>
+      </div>
       
+      {/* Simplemente renderizamos el Footer sin contenedor adicional, ya que
+          el propio componente Footer tiene su estructura interna con container */}
       <Footer />
     </div>
   );

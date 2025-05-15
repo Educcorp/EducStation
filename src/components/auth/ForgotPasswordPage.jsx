@@ -1,15 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
 import { requestPasswordReset } from '../../services/authService';
 import '@fortawesome/fontawesome-free/css/all.css';
+import { ThemeContext } from '../../context/ThemeContext';
 
 const ForgotPasswordPage = () => {
     const navigate = useNavigate();
+    const { setForceLightMode } = useContext(ThemeContext);
     const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [step, setStep] = useState('form'); // 'form', 'success', 'error'
     const [error, setError] = useState('');
+
+    // Forzar el modo claro inmediatamente
+    // Usando useLayoutEffect para que se ejecute antes del renderizado
+    React.useLayoutEffect(() => {
+        setForceLightMode(true);
+        return () => setForceLightMode(false);
+    }, [setForceLightMode]);
 
     const handleChange = (e) => {
         setEmail(e.target.value);
@@ -374,3 +383,4 @@ const ForgotPasswordPage = () => {
 };
 
 export default ForgotPasswordPage; 
+
