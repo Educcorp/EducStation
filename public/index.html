@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EducStation</title>
-    <script>
-      // Forzar modo claro por defecto
-      document.documentElement.classList.add('light-mode');
-      document.documentElement.classList.remove('dark-mode');
-      
-      // Asegurarse de que localStorage tenga el tema claro
-      if (localStorage.getItem('theme') !== 'dark') {
-        localStorage.setItem('theme', 'light');
-      }
-    </script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EducStation</title>
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e293b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+  <link rel="apple-touch-icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e293b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+  <script>
+    // Forzar modo claro por defecto
+    document.documentElement.classList.add('light-mode');
+    document.documentElement.classList.remove('dark-mode');
+
+    // Asegurarse de que localStorage tenga el tema claro
+    if (localStorage.getItem('theme') !== 'dark') {
+      localStorage.setItem('theme', 'light');
+    }
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+</body>
+
 </html>

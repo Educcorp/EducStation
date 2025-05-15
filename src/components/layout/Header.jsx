@@ -5,6 +5,7 @@ import { colors, spacing, typography, shadows, borderRadius, transitions } from 
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { AuthContext } from '../../context/AuthContext'; // Importa el contexto de autenticación
+import { FaHome, FaInfo, FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle } from 'react-icons/fa';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -409,12 +410,33 @@ const Header = () => {
     color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#79bd9e" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Cambiado de #ffd700 a #d8d0a9
   });
 
-  const navItems = [
-    { path: '/', label: 'Inicio' },
-    { path: '/category/tecnicas-de-estudio', label: 'Blog' },
-    { path: '/about', label: 'Acerca de' },
-    { path: '/contact', label: 'Contacto' },
-    { path: '/admin/post', label: 'Crear Post', admin: true }
+  const menuItems = [
+    {
+      path: '/',
+      label: 'Inicio',
+      icon: <FaHome size={20} />
+    },
+    {
+      path: '/category/tecnicas-de-estudio',
+      label: 'Blog',
+      icon: <FaFileAlt size={20} />
+    },
+    {
+      path: '/about',
+      label: 'Acerca de',
+      icon: <FaInfo size={20} />
+    },
+    {
+      path: '/contact',
+      label: 'Contacto',
+      icon: <FaPhone size={20} />
+    },
+    {
+      path: '/admin/post',
+      label: 'Crear Post',
+      admin: true,
+      icon: <FaPenSquare size={20} />
+    }
   ];
 
   const handleNavigation = (path) => {
@@ -472,8 +494,7 @@ const Header = () => {
           </Link>
 
           <nav style={styles.navLinks}>
-            {navItems.map((item, index) => (
-              // Solo mostrar enlaces de admin a usuarios con rol admin
+            {menuItems.map((item, index) => (
               (!item.admin || userRole === 'admin') && (
                 <a
                   key={index}
@@ -486,6 +507,7 @@ const Header = () => {
                     handleNavigation(item.path);
                   }}
                 >
+                  <span style={{ marginRight: 10, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>{item.icon}</span>
                   {item.label}
                   <span
                     style={{
@@ -517,6 +539,7 @@ const Header = () => {
                 e.currentTarget.style.color = colors.primary;
               }}
             >
+              <FaSignOutAlt size={16} style={{ marginRight: 8 }} />
               Cerrar Sesión
             </button>
           )}
@@ -558,7 +581,9 @@ const Header = () => {
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <span style={styles.menuItemIcon}>👤</span> Mi Perfil
+                  <span style={styles.menuItemIcon}>
+                    <FaUser size={24} />
+                  </span> Mi Perfil
                 </Link>
                 <a
                   href="/settings"
@@ -571,7 +596,9 @@ const Header = () => {
                     window.location.href = '/settings';
                   }}
                 >
-                  <span style={styles.menuItemIcon}>⚙️</span> Configuración
+                  <span style={styles.menuItemIcon}>
+                    <FaCog size={24} />
+                  </span> Configuración
                 </a>
 
                 <div style={styles.menuSeparator}></div>
@@ -593,7 +620,9 @@ const Header = () => {
                     initiateLogout();
                   }}
                 >
-                  <span style={styles.menuItemIcon}>🚪</span> Cerrar Sesión
+                  <span style={styles.menuItemIcon}>
+                    <FaSignOutAlt size={24} />
+                  </span> Cerrar Sesión
                 </a>
               </>
             ) : (
@@ -601,22 +630,22 @@ const Header = () => {
                 {/* Menú para usuarios no autenticados */}
                 <div style={styles.menuHeader}>Menú</div>
                 <Link to="/" style={getMenuItemStyle(0)} onMouseEnter={() => setHoveredItem('menu-0')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span style={styles.menuItemIcon}>🏠</span> Inicio
+                  <span style={styles.menuItemIcon}><FaHome size={20} /></span> Inicio
                 </Link>
                 <Link to="/about" style={getMenuItemStyle(1)} onMouseEnter={() => setHoveredItem('menu-1')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span style={styles.menuItemIcon}>ℹ️</span> Acerca de
+                  <span style={styles.menuItemIcon}><FaInfo size={20} /></span> Acerca de
                 </Link>
                 <Link to="/contact" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span style={styles.menuItemIcon}>📞</span> Contacto
+                  <span style={styles.menuItemIcon}><FaPhone size={20} /></span> Contacto
                 </Link>
 
                 <div style={styles.menuSeparator}></div>
 
                 <Link to="/login" style={getMenuItemStyle(3)} onMouseEnter={() => setHoveredItem('menu-3')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span style={styles.menuItemIcon}>🔑</span> Iniciar Sesión
+                  <span style={styles.menuItemIcon}><FaLock size={20} /></span> Iniciar Sesión
                 </Link>
                 <Link to="/register" style={getMenuItemStyle(4)} onMouseEnter={() => setHoveredItem('menu-4')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span style={styles.menuItemIcon}>📝</span> Registrarse
+                  <span style={styles.menuItemIcon}><FaPenSquare size={20} /></span> Registrarse
                 </Link>
 
                 <div style={styles.menuSeparator}></div>
@@ -663,7 +692,7 @@ const Header = () => {
           onClick={(e) => e.stopPropagation()}
         >
           <div style={styles.modalHeader}>
-            <span style={styles.modalWarningIcon}>⚠️</span>
+            <span style={styles.modalWarningIcon}><FaExclamationTriangle size={24} /></span>
             <h3 style={styles.modalTitle}>Confirmar cierre de sesión</h3>
           </div>
           <div style={styles.modalBody}>
