@@ -494,8 +494,8 @@ const HomePage = () => {
       fontSize: "18px"
     },
     contentWrapper: {
-      display: "grid",
-      gridTemplateColumns: "60% 1fr",
+      display: "flex",
+      flexDirection: "column",
       gap: spacing.xl,
       marginBottom: spacing.xxl,
       animation: "fadeIn 1s ease-out",
@@ -507,12 +507,15 @@ const HomePage = () => {
     },
     featuredPostWrapper: {
       width: "100%",
-      height: "100%",
       position: "relative",
-      minWidth: "300px",
-      // La siguiente propiedad evita que el featuredPost se minimice al hacer scroll
-      position: "sticky",
-      top: spacing.xl,
+      marginBottom: spacing.xl,
+      maxWidth: "800px",
+      margin: "0 auto",
+      transform: "none",
+      transition: "transform 0.3s ease",
+      "&:hover": {
+        transform: "none",
+      }
     },
     postsGridWrapper: {
       width: "100%",
@@ -520,7 +523,7 @@ const HomePage = () => {
     },
     postsGrid: {
       display: "grid",
-      gridTemplateColumns: "1fr",
+      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
       gap: spacing.xl,
     },
     animationStyles: `
@@ -664,12 +667,12 @@ const HomePage = () => {
 
         {/* Featured Post and Posts Grid - CORREGIDO */}
         <div style={styles.contentWrapper}>
-          {/* Featured Post */}
+          {/* Featured Post - Ahora a todo lo ancho */}
           <div style={styles.featuredPostWrapper}>
             <FeaturedPost post={featuredPost} />
           </div>
 
-          {/* Posts Grid */}
+          {/* Posts Grid - Ahora debajo del post destacado */}
           <div style={styles.postsGridWrapper}>
             <div style={styles.postsGrid}>
               {filteredPosts.map((post, index) => (

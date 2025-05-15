@@ -19,14 +19,20 @@ const FeaturedPost = ({ post }) => {
       borderRadius: borderRadius.xl,
       boxShadow: shadows.lg,
       transition: transitions.default,
+      width: "100%",
       '&:hover': {
         transform: "translateY(-5px)",
         boxShadow: "0 15px 40px rgba(11, 68, 68, 0.15)"
       }
     },
-    featuredImg: {
+    featuredImgWrapper: {
       width: "100%",
       height: "350px",
+      overflow: "hidden"
+    },
+    featuredImg: {
+      width: "100%",
+      height: "100%",
       objectFit: "cover",
       transition: transitions.slow,
       '&:hover': {
@@ -116,11 +122,13 @@ const FeaturedPost = ({ post }) => {
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <img
-        src={post.image}
-        alt={post.title}
-        style={isHovered ? applyHoverStyles(styles.featuredImg) : styles.featuredImg}
-      />
+      <div style={styles.featuredImgWrapper}>
+        <img
+          src={post.image}
+          alt={post.title}
+          style={isHovered ? applyHoverStyles(styles.featuredImg) : styles.featuredImg}
+        />
+      </div>
       <div style={styles.featuredNumber}>
         <span style={styles.featuredNumberSpan}>#{post.number}</span> Destacado
       </div>
