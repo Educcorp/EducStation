@@ -56,47 +56,9 @@ const CategoryPage = () => {
   
   // Generar datos de posts simulados
   useEffect(() => {
-    // Función para generar un array de posts aleatorios
-    const generatePosts = (count, category) => {
-      const postTitles = [
-        'Estrategias innovadoras para el aula digital',
-        'Cómo fomentar la participación activa de los estudiantes',
-        'Herramientas tecnológicas esenciales para educadores',
-        'El impacto de la gamificación en el aprendizaje',
-        'Evaluación formativa: más allá de las calificaciones',
-        'Inclusión en el aula: estrategias prácticas',
-        'El papel de la inteligencia emocional en la educación',
-        'Metodologías activas para el aprendizaje significativo',
-        'Cómo crear contenido educativo atractivo',
-        'La neurociencia aplicada a la enseñanza',
-        'Gestión del tiempo en entornos educativos',
-        'El futuro de la educación: tendencias y perspectivas',
-        'Educación personalizada en grupos numerosos',
-        'Comunicación efectiva con padres y tutores',
-        'Desarrollo profesional continuo para educadores'
-      ];
-      
-      return Array.from({ length: count }, (_, i) => ({
-        id: i + 1,
-        title: postTitles[Math.floor(Math.random() * postTitles.length)],
-        image: `/api/placeholder/350/200?text=${category}`,
-        category: category.toLowerCase(),
-        time: Math.floor(Math.random() * 10) + 1 + ' días atrás',
-        number: String(i + 1).padStart(2, '0'),
-        likes: Math.floor(Math.random() * 200) + 50,
-        excerpt: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        author: {
-          name: 'María Rodríguez',
-          avatar: '/api/placeholder/40/40',
-          role: 'Docente'
-        }
-      }));
-    };
-    
-    // Generar entre 12 y 30 posts para la categoría actual
-    const numPosts = Math.floor(Math.random() * 18) + 12;
-    setPosts(generatePosts(numPosts, currentCategory.name));
-  }, [categoryName, currentCategory.name]); // Eliminamos colors de las dependencias
+    // Eliminar la generación de posts falsos
+    // No se generarán posts de ejemplo
+  }, [/* dependencias necesarias */]);
   
   // Filtrar posts por búsqueda
   const filteredPosts = posts.filter(post => 
@@ -620,17 +582,9 @@ const CategoryPage = () => {
               </div>
               
               {/* Posts Grid */}
-              {currentPosts.length > 0 ? (
-                <div style={styles.postsGrid}>
-                  {currentPosts.map((post) => (
-                    <PostCard key={post.id} post={post} />
-                  ))}
-                </div>
-              ) : (
-                <div style={styles.noResults}>
-                  No se encontraron artículos que coincidan con tu búsqueda.
-                </div>
-              )}
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>
+                No hay artículos disponibles en esta categoría.
+              </div>
               
               {/* Pagination */}
               {totalPages > 1 && (
