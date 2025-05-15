@@ -3,6 +3,7 @@ import { useTheme } from '../context/ThemeContext';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
+import { deleteAccount } from '../services/authService';
 
 const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -270,12 +271,16 @@ const SettingsPage = () => {
     </div>
   );
 
-  const handleDeleteAccount = () => {
-    // Aquí iría la lógica para eliminar la cuenta
-    alert('Cuenta eliminada correctamente');
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.href = '/';
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteAccount();
+      alert('Cuenta eliminada correctamente. Serás redirigido a la página principal.');
+      localStorage.clear();
+      sessionStorage.clear();
+      window.location.href = '/';
+    } catch (error) {
+      alert(error.message || 'Error al eliminar la cuenta.');
+    }
   };
 
   return (
