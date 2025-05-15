@@ -1,7 +1,11 @@
 // src/components/admin/PostEditor.jsx
 import React, { useState, useEffect } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
-import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
+import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext';
+
+// Servicios
+import publicacionesService from '../../services/publicacionesService';
 
 // Componentes para el editor
 import DualModeEditor from './DualModeEditor';
@@ -109,6 +113,8 @@ const ContentLabel = () => {
 const PostEditor = () => {
   // Obtener los colores del tema actual
   const { colors, isDarkMode } = useTheme();
+  // Obtener información del usuario autenticado
+  const { user, isAuthenticated, token } = useAuth();
   
   const [post, setPost] = useState({
     title: '',
@@ -193,59 +199,165 @@ const PostEditor = () => {
     setIsInitialized(true);
   }, []);
 
-  // Simular guardar como borrador
-  const saveDraft = () => {
-    setIsSaving(true);
-    
-    // Guardar en localStorage
-    savePostToLocalStorage(post);
-    
-    // Simulación de guardado
-    setTimeout(() => {
-      setIsSaving(false);
-      setSaveMessage({
-        type: 'success',
-        text: 'Borrador guardado correctamente',
-        icon: '✓'
-      });
+  // Guardar como borrador en la base de datos
+  const saveDraft = async () => {
+    try {
+      setIsSaving(true);
       
-      // Limpiar mensaje después de unos segundos
-      setTimeout(() => setSaveMessage(null), 3000);
-    }, 1000);
-  };
-
-  // Simular publicación del post
-  const publishPost = () => {
-    // Validación básica
-    if (!post.title.trim() || !post.content.trim() || !post.category) {
+      // Validación básica
+      if (!post.title.trim()) {
+        setSaveMessage({
+          type: 'error',
+          text: 'El título es obligatorio para guardar un borrador',
+          icon: '✖'
+        });
+        
+        setTimeout(() => setSaveMessage(null), 3000);
+        setIsSaving(false);
+        return;
+      }
+      
+      // Crear objeto para enviar a la API
+      const postData = {
+        titulo: post.title,
+        contenido: post.content,
+        categoria_id: getCategoriaIdByName(post.category),
+        estado: 'borrador',
+        tags: post.tags,
+        coverImage: post.coverImage,
+      };
+      
+      if (isAuthenticated && token) {
+        // Si ya tiene un ID, actualizar, si no, crear nuevo
+        let response;
+        if (post.id) {
+          response = await publicacionesService.updatePublicacion(post.id, postData, token);
+        } else {
+          response = await publicacionesService.createPublicacion(postData, token);
+          // Actualizar el ID del post en el estado local
+          setPost(prev => ({ ...prev, id: response.id }));
+        }
+        
+        // Guardar también en localStorage como respaldo
+        savePostToLocalStorage(post);
+        
+        setSaveMessage({
+          type: 'success',
+          text: 'Borrador guardado correctamente en la base de datos',
+          icon: '✓'
+        });
+      } else {
+        // Si no está autenticado, solo guarda en localStorage
+        savePostToLocalStorage(post);
+        
+        setSaveMessage({
+          type: 'success',
+          text: 'Borrador guardado localmente (inicia sesión para guardar en la nube)',
+          icon: '✓'
+        });
+      }
+    } catch (error) {
+      console.error('Error al guardar borrador:', error);
       setSaveMessage({
         type: 'error',
-        text: 'Por favor completa al menos el título, categoría y contenido del post',
+        text: `Error al guardar: ${error.message}`,
         icon: '✖'
       });
-      
+    } finally {
+      setIsSaving(false);
       setTimeout(() => setSaveMessage(null), 3000);
-      return;
     }
-    
-    setIsPublishing(true);
-    
-    // Simulación de publicación
-    setTimeout(() => {
-      setIsPublishing(false);
-      setPost(prev => ({ ...prev, status: 'published' }));
+  };
+
+  // Publicar el post en la base de datos
+  const publishPost = async () => {
+    try {
+      // Validación básica
+      if (!post.title.trim() || !post.content.trim() || !post.category) {
+        setSaveMessage({
+          type: 'error',
+          text: 'Por favor completa al menos el título, categoría y contenido del post',
+          icon: '✖'
+        });
+        
+        setTimeout(() => setSaveMessage(null), 3000);
+        return;
+      }
+      
+      setIsPublishing(true);
+      
+      // Solo se puede publicar si el usuario está autenticado
+      if (!isAuthenticated || !token) {
+        setSaveMessage({
+          type: 'error',
+          text: 'Debes iniciar sesión para publicar',
+          icon: '✖'
+        });
+        setIsPublishing(false);
+        setTimeout(() => setSaveMessage(null), 3000);
+        return;
+      }
+      
+      // Crear objeto para enviar a la API
+      const postData = {
+        titulo: post.title,
+        contenido: post.content,
+        categoria_id: getCategoriaIdByName(post.category),
+        estado: 'publicado',
+        tags: post.tags,
+        coverImage: post.coverImage,
+        fecha_publicacion: post.publishDate || new Date().toISOString().slice(0, 10),
+      };
+      
+      // Si ya tiene un ID, actualizar, si no, crear nuevo
+      let response;
+      if (post.id) {
+        response = await publicacionesService.updatePublicacion(post.id, postData, token);
+      } else {
+        response = await publicacionesService.createPublicacion(postData, token);
+      }
+      
+      setPost(prev => ({ 
+        ...prev, 
+        id: response.id, 
+        status: 'published' 
+      }));
+      
       setSaveMessage({
         type: 'success',
         text: '¡Post publicado correctamente!',
         icon: '🎉'
       });
       
-      // Limpiar mensaje después de unos segundos
-      setTimeout(() => setSaveMessage(null), 3000);
-      
-      // Limpieza del borrador en localStorage después de publicar
+      // Limpiar el borrador en localStorage después de publicar
       localStorage.removeItem('post_draft');
-    }, 1500);
+    } catch (error) {
+      console.error('Error al publicar:', error);
+      setSaveMessage({
+        type: 'error',
+        text: `Error al publicar: ${error.message}`,
+        icon: '✖'
+      });
+    } finally {
+      setIsPublishing(false);
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
+  };
+  
+  // Obtener el ID de la categoría por su nombre
+  const getCategoriaIdByName = (categoryName) => {
+    // Mapeo de nombres de categorías a IDs (debería obtenerse de la API)
+    const categoryMap = {
+      'Noticias': 1,
+      'Técnicas de Estudio': 2,
+      'Problemáticas': 3,
+      'Educación de Calidad': 4,
+      'Herramientas': 5,
+      'Desarrollo Docente': 6,
+      'Comunidad': 7
+    };
+    
+    return categoryMap[categoryName] || null;
   };
 
   // Exportar el post a HTML para descargar
