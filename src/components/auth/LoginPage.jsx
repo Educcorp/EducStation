@@ -630,6 +630,44 @@ const LoginPage = () => {
             opacity: 0.2,
             animation: 'float 15s infinite linear',
         },
+        forgotPasswordContainer: {
+            marginTop: spacing.xs,
+            textAlign: 'right',
+        },
+        forgotPasswordLink: {
+            color: colors.primaryLight,
+            fontSize: typography.fontSize.sm,
+            textDecoration: 'none',
+            transition: 'all 0.3s ease',
+        },
+        forgotPasswordWrapper: {
+            textAlign: 'center',
+            margin: `${spacing.md} 0`,
+            padding: `${spacing.sm} ${spacing.md}`,
+            borderRadius: '8px',
+            backgroundColor: 'rgba(210, 185, 154, 0.15)',
+            border: '1px dashed rgba(11, 68, 68, 0.2)',
+            transition: 'all 0.3s ease',
+            animation: 'pulseAttention 2s infinite',
+        },
+        forgotPasswordLinkProminent: {
+            color: colors.primary,
+            fontSize: typography.fontSize.md,
+            textDecoration: 'none',
+            fontWeight: typography.fontWeight.semiBold,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            padding: `${spacing.xs} ${spacing.sm}`,
+            borderRadius: '8px',
+            width: '100%',
+        },
+        forgotPasswordIcon: {
+            marginRight: spacing.xs,
+            fontSize: '16px',
+            color: colors.secondary,
+        },
     };
 
     // Estilos para bordes de inputs con error
@@ -827,17 +865,10 @@ const LoginPage = () => {
                                         <button
                                             type="button"
                                             onClick={togglePasswordVisibility}
-                                            style={{
-                                                ...styles.eyeIcon,
-                                                ...(activeField === 'password' ? styles.activeEyeIcon : {})
-                                            }}
+                                            style={styles.eyeIcon}
                                             aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                                            className="eye-icon-animation"
                                         >
-                                            {showPassword ? 
-                                                <i className="fa-solid fa-eye-slash"></i> : 
-                                                <i className="fa-solid fa-eye"></i>
-                                            }
+                                            {showPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}
                                         </button>
                                     </div>
                                     {errors.password && (
@@ -875,13 +906,6 @@ const LoginPage = () => {
                                         </div>
                                         Recordar sesión
                                     </label>
-                                    <Link 
-                                        to="/forgot-password"
-                                        style={styles.forgotLink}
-                                        className="link-hover-effect"
-                                    >
-                                        ¿Olvidaste tu contraseña?
-                                    </Link>
                                 </div>
 
                                 <button
@@ -899,6 +923,12 @@ const LoginPage = () => {
                                         </>
                                     ) : 'Iniciar Sesión'}
                                 </button>
+
+                                <div style={styles.forgotPasswordWrapper}>
+                                    <Link to="/forgot-password" style={styles.forgotPasswordLinkProminent}>
+                                        <i className="fas fa-key" style={styles.forgotPasswordIcon}></i> ¿Olvidaste tu contraseña?
+                                    </Link>
+                                </div>
 
                                 <div style={styles.registerLink}>
                                     ¿No tienes una cuenta?
@@ -962,6 +992,21 @@ const LoginPage = () => {
                     100% {
                         transform: scale(1);
                         box-shadow: 0 0 0 0 rgba(44, 113, 113, 0);
+                    }
+                }
+                
+                @keyframes pulseAttention {
+                    0% {
+                        box-shadow: 0 0 0 0 rgba(210, 185, 154, 0.3);
+                        transform: scale(1);
+                    }
+                    50% {
+                        box-shadow: 0 0 0 5px rgba(210, 185, 154, 0);
+                        transform: scale(1.02);
+                    }
+                    100% {
+                        box-shadow: 0 0 0 0 rgba(210, 185, 154, 0);
+                        transform: scale(1);
                     }
                 }
                 
