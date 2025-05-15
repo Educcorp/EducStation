@@ -8,6 +8,7 @@ import { colors, spacing, typography, shadows, borderRadius } from '../../styles
 import CommentSection from './CommentSection';
 import ReactionSection from './ReactionSection';
 
+
 const PostViewer = () => {
   const { postId } = useParams(); // Obtiene el ID del post de la URL
   const [postContent, setPostContent] = useState('');
@@ -196,7 +197,7 @@ const PostViewer = () => {
           )}
         </div>
         
-        <CommentSection />
+         <CommentSection publicacionId={postId} />
       </main>
       
       <Footer />

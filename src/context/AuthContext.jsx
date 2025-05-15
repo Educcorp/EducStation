@@ -1,8 +1,11 @@
 // src/context/AuthContext.jsx - Actualizado
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { login, logout, refreshToken } from '../services/authService';
 
 export const AuthContext = createContext();
+
+// Hook de utilidad para acceder al contexto fácilmente
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -101,15 +104,22 @@ export const AuthProvider = ({ children }) => {
     setIsAuth(true);
   };
 
+  // Función para obtener el token (utilidad para el componente CommentSection)
+  const getUserToken = () => {
+    return localStorage.getItem('userToken');
+  };
+
   return (
     <AuthContext.Provider value={{ 
       user, 
       isAuth, 
+      isAuthenticated: isAuth, // Alias para compatibilidad con CommentSection
       loading, 
       error,
       login: loginUser, 
       logout: logoutUser, 
-      updateAuthState 
+      updateAuthState,
+      getUserToken // Nueva función para obtener el token actual
     }}>
       {children}
     </AuthContext.Provider>
