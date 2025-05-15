@@ -164,9 +164,54 @@ const ResetPasswordPage = () => {
     const styles = {
         container: {
             minHeight: '100vh',
-            backgroundColor: colors.background,
+            background: 'linear-gradient(135deg, #93ABA3 0%, #1F4E4E 100%)',
             display: 'flex',
             flexDirection: 'column',
+            position: 'relative',
+            overflow: 'hidden',
+        },
+        backgroundElements: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            opacity: 0.08,
+            pointerEvents: 'none',
+            zIndex: 0,
+        },
+        circle1: {
+            position: 'absolute',
+            width: '400px',
+            height: '400px',
+            borderRadius: '50%',
+            backgroundColor: '#ffffff',
+            top: '-100px',
+            right: '-100px',
+            opacity: '0.1',
+            animation: 'float 15s infinite ease-in-out',
+        },
+        circle2: {
+            position: 'absolute',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            backgroundColor: '#d2b99a',
+            bottom: '-50px',
+            left: '10%',
+            opacity: '0.1',
+            animation: 'float 18s infinite ease-in-out reverse',
+        },
+        circle3: {
+            position: 'absolute',
+            width: '200px',
+            height: '200px',
+            borderRadius: '50%',
+            backgroundColor: '#91a8a9',
+            top: '20%',
+            left: '-50px',
+            opacity: '0.1',
+            animation: 'float 20s infinite ease-in-out',
         },
         navContainer: {
             display: 'flex',
@@ -174,15 +219,13 @@ const ResetPasswordPage = () => {
             alignItems: 'center',
             padding: `${spacing.md} ${spacing.xl}`,
             backgroundColor: 'transparent',
+            position: 'relative',
+            zIndex: 2,
         },
         logo: {
             display: 'flex',
             alignItems: 'center',
             textDecoration: 'none',
-        },
-        logoImg: {
-            height: '36px',
-            marginRight: spacing.sm,
         },
         logoText: {
             fontSize: typography.fontSize.lg,
@@ -195,15 +238,22 @@ const ResetPasswordPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             padding: `${spacing.xl} ${spacing.md}`,
+            position: 'relative',
+            zIndex: 1,
         },
         formContainer: {
-            width: "100%",
-            maxWidth: "600px",
-            borderRadius: "12px",
-            overflow: "hidden",
-            boxShadow: '0 15px 30px rgba(11, 68, 68, 0.2)',
+            width: '100%',
+            maxWidth: '420px',
+            borderRadius: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 50px rgba(11, 68, 68, 0.25)',
             backgroundColor: colors.white,
             padding: spacing.xl,
+            margin: '0 auto',
+            opacity: 1,
+            transform: 'translateY(0)',
+            transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+            animation: 'fadeInUp 0.8s',
         },
         header: {
             marginBottom: spacing.xl,
@@ -213,11 +263,13 @@ const ResetPasswordPage = () => {
             color: colors.primary,
             fontSize: typography.fontSize.xxl,
             marginBottom: spacing.sm,
+            fontWeight: typography.fontWeight.bold,
+            letterSpacing: '1px',
         },
         subtitle: {
             color: colors.primaryLight,
             fontSize: typography.fontSize.md,
-            maxWidth: '450px',
+            maxWidth: '350px',
             margin: '0 auto',
         },
         formGroup: {
@@ -230,25 +282,28 @@ const ResetPasswordPage = () => {
             color: colors.primary,
             fontWeight: typography.fontWeight.medium,
             fontSize: typography.fontSize.sm,
+            letterSpacing: '0.5px',
         },
         input: {
             width: '100%',
-            padding: `${spacing.sm} ${spacing.md}`,
-            border: `1px solid ${colors.gray200}`,
-            borderRadius: '6px',
+            padding: `${spacing.md} ${spacing.lg}`,
+            border: `2px solid ${colors.gray200}`,
+            borderRadius: '12px',
             fontSize: typography.fontSize.md,
             transition: 'all 0.3s ease',
-            backgroundColor: colors.white,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
         },
         passwordInput: {
             width: '100%',
-            padding: `${spacing.sm} ${spacing.md}`,
-            paddingRight: '40px', // Espacio para el icono
-            border: `1px solid ${colors.gray200}`,
-            borderRadius: '6px',
+            padding: `${spacing.md} ${spacing.lg}`,
+            paddingRight: '40px',
+            border: `2px solid ${colors.gray200}`,
+            borderRadius: '12px',
             fontSize: typography.fontSize.md,
             transition: 'all 0.3s ease',
-            backgroundColor: colors.white,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
         },
         passwordWrapper: {
             position: 'relative',
@@ -281,12 +336,18 @@ const ResetPasswordPage = () => {
             background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)`,
             color: colors.white,
             border: 'none',
-            borderRadius: '6px',
+            borderRadius: '12px',
             fontSize: typography.fontSize.md,
-            fontWeight: typography.fontWeight.medium,
+            fontWeight: typography.fontWeight.semiBold,
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             marginBottom: spacing.md,
+            boxShadow: '0 4px 15px rgba(31, 78, 78, 0.3)',
+        },
+        buttonHover: {
+            background: `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.primary} 100%)`,
+            transform: 'translateY(-2px)',
+            boxShadow: '0 8px 25px rgba(31, 78, 78, 0.4)',
         },
         backLink: {
             textAlign: 'center',
@@ -299,6 +360,8 @@ const ResetPasswordPage = () => {
             fontWeight: typography.fontWeight.semiBold,
             textDecoration: 'none',
             transition: 'color 0.3s ease',
+            position: 'relative',
+            paddingBottom: '2px',
         },
         successContainer: {
             textAlign: 'center',
@@ -354,6 +417,15 @@ const ResetPasswordPage = () => {
         },
     };
 
+    // Animaciones de fondo
+    const renderBackground = () => (
+        <div style={styles.backgroundElements}>
+            <div style={styles.circle1}></div>
+            <div style={styles.circle2}></div>
+            <div style={styles.circle3}></div>
+        </div>
+    );
+
     // Función para manejar el estilo del botón en hover
     const getButtonStyle = () => ({
         ...styles.button,
@@ -375,14 +447,12 @@ const ResetPasswordPage = () => {
 
     return (
         <div style={styles.container}>
-            {/* Logo simplificado en lugar del Header */}
+            {renderBackground()}
             <div style={styles.navContainer}>
                 <Link to="/" style={styles.logo}>
-                    <img src="/assets/images/Icon.png" alt="EducStation Logo" style={styles.logoImg} />
                     <span style={styles.logoText}>EducStation</span>
                 </Link>
             </div>
-
             <main style={styles.mainContent}>
                 <div style={styles.formContainer}>
                     {step === 'loading' && (
@@ -561,16 +631,19 @@ const ResetPasswordPage = () => {
                     )}
                 </div>
             </main>
-
-            {/* Estilos para la animación de carga */}
-            <style>
-                {`
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
+            <style>{`
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
-                `}
-            </style>
+                @keyframes float {
+                    0% { transform: translateY(0) translateX(0); }
+                    25% { transform: translateY(-20px) translateX(10px); }
+                    50% { transform: translateY(0) translateX(20px); }
+                    75% { transform: translateY(20px) translateX(10px); }
+                    100% { transform: translateY(0) translateX(0); }
+                }
+            `}</style>
         </div>
     );
 };
