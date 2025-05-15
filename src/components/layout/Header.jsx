@@ -448,6 +448,10 @@ const Header = () => {
             style={styles.logo}
             onMouseEnter={() => setHoveredItem('logo')}
             onMouseLeave={() => setHoveredItem(null)}
+            onClick={e => {
+              e.preventDefault();
+              window.location.href = '/';
+            }}
           >
             <div style={{
               ...styles.logoIcon,
