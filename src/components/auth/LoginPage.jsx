@@ -397,24 +397,13 @@ const LoginPage = () => {
 
     return (
         <div style={styles.loginContainer}>
-            {/* Logo simplificado en lugar del Header */}
-            <div style={styles.navContainer}>
-                <Link to="/" style={styles.logo}>
-                    <img src="/assets/images/Icon.png" alt="EducStation Logo" style={styles.logoImg} />
-                    <span style={styles.logoText}>EducStation</span>
-                </Link>
-            </div>
+            {/* El logo de navegación superior ha sido eliminado */}
 
             <main style={styles.mainContent}>
                 <div style={styles.formContainer}>
                     <div style={styles.loginImage}>
                         <div style={styles.imageOverlay}>
-                            <div style={styles.logoContainer}>
-                                <div style={styles.logoIcon}>
-                                    <img src="/assets/images/Icon.png" alt="Logo" style={{ width: '30px', height: '30px' }} />
-                                </div>
-                                <div style={styles.logoText}>EducStation</div>
-                            </div>
+                            {/* El logo del lado izquierdo ha sido eliminado */}
                             <p style={styles.imageText}>
                                 Tu destino para educación, innovación y crecimiento profesional.
                                 Conecta con nuestra comunidad de educadores y estudiantes comprometidos.

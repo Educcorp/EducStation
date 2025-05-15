@@ -571,24 +571,13 @@ const RegisterPage = () => {
 
     return (
         <div style={styles.registerContainer}>
-            {/* Logo simplificado en lugar del Header */}
-            <div style={styles.navContainer}>
-                <Link to="/" style={styles.logo}>
-                    <img src="/assets/images/Icon.png" alt="EducStation Logo" style={styles.logoImg} />
-                    <span style={styles.logoText}>EducStation</span>
-                </Link>
-            </div>
+            {/* El logo de navegación superior ha sido eliminado */}
 
             <main style={styles.mainContent}>
                 <div style={styles.formContainer}>
                     <div style={styles.registerImage}>
                         <div style={styles.imageOverlay}>
-                            <div style={styles.logoContainer}>
-                                <div style={styles.logoIcon}>
-                                    <img src="/assets/images/Icon.png" alt="Logo" style={{ width: '30px', height: '30px' }} />
-                                </div>
-                                <div style={styles.logoText}>EducStation</div>
-                            </div>
+                            {/* El logo del lado izquierdo ha sido eliminado */}
                             <p style={styles.imageText}>
                                 Únete a nuestra comunidad educativa y descubre un mundo de
                                 oportunidades para tu crecimiento profesional y personal.
