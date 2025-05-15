@@ -256,8 +256,7 @@ const HomePage = () => {
     'Problemáticas',
     'Educación de Calidad',
     'Herramientas',
-    'Desarrollo Docente',
-    'Comunidad'
+    'Desarrollo Docente'
   ];
 
   // Artículo destacado
@@ -267,7 +266,6 @@ const HomePage = () => {
     image: '/assets/images/tecnologia.jpg',
     category: 'desarrollo docente',
     time: '2 horas atrás',
-    number: '01',
     excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
   };
 
@@ -279,7 +277,6 @@ const HomePage = () => {
       image: '/assets/images/tecnologia.jpg',
       category: 'herramientas',
       time: '4 horas atrás',
-      number: '02',
       likes: 124
     },
     {
@@ -288,26 +285,15 @@ const HomePage = () => {
       image: '/assets/images/humanos.jpg',
       category: 'técnicas de estudio',
       time: '4 horas atrás',
-      number: '03',
       likes: 89
     },
     {
       id: 3,
       title: 'Problemas a enfrentar en la actualidad',
       image: '/assets/images/desafio.jpg',
-      category: 'comunidad',
+      category: 'problemáticas',
       time: '4 horas atrás',
-      number: '04',
       likes: 76
-    },
-    {
-      id: 4,
-      title: 'Desarrollo Profesional Docente',
-      image: '/assets/images/maestro.jpg',
-      category: 'educación de calidad',
-      time: '4 horas atrás',
-      number: '05',
-      likes: 112
     }
   ];
 

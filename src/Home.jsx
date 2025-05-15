@@ -28,8 +28,7 @@ const EducStation = () => {
     'Problemáticas',
     'Educación de Calidad',
     'Herramientas',
-    'Desarrollo Docente',
-    'Comunidad'
+    'Desarrollo Docente'
   ];
   
   // Artículo destacado
@@ -38,7 +37,6 @@ const EducStation = () => {
     image: '/api/placeholder/600/350',
     category: 'desarrollo docente',
     time: '2 horas atrás',
-    number: '01',
     excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
   };
   
@@ -50,7 +48,6 @@ const EducStation = () => {
       image: '/api/placeholder/150/100',
       category: 'herramientas',
       time: '4 horas atrás',
-      number: '02',
       likes: 124
     },
     {
@@ -59,16 +56,14 @@ const EducStation = () => {
       image: '/api/placeholder/150/100',
       category: 'técnicas de estudio',
       time: '4 horas atrás',
-      number: '03',
       likes: 89
     },
     {
       id: 3,
       title: 'El Poder de la Colaboración en Entornos Educativos',
       image: '/api/placeholder/150/100',
-      category: 'comunidad',
+      category: 'técnicas de estudio',
       time: '4 horas atrás',
-      number: '04',
       likes: 76
     },
     {
@@ -77,7 +72,6 @@ const EducStation = () => {
       image: '/api/placeholder/150/100',
       category: 'educación de calidad',
       time: '4 horas atrás',
-      number: '05',
       likes: 112
     }
   ];
@@ -427,30 +421,22 @@ const EducStation = () => {
     postMeta: {
       display: "flex",
       alignItems: "center",
-      gap: "12px",
       marginBottom: "10px",
-      flexWrap: "wrap"
-    },
-    postNumber: {
-      fontWeight: "bold",
-      fontSize: "14px",
-      color: "#7c4dff"
+      gap: "15px"
     },
     postCategory: {
-      color: "white",
+      color: "#7c4dff",
       fontSize: "12px",
-      fontWeight: "500",
-      backgroundColor: "#7c4dff",
-      padding: "4px 10px",
-      borderRadius: "12px",
-      textTransform: "capitalize"
+      fontWeight: "600",
+      textTransform: "uppercase",
+      letterSpacing: "0.5px"
     },
     postTime: {
       color: "#64748b",
       fontSize: "12px",
       display: "flex",
       alignItems: "center",
-      gap: "4px"
+      gap: "5px"
     },
     postLikes: {
       color: "#64748b",
@@ -704,9 +690,6 @@ const EducStation = () => {
                 transform: hoveredCategory === 'featured' ? 'scale(1.03)' : 'scale(1)'
               }}
             />
-            <div style={styles.featuredNumber}>
-              <span style={styles.featuredNumberSpan}>#{featuredPost.number}</span> Destacado
-            </div>
             <div style={styles.featuredContent}>
               <div style={styles.featuredMeta}>
                 <div style={styles.metaItem}>
@@ -756,7 +739,6 @@ const EducStation = () => {
                 </div>
                 <div style={styles.postContent}>
                   <div style={styles.postMeta}>
-                    <div style={styles.postNumber}>#{post.number}</div>
                     <div style={styles.postCategory}>{post.category}</div>
                     <div style={styles.postTime}>
                       <span style={{fontSize: '10px', marginRight: '2px'}}>⏱</span> {post.time}

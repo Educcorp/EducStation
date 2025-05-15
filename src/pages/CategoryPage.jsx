@@ -32,20 +32,18 @@ const CategoryPage = () => {
   
   // Categorías disponibles (para la navegación de categorías relacionadas)
   const categories = [
-    { id: 'noticias', name: 'Noticias', count: 23 },
-    { id: 'tecnicas-de-estudio', name: 'Técnicas de Estudio', count: 45 },
-    { id: 'problematicas', name: 'Problemáticas', count: 18 },
-    { id: 'educacion-de-calidad', name: 'Educación de Calidad', count: 32 },
-    { id: 'herramientas', name: 'Herramientas', count: 37 },
-    { id: 'desarrollo-docente', name: 'Desarrollo Docente', count: 29 },
-    { id: 'comunidad', name: 'Comunidad', count: 16 }
+    { id: 'noticias', name: 'Noticias' },
+    { id: 'tecnicas-de-estudio', name: 'Técnicas de Estudio' },
+    { id: 'problematicas', name: 'Problemáticas' },
+    { id: 'educacion-de-calidad', name: 'Educación de Calidad' },
+    { id: 'herramientas', name: 'Herramientas' },
+    { id: 'desarrollo-docente', name: 'Desarrollo Docente' }
   ];
   
   // Obtener información de la categoría actual
   const currentCategory = categories.find(cat => cat.id === categoryName) || {
     id: categoryName,
-    name: categoryName?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-    count: 0
+    name: categoryName?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
   };
   
   // Categorías relacionadas (todas excepto la actual)
@@ -528,7 +526,7 @@ const CategoryPage = () => {
               </p>
               
               <div style={styles.categoryTag}>
-                {currentCategory.name} <span style={styles.categoryCount}>{currentCategory.count || posts.length}</span>
+                {currentCategory.name}
               </div>
             </div>
           </div>
@@ -686,9 +684,6 @@ const CategoryPage = () => {
                       }}
                     >
                       {cat.name}
-                      <span className="category-count" style={styles.categoryItemCount}>
-                        {cat.count}
-                      </span>
                     </a>
                   ))}
                 </div>
