@@ -1,6 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 
+const API_URL =
+  process.env.NODE_ENV === 'production'
+    ? 'https://educstation-backend-production.up.railway.app/api/chatbot/message'
+    : '/api/chatbot/message';
+
 const Chatbot = () => {
   const { colors, isDarkMode } = useTheme();
   const [open, setOpen] = useState(false);
@@ -25,7 +30,7 @@ const Chatbot = () => {
     setInput('');
     setLoading(true);
     try {
-      const res = await fetch('/api/chatbot/message', {
+      const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })
