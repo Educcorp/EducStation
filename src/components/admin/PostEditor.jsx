@@ -173,6 +173,18 @@ const PostEditor = () => {
         transform: translateY(8px);
       }
     }
+
+    .tooltip-arrow {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      margin-left: -8px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid white;
+    }
   `;
 
   // Cargar categorías desde el backend
@@ -706,8 +718,9 @@ const PostEditor = () => {
                       {hoveredCategory === categoryName && categoryDescriptions[categoryName] && (
                         <div style={{
                           position: "absolute",
-                          top: "-40px",
+                          top: "-50px",
                           left: 0,
+                          right: 0,
                           backgroundColor: colors.white,
                           color: colors.primary,
                           padding: spacing.sm,
@@ -721,9 +734,14 @@ const PostEditor = () => {
                           opacity: 0.98,
                           animation: "fadeIn 0.2s ease-in-out",
                           pointerEvents: "none",
-                          fontWeight: typography.fontWeight.medium
+                          fontWeight: typography.fontWeight.medium,
+                          maxWidth: "100%",
+                          whiteSpace: "normal",
+                          lineHeight: "1.4",
+                          textAlign: "left"
                         }}>
                           {categoryDescriptions[categoryName]}
+                          <span className="tooltip-arrow"></span>
                         </div>
                       )}
                     </div>
