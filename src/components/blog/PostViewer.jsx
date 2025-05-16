@@ -9,12 +9,15 @@ import CommentSection from './CommentSection';
 import ReactionSection from './ReactionSection';
 // Importamos el archivo CSS específico para posts
 import '../../styles/posts.css';
+import { useTheme } from '../../context/ThemeContext';
+import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicionales
 
 const PostViewer = () => {
   const { postId } = useParams(); // Obtiene el ID del post de la URL
   const [postContent, setPostContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     const fetchPostContent = async () => {
@@ -140,6 +143,11 @@ const PostViewer = () => {
         backgroundColor: colors.primary,
         color: colors.white
       }
+    },
+    container: {
+      fontSize: typography.fontSize.md,
+      lineHeight: '1.7',
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
     }
   };
 
@@ -149,6 +157,10 @@ const PostViewer = () => {
       __html: postContent
     };
   };
+
+  if (!postContent) {
+    return null;
+  }
 
   return (
     <div style={styles.pageWrapper}>
@@ -206,9 +218,9 @@ const PostViewer = () => {
             ) : (
               <>
                 <div
+                  className={`post-content ${isDarkMode ? 'dark-mode' : 'light-mode'}`}
+                  style={styles.container}
                   dangerouslySetInnerHTML={createPostComponent()}
-                  style={{ width: "100%" }}
-                  className="post-content"
                 />
                 <ReactionSection postId={postId} />
               </>

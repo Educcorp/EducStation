@@ -8,12 +8,13 @@ import './styles/darkMode.css'; // Los estilos oscuros solo se aplicarán cuando
 
 // Importación de páginas
 import HomePage from './pages/HomePage';
+import BlogPage from './pages/BlogPage';
 import BlogDetailPage from './pages/BlogDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import AdminPostPage from './pages/AdminPostPage';
 import CategoryPage from './pages/CategoryPage';
-import PostViewer from './components/blog/PostViewer';
+import CategoriesListPage from './pages/CategoriesListPage';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
@@ -166,15 +167,15 @@ const App = () => {
                 } 
               />
               <Route 
-                path="/blog/:postId" 
+                path="/blog" 
                 element={
                   <PrivateRoute>
-                    <PostViewer />
+                    <BlogPage />
                   </PrivateRoute>
                 } 
               />
               <Route 
-                path="/blog/detail/:blogId" 
+                path="/blog/:id" 
                 element={
                   <PrivateRoute>
                     <BlogDetailPage />
@@ -206,6 +207,14 @@ const App = () => {
                 } 
               />
               <Route 
+                path="/admin/post/new" 
+                element={
+                  <PrivateRoute>
+                    <AdminPostPage />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
                 path="/admin/post/:postId" 
                 element={
                   <PrivateRoute>
@@ -214,10 +223,18 @@ const App = () => {
                 } 
               />
               <Route 
-                path="/category/:categoryName" 
+                path="/categoria/:id" 
                 element={
                   <PrivateRoute>
                     <CategoryPage />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/categorias" 
+                element={
+                  <PrivateRoute>
+                    <CategoriesListPage />
                   </PrivateRoute>
                 } 
               />

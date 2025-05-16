@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
+import { createPublicacion, createPublicacionFromHTML } from '../../services/publicacionesService';
+import { getAllCategorias } from '../../services/categoriasServices';
 
 // Componentes para el editor
 import DualModeEditor from './DualModeEditor';
@@ -126,17 +128,49 @@ const PostEditor = () => {
   const [saveMessage, setSaveMessage] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
-  // Categorías disponibles
-  const categories = [
-    'Noticias',
-    'Técnicas de Estudio',
-    'Problemáticas',
-    'Educación de Calidad',
-    'Herramientas',
-    'Desarrollo Docente',
-    'Comunidad'
-  ];
+  // Cargar categorías desde el backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const data = await getAllCategorias();
+        console.log("Categorías cargadas:", data);
+        if (data && Array.isArray(data)) {
+          setCategories(data);
+        } else {
+          // Si no hay datos o no es un array, usar categorías predeterminadas
+          setCategories([
+            { ID_categoria: 1, Nombre_categoria: 'Noticias' },
+            { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
+            { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
+            { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
+            { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
+            { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
+            { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        // Usar categorías predeterminadas en caso de error
+        setCategories([
+          { ID_categoria: 1, Nombre_categoria: 'Noticias' },
+          { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
+          { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
+          { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
+          { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
+          { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
+          { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
+        ]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Manejador para cambios en los campos del formulario
   const handleChange = (e) => {
@@ -193,15 +227,57 @@ const PostEditor = () => {
     setIsInitialized(true);
   }, []);
 
-  // Simular guardar como borrador
-  const saveDraft = () => {
+  // Guardar como borrador
+  const saveDraft = async () => {
+    // Validación básica
+    if (!post.title.trim()) {
+      setSaveMessage({
+        type: 'error',
+        text: 'Por favor añade un título a tu publicación',
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+      return;
+    }
+    
     setIsSaving(true);
     
-    // Guardar en localStorage
-    savePostToLocalStorage(post);
-    
-    // Simulación de guardado
-    setTimeout(() => {
+    try {
+      // Convertir la categoría seleccionada a un ID numérico si existe
+      let categorias = [];
+      if (post.category) {
+        // Buscar el ID de la categoría seleccionada
+        const categoriaSeleccionada = categories.find(cat => 
+          typeof cat === 'object' ? cat.Nombre_categoria === post.category : cat === post.category
+        );
+        
+        if (typeof categoriaSeleccionada === 'object' && categoriaSeleccionada.ID_categoria) {
+          categorias = [categoriaSeleccionada.ID_categoria];
+        } else if (post.category) {
+          // Si no encontramos el ID pero hay una categoría seleccionada, usamos 1 como valor predeterminado
+          console.warn("No se pudo encontrar el ID de la categoría, usando valor predeterminado");
+          categorias = [1];
+        }
+      }
+      
+      // Preparar los datos para el backend
+      const postData = {
+        titulo: post.title,
+        contenido: post.content,
+        resumen: post.title.substring(0, 150), // Usar parte del título como resumen
+        estado: 'borrador',
+        categorias: categorias
+      };
+      
+      console.log("Guardando borrador con datos:", postData);
+      
+      // Guardar en el backend
+      const result = await createPublicacion(postData);
+      
+      // Guardar en localStorage como respaldo
+      savePostToLocalStorage(post);
+      
       setIsSaving(false);
       setSaveMessage({
         type: 'success',
@@ -211,11 +287,21 @@ const PostEditor = () => {
       
       // Limpiar mensaje después de unos segundos
       setTimeout(() => setSaveMessage(null), 3000);
-    }, 1000);
+    } catch (error) {
+      console.error('Error al guardar borrador:', error);
+      setIsSaving(false);
+      setSaveMessage({
+        type: 'error',
+        text: `Error al guardar: ${error.message}`,
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
   };
 
-  // Simular publicación del post
-  const publishPost = () => {
+  // Publicar el post
+  const publishPost = async () => {
     // Validación básica
     if (!post.title.trim() || !post.content.trim() || !post.category) {
       setSaveMessage({
@@ -230,8 +316,47 @@ const PostEditor = () => {
     
     setIsPublishing(true);
     
-    // Simulación de publicación
-    setTimeout(() => {
+    try {
+      // Convertir la categoría seleccionada a un ID numérico
+      // Buscar el ID de la categoría seleccionada
+      const categoriaSeleccionada = categories.find(cat => 
+        typeof cat === 'object' ? cat.Nombre_categoria === post.category : cat === post.category
+      );
+      
+      let categoriaId;
+      if (typeof categoriaSeleccionada === 'object' && categoriaSeleccionada.ID_categoria) {
+        categoriaId = categoriaSeleccionada.ID_categoria;
+      } else {
+        // Si no encontramos el ID, usamos 1 como valor predeterminado (asumiendo que existe)
+        console.warn("No se pudo encontrar el ID de la categoría, usando valor predeterminado");
+        categoriaId = 1;
+      }
+      
+      // Preparar los datos para el backend
+      const postData = {
+        titulo: post.title,
+        contenido: post.content,
+        resumen: post.title.substring(0, 150), // Usar parte del título como resumen
+        estado: 'publicado',
+        categorias: [categoriaId] // Usar el ID numérico de la categoría
+      };
+      
+      console.log("Enviando publicación con datos:", postData);
+      
+      // Determinar qué endpoint usar según el modo del editor
+      let result;
+      if (post.editorMode === 'html') {
+        result = await createPublicacionFromHTML({
+          titulo: postData.titulo,
+          htmlContent: postData.contenido,
+          resumen: postData.resumen,
+          estado: postData.estado,
+          categorias: postData.categorias
+        });
+      } else {
+        result = await createPublicacion(postData);
+      }
+      
       setIsPublishing(false);
       setPost(prev => ({ ...prev, status: 'published' }));
       setSaveMessage({
@@ -245,7 +370,17 @@ const PostEditor = () => {
       
       // Limpieza del borrador en localStorage después de publicar
       localStorage.removeItem('post_draft');
-    }, 1500);
+    } catch (error) {
+      console.error('Error al publicar:', error);
+      setIsPublishing(false);
+      setSaveMessage({
+        type: 'error',
+        text: `Error al publicar: ${error.message}`,
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
   };
 
   // Exportar el post a HTML para descargar
@@ -387,6 +522,137 @@ const PostEditor = () => {
     }
   };
 
+  // Modificar el componente PostMetadata para usar las categorías cargadas
+  const renderPostMetadata = () => {
+    return (
+      <div style={{
+        marginTop: spacing.lg,
+        backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+        padding: spacing.md,
+        borderRadius: borderRadius.md,
+        boxShadow: shadows.sm
+      }}>
+        <h3 style={{
+          fontSize: typography.fontSize.lg,
+          fontWeight: typography.fontWeight.semiBold,
+          marginBottom: spacing.md,
+          color: isDarkMode ? colors.textLight : colors.primary
+        }}>Detalles de la publicación</h3>
+        
+        <div style={{ marginBottom: spacing.md }}>
+          <label style={{
+            display: 'block',
+            marginBottom: spacing.xs,
+            fontWeight: typography.fontWeight.medium,
+            color: isDarkMode ? colors.textLight : colors.textPrimary
+          }} htmlFor="category">
+            Categoría
+          </label>
+          <select
+            id="category"
+            name="category"
+            value={post.category}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              padding: spacing.sm,
+              borderRadius: borderRadius.sm,
+              border: `1px solid ${colors.gray200}`,
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+              color: isDarkMode ? colors.textLight : colors.textPrimary
+            }}
+            disabled={loadingCategories}
+          >
+            <option value="">Seleccionar categoría</option>
+            {categories.map((cat) => (
+              <option 
+                key={cat.ID_categoria} 
+                value={cat.Nombre_categoria}
+              >
+                {cat.Nombre_categoria}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div style={{ marginBottom: spacing.md }}>
+          <label style={{
+            display: 'block',
+            marginBottom: spacing.xs,
+            fontWeight: typography.fontWeight.medium,
+            color: isDarkMode ? colors.textLight : colors.textPrimary
+          }} htmlFor="tags">
+            Etiquetas (separadas por comas)
+          </label>
+          <input
+            type="text"
+            id="tags"
+            name="tags"
+            value={post.tags}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              padding: spacing.sm,
+              borderRadius: borderRadius.sm,
+              border: `1px solid ${colors.gray200}`,
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+              color: isDarkMode ? colors.textLight : colors.textPrimary
+            }}
+            placeholder="ej. educación, tecnología, aprendizaje"
+          />
+        </div>
+        
+        <div style={{ marginBottom: spacing.md }}>
+          <label style={{
+            display: 'block',
+            marginBottom: spacing.xs,
+            fontWeight: typography.fontWeight.medium,
+            color: isDarkMode ? colors.textLight : colors.textPrimary
+          }} htmlFor="publishDate">
+            Fecha de publicación
+          </label>
+          <input
+            type="date"
+            id="publishDate"
+            name="publishDate"
+            value={post.publishDate}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              padding: spacing.sm,
+              borderRadius: borderRadius.sm,
+              border: `1px solid ${colors.gray200}`,
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+              color: isDarkMode ? colors.textLight : colors.textPrimary
+            }}
+          />
+        </div>
+        
+        <div style={{ marginBottom: spacing.md }}>
+          <label style={{
+            display: 'block',
+            marginBottom: spacing.xs,
+            fontWeight: typography.fontWeight.medium,
+            color: isDarkMode ? colors.textLight : colors.textPrimary
+          }}>
+            Estado actual
+          </label>
+          <div style={{
+            display: 'inline-block',
+            padding: `${spacing.xs} ${spacing.sm}`,
+            backgroundColor: post.status === 'draft' ? colors.warning : colors.success,
+            color: colors.white,
+            borderRadius: borderRadius.sm,
+            fontSize: typography.fontSize.sm,
+            fontWeight: typography.fontWeight.medium
+          }}>
+            {post.status === 'draft' ? 'Borrador' : 'Publicado'}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Solo renderizar una vez inicializado para evitar problemas de redimensión
   if (!isInitialized) {
     return <div style={styles.container}>Cargando editor...</div>;
@@ -434,11 +700,7 @@ const PostEditor = () => {
             onChange={handleImageChange} 
           />
 
-          <PostMetadata 
-            post={post} 
-            categories={categories} 
-            onChange={handleChange} 
-          />
+          {renderPostMetadata()}
           
           <ImportExportActions 
             onExport={exportToFile} 
