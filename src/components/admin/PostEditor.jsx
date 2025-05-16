@@ -61,13 +61,13 @@ const ContentLabel = () => {
     icon: {
       fontSize: '22px',
       marginRight: spacing.sm,
-      color: colors.secondary,
+      color: colors?.secondary || '#d2b99a',
       animation: isAnimated ? 'pulseIcon 2s infinite' : 'none'
     },
     label: {
       fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.semiBold,
-      color: isDarkMode ? colors.textLight : colors.primary, // Ajustar color según el tema
+      color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.primary || '#0b4444'), // Ajustar color según el tema
       position: 'relative',
       paddingBottom: '3px'
     },
@@ -77,13 +77,13 @@ const ContentLabel = () => {
       left: 0,
       width: isAnimated ? '100%' : '0%',
       height: '2px',
-      backgroundColor: colors.secondary,
+      backgroundColor: colors?.secondary || '#d2b99a',
       transition: 'width 0.8s ease-in-out',
       transitionDelay: '0.3s'
     },
     badge: {
       display: 'inline-block',
-      backgroundColor: isAnimated ? colors.primary : 'transparent',
+      backgroundColor: isAnimated ? (colors?.primary || '#0b4444') : 'transparent',
       color: 'white',
       padding: `${spacing.xs} ${spacing.sm}`,
       borderRadius: borderRadius.round,
@@ -109,52 +109,61 @@ const ContentLabel = () => {
 };
 
 const PostEditor = () => {
-  // Obtener los colores del tema actual
-  const { colors, isDarkMode } = useTheme();
+  // Estado para el tema
+  const { colors, isDarkMode } = useTheme(); // Extraer colors y isDarkMode
   
+  // Estado del post
   const [post, setPost] = useState({
     title: '',
+    content: '',
     category: '',
-    content: '', // Aseguramos que se inicie con una cadena vacía
-    tags: '',
     coverImage: null,
-    coverImagePreview: null,
-    status: 'draft', // 'draft', 'published'
-    publishDate: new Date().toISOString().slice(0, 10),
-    editorMode: 'simple', // Set default mode to 'simple'
+    status: 'draft',
+    editorMode: 'simple', // Es importante inicializar este valor
+    previewUrl: null,
+    lastSaved: null
   });
-
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveMessage, setSaveMessage] = useState(null);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Otros estados
   const [categories, setCategories] = useState([]);
-  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [saveMessage, setSaveMessage] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  // Cargar categorías desde el backend
+  // Cargar categorías
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoadingCategories(true);
-        const data = await getAllCategorias();
-        console.log("Categorías cargadas:", data);
-        if (data && Array.isArray(data)) {
-          setCategories(data);
-        } else {
-          // Si no hay datos o no es un array, usar categorías predeterminadas
-          setCategories([
-            { ID_categoria: 1, Nombre_categoria: 'Noticias' },
-            { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
-            { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
-            { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
-            { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
-            { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
-            { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
-          ]);
-        }
-      } catch (error) {
-        console.error('Error al cargar categorías:', error);
-        // Usar categorías predeterminadas en caso de error
+    loadCategories();
+    
+    // Cargar borrador del almacenamiento local
+    const savedPost = loadPostFromLocalStorage();
+    if (savedPost) {
+      setPost(prev => ({
+        ...prev,
+        ...savedPost,
+        lastSaved: savedPost.lastSaved || null,
+        // Asegurarnos que editorMode existe y tiene un valor válido
+        editorMode: savedPost.editorMode || 'simple'
+      }));
+    }
+    
+    // Auto-guardado cada 30 segundos
+    const interval = setInterval(() => {
+      saveDraft();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Función para cargar categorías
+  const loadCategories = async () => {
+    try {
+      const data = await getAllCategorias();
+      console.log("Categorías cargadas:", data);
+      if (data && Array.isArray(data)) {
+        setCategories(data);
+      } else {
+        // Si no hay datos o no es un array, usar categorías predeterminadas
         setCategories([
           { ID_categoria: 1, Nombre_categoria: 'Noticias' },
           { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
@@ -164,20 +173,31 @@ const PostEditor = () => {
           { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
           { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
         ]);
-      } finally {
-        setLoadingCategories(false);
       }
-    };
-
-    fetchCategories();
-  }, []);
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+      // Usar categorías predeterminadas en caso de error
+      setCategories([
+        { ID_categoria: 1, Nombre_categoria: 'Noticias' },
+        { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
+        { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
+        { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
+        { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
+        { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
+        { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
+      ]);
+    }
+  };
 
   // Manejador para cambios en los campos del formulario
-  const handleChange = (e) => {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // Log para depuración
-    console.log(`Changing ${name} to ${value}`);
+    console.log(`Campo ${name} cambió a: ${value}`);
+    
+    if (name === 'editorMode') {
+      console.log(`Modo de editor cambiado a: ${value}`);
+    }
     
     setPost(prev => ({
       ...prev,
@@ -192,41 +212,19 @@ const PostEditor = () => {
       setPost(prev => ({
         ...prev,
         coverImage: file,
-        coverImagePreview: URL.createObjectURL(file)
+        previewUrl: URL.createObjectURL(file)
       }));
     }
   };
 
   // Autoguardado cuando el contenido cambia
   useEffect(() => {
-    if (!isInitialized) return; // Evita guardar durante la inicialización
-    
-    const timer = setTimeout(() => {
-      if (post.content.length > 0 || post.title.length > 0) {
-        // console.log('Guardado automático'); // Eliminar o comentar esta línea
-        savePostToLocalStorage(post);
-      }
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [post, isInitialized]);
-  
-  // Cargar borrador guardado al iniciar
-  useEffect(() => {
-    const savedPost = loadPostFromLocalStorage();
-    if (savedPost) {
-      setPost({
-        ...savedPost,
-        editorMode: savedPost.editorMode || 'simple' // Ensure 'simple' is the default mode
-      });
-      
-      console.log('Loaded post with mode:', savedPost.editorMode || 'simple');
+    if (!post.content.length > 0 || !post.title.length > 0) {
+      // console.log('Guardado automático'); // Eliminar o comentar esta línea
+      savePostToLocalStorage(post);
     }
-    
-    // Marcar como inicializado después de cargar
-    setIsInitialized(true);
-  }, []);
-
+  }, [post]);
+  
   // Guardar como borrador
   const saveDraft = async () => {
     // Validación básica
@@ -346,9 +344,22 @@ const PostEditor = () => {
       // Determinar qué endpoint usar según el modo del editor
       let result;
       if (post.editorMode === 'html') {
+        console.log("Usando endpoint HTML con contenido HTML de longitud:", post.content.length);
+        console.log("Muestra del contenido HTML:", post.content.substring(0, 150) + "...");
+        
+        // Verificar que el contenido no sea vacío o solo espacios
+        if (!post.content.trim()) {
+          throw new Error("El contenido HTML está vacío o solo contiene espacios");
+        }
+        
+        // Verificar que el contenido tenga etiquetas HTML válidas
+        if (!post.content.includes("<") || !post.content.includes(">")) {
+          console.warn("El contenido no parece contener etiquetas HTML válidas");
+        }
+        
         result = await createPublicacionFromHTML({
           titulo: postData.titulo,
-          htmlContent: postData.contenido,
+          htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
           resumen: postData.resumen,
           estado: postData.estado,
           categorias: postData.categorias
@@ -507,17 +518,17 @@ const PostEditor = () => {
       // Estilos específicos se aplicarán en cada botón
     },
     saveButton: {
-      backgroundColor: colors.secondary,
-      color: colors.primary,
+      backgroundColor: colors?.secondary || '#d2b99a',
+      color: colors?.primary || '#0b4444',
       "&:hover": {
-        backgroundColor: colors.secondary + "cc", // Añadir transparencia al hover
+        backgroundColor: (colors?.secondary || '#d2b99a') + "cc", // Añadir transparencia al hover
       }
     },
     publishButton: {
-      backgroundColor: colors.primary,
-      color: colors.white,
+      backgroundColor: colors?.primary || '#0b4444',
+      color: colors?.white || '#ffffff',
       "&:hover": {
-        backgroundColor: colors.primaryLight,
+        backgroundColor: colors?.primaryLight || '#166363',
       }
     }
   };
@@ -527,7 +538,7 @@ const PostEditor = () => {
     return (
       <div style={{
         marginTop: spacing.lg,
-        backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+        backgroundColor: isDarkMode ? (colors?.backgroundDarkSecondary || '#1a3838') : (colors?.white || '#ffffff'),
         padding: spacing.md,
         borderRadius: borderRadius.md,
         boxShadow: shadows.sm
@@ -536,7 +547,7 @@ const PostEditor = () => {
           fontSize: typography.fontSize.lg,
           fontWeight: typography.fontWeight.semiBold,
           marginBottom: spacing.md,
-          color: isDarkMode ? colors.textLight : colors.primary
+          color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.primary || '#0b4444')
         }}>Detalles de la publicación</h3>
         
         <div style={{ marginBottom: spacing.md }}>
@@ -544,7 +555,7 @@ const PostEditor = () => {
             display: 'block',
             marginBottom: spacing.xs,
             fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? colors.textLight : colors.textPrimary
+            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
           }} htmlFor="category">
             Categoría
           </label>
@@ -552,16 +563,15 @@ const PostEditor = () => {
             id="category"
             name="category"
             value={post.category}
-            onChange={handleChange}
+            onChange={handleInputChange}
             style={{
               width: "100%",
               padding: spacing.sm,
               borderRadius: borderRadius.sm,
-              border: `1px solid ${colors.gray200}`,
-              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
-              color: isDarkMode ? colors.textLight : colors.textPrimary
+              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
+              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
+              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
             }}
-            disabled={loadingCategories}
           >
             <option value="">Seleccionar categoría</option>
             {categories.map((cat) => (
@@ -580,7 +590,7 @@ const PostEditor = () => {
             display: 'block',
             marginBottom: spacing.xs,
             fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? colors.textLight : colors.textPrimary
+            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
           }} htmlFor="tags">
             Etiquetas (separadas por comas)
           </label>
@@ -589,14 +599,14 @@ const PostEditor = () => {
             id="tags"
             name="tags"
             value={post.tags}
-            onChange={handleChange}
+            onChange={handleInputChange}
             style={{
               width: "100%",
               padding: spacing.sm,
               borderRadius: borderRadius.sm,
-              border: `1px solid ${colors.gray200}`,
-              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
-              color: isDarkMode ? colors.textLight : colors.textPrimary
+              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
+              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
+              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
             }}
             placeholder="ej. educación, tecnología, aprendizaje"
           />
@@ -607,7 +617,7 @@ const PostEditor = () => {
             display: 'block',
             marginBottom: spacing.xs,
             fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? colors.textLight : colors.textPrimary
+            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
           }} htmlFor="publishDate">
             Fecha de publicación
           </label>
@@ -616,14 +626,14 @@ const PostEditor = () => {
             id="publishDate"
             name="publishDate"
             value={post.publishDate}
-            onChange={handleChange}
+            onChange={handleInputChange}
             style={{
               width: "100%",
               padding: spacing.sm,
               borderRadius: borderRadius.sm,
-              border: `1px solid ${colors.gray200}`,
-              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
-              color: isDarkMode ? colors.textLight : colors.textPrimary
+              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
+              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
+              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
             }}
           />
         </div>
@@ -633,15 +643,15 @@ const PostEditor = () => {
             display: 'block',
             marginBottom: spacing.xs,
             fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? colors.textLight : colors.textPrimary
+            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
           }}>
             Estado actual
           </label>
           <div style={{
             display: 'inline-block',
             padding: `${spacing.xs} ${spacing.sm}`,
-            backgroundColor: post.status === 'draft' ? colors.warning : colors.success,
-            color: colors.white,
+            backgroundColor: post.status === 'draft' ? (colors?.warning || '#f6c23e') : (colors?.success || '#1cc88a'),
+            color: colors?.white || '#ffffff',
             borderRadius: borderRadius.sm,
             fontSize: typography.fontSize.sm,
             fontWeight: typography.fontWeight.medium
@@ -654,8 +664,8 @@ const PostEditor = () => {
   };
 
   // Solo renderizar una vez inicializado para evitar problemas de redimensión
-  if (!isInitialized) {
-    return <div style={styles.container}>Cargando editor...</div>;
+  if (!categories.length) {
+    return <div style={styles.container}>Cargando categorías...</div>;
   }
 
   return (
@@ -696,7 +706,7 @@ const PostEditor = () => {
         {/* Sidebar - Ahora a la izquierda */}
         <div style={styles.sidebar}>
           <CoverImageUploader 
-            coverImagePreview={post.coverImagePreview} 
+            coverImagePreview={post.previewUrl} 
             onChange={handleImageChange} 
           />
 
@@ -726,28 +736,28 @@ const PostEditor = () => {
               id="title"
               name="title"
               value={post.title}
-              onChange={handleChange}
+              onChange={handleInputChange}
               style={{
                 width: "100%",
                 padding: spacing.md,
                 borderRadius: borderRadius.md,
-                border: `1px solid ${colors.gray200}`,
+                border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
                 fontSize: typography.fontSize.lg,
                 transition: "all 0.3s ease",
                 marginBottom: spacing.md,
                 fontWeight: typography.fontWeight.semiBold,
-                borderLeft: `4px solid ${colors.primary}`,
-                backgroundColor: colors.white,
-                color: isDarkMode ? colors.textPrimary : "#000000",
+                borderLeft: `4px solid ${colors?.primary || '#0b4444'}`,
+                backgroundColor: colors?.white || '#ffffff',
+                color: isDarkMode ? (colors?.textPrimary || '#333333') : "#000000",
               }}
               placeholder="Escribe un título atractivo"
               onFocus={(e) => {
-                e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`;
-                e.target.style.borderLeft = `4px solid ${colors.secondary}`;
+                e.target.style.boxShadow = `0 0 0 2px ${colors?.primary || '#0b4444'}30`;
+                e.target.style.borderLeft = `4px solid ${colors?.secondary || '#d2b99a'}`;
               }}
               onBlur={(e) => {
                 e.target.style.boxShadow = 'none';
-                e.target.style.borderLeft = `4px solid ${colors.primary}`;
+                e.target.style.borderLeft = `4px solid ${colors?.primary || '#0b4444'}`;
               }}
             />
           </div>
@@ -758,7 +768,7 @@ const PostEditor = () => {
             
             <DualModeEditor 
               content={post.content}
-              onChange={handleChange}
+              onChange={handleInputChange}
               initialMode={post.editorMode}
             />
           </div>

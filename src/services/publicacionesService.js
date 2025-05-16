@@ -67,6 +67,12 @@ export const createPublicacion = async (publicacionData) => {
 // Crear una publicación a partir de HTML
 export const createPublicacionFromHTML = async (publicacionData) => {
     try {
+        console.log("=== createPublicacionFromHTML ===");
+        console.log("Datos a enviar:", JSON.stringify(publicacionData, null, 2));
+        console.log("htmlContent largo:", publicacionData.htmlContent ? publicacionData.htmlContent.length : 0);
+        console.log("htmlContent muestra:", publicacionData.htmlContent ? publicacionData.htmlContent.substring(0, 100) + "..." : "vacío");
+        console.log("URL API:", `${API_URL}/api/publicaciones/from-html`);
+        
         const response = await fetch(`${API_URL}/api/publicaciones/from-html`, {
             method: 'POST',
             headers: {
@@ -78,10 +84,13 @@ export const createPublicacionFromHTML = async (publicacionData) => {
         
         if (!response.ok) {
             const errorData = await response.json();
+            console.error("Error respuesta:", errorData);
             throw new Error(errorData.detail || 'Error al crear la publicación desde HTML');
         }
         
-        return await response.json();
+        const responseData = await response.json();
+        console.log("Respuesta del servidor:", responseData);
+        return responseData;
     } catch (error) {
         console.error('Error en createPublicacionFromHTML:', error);
         throw error;
