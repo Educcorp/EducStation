@@ -40,6 +40,34 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
       return;
     }
     
+    // Para imágenes, asegurar que se guarden con el atributo data-image-type
+    if (actionType === 'image') {
+      // Abrir diálogo de selección de archivo
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const imgSrc = event.target.result;
+            // Crear HTML con el atributo data-image-type para identificar en vistas de carátulas
+            const imgHTML = `<img src="${imgSrc}" alt="Imagen" data-image-type="html-encoded" style="max-width: 100%; height: auto;" />`;
+            
+            const newContent = internalContent.substring(0, textAreaRef.current.selectionStart) +
+              imgHTML +
+              internalContent.substring(textAreaRef.current.selectionEnd);
+            
+            updateContent(newContent);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
+      return;
+    }
+    
     const newContent = insertHTML(
       internalContent,
       actionType,

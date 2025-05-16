@@ -4,29 +4,37 @@ import { getAllPublicaciones } from '../../services/publicacionesService';
 import { searchPublicaciones, searchByTags } from '../../services/searchService';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows } from '../../styles/theme';
-import { FaCalendarAlt, FaTag, FaEye } from 'react-icons/fa';
+import { FaCalendarAlt, FaTag, FaEye, FaPlus } from 'react-icons/fa';
 import { getAllCategorias } from '../../services/categoriasServices';
+
+const POSTS_PER_PAGE = 6; // Número de posts por página
 
 const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'recientes' }) => {
   const [posts, setPosts] = useState([]);
+  const [displayPosts, setDisplayPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
   const { colors, isDarkMode } = useTheme();
 
+  // Cargar posts iniciales
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setLoading(true);
+        setPage(1); // Resetear página cuando cambian los filtros
         let data = [];
 
         // Si hay término de búsqueda, usamos el servicio de búsqueda
         if (searchTerm && searchTerm.trim() !== '') {
-          data = await searchPublicaciones(searchTerm, limit || 10, 0);
+          data = await searchPublicaciones(searchTerm, limit || 30, 0);
         }
         // Si hay filtro de categoría específica (no es "Todas las categorías")
         else if (categoryFilter && categoryFilter !== '') {
-          data = await searchByTags(categoryFilter, limit || 10, 0);
+          data = await searchByTags(categoryFilter, limit || 30, 0);
         }
         // Si es "Todas las categorías", cargar por categorías de manera independiente
         else {
@@ -38,7 +46,7 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
             // 2. Hacemos peticiones por cada categoría en paralelo
             if (categorias && categorias.length > 0) {
               const promesas = categorias.map(categoria => 
-                searchByTags(categoria.ID_categoria, limit || 10, 0)
+                searchByTags(categoria.ID_categoria, limit || 30, 0)
                   .catch(error => {
                     console.error(`Error al cargar categoría ${categoria.Nombre_categoria}:`, error);
                     return []; // Si falla una categoría, retornamos un array vacío
@@ -62,12 +70,12 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
               console.log(`Combinadas ${data.length} publicaciones únicas de todas las categorías`);
             } else {
               // Si no hay categorías, intentamos el método original como fallback
-              data = await getAllPublicaciones(limit || 10, 0, 'publicado');
+              data = await getAllPublicaciones(limit || 30, 0, 'publicado');
             }
           } catch (categoryError) {
             console.error("Error al cargar por categorías:", categoryError);
             // Intentamos el método general como último recurso
-            data = await getAllPublicaciones(limit || 10, 0, 'publicado');
+            data = await getAllPublicaciones(limit || 30, 0, 'publicado');
           }
         }
 
@@ -84,6 +92,11 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
 
         console.log("Posts cargados:", data.length);
         setPosts(data);
+        
+        // Mostrar solo los primeros POSTS_PER_PAGE posts inicialmente
+        setDisplayPosts(data.slice(0, POSTS_PER_PAGE));
+        setHasMore(data.length > POSTS_PER_PAGE);
+        
         setError(null);
       } catch (error) {
         console.error('Error al cargar publicaciones:', error);
@@ -95,6 +108,21 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
 
     fetchPosts();
   }, [limit, categoryFilter, searchTerm, sortOrder]);
+
+  // Cargar más posts
+  const loadMorePosts = () => {
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    const startIndex = (nextPage - 1) * POSTS_PER_PAGE;
+    const endIndex = nextPage * POSTS_PER_PAGE;
+    
+    setTimeout(() => {
+      setDisplayPosts([...displayPosts, ...posts.slice(startIndex, endIndex)]);
+      setPage(nextPage);
+      setHasMore(endIndex < posts.length);
+      setLoadingMore(false);
+    }, 500); // Pequeño retraso para efecto visual
+  };
 
   // Función para formatear la fecha
   const formatDate = (dateString) => {
@@ -286,6 +314,49 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
       borderRadius: borderRadius.md,
       display: 'inline-block'
     },
+    loadMoreContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      margin: `${spacing.xl} 0`,
+    },
+    loadMoreButton: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '10px',
+      backgroundColor: colors.secondary,
+      color: colors.white,
+      border: 'none',
+      borderRadius: borderRadius.md,
+      padding: `${spacing.md} ${spacing.xl}`,
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.medium,
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      boxShadow: shadows.sm,
+      minWidth: '180px',
+      '&:hover': {
+        backgroundColor: colors.primary,
+        transform: 'translateY(-2px)',
+        boxShadow: shadows.md
+      },
+      '&:disabled': {
+        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        color: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+        cursor: 'not-allowed',
+        transform: 'none',
+        boxShadow: 'none'
+      }
+    },
+    loadingSpinnerSmall: {
+      width: '20px',
+      height: '20px',
+      border: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+      borderTop: `2px solid ${colors.white}`,
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      marginRight: spacing.sm
+    },
   };
 
   // Agregar estilos para la animación del spinner y las tarjetas
@@ -374,7 +445,7 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
       )}
       
       <div style={styles.postGrid}>
-        {posts.map((post, index) => (
+        {displayPosts.map((post, index) => (
           <div 
             key={post.ID_publicaciones} 
             className="blog-post-card"
@@ -460,6 +531,30 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
           </div>
         ))}
       </div>
+      
+      {hasMore && (
+        <div style={styles.loadMoreContainer}>
+          <button 
+            style={{
+              ...styles.loadMoreButton,
+              backgroundColor: loadingMore ? (isDarkMode ? 'rgba(26, 147, 111, 0.7)' : 'rgba(26, 147, 111, 0.7)') : colors.secondary,
+            }}
+            onClick={loadMorePosts}
+            disabled={loadingMore}
+          >
+            {loadingMore ? (
+              <>
+                <div style={styles.loadingSpinnerSmall}></div>
+                Cargando...
+              </>
+            ) : (
+              <>
+                <FaPlus size={14} /> Cargar más publicaciones
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

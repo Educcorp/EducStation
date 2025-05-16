@@ -18,6 +18,8 @@ const savePostToLocalStorage = (post) => {
     const postToSave = { ...post };
     // No guardamos la imagen como tal, sino solo la URL de vista previa
     delete postToSave.coverImage;
+    // Incluimos el resumen en los datos guardados
+    postToSave.lastSaved = new Date().toISOString();
     localStorage.setItem('post_draft', JSON.stringify(postToSave));
     console.log('Saved to localStorage:', postToSave); // Debug
   } catch (error) {
@@ -122,6 +124,7 @@ const PostEditor = () => {
     status: 'draft', // 'draft', 'published'
     publishDate: new Date().toISOString().slice(0, 10),
     editorMode: 'simple', // Set default mode to 'simple'
+    resumen: '', // Añadimos el campo resumen
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -348,7 +351,7 @@ const PostEditor = () => {
       const postData = {
         titulo: post.title,
         contenido: post.content,
-        resumen: post.title.substring(0, 150), // Usar parte del título como resumen
+        resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'borrador',
         categorias: categorias
       };
@@ -419,7 +422,7 @@ const PostEditor = () => {
       const postData = {
         titulo: post.title,
         contenido: post.content,
-        resumen: post.title.substring(0, 150), // Usar parte del título como resumen
+        resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'publicado',
         categorias: [categoriaId] // Usar el ID numérico de la categoría
       };
@@ -445,7 +448,7 @@ const PostEditor = () => {
         result = await createPublicacionFromHTML({
           titulo: postData.titulo,
           htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
-          resumen: postData.resumen,
+          resumen: post.resumen || postData.resumen,
           estado: postData.estado,
           categorias: postData.categorias
         });
@@ -481,87 +484,103 @@ const PostEditor = () => {
 
   // Exportar el post a HTML para descargar
   const exportToFile = () => {
-    // Crear un objeto de texto para descargar
-    const content = post.content;
-    
-    const blob = new Blob([content], { type: 'text/html' });
-    const url = URL.createObjectURL(blob);
-    
-    // Crear un enlace de descarga y hacer clic en él
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${post.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.html`;
-    document.body.appendChild(a);
-    a.click();
-    
-    // Limpiar
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    // Mostrar mensaje de éxito
-    setSaveMessage({
-      type: 'success',
-      text: `Archivo HTML descargado correctamente`,
-      icon: '📥'
-    });
-    
-    setTimeout(() => setSaveMessage(null), 3000);
+    try {
+      // Prepare the data for export (including the resumen field)
+      const postData = {
+        title: post.title,
+        content: post.content,
+        category: post.category,
+        tags: post.tags,
+        status: post.status,
+        publishDate: post.publishDate,
+        editorMode: post.editorMode,
+        resumen: post.resumen,
+        // We don't include the image as it's a File object which can't be serialized
+        // But we could include the coverImagePreview URL
+        coverImagePreview: post.coverImagePreview
+      };
+      
+      // Convert to JSON
+      const jsonData = JSON.stringify(postData, null, 2);
+      
+      // Create a blob from the JSON data
+      const blob = new Blob([jsonData], { type: 'application/json' });
+      
+      // Create a download link and trigger it
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Clean up
+      URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+      
+      // Show success message
+      setSaveMessage({
+        type: 'success',
+        text: 'Post exportado correctamente',
+        icon: '📤'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    } catch (error) {
+      console.error('Error al exportar post:', error);
+      setSaveMessage({
+        type: 'error',
+        text: 'Error al exportar: ' + error.message,
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
   };
 
   // Importar un archivo HTML
   const importFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    
+
     const reader = new FileReader();
     reader.onload = (event) => {
-      const content = event.target.result;
-      const fileExtension = file.name.split('.').pop().toLowerCase();
-      
-      // Verificar que sea HTML
-      const isHTML = fileExtension === 'html' || fileExtension === 'htm';
-      
-      if (isHTML) {
-        // Extraer el título del documento HTML si existe
-        const titleMatch = content.match(/<title>(.*?)<\/title>/i);
-        const title = titleMatch ? titleMatch[1] : '';
+      try {
+        // Parse the imported JSON data
+        const importedData = JSON.parse(event.target.result);
         
-        // Actualizar el estado con el contenido HTML
-        setPost(prevPost => {
-          const updatedPost = {
-            ...prevPost,
-            title: title || prevPost.title,
-            content: content,
-            editorMode: 'html'
-          };
-          
-          console.log("Modo de editor actualizado a HTML después de importar archivo");
-          
-          // Guardamos en localStorage inmediatamente
-          savePostToLocalStorage(updatedPost);
-          
-          return updatedPost;
-        });
-      } else {
-        // Informar que solo se permiten archivos HTML
+        // Update the post state with the imported data
+        setPost(prev => ({
+          ...prev,
+          title: importedData.title || '',
+          content: importedData.content || '',
+          category: importedData.category || '',
+          tags: importedData.tags || '',
+          status: importedData.status || 'draft',
+          publishDate: importedData.publishDate || new Date().toISOString().slice(0, 10),
+          editorMode: importedData.editorMode || 'simple',
+          resumen: importedData.resumen || '',
+          coverImagePreview: importedData.coverImagePreview || null
+        }));
+        
+        // Show success message
         setSaveMessage({
-          type: 'error',
-          text: 'Solo se permiten archivos HTML (.html, .htm)',
-          icon: '⚠️'
+          type: 'success',
+          text: 'Post importado correctamente',
+          icon: '📥'
         });
         
         setTimeout(() => setSaveMessage(null), 3000);
-        return;
+      } catch (error) {
+        console.error('Error al importar archivo:', error);
+        setSaveMessage({
+          type: 'error',
+          text: 'Error al importar: formato inválido',
+          icon: '✖'
+        });
+        
+        setTimeout(() => setSaveMessage(null), 3000);
       }
-      
-      // Mostrar mensaje de éxito
-      setSaveMessage({
-        type: 'success',
-        text: `Archivo HTML importado correctamente`,
-        icon: '📤'
-      });
-      
-      setTimeout(() => setSaveMessage(null), 3000);
     };
     
     reader.readAsText(file);
@@ -982,6 +1001,56 @@ const PostEditor = () => {
               onChange={handleChange}
               initialMode={post.editorMode}
             />
+          </div>
+
+          {/* Campo para resumen */}
+          <div style={{
+            marginBottom: spacing.xl,
+            marginTop: spacing.xl,
+            border: `1px solid ${colors.gray200}`,
+            borderRadius: borderRadius.md,
+            padding: spacing.md,
+            backgroundColor: colors.white,
+            boxShadow: shadows.sm,
+          }}>
+            <label 
+              htmlFor="resumen" 
+              style={{
+                display: 'block',
+                marginBottom: spacing.sm,
+                fontSize: typography.fontSize.md,
+                fontWeight: typography.fontWeight.medium,
+                color: colors.textPrimary,
+              }}
+            >
+              Resumen de la publicación
+            </label>
+            <textarea
+              id="resumen"
+              name="resumen"
+              value={post.resumen}
+              onChange={handleChange}
+              placeholder="Ingresa un resumen para tu publicación (máximo 500 caracteres)"
+              style={{
+                width: '100%',
+                padding: spacing.md,
+                border: `1px solid ${colors.gray200}`,
+                borderRadius: borderRadius.md,
+                minHeight: '120px',
+                fontSize: typography.fontSize.md,
+                color: colors.textPrimary,
+                resize: 'vertical',
+              }}
+              maxLength={500}
+            />
+            <div style={{
+              textAlign: 'right',
+              marginTop: spacing.xs,
+              fontSize: typography.fontSize.sm,
+              color: colors.textSecondary,
+            }}>
+              {post.resumen.length}/500 caracteres
+            </div>
           </div>
 
           {saveMessage && (

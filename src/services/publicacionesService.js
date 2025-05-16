@@ -91,33 +91,41 @@ export const createPublicacion = async (publicacionData) => {
     }
 };
 
-// Crear una publicación a partir de HTML
+// Crear una publicación desde HTML (método específico para el editor HTML)
 export const createPublicacionFromHTML = async (publicacionData) => {
     try {
-        console.log("=== createPublicacionFromHTML ===");
-        console.log("Datos a enviar:", JSON.stringify(publicacionData, null, 2));
-        console.log("htmlContent largo:", publicacionData.htmlContent ? publicacionData.htmlContent.length : 0);
-        console.log("htmlContent muestra:", publicacionData.htmlContent ? publicacionData.htmlContent.substring(0, 100) + "..." : "vacío");
-        console.log("URL API:", `${API_URL}/api/publicaciones/from-html`);
-        
-        const response = await fetch(`${API_URL}/api/publicaciones/from-html`, {
+        // Validación básica del contenido HTML
+        if (!publicacionData.htmlContent || publicacionData.htmlContent.trim() === '') {
+            throw new Error('El contenido HTML no puede estar vacío');
+        }
+
+        // Verificar que el contenido tenga etiquetas HTML válidas
+        if (!publicacionData.htmlContent.includes("<") || !publicacionData.htmlContent.includes(">")) {
+            console.warn("El contenido no parece contener etiquetas HTML válidas");
+        }
+
+        // Asegurar que existe un resumen o usar los primeros caracteres del título
+        if (!publicacionData.resumen) {
+            publicacionData.resumen = publicacionData.titulo.substring(0, Math.min(150, publicacionData.titulo.length));
+        }
+
+        // Enviamos los datos al backend
+        const response = await fetch(`${API_URL}/api/publicaciones/html`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
             body: JSON.stringify(publicacionData)
         });
-        
+
         if (!response.ok) {
             const errorData = await response.json();
-            console.error("Error respuesta:", errorData);
+            console.error('Error response:', errorData);
             throw new Error(errorData.detail || 'Error al crear la publicación desde HTML');
         }
-        
-        const responseData = await response.json();
-        console.log("Respuesta del servidor:", responseData);
-        return responseData;
+
+        return await response.json();
     } catch (error) {
         console.error('Error en createPublicacionFromHTML:', error);
         throw error;
