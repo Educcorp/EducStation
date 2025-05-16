@@ -14,6 +14,7 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import AdminPostPage from './pages/AdminPostPage';
 import CategoryPage from './pages/CategoryPage';
+import CategoriesListPage from './pages/CategoriesListPage';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
@@ -226,6 +227,14 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <CategoryPage />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/categorias" 
+                element={
+                  <PrivateRoute>
+                    <CategoriesListPage />
                   </PrivateRoute>
                 } 
               />
