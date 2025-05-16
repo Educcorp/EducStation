@@ -117,23 +117,43 @@ export const login = async (credentials) => {
     // Guardar tokens en localStorage
     localStorage.setItem('userToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
+    
+    // Guardar nombre de usuario y estado de superusuario si están disponibles en la respuesta
+    if (data.username) {
+      localStorage.setItem('userName', data.username);
+    }
+    
+    // Guardar explícitamente el estado de superusuario
+    localStorage.setItem('isSuperUser', data.is_superuser ? 'true' : 'false');
 
-    // Obtener información del usuario
-    const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
-      headers: {
-        'Authorization': `Bearer ${data.access}`,
-      },
-    });
+    // Obtener información completa del usuario si no viene en la respuesta inicial
+    if (!data.username || data.is_superuser === undefined) {
+      const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
+        headers: {
+          'Authorization': `Bearer ${data.access}`,
+        },
+      });
 
-    if (!userResponse.ok) {
-      throw new Error('Error al obtener información del usuario');
+      if (!userResponse.ok) {
+        throw new Error('Error al obtener información del usuario');
+      }
+
+      const userData = await userResponse.json();
+      localStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
+      localStorage.setItem('isSuperUser', userData.is_superuser ? 'true' : 'false');
+      
+      return {
+        user: userData,
+        token: data.access,
+        refresh: data.refresh,
+      };
     }
 
-    const userData = await userResponse.json();
-    localStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
-
     return {
-      user: userData,
+      user: {
+        username: data.username,
+        is_superuser: data.is_superuser
+      },
       token: data.access,
       refresh: data.refresh,
     };
@@ -148,6 +168,7 @@ export const logout = () => {
   localStorage.removeItem('userToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userName');
+  localStorage.removeItem('isSuperUser');
 };
 
 // Refrescar el token de acceso
