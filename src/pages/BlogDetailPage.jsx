@@ -4,6 +4,8 @@ import { useParams, Link } from 'react-router-dom';
 import { getPublicacionById } from '../services/publicacionesService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import PostDetail from '../components/blog/PostDetail';
+import PostViewer from '../components/blog/PostViewer';
 import { useTheme } from '../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../styles/theme';
 
@@ -202,6 +204,12 @@ const BlogDetailPage = () => {
         {loading ? (
           <div style={styles.loadingContainer}>
             <div style={styles.loadingSpinner}></div>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
           </div>
         ) : error ? (
           <div style={styles.errorContainer}>
@@ -209,46 +217,7 @@ const BlogDetailPage = () => {
             <Link to="/blog" style={styles.backLink}>Volver al blog</Link>
           </div>
         ) : post ? (
-          <article style={styles.article}>
-            <header style={styles.header}>
-              <h1 style={styles.title}>{post.Titulo}</h1>
-              <div style={styles.meta}>
-                <span>Por {post.NombreAdmin || 'Admin'}</span>
-                <span>{formatDate(post.Fecha_creacion)}</span>
-              </div>
-              {post.Imagen_destacada_ID && (
-                <img 
-                  src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`} 
-                  alt={post.Titulo} 
-                  style={styles.featuredImage}
-                />
-              )}
-            </header>
-            
-            <div 
-              style={styles.content}
-              dangerouslySetInnerHTML={{ __html: post.Contenido }}
-            />
-            
-            {post.categorias && post.categorias.length > 0 && (
-              <div style={styles.categories}>
-                <span>Categorías: </span>
-                {post.categorias.map(cat => (
-                  <Link 
-                    key={cat.ID_categoria} 
-                    to={`/categoria/${cat.ID_categoria}`} 
-                    style={styles.category}
-                  >
-                    {cat.Nombre_categoria}
-                  </Link>
-                ))}
-              </div>
-            )}
-            
-            <Link to="/blog" style={styles.backLink}>
-              ← Volver al blog
-            </Link>
-          </article>
+          <PostDetail post={post} />
         ) : (
           <div style={styles.errorContainer}>
             <p>No se encontró la publicación solicitada.</p>

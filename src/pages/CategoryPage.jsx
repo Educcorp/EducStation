@@ -1,25 +1,28 @@
 // src/pages/CategoryPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostCard from '../components/blog/PostCard';
 import { spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
+import { searchByTags } from '../services/searchService';
+import { getAllCategorias } from '../services/categoriasServices';
 import '../styles/animations.css';
 
 const CategoryPage = () => {  
-    // Añade isDarkMode a la desestructuración del contexto
-    const { colors, isDarkMode } = useTheme(); // Obtenemos los colores y el estado del modo oscuro
-    
-    const [animate, setAnimate] = useState(false);
+  const { colors, isDarkMode } = useTheme();
+  const [animate, setAnimate] = useState(false);
   
-    useEffect(() => {
-      const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente
-      return () => clearTimeout(timeout); // Limpia el timeout al desmontar
-    }, []);
   // Obtenemos el parámetro de categoría de la URL
-  const { categoryName } = useParams();
+  const { id } = useParams();
+  
+  // Estados para los datos
+  const [posts, setPosts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [currentCategory, setCurrentCategory] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // Estado para la búsqueda
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,51 +32,64 @@ const CategoryPage = () => {
   
   // Estado para el número de página
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   
-  // Categorías disponibles (para la navegación de categorías relacionadas)
-  const categories = [
-    { id: 'noticias', name: 'Noticias' },
-    { id: 'tecnicas-de-estudio', name: 'Técnicas de Estudio' },
-    { id: 'problematicas', name: 'Problemáticas' },
-    { id: 'educacion-de-calidad', name: 'Educación de Calidad' },
-    { id: 'herramientas', name: 'Herramientas' },
-    { id: 'desarrollo-docente', name: 'Desarrollo Docente' }
-  ];
-  
-  // Obtener información de la categoría actual
-  const currentCategory = categories.find(cat => cat.id === categoryName) || {
-    id: categoryName,
-    name: categoryName?.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-  };
-  
-  // Categorías relacionadas (todas excepto la actual)
-  const relatedCategories = categories.filter(cat => cat.id !== categoryName);
-  
-  // Lista de artículos simulada para esta categoría
-  const [posts, setPosts] = useState([]);
-  
-  // Generar datos de posts simulados
+  // Activar animación al montar el componente
   useEffect(() => {
-    // Eliminar la generación de posts falsos
-    // No se generarán posts de ejemplo
-  }, [/* dependencias necesarias */]);
+    const timeout = setTimeout(() => setAnimate(true), 0);
+    return () => clearTimeout(timeout);
+  }, []);
+  
+  // Cargar categorías y posts
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Cargar todas las categorías
+        const categoriesData = await getAllCategorias();
+        setCategories(categoriesData);
+        
+        // Encontrar la categoría actual
+        const category = categoriesData.find(cat => cat.ID_categoria === parseInt(id));
+        setCurrentCategory(category);
+        
+        // Cargar posts de esta categoría
+        const postsData = await searchByTags(id, 12, 0);
+        setPosts(postsData);
+        
+        // Calcular total de páginas
+        const totalPosts = postsData.length;
+        setTotalPages(Math.ceil(totalPosts / 9));
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error al cargar datos:', err);
+        setError('No se pudieron cargar los datos. Por favor, intenta de nuevo más tarde.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
   
   // Filtrar posts por búsqueda
   const filteredPosts = posts.filter(post => 
-    post.title.toLowerCase().includes(searchQuery.toLowerCase())
+    post.Titulo.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   // Ordenar posts según el filtro seleccionado
   const sortedPosts = [...filteredPosts].sort((a, b) => {
     switch (selectedFilter) {
       case 'reciente':
-        return parseInt(a.time) - parseInt(b.time);
+        return new Date(b.Fecha_creacion) - new Date(a.Fecha_creacion);
       case 'antiguo':
-        return parseInt(b.time) - parseInt(a.time);
-      case 'popular':
-        return b.likes - a.likes;
+        return new Date(a.Fecha_creacion) - new Date(b.Fecha_creacion);
       case 'alfabetico':
-        return a.title.localeCompare(b.title);
+        return a.Titulo.localeCompare(b.Titulo);
       default:
         return 0;
     }
@@ -81,7 +97,6 @@ const CategoryPage = () => {
   
   // Paginación
   const postsPerPage = 9;
-  const totalPages = Math.ceil(sortedPosts.length / postsPerPage);
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = sortedPosts.slice(indexOfFirstPost, indexOfLastPost);
@@ -232,6 +247,8 @@ const CategoryPage = () => {
       border: `1px solid ${colors.gray200}`,
       fontSize: typography.fontSize.sm,
       transition: transitions.default,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
       '&:focus': {
         outline: "none",
         borderColor: colors.primary,
@@ -251,51 +268,44 @@ const CategoryPage = () => {
       borderRadius: borderRadius.md,
       border: `1px solid ${colors.gray200}`,
       fontSize: typography.fontSize.sm,
-      color: colors.textPrimary,
-      backgroundColor: colors.white,
-      cursor: "pointer",
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
       transition: transitions.default,
-      '&:focus': {
-        outline: "none",
-        borderColor: colors.primary,
-        boxShadow: `0 0 0 2px ${colors.primary}30`
-      }
+      appearance: "none",
+      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11.5l-6-6 1.5-1.5L8 8.5 12.5 4 14 5.5l-6 6z'/%3E%3C/svg%3E")`,
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "right 12px center",
+      paddingRight: "30px"
     },
     postsGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-      gap: spacing.xl,
+      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+      gap: spacing.lg,
       marginBottom: spacing.xl
-    },
-    noResults: {
-      textAlign: "center",
-      padding: `${spacing.xxl} 0`,
-      color: colors.textSecondary,
-      fontSize: typography.fontSize.lg
     },
     pagination: {
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
       gap: spacing.sm,
-      marginTop: spacing.xl
+      marginTop: spacing.xl,
+      marginBottom: spacing.xl
     },
     pageButton: {
-      minWidth: "36px",
-      height: "36px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      padding: `0 ${spacing.sm}`,
+      width: "36px",
+      height: "36px",
       borderRadius: borderRadius.md,
-      backgroundColor: "transparent",
       border: `1px solid ${colors.gray200}`,
-      color: colors.textPrimary,
-      fontSize: typography.fontSize.sm,
-      cursor: "pointer",
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
       transition: transitions.default,
+      cursor: "pointer",
       '&:hover': {
-        backgroundColor: colors.gray100
+        backgroundColor: colors.gray100,
+        borderColor: colors.gray300
       },
       '&:disabled': {
         opacity: 0.5,
@@ -305,159 +315,75 @@ const CategoryPage = () => {
     activePageButton: {
       backgroundColor: colors.primary,
       color: colors.white,
-      border: `1px solid ${colors.primary}`,
+      borderColor: colors.primary,
       '&:hover': {
         backgroundColor: colors.primaryDark
       }
     },
-    sidebarSection: {
-      backgroundColor: colors.white,
-      borderRadius: borderRadius.lg,
-      padding: spacing.lg,
-      boxShadow: shadows.sm,
+    relatedCategories: {
       marginBottom: spacing.xl
     },
-    sidebarTitle: {
+    relatedCategoriesTitle: {
       fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.semiBold,
-      marginBottom: spacing.lg,
-      position: "relative",
-      paddingBottom: spacing.sm,
-      '&:after': {
-        content: '""',
-        position: "absolute",
-        bottom: 0,
-        left: 0,
-        width: "40px",
-        height: "2px",
-        backgroundColor: colors.primary
-      }
-    },
-    categoriesList: {
-      display: "flex",
-      flexDirection: "column",
-      gap: spacing.sm
-    },
-    categoryItem: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: `${spacing.sm} ${spacing.md}`,
-      borderRadius: borderRadius.md,
-      color: colors.textPrimary,
-      textDecoration: "none",
-      transition: transitions.default,
-      '&:hover': {
-        backgroundColor: colors.gray100,
-        transform: "translateX(5px)"
-      }
-    },
-    categoryItemCount: {
-      backgroundColor: colors.gray100,
-      borderRadius: "50%",
-      width: "24px",
-      height: "24px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: typography.fontSize.xs,
-      transition: transitions.default
-    },
-    popularPost: {
-      display: "flex",
-      gap: spacing.md,
-      padding: spacing.md,
       marginBottom: spacing.md,
-      borderRadius: borderRadius.md,
-      transition: transitions.default,
-      '&:hover': {
-        backgroundColor: colors.gray100
-      }
+      color: isDarkMode ? colors.textLight : colors.textPrimary
     },
-    popularPostImage: {
-      width: "80px",
-      height: "80px",
-      borderRadius: borderRadius.sm,
-      overflow: "hidden"
-    },
-    popularPostImg: {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover"
-    },
-    popularPostTitle: {
-      fontSize: typography.fontSize.md,
-      fontWeight: typography.fontWeight.medium,
-      marginBottom: spacing.xs,
-      color: colors.textPrimary,
-      transition: transitions.default,
-      '&:hover': {
-        color: colors.primary
-      }
-    },
-    popularPostMeta: {
-      display: "flex",
-      alignItems: "center",
-      gap: spacing.sm,
-      fontSize: typography.fontSize.xs,
-      color: colors.textSecondary
-    },
-    tagCloud: {
+    categoryList: {
       display: "flex",
       flexWrap: "wrap",
       gap: spacing.sm
     },
-    tag: {
+    categoryLink: {
+      display: "inline-block",
       padding: `${spacing.xs} ${spacing.md}`,
-      backgroundColor: colors.gray100,
       borderRadius: borderRadius.round,
-      fontSize: typography.fontSize.xs,
-      color: colors.textSecondary,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.gray100,
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      fontSize: typography.fontSize.sm,
+      textDecoration: "none",
       transition: transitions.default,
-      cursor: "pointer",
       '&:hover': {
         backgroundColor: colors.primary,
         color: colors.white
       }
     },
-    newsletter: {
-      display: "flex",
-      flexDirection: "column",
-      gap: spacing.md
+    newsletterBox: {
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.gray100,
+      padding: spacing.lg,
+      borderRadius: borderRadius.md,
+      marginBottom: spacing.xl
+    },
+    newsletterTitle: {
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.semiBold,
+      marginBottom: spacing.sm,
+      color: isDarkMode ? colors.textLight : colors.textPrimary
     },
     newsletterText: {
       fontSize: typography.fontSize.sm,
-      color: colors.textSecondary,
-      marginBottom: spacing.md
+      marginBottom: spacing.md,
+      color: isDarkMode ? colors.textLight : colors.textSecondary
     },
     newsletterForm: {
       display: "flex",
       flexDirection: "column",
-      gap: spacing.md
+      gap: spacing.sm
     },
     newsletterInput: {
-      padding: spacing.md,
+      padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: borderRadius.md,
-      border: `1px solid ${isDarkMode ? colors.gray300 : colors.gray200}`,
+      border: `1px solid ${colors.gray200}`,
       fontSize: typography.fontSize.sm,
-      backgroundColor: isDarkMode ? '#333' : colors.white,
-      color: isDarkMode ? '#fff' : colors.textPrimary,
-      transition: transitions.default,
-      '&:focus': {
-        outline: "none",
-        borderColor: colors.primary,
-        boxShadow: `0 0 0 2px ${colors.primary}30`
-      },
-      '&::placeholder': {
-        color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'
-      }
+      backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+      color: isDarkMode ? colors.textLight : colors.textPrimary
     },
     newsletterButton: {
-      padding: spacing.md,
+      padding: `${spacing.sm} ${spacing.md}`,
+      borderRadius: borderRadius.md,
       backgroundColor: colors.primary,
       color: colors.white,
       border: "none",
-      borderRadius: borderRadius.md,
       fontSize: typography.fontSize.sm,
       fontWeight: typography.fontWeight.medium,
       cursor: "pointer",
@@ -466,388 +392,236 @@ const CategoryPage = () => {
         backgroundColor: colors.primaryDark
       },
       '&:disabled': {
-        backgroundColor: colors.gray300,
+        opacity: 0.7,
         cursor: "not-allowed"
       }
     },
-    successMessage: {
-      marginTop: spacing.sm,
+    messageBox: {
       padding: spacing.sm,
-      backgroundColor: '#dff0d8',
-      color: '#3c763d',
-      borderRadius: borderRadius.sm,
-      fontSize: typography.fontSize.sm
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.sm,
+      marginTop: spacing.sm
+    },
+    successMessage: {
+      backgroundColor: "#d1e7dd",
+      color: "#0f5132"
     },
     errorMessage: {
-      marginTop: spacing.sm,
-      padding: spacing.sm,
-      backgroundColor: '#f2dede',
-      color: '#a94442',
-      borderRadius: borderRadius.sm,
-      fontSize: typography.fontSize.sm
+      backgroundColor: "#f8d7da",
+      color: "#842029"
+    },
+    loadingContainer: {
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      minHeight: "300px"
+    },
+    loadingSpinner: {
+      width: "40px",
+      height: "40px",
+      border: `4px solid ${colors.gray200}`,
+      borderTop: `4px solid ${colors.primary}`,
+      borderRadius: "50%",
+      animation: "spin 1s linear infinite"
+    },
+    errorContainer: {
+      padding: spacing.lg,
+      backgroundColor: "#f8d7da",
+      color: "#842029",
+      borderRadius: borderRadius.md,
+      textAlign: "center",
+      margin: `${spacing.xl} 0`
+    },
+    noPostsMessage: {
+      textAlign: "center",
+      padding: spacing.xl,
+      color: isDarkMode ? colors.textLight : colors.textSecondary
     }
   };
 
   return (
-    <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
+    <div style={{ 
+      backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      minHeight: "100vh"
+    }}>
       <Header />
       
-      <main>
-        {/* Hero Section */}
-        <section style={styles.hero}>
-          <div style={styles.container}>
-            <div style={styles.heroContent}>
-              <div style={styles.breadcrumb}>
-                <a 
-                  href="/"
-                  style={styles.breadcrumbLink}
-                  onMouseEnter={(e) => e.target.style.color = colors.primary} 
-                  onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
-                >Inicio</a>
-                <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
-                <a 
-                  href="/category/tecnicas-de-estudio"
-                  style={styles.breadcrumbLink}
-                  onMouseEnter={(e) => e.target.style.color = colors.primary} 
-                  onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
-                >Blog</a>
-                <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
-                <span>{currentCategory.name}</span>
-                
-              </div>
-              
-              <h1 
-              className={animate ? "page-animation" : ""}
-              style={styles.title}>{currentCategory.name}</h1>
-              <p className={animate ? "page-animation" : ""} style={styles.subtitle}>
-                Explora nuestra colección de artículos sobre {currentCategory.name.toLowerCase()}. 
-                Aquí encontrarás consejos, estrategias y recursos para mejorar tu práctica educativa 
-                en esta área específica.
-              </p>
-              
-              <div style={styles.categoryTag}>
-                {currentCategory.name}
-              </div>
-            </div>
+      <div style={styles.container}>
+        {loading ? (
+          <div style={styles.loadingContainer}>
+            <div style={styles.loadingSpinner}></div>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
           </div>
-        </section>
-        
-        <div style={styles.container}>
-          <div style={styles.contentWrapper}>
-            {/* Main Content */}
-            <div style={styles.mainContent}>
-              {/* Filter Bar */}
-              <div style={styles.filterBar}>
-                <div style={styles.searchBox}>
-                  <span style={styles.searchIcon}>🔍</span>
-                  <input 
-                    type="text" 
-                    placeholder="Buscar en esta categoría..." 
-                    style={{
-                      ...styles.searchInput,
-                      backgroundColor: isDarkMode ? '#333' : colors.white,
-                      color: isDarkMode ? '#fff' : colors.textPrimary,
-                      border: `1px solid ${isDarkMode ? colors.gray300 : colors.gray200}`,
-                      '&::placeholder': {
-                        color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)'
-                      }
-                    }}
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      setCurrentPage(1); // Reset to first page on new search
-                    }}
-                    onFocus={(e) => e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`}
-                    onBlur={(e) => e.target.style.boxShadow = 'none'}
-                  />
-                </div>
-                
-                <select 
-                  style={styles.filterDropdown}
-                  value={selectedFilter}
-                  onChange={(e) => {
-                    setSelectedFilter(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
-                  }}
-                  onFocus={(e) => e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`}
-                  onBlur={(e) => e.target.style.boxShadow = 'none'}
-                >
-                  <option value="reciente">Más recientes</option>
-                  <option value="antiguo">Más antiguos</option>
-                  <option value="popular">Más populares</option>
-                  <option value="alfabetico">Alfabéticamente</option>
-                </select>
-              </div>
-              
-              {/* Posts Grid */}
-              <div style={{ padding: '2rem', textAlign: 'center', color: '#888', fontSize: '1.2rem' }}>
-                No hay artículos disponibles en esta categoría.
-              </div>
-              
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div style={styles.pagination}>
-                  <button 
-                    style={styles.pageButton}
-                    onClick={prevPage}
-                    disabled={currentPage === 1}
-                    onMouseEnter={(e) => {
-                      if (currentPage !== 1) {
-                        e.currentTarget.style.backgroundColor = colors.gray100;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    ←
-                  </button>
+        ) : error ? (
+          <div style={styles.errorContainer}>
+            <p>{error}</p>
+          </div>
+        ) : (
+          <>
+            <section style={styles.hero} className={animate ? "fade-in" : ""}>
+              <div style={styles.container}>
+                <div style={styles.heroContent}>
+                  <div style={styles.breadcrumb}>
+                    <Link to="/" style={styles.breadcrumbLink}>Inicio</Link>
+                    <span>›</span>
+                    <Link to="/blog" style={styles.breadcrumbLink}>Blog</Link>
+                    <span>›</span>
+                    <span>{currentCategory?.Nombre_categoria || 'Categoría'}</span>
+                  </div>
                   
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                    <button
-                      key={number}
-                      style={{
-                        ...styles.pageButton,
-                        ...(number === currentPage ? styles.activePageButton : {})
-                      }}
-                      onClick={() => paginate(number)}
-                      onMouseEnter={(e) => {
-                        if (number !== currentPage) {
-                          e.currentTarget.style.backgroundColor = colors.gray100;
-                        } else {
-                          e.currentTarget.style.backgroundColor = colors.primaryDark;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (number !== currentPage) {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                        } else {
-                          e.currentTarget.style.backgroundColor = colors.primary;
-                        }
-                      }}
-                    >
-                      {number}
-                    </button>
-                  ))}
+                  <h1 style={styles.title}>{currentCategory?.Nombre_categoria || 'Categoría'}</h1>
                   
-                  <button 
-                    style={styles.pageButton}
-                    onClick={nextPage}
-                    disabled={currentPage === totalPages}
-                    onMouseEnter={(e) => {
-                      if (currentPage !== totalPages) {
-                        e.currentTarget.style.backgroundColor = colors.gray100;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    →
-                  </button>
+                  <p style={styles.subtitle}>
+                    {currentCategory?.Descripcion || 'Artículos relacionados con esta categoría'}
+                  </p>
+                  
+                  <div style={styles.categoryTag}>
+                    {currentCategory?.Nombre_categoria || 'Categoría'}
+                    <span style={styles.categoryCount}>{posts.length}</span>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            </section>
             
-            {/* Sidebar */}
-            <div style={styles.sidebar}>
-              {/* Categories Section */}
-              <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
-                  Categorías
-                  <span style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    width: "40px",
-                    height: "2px",
-                    backgroundColor: colors.primary
-                  }}></span>
-                </h3>
-                <div style={styles.categoriesList}>
-                  {categories.map((cat) => (
-                    <a 
-                      key={cat.id}
-                      href={`/category/${cat.id}`}
-                      style={styles.categoryItem}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.gray100;
-                        e.currentTarget.style.transform = "translateX(5px)";
-                        e.currentTarget.querySelector('.category-count').style.backgroundColor = colors.primary;
-                        e.currentTarget.querySelector('.category-count').style.color = colors.white;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.transform = "translateX(0)";
-                        e.currentTarget.querySelector('.category-count').style.backgroundColor = colors.gray100;
-                        e.currentTarget.querySelector('.category-count').style.color = colors.textSecondary;
-                      }}
-                    >
-                      {cat.name}
-                    </a>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Popular Posts Section */}
-              <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
-                  Artículos Populares
-                  <span style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    width: "40px",
-                    height: "2px",
-                    backgroundColor: colors.primary
-                  }}></span>
-                </h3>
-                
-                {/* Generate some popular posts from the current category */}
-                {posts.slice(0, 3).map((post) => (
-                  <div 
-                    key={post.id}
-                    style={styles.popularPost}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = colors.gray100;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
+            <div style={styles.contentWrapper}>
+              <main style={styles.mainContent}>
+                <div style={styles.filterBar}>
+                  <div style={styles.searchBox}>
+                    <span style={styles.searchIcon}>🔍</span>
+                    <input
+                      type="text"
+                      placeholder="Buscar en esta categoría..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      style={styles.searchInput}
+                    />
+                  </div>
+                  
+                  <select
+                    value={selectedFilter}
+                    onChange={(e) => setSelectedFilter(e.target.value)}
+                    style={styles.filterDropdown}
                   >
-                    <div style={styles.popularPostImage}>
-                      <img 
-                        src={post.image} 
-                        alt={post.title} 
-                        style={styles.popularPostImg} 
-                      />
-                    </div>
-                    <div>
-                      <h4 
-                        style={styles.popularPostTitle}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = colors.primary;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = colors.textPrimary;
+                    <option value="reciente">Más recientes</option>
+                    <option value="antiguo">Más antiguos</option>
+                    <option value="alfabetico">Alfabéticamente</option>
+                  </select>
+                </div>
+                
+                {currentPosts.length > 0 ? (
+                  <div style={styles.postsGrid}>
+                    {currentPosts.map(post => (
+                      <PostCard key={post.ID_publicaciones} post={post} />
+                    ))}
+                  </div>
+                ) : (
+                  <div style={styles.noPostsMessage}>
+                    <h3>No hay publicaciones disponibles</h3>
+                    <p>No se encontraron artículos en esta categoría{searchQuery ? ` que coincidan con "${searchQuery}"` : ''}.</p>
+                  </div>
+                )}
+                
+                {totalPages > 1 && (
+                  <div style={styles.pagination}>
+                    <button 
+                      onClick={prevPage} 
+                      disabled={currentPage === 1}
+                      style={styles.pageButton}
+                    >
+                      &lt;
+                    </button>
+                    
+                    {[...Array(totalPages).keys()].map(number => (
+                      <button
+                        key={number + 1}
+                        onClick={() => paginate(number + 1)}
+                        style={{
+                          ...styles.pageButton,
+                          ...(currentPage === number + 1 ? styles.activePageButton : {})
                         }}
                       >
-                        {post.title}
-                      </h4>
-                      <div style={styles.popularPostMeta}>
-                        <span>{post.time}</span>
-                        <span>•</span>
-                        <span>{post.likes} likes</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              {/* Tags Section */}
-              <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
-                  Etiquetas Populares
-                  <span style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    width: "40px",
-                    height: "2px",
-                    backgroundColor: colors.primary
-                  }}></span>
-                </h3>
-                
-                <div style={styles.tagCloud}>
-                  {['Innovación', 'Tecnología', 'Metodologías', 'Evaluación', 'Inclusión', 
-                    'Motivación', 'Recursos', 'Digital', 'Proyectos', 'Gamificación', 
-                    'Colaboración', 'Aprendizaje', 'Didáctica'].map((tag, index) => (
-                    <div 
-                      key={index}
-                      style={styles.tag}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.primary;
-                        e.currentTarget.style.color = colors.white;
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = colors.gray100;
-                        e.currentTarget.style.color = colors.textSecondary;
-                      }}
+                        {number + 1}
+                      </button>
+                    ))}
+                    
+                    <button 
+                      onClick={nextPage} 
+                      disabled={currentPage === totalPages}
+                      style={styles.pageButton}
                     >
-                      {tag}
-                    </div>
-                  ))}
-                </div>
-              </div>
+                      &gt;
+                    </button>
+                  </div>
+                )}
+              </main>
               
-              {/* Newsletter Section */}
-              <div style={styles.sidebarSection}>
-                <h3 style={{...styles.sidebarTitle, '&:after': {...styles.sidebarTitle['&:after'], content: '""'}}}>
-                  Suscríbete
-                  <span style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    width: "40px",
-                    height: "2px",
-                    backgroundColor: colors.primary
-                  }}></span>
-                </h3>
+              <aside style={styles.sidebar}>
+                <div style={styles.relatedCategories}>
+                  <h3 style={styles.relatedCategoriesTitle}>Categorías relacionadas</h3>
+                  <div style={styles.categoryList}>
+                    {categories.filter(cat => cat.ID_categoria !== parseInt(id)).map(category => (
+                      <Link 
+                        key={category.ID_categoria} 
+                        to={`/categoria/${category.ID_categoria}`}
+                        style={styles.categoryLink}
+                      >
+                        {category.Nombre_categoria}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
                 
-                <div style={styles.newsletter}>
+                <div style={styles.newsletterBox}>
+                  <h3 style={styles.newsletterTitle}>Suscríbete al newsletter</h3>
                   <p style={styles.newsletterText}>
-                    Recibe nuestros mejores artículos y novedades directamente en tu bandeja de entrada.
+                    Recibe las últimas publicaciones y novedades directamente en tu correo.
                   </p>
                   
                   <form style={styles.newsletterForm} onSubmit={handleSubscribe}>
-                    <input 
-                      type="email" 
-                      placeholder="Tu email" 
-                      style={{
-                        ...styles.newsletterInput,
-                        backgroundColor: isDarkMode ? '#333' : colors.white,
-                        color: isDarkMode ? '#fff' : colors.textPrimary,
-                        border: `1px solid ${isDarkMode ? colors.gray300 : colors.gray200}`
-                      }}
+                    <input
+                      type="email"
+                      placeholder="Tu correo electrónico"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      onFocus={(e) => e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`}
-                      onBlur={(e) => e.target.style.boxShadow = 'none'}
+                      style={styles.newsletterInput}
                       required
                     />
+                    
                     <button 
                       type="submit" 
                       style={styles.newsletterButton}
                       disabled={isSubscribing}
-                      onMouseEnter={(e) => {
-                        if (!isSubscribing) {
-                          e.currentTarget.style.backgroundColor = colors.primaryDark;
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSubscribing) {
-                          e.currentTarget.style.backgroundColor = colors.primary;
-                        }
-                      }}
                     >
-                      {isSubscribing ? 'Procesando...' : 'Suscribirse'}
+                      {isSubscribing ? 'Suscribiendo...' : 'Suscribirse'}
                     </button>
+                    
+                    {subscribeMessage && (
+                      <div 
+                        style={{
+                          ...styles.messageBox,
+                          ...(subscribeMessage.type === 'success' ? styles.successMessage : styles.errorMessage)
+                        }}
+                      >
+                        {subscribeMessage.text}
+                      </div>
+                    )}
                   </form>
-                  
-                  {subscribeMessage && (
-                    <div style={subscribeMessage.type === 'success' ? styles.successMessage : styles.errorMessage}>
-                      {subscribeMessage.text}
-                    </div>
-                  )}
                 </div>
-              </div>
+              </aside>
             </div>
-          </div>
-        </div>
-      </main>
+          </>
+        )}
+      </div>
       
       <Footer />
     </div>
   );
 };
+
 export default CategoryPage;
