@@ -111,21 +111,21 @@ const CategoriesListPage = () => {
   // Efectos para tarjetas
   const getCardTransform = (id) => {
     if (hoveredCard === id) {
-      return 'translateY(-10px)';
+      return 'translateY(-15px)';
     } 
     return 'translateY(0)';
   };
   
   const getCardBoxShadow = (id, color) => {
     if (hoveredCard === id) {
-      return `0 15px 30px ${color}70`;
+      return `0 20px 35px ${color}80`;
     }
     return `0 10px 30px rgba(0, 0, 0, 0.08)`;
   };
   
   const getCardBorder = (id, color) => {
     if (hoveredCard === id) {
-      return `1px solid ${color}40`;
+      return `1px solid ${color}60`;
     }
     return '1px solid rgba(0,0,0,0.05)';
   };
@@ -188,7 +188,7 @@ const CategoriesListPage = () => {
       marginTop: spacing.xl,
       marginBottom: spacing.xxl,
       position: 'relative',
-      maxWidth: '600px',
+      maxWidth: '700px',
       margin: '0 auto',
       opacity: animate ? 1 : 0,
       transform: animate ? 'translateY(0)' : 'translateY(20px)',
@@ -197,42 +197,46 @@ const CategoriesListPage = () => {
     searchInput: {
       width: '100%',
       padding: `${spacing.md} ${spacing.xl}`,
-      paddingLeft: '50px',
+      paddingLeft: '60px',
       borderRadius: '50px',
       fontSize: typography.fontSize.md,
       border: 'none',
-      boxShadow: '0 5px 20px rgba(0,0,0,0.1)',
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.9)',
+      boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.95)',
       color: isDarkMode ? '#ffffff' : '#333',
       transition: 'all 0.3s ease',
       '&:focus': {
         outline: 'none',
-        boxShadow: '0 5px 25px rgba(0,0,0,0.2)'
+        boxShadow: '0 15px 30px rgba(0,0,0,0.2)'
       },
       backdropFilter: 'blur(10px)'
     },
     searchIcon: {
       position: 'absolute',
-      left: '15px',
+      left: '20px',
       top: '50%',
       transform: 'translateY(-50%)',
       color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#555',
-      fontSize: '20px'
+      fontSize: '22px'
     },
     clearButton: {
       position: 'absolute',
-      right: '15px',
+      right: '20px',
       top: '50%',
       transform: 'translateY(-50%)',
       backgroundColor: 'transparent',
       border: 'none',
       cursor: 'pointer',
       color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#555',
-      fontSize: '16px',
-      padding: '5px',
+      fontSize: '18px',
+      padding: '8px',
       borderRadius: '50%',
-      display: isSearching ? 'block' : 'none',
+      display: isSearching ? 'flex' : 'none',
+      alignItems: 'center',
+      justifyContent: 'center',
       transition: 'all 0.2s ease',
+      width: '32px',
+      height: '32px',
       '&:hover': {
         backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
       }
@@ -279,9 +283,9 @@ const CategoriesListPage = () => {
       width: '100%',
       height: '100%',
       background: isDarkMode 
-        ? `linear-gradient(135deg, ${color}20, ${color}10)`
-        : `linear-gradient(135deg, ${color}15, ${color}05)`,
-      opacity: 0.8,
+        ? `linear-gradient(135deg, ${color}30, ${color}15)`
+        : `linear-gradient(135deg, ${color}25, ${color}10)`,
+      opacity: 0.9,
       zIndex: 0
     }),
     cardPattern: (color) => ({
@@ -289,28 +293,28 @@ const CategoriesListPage = () => {
       bottom: 0,
       left: 0,
       width: '100%',
-      height: '40%',
+      height: '60%',
       backgroundImage: `
-        radial-gradient(circle at 50% 80%, ${color}15 0%, transparent 20%),
-        radial-gradient(circle at 20% 50%, ${color}10 0%, transparent 30%),
-        radial-gradient(circle at 80% 20%, ${color}10 0%, transparent 30%)
+        radial-gradient(circle at 50% 80%, ${color}20 0%, transparent 25%),
+        radial-gradient(circle at 20% 50%, ${color}15 0%, transparent 35%),
+        radial-gradient(circle at 80% 20%, ${color}15 0%, transparent 35%)
       `,
-      opacity: 0.5,
+      opacity: 0.7,
       zIndex: 1
     }),
     iconContainer: (color) => ({
-      width: '100px',
-      height: '100px',
-      borderRadius: '20px',
+      width: '120px',
+      height: '120px',
+      borderRadius: '24px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: spacing.lg,
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.9)',
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.95)',
       color: color,
       transition: 'all 0.3s ease',
       transform: 'rotate(0deg)',
-      boxShadow: `0 8px 20px ${color}50`,
+      boxShadow: `0 10px 25px ${color}60`,
       position: 'relative',
       zIndex: 2
     }),
@@ -582,7 +586,7 @@ const CategoriesListPage = () => {
             </div>
             
             <div style={styles.searchContainer}>
-              <FaSearch style={styles.searchIcon} />
+              <FaSearch style={styles.searchIcon} size={24} />
               <input
                 type="text"
                 placeholder="Buscar categorías..."
@@ -592,7 +596,29 @@ const CategoriesListPage = () => {
               />
               {isSearching && (
                 <button 
-                  style={styles.clearButton}
+                  style={{
+                    ...styles.clearButton,
+                    position: 'absolute',
+                    right: '20px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#555',
+                    fontSize: '18px',
+                    padding: '8px',
+                    borderRadius: '50%',
+                    display: isSearching ? 'flex' : 'none',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    width: '32px',
+                    height: '32px',
+                    '&:hover': {
+                      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+                    }
+                  }}
                   onClick={clearSearch}
                   aria-label="Limpiar búsqueda"
                 >
@@ -633,9 +659,8 @@ const CategoriesListPage = () => {
                   
                   <div 
                     style={styles.iconContainer(category.color)}
-                    className={`icon-container-${category.id}`}
                   >
-                    {category.icon}
+                    {React.cloneElement(category.icon, { size: 50, opacity: 1 })}
                   </div>
                   
                   <h2 style={styles.categoryName}>
@@ -742,7 +767,7 @@ const CategoriesListPage = () => {
       <style>
         {`
           .category-card {
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
           }
           
           .category-grid {

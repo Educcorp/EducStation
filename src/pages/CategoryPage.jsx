@@ -301,22 +301,19 @@ const CategoryPage = () => {
       gap: spacing.sm,
       color: '#ffffff',
       textDecoration: 'none',
-      fontSize: typography.fontSize.sm,
+      fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.medium,
       marginBottom: spacing.md,
       cursor: 'pointer',
-      background: 'rgba(255,255,255,0.2)',
-      padding: `${spacing.xs} ${spacing.md}`,
+      background: 'rgba(255,255,255,0.25)',
+      padding: `${spacing.sm} ${spacing.lg}`,
       borderRadius: borderRadius.round,
       backdropFilter: 'blur(5px)',
       transition: 'all 0.3s ease',
       border: 'none',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       width: 'fit-content',
       transform: isHovering ? 'translateX(-5px)' : 'translateX(0)',
-      '&:hover': {
-        background: 'rgba(255,255,255,0.3)',
-      }
     },
     breadcrumb: {
       marginBottom: spacing.md,
@@ -397,7 +394,9 @@ const CategoryPage = () => {
       },
       transform: contentVisible ? 'translateY(0)' : 'translateY(20px)',
       opacity: contentVisible ? 1 : 0,
-      transition: 'transform 0.6s ease, opacity 0.6s ease'
+      transition: 'transform 0.6s ease, opacity 0.6s ease',
+      position: 'relative',
+      zIndex: 10
     },
     mainContent: {},
     sidebar: {
@@ -452,15 +451,15 @@ const CategoryPage = () => {
       display: 'flex',
       alignItems: 'center',
       gap: spacing.sm,
-      padding: `${spacing.sm} ${spacing.md}`,
-      borderRadius: borderRadius.md,
+      padding: `${spacing.md} ${spacing.lg}`,
+      borderRadius: borderRadius.lg,
       border: 'none',
-      fontSize: typography.fontSize.sm,
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.9)',
+      fontSize: typography.fontSize.md,
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.95)',
       color: isDarkMode ? colors.textLight : colors.textPrimary,
       cursor: 'pointer',
       transition: transitions.default,
-      boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
       '&:hover': {
         backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : categoryColor,
         color: isDarkMode ? colors.textLight : '#ffffff'
@@ -471,12 +470,12 @@ const CategoryPage = () => {
       top: '100%',
       right: 0,
       marginTop: spacing.xs,
-      width: '180px',
+      width: '220px',
       backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : '#ffffff',
       borderRadius: borderRadius.md,
-      boxShadow: '0 5px 15px rgba(0,0,0,0.1)',
+      boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
       padding: spacing.sm,
-      zIndex: 10,
+      zIndex: 100,
       border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
       animation: 'fadeIn 0.2s ease-out'
     },
@@ -821,12 +820,32 @@ const CategoryPage = () => {
               <div style={styles.container}>
                 <div style={styles.heroContent}>
                   <button 
-                    style={styles.backButton}
+                    style={{
+                      ...styles.backButton,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: spacing.sm,
+                      color: '#ffffff',
+                      textDecoration: 'none',
+                      fontSize: typography.fontSize.md,
+                      fontWeight: typography.fontWeight.medium,
+                      marginBottom: spacing.md,
+                      cursor: 'pointer',
+                      background: 'rgba(255,255,255,0.25)',
+                      padding: `${spacing.sm} ${spacing.lg}`,
+                      borderRadius: borderRadius.round,
+                      backdropFilter: 'blur(5px)',
+                      transition: 'all 0.3s ease',
+                      border: 'none',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      width: 'fit-content',
+                      transform: isHovering ? 'translateX(-5px)' : 'translateX(0)',
+                    }}
                     onClick={goBackToCategories}
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => setIsHovering(false)}
                   >
-                    <FaArrowLeft size={14} />
+                    <FaArrowLeft size={18} />
                     Volver a categorías
                   </button>
                   
@@ -836,55 +855,165 @@ const CategoryPage = () => {
                     {currentCategory?.Descripcion || 'Artículos relacionados con esta categoría'}
                   </p>
                   
-                  <div style={styles.categoryTag}>
+                  <div style={{
+                    ...styles.categoryTag,
+                    backgroundColor: 'rgba(255,255,255,0.3)',
+                    backdropFilter: 'blur(10px)',
+                    color: '#ffffff',
+                    padding: `${spacing.sm} ${spacing.lg}`,
+                    borderRadius: borderRadius.round,
+                    fontSize: typography.fontSize.md,
+                    fontWeight: typography.fontWeight.medium,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    border: '1px solid rgba(255,255,255,0.3)'
+                  }}>
                     Número de posts
-                    <span style={styles.categoryCount}>{posts.length}</span>
+                    <span style={{
+                      ...styles.categoryCount,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "#ffffff",
+                      color: categoryColor,
+                      borderRadius: "50%",
+                      width: "28px",
+                      height: "28px",
+                      fontSize: "14px",
+                      fontWeight: typography.fontWeight.bold,
+                      marginLeft: spacing.sm
+                    }}>{posts.length}</span>
                   </div>
                 </div>
                 
-                <div style={styles.heroIcon} className="float-animation">
-                  {currentCategory?.ID_categoria === 1 ? <FaNewspaper size={120} /> :
-                   currentCategory?.ID_categoria === 2 ? <FaBook size={120} /> :
-                   currentCategory?.ID_categoria === 3 ? <FaPenNib size={120} /> :
-                   currentCategory?.ID_categoria === 4 ? <FaAward size={120} /> :
-                   currentCategory?.ID_categoria === 5 ? <FaCog size={120} /> :
-                   currentCategory?.ID_categoria === 6 ? <FaChalkboardTeacher size={120} /> :
-                   currentCategory?.ID_categoria === 7 ? <FaUsers size={120} /> :
-                   <FaNewspaper size={120} />}
+                <div style={{
+                  ...styles.heroIcon,
+                  position: 'absolute',
+                  top: '50%',
+                  right: '10%',
+                  transform: 'translateY(-50%)',
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  zIndex: 4
+                }} className="float-animation">
+                  {currentCategory?.ID_categoria === 1 ? <FaNewspaper size={150} /> :
+                   currentCategory?.ID_categoria === 2 ? <FaBook size={150} /> :
+                   currentCategory?.ID_categoria === 3 ? <FaPenNib size={150} /> :
+                   currentCategory?.ID_categoria === 4 ? <FaAward size={150} /> :
+                   currentCategory?.ID_categoria === 5 ? <FaCog size={150} /> :
+                   currentCategory?.ID_categoria === 6 ? <FaChalkboardTeacher size={150} /> :
+                   currentCategory?.ID_categoria === 7 ? <FaUsers size={150} /> :
+                   <FaNewspaper size={150} />}
                 </div>
               </div>
             </section>
             
             <div style={styles.contentWrapper}>
               <main style={styles.mainContent}>
-                <div style={styles.filterBar}>
-                  <div style={styles.searchBox}>
-                    <span style={styles.searchIcon}>
-                      <FaSearch size={14} />
+                <div style={{
+                  ...styles.filterBar,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: spacing.lg,
+                  flexWrap: "wrap",
+                  gap: spacing.md,
+                  padding: `${spacing.md} ${spacing.lg}`,
+                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.9)',
+                  borderRadius: borderRadius.lg,
+                  boxShadow: isDarkMode ? 'none' : '0 4px 15px rgba(0,0,0,0.08)',
+                  border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+                  backdropFilter: 'blur(10px)',
+                  position: 'sticky',
+                  top: '20px',
+                  zIndex: 100
+                }}>
+                  <div style={{
+                    ...styles.searchBox,
+                    flex: "1",
+                    maxWidth: "400px",
+                    position: "relative"
+                  }}>
+                    <span style={{
+                      ...styles.searchIcon,
+                      position: "absolute",
+                      left: spacing.md,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: isSearchFocused ? categoryColor : isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+                      transition: transitions.default,
+                      fontSize: "18px"
+                    }}>
+                      <FaSearch size={18} />
                     </span>
                     <input
                       type="text"
                       placeholder="Buscar en esta categoría..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={styles.searchInput}
+                      style={{
+                        ...styles.searchInput,
+                        width: "100%",
+                        padding: `${spacing.md} ${spacing.md} ${spacing.md} ${spacing.xxl}`,
+                        borderRadius: borderRadius.lg,
+                        border: `2px solid ${isSearchFocused ? categoryColor : isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                        fontSize: typography.fontSize.md,
+                        transition: transitions.default,
+                        backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.95)',
+                        color: isDarkMode ? colors.textLight : colors.textPrimary,
+                        outline: 'none',
+                        boxShadow: isSearchFocused ? `0 0 0 3px ${categoryColor}40` : 'none'
+                      }}
                       onFocus={() => setIsSearchFocused(true)}
                       onBlur={() => setIsSearchFocused(false)}
                     />
                   </div>
                   
-                  <div style={styles.filterWrapper}>
+                  <div style={{
+                    ...styles.filterWrapper,
+                    position: 'relative'
+                  }}>
                     <button 
-                      style={styles.filterButton}
+                      style={{
+                        ...styles.filterButton,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: spacing.sm,
+                        padding: `${spacing.md} ${spacing.lg}`,
+                        borderRadius: borderRadius.lg,
+                        border: 'none',
+                        fontSize: typography.fontSize.md,
+                        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.95)',
+                        color: isDarkMode ? colors.textLight : colors.textPrimary,
+                        cursor: 'pointer',
+                        transition: transitions.default,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+                        '&:hover': {
+                          backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : categoryColor,
+                          color: isDarkMode ? colors.textLight : '#ffffff'
+                        }
+                      }}
                       onClick={() => setShowFilterOptions(!showFilterOptions)}
                     >
-                      <FaFilter size={14} />
+                      <FaFilter size={16} />
                       Ordenar por: {selectedFilter === 'reciente' ? 'Más recientes' : 
                         selectedFilter === 'antiguo' ? 'Más antiguos' : 'Alfabéticamente'}
                     </button>
                     
                     {showFilterOptions && (
-                      <div style={styles.filterDropdown}>
+                      <div style={{
+                        ...styles.filterDropdown,
+                        position: 'absolute',
+                        top: '100%',
+                        right: 0,
+                        marginTop: spacing.xs,
+                        width: '220px',
+                        backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : '#ffffff',
+                        borderRadius: borderRadius.md,
+                        boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
+                        padding: spacing.sm,
+                        zIndex: 100,
+                        border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+                        animation: 'fadeIn 0.2s ease-out'
+                      }}>
                         <div 
                           style={{
                             ...styles.filterOption,
@@ -931,8 +1060,15 @@ const CategoryPage = () => {
                 
                 {currentPosts.length > 0 ? (
                   <div style={styles.postsGrid}>
-                    {currentPosts.map(post => (
-                      <div className="hover-scale" key={post.ID_publicaciones}>
+                    {currentPosts.map((post, index) => (
+                      <div 
+                        className="post-card-animation" 
+                        key={post.ID_publicaciones}
+                        style={{
+                          "--animation-order": index,
+                          background: "transparent"
+                        }}
+                      >
                         <PostCard post={post} />
                       </div>
                     ))}
@@ -1045,6 +1181,58 @@ const CategoryPage = () => {
       </div>
       
       <Footer />
+      
+      <style>
+        {`
+          @keyframes fadeUpIn {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .post-card-animation {
+            animation: fadeUpIn 0.6s ease forwards;
+            animation-delay: calc(0.1s * var(--animation-order, 0));
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-color: transparent;
+          }
+          
+          .post-card-animation:hover {
+            transform: translateY(-10px);
+          }
+          
+          .post-card-animation > a > div {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          }
+          
+          .post-card-animation:hover > a > div {
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+          }
+          
+          .float-animation {
+            animation: float 6s ease-in-out infinite;
+          }
+          
+          @keyframes float {
+            0% {
+              transform: translateY(-50%) translateX(0);
+            }
+            50% {
+              transform: translateY(-50%) translateX(-10px);
+            }
+            100% {
+              transform: translateY(-50%) translateX(0);
+            }
+          }
+        `}
+      </style>
     </div>
   );
 };

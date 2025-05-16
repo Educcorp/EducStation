@@ -30,13 +30,14 @@ const PostCard = ({ post }) => {
       flexDirection: "column",
       borderRadius: borderRadius.lg,
       overflow: "hidden",
-      transition: transitions.default,
+      transition: `${transitions.default}, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)`,
       backgroundColor: isDarkMode ? "#1a1e23" : colors.white,
       boxShadow: isDarkMode ? `0 8px 20px rgba(0, 0, 0, 0.3)` : shadows.md,
       transform: isHovered ? "translateY(-5px)" : "translateY(0)",
       marginBottom: spacing.lg,
       width: "100%",
       maxWidth: "400px",
+      height: "100%"
     },
     imageContainer: {
       position: "relative",
