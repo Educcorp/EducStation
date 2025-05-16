@@ -91,3 +91,4 @@ yarn-error.log*
 # Archivos migraciones (opcional, generalmente se deben incluir)
 # */migrations/*.py
 # !*/migrations/__init__.py
+envs.txt
