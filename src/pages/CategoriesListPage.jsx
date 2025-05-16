@@ -10,13 +10,13 @@ const CategoriesListPage = () => {
   const { isDarkMode, colors } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
   const [categories, setCategories] = useState([
-    { id: 1, name: 'Noticias', description: 'Últimas noticias y novedades sobre educación y tecnología', icon: <FaNewspaper size={38} />, color: '#5e8b7e' },
-    { id: 2, name: 'Técnicas de Estudio', description: 'Estrategias y métodos para mejorar el aprendizaje', icon: <FaBook size={38} />, color: '#a7c4bc' },
-    { id: 3, name: 'Problemáticas en el Estudio', description: 'Dificultades y retos comunes en el aprendizaje', icon: <FaPenNib size={38} />, color: '#2c6975' },
-    { id: 4, name: 'Educación de Calidad', description: 'Mejores prácticas y estándares para una educación eficaz', icon: <FaAward size={38} />, color: '#68b0ab' },
-    { id: 5, name: 'Herramientas Tecnológicas', description: 'Tecnología y recursos para mejorar la enseñanza', icon: <FaCog size={38} />, color: '#52796f' },
-    { id: 6, name: 'Desarrollo Profesional Docente', description: 'Capacitación y crecimiento profesional para docentes', icon: <FaChalkboardTeacher size={38} />, color: '#84a98c' },
-    { id: 7, name: 'Comunidad y Colaboración', description: 'Interacción y trabajo en equipo en el ámbito educativo', icon: <FaUsers size={38} />, color: '#354f52' }
+    { id: 1, name: 'Noticias', description: 'Últimas noticias y novedades sobre educación y tecnología', icon: <FaNewspaper size={38} />, color: '#FF6B6B' },
+    { id: 2, name: 'Técnicas de Estudio', description: 'Estrategias y métodos para mejorar el aprendizaje', icon: <FaBook size={38} />, color: '#4ECDC4' },
+    { id: 3, name: 'Problemáticas en el Estudio', description: 'Dificultades y retos comunes en el aprendizaje', icon: <FaPenNib size={38} />, color: '#FFD166' },
+    { id: 4, name: 'Educación de Calidad', description: 'Mejores prácticas y estándares para una educación eficaz', icon: <FaAward size={38} />, color: '#6A0572' },
+    { id: 5, name: 'Herramientas Tecnológicas', description: 'Tecnología y recursos para mejorar la enseñanza', icon: <FaCog size={38} />, color: '#1A936F' },
+    { id: 6, name: 'Desarrollo Profesional Docente', description: 'Capacitación y crecimiento profesional para docentes', icon: <FaChalkboardTeacher size={38} />, color: '#3D5A80' },
+    { id: 7, name: 'Comunidad y Colaboración', description: 'Interacción y trabajo en equipo en el ámbito educativo', icon: <FaUsers size={38} />, color: '#F18F01' }
   ]);
 
   // Animación de entrada para las tarjetas
@@ -26,7 +26,7 @@ const CategoriesListPage = () => {
       setTimeout(() => {
         card.style.opacity = '1';
         card.style.transform = 'translateY(0)';
-      }, 100 * index);
+      }, 80 * index);
     });
   }, []);
 
@@ -34,17 +34,18 @@ const CategoriesListPage = () => {
     container: {
       maxWidth: '1200px',
       margin: '0 auto',
-      padding: `${spacing.xl} ${spacing.md}`,
+      padding: `${spacing.lg} ${spacing.md}`,
       paddingBottom: spacing.xxl
     },
     pageTitle: {
-      fontSize: '3rem',
+      fontSize: '3.5rem',
       fontWeight: typography.fontWeight.bold,
       textAlign: 'center',
       marginBottom: spacing.md,
-      color: isDarkMode ? colors.white : colors.primary,
+      color: '#ffffff',
       position: 'relative',
-      display: 'inline-block'
+      display: 'inline-block',
+      textShadow: '0 2px 10px rgba(0,0,0,0.2)'
     },
     titleUnderline: {
       position: 'absolute',
@@ -52,12 +53,12 @@ const CategoriesListPage = () => {
       left: '10%',
       width: '80%',
       height: '4px',
-      background: `linear-gradient(90deg, transparent, ${colors.secondary}, transparent)`,
+      background: `linear-gradient(90deg, transparent, #FFD166, transparent)`,
       borderRadius: '2px'
     },
     titleContainer: {
       textAlign: 'center',
-      marginBottom: spacing.xxl
+      marginBottom: spacing.lg
     },
     subtitle: {
       fontSize: typography.fontSize.lg,
@@ -65,14 +66,13 @@ const CategoriesListPage = () => {
       marginTop: spacing.md,
       maxWidth: '800px',
       margin: '20px auto 0',
-      color: isDarkMode ? colors.gray200 : colors.textSecondary,
-      lineHeight: '1.6'
+      color: 'rgba(255,255,255,0.9)',
+      lineHeight: '1.6',
+      textShadow: '0 1px 3px rgba(0,0,0,0.2)'
     },
     grid: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))',
-      gap: spacing.xl,
-      marginTop: spacing.xxl
+      marginTop: spacing.xxl,
+      width: '100%'
     },
     card: {
       backgroundColor: isDarkMode ? '#2a2a2a' : colors.white,
@@ -84,13 +84,14 @@ const CategoriesListPage = () => {
       flexDirection: 'column',
       alignItems: 'center',
       textAlign: 'center',
-      height: '100%',
+      height: '400px',
+      width: '100%',
       overflow: 'hidden',
       position: 'relative',
       cursor: 'pointer',
       border: '1px solid rgba(0,0,0,0.05)',
       opacity: 0,
-      transform: 'translateY(30px)'
+      transform: 'translateY(10px)'
     },
     iconContainer: (color) => ({
       width: '100px',
@@ -100,11 +101,11 @@ const CategoriesListPage = () => {
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: spacing.lg,
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.03)',
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.9)',
       color: color,
       transition: 'all 0.3s ease',
       transform: 'rotate(0deg)',
-      boxShadow: '0 8px 16px rgba(0,0,0,0.05)'
+      boxShadow: `0 8px 16px ${color}33`
     }),
     categoryName: {
       fontSize: '1.5rem',
@@ -121,7 +122,7 @@ const CategoriesListPage = () => {
       width: isHovered ? '100%' : '0%',
       height: '3px',
       backgroundColor: color,
-      transition: 'all 0.3s ease',
+      transition: 'all 0.25s ease',
       borderRadius: '3px'
     }),
     categoryDescription: {
@@ -138,7 +139,7 @@ const CategoriesListPage = () => {
     },
     button: (isHovered, color) => ({
       backgroundColor: isHovered ? color : (isDarkMode ? colors.primaryDark : colors.primary),
-      color: colors.white,
+      color: '#FFFFFF',
       padding: `${spacing.sm} ${spacing.lg}`,
       borderRadius: borderRadius.md,
       border: 'none',
@@ -152,18 +153,21 @@ const CategoriesListPage = () => {
       justifyContent: 'center',
       gap: '10px',
       transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-      boxShadow: isHovered ? '0 10px 20px rgba(0,0,0,0.15)' : 'none'
+      boxShadow: isHovered ? `0 10px 20px ${color}40` : 'none'
     }),
     header: {
       backgroundColor: isDarkMode ? '#0b2b26' : '#0b4444',
       padding: `${spacing.xxl} 0`,
       marginBottom: spacing.xxl,
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      backgroundImage: 'linear-gradient(135deg, #0b4444 0%, #1a936f 100%)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
     },
     headerContent: {
       position: 'relative',
-      zIndex: 2
+      zIndex: 2,
+      padding: `${spacing.xl} 0`
     },
     headerBackground: {
       position: 'absolute',
@@ -173,7 +177,7 @@ const CategoriesListPage = () => {
       bottom: 0,
       backgroundImage: 'url(/assets/images/pattern-bg.png)',
       backgroundSize: 'cover',
-      opacity: 0.1,
+      opacity: 0.15,
       zIndex: 1
     },
     headerDecoration: {
@@ -181,14 +185,14 @@ const CategoriesListPage = () => {
       bottom: 0,
       left: 0,
       width: '100%',
-      height: '40px',
+      height: '60px',
       backgroundImage: `linear-gradient(135deg, ${colors.primaryLight} 25%, transparent 25%), 
                         linear-gradient(225deg, ${colors.primaryLight} 25%, transparent 25%), 
                         linear-gradient(45deg, ${colors.primaryLight} 25%, transparent 25%), 
                         linear-gradient(315deg, ${colors.primaryLight} 25%, transparent 25%)`,
       backgroundSize: '40px 40px',
       backgroundPosition: '0 0, 20px 0, 0 20px, 20px 20px',
-      opacity: 0.3
+      opacity: 0.2
     },
     backToTop: {
       position: 'fixed',
@@ -207,7 +211,7 @@ const CategoriesListPage = () => {
       transition: 'all 0.3s ease',
       zIndex: 999,
       opacity: 0,
-      transform: 'translateY(20px)',
+      transform: 'translateY(10px)',
       pointerEvents: 'none'
     },
     categoryBadge: (color) => ({
@@ -224,39 +228,58 @@ const CategoriesListPage = () => {
     }),
     featuredSection: {
       marginBottom: spacing.xxl,
-      textAlign: 'center'
+      textAlign: 'center',
+      padding: `${spacing.xl} ${spacing.md}`,
+      backgroundColor: isDarkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.8)',
+      borderRadius: borderRadius.lg,
+      boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+      position: 'relative',
+      overflow: 'hidden'
     },
     featuredTitle: {
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.bold,
       color: isDarkMode ? colors.white : colors.primary,
-      marginBottom: spacing.md,
+      marginBottom: spacing.xl,
       position: 'relative',
       display: 'inline-block'
     },
     featuredCards: {
       display: 'flex',
       justifyContent: 'center',
-      gap: spacing.lg,
+      gap: spacing.xl,
       flexWrap: 'wrap',
       marginTop: spacing.xl
     },
     featuredCard: {
       width: '280px',
       textAlign: 'center',
-      padding: spacing.lg,
+      padding: spacing.xl,
       borderRadius: borderRadius.md,
-      backgroundColor: isDarkMode ? '#2a2a2a' : 'rgba(0,0,0,0.02)',
-      transition: 'all 0.3s ease'
+      backgroundColor: isDarkMode ? '#2a2a2a' : 'rgba(255,255,255,0.9)',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 8px 20px rgba(0,0,0,0.08)',
+      border: '1px solid rgba(0,0,0,0.05)',
+      transform: 'translateY(0)',
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: '0 15px 30px rgba(0,0,0,0.12)'
+      }
     },
     featuredIcon: {
-      fontSize: '2.5rem',
+      fontSize: '3rem',
       color: colors.secondary,
-      marginBottom: spacing.sm
+      marginBottom: spacing.md,
+      display: 'inline-block',
+      padding: spacing.md,
+      borderRadius: '50%',
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.03)'
     },
     featuredText: {
-      fontSize: typography.fontSize.sm,
-      color: isDarkMode ? colors.gray200 : colors.textSecondary
+      fontSize: typography.fontSize.md,
+      color: isDarkMode ? colors.gray200 : colors.textSecondary,
+      lineHeight: '1.6',
+      marginTop: spacing.sm
     }
   };
 
@@ -272,7 +295,7 @@ const CategoriesListPage = () => {
         backToTopButton.style.pointerEvents = 'auto';
       } else {
         backToTopButton.style.opacity = '0';
-        backToTopButton.style.transform = 'translateY(20px)';
+        backToTopButton.style.transform = 'translateY(10px)';
         backToTopButton.style.pointerEvents = 'none';
       }
     };
@@ -294,6 +317,42 @@ const CategoriesListPage = () => {
       <div style={styles.header}>
         <div style={styles.headerBackground}></div>
         <div style={styles.headerDecoration}></div>
+        <div 
+          style={{
+            position: 'absolute',
+            top: '10%',
+            left: '5%',
+            width: '150px',
+            height: '150px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+            zIndex: 1
+          }}
+        ></div>
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '15%',
+            right: '8%',
+            width: '100px',
+            height: '100px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+            zIndex: 1
+          }}
+        ></div>
+        <div 
+          style={{
+            position: 'absolute',
+            top: '40%',
+            right: '15%',
+            width: '50px',
+            height: '50px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,209,102,0.15) 0%, rgba(255,209,102,0) 70%)',
+            zIndex: 1
+          }}
+        ></div>
         <div style={styles.headerContent}>
           <div style={styles.container}>
             <div style={styles.titleContainer}>
@@ -312,31 +371,7 @@ const CategoriesListPage = () => {
       </div>
 
       <div style={styles.container}>
-        <div style={styles.featuredSection}>
-          <h2 style={styles.featuredTitle}>
-            Lo que encontrarás
-            <div style={styles.titleUnderline}></div>
-          </h2>
-          <div style={styles.featuredCards}>
-            <div style={styles.featuredCard}>
-              <div style={styles.featuredIcon}>📚</div>
-              <h3>Artículos de Calidad</h3>
-              <p style={styles.featuredText}>Contenido redactado por expertos en educación y tecnología.</p>
-            </div>
-            <div style={styles.featuredCard}>
-              <div style={styles.featuredIcon}>🔍</div>
-              <h3>Recursos Filtrados</h3>
-              <p style={styles.featuredText}>Navega por categorías para encontrar justo lo que necesitas.</p>
-            </div>
-            <div style={styles.featuredCard}>
-              <div style={styles.featuredIcon}>💡</div>
-              <h3>Ideas Innovadoras</h3>
-              <p style={styles.featuredText}>Descubre nuevas tendencias en educación y tecnología.</p>
-            </div>
-          </div>
-        </div>
-
-        <div style={styles.grid}>
+        <div style={{...styles.grid, marginTop: spacing.xxl}} className="category-grid">
           {categories.map((category, index) => (
             <Link 
               key={category.id} 
@@ -351,8 +386,8 @@ const CategoriesListPage = () => {
                 className="category-card"
                 style={{
                   ...styles.card,
-                  transform: hoveredCard === category.id ? 'translateY(-10px)' : 'translateY(30px)',
-                  boxShadow: hoveredCard === category.id ? '0 20px 40px rgba(0, 0, 0, 0.15)' : '0 10px 30px rgba(0, 0, 0, 0.08)'
+                  transform: hoveredCard === category.id ? 'translateY(-5px)' : 'translateY(0)',
+                  boxShadow: hoveredCard === category.id ? '0 15px 30px rgba(0, 0, 0, 0.12)' : '0 10px 30px rgba(0, 0, 0, 0.08)'
                 }}
                 onMouseEnter={() => setHoveredCard(category.id)}
                 onMouseLeave={() => setHoveredCard(null)}
@@ -379,6 +414,66 @@ const CategoriesListPage = () => {
             </Link>
           ))}
         </div>
+        
+        <div style={{...styles.featuredSection, marginTop: spacing.xxl}}>
+          <h2 style={styles.featuredTitle}>
+            Lo que encontrarás
+            <div style={styles.titleUnderline}></div>
+          </h2>
+          <div style={styles.featuredCards}>
+            <div 
+              style={styles.featuredCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
+              }}
+            >
+              <div style={{...styles.featuredIcon, color: '#FF6B6B'}}>📚</div>
+              <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
+                Artículos de Calidad
+              </h3>
+              <p style={styles.featuredText}>Contenido redactado por expertos en educación y tecnología.</p>
+            </div>
+            <div 
+              style={styles.featuredCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
+              }}
+            >
+              <div style={{...styles.featuredIcon, color: '#4ECDC4'}}>🔍</div>
+              <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
+                Recursos Filtrados
+              </h3>
+              <p style={styles.featuredText}>Navega por categorías para encontrar justo lo que necesitas.</p>
+            </div>
+            <div 
+              style={styles.featuredCard}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.12)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
+              }}
+            >
+              <div style={{...styles.featuredIcon, color: '#FFD166'}}>💡</div>
+              <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
+                Ideas Innovadoras
+              </h3>
+              <p style={styles.featuredText}>Descubre nuevas tendencias en educación y tecnología.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div 
@@ -386,7 +481,7 @@ const CategoriesListPage = () => {
         style={styles.backToTop}
         onClick={scrollToTop}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-5px)';
+          e.currentTarget.style.transform = 'translateY(-3px)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = 'translateY(0)';
@@ -403,17 +498,59 @@ const CategoriesListPage = () => {
         {`
           @keyframes float {
             0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
+            50% { transform: translateY(-5px); }
             100% { transform: translateY(0px); }
           }
           
           .icon-container-1:hover, .icon-container-2:hover, .icon-container-3:hover, .icon-container-4:hover, .icon-container-5:hover, .icon-container-6:hover, .icon-container-7:hover {
-            animation: float 2s ease-in-out infinite;
-            transform: rotate(5deg) scale(1.1);
+            animation: float 1.5s ease-in-out infinite;
+            transform: rotate(3deg) scale(1.05);
           }
           
           .category-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s ease;
+          }
+          
+          .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 24px;
+          }
+          
+          /* Estilo específico para la última fila con solo un elemento */
+          .category-grid > *:nth-last-child(-n+1):first-child,
+          .category-grid > *:nth-last-child(-n+1):first-child ~ * {
+            margin: 0 auto;
+          }
+          
+          /* Estilo específico para la última fila incompleta (con 7 elementos) */
+          .category-grid > *:nth-child(7) {
+            grid-column-start: 2;
+          }
+          
+          @media (max-width: 992px) {
+            .category-grid {
+              grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            .category-grid::after {
+              grid-column: span 2;
+            }
+            
+            /* Ajuste para pantallas medianas */
+            .category-grid > *:nth-child(7) {
+              grid-column-start: auto;
+            }
+          }
+          
+          @media (max-width: 576px) {
+            .category-grid {
+              grid-template-columns: 1fr !important;
+            }
+            
+            .category-grid::after {
+              grid-column: span 1;
+            }
           }
         `}
       </style>
