@@ -36,18 +36,25 @@ export const getPublicacionById = async (id) => {
 // Crear una nueva publicación
 export const createPublicacion = async (publicacionData) => {
     try {
+        console.log("Datos enviados al backend:", JSON.stringify(publicacionData, null, 2));
+        console.log("URL de la API:", `${API_URL}/api/publicaciones`);
+        
+        const token = localStorage.getItem('userToken');
+        console.log("Token de autenticación disponible:", !!token);
+        
         const response = await fetch(`${API_URL}/api/publicaciones`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(publicacionData)
         });
         
         if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.detail || 'Error al crear la publicación');
+            const errorData = await response.json().catch(e => ({ detail: 'Error al procesar la respuesta' }));
+            console.error("Respuesta del servidor:", response.status, errorData);
+            throw new Error(errorData.detail || `Error del servidor: ${response.status}`);
         }
         
         return await response.json();
