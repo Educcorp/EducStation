@@ -1,15 +1,14 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useTheme } from '../context/ThemeContext';
 import { spacing, typography, shadows, borderRadius } from '../styles/theme';
-import { FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaNewspaper, FaPenNib, FaChalkboardTeacher, FaArrowRight, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaNewspaper, FaPenNib, FaChalkboardTeacher, FaArrowRight } from 'react-icons/fa';
 
 const CategoriesListPage = () => {
   const { isDarkMode, colors } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
-  const gridRef = useRef(null);
   const [categories, setCategories] = useState([
     { id: 1, name: 'Noticias', description: 'Últimas noticias y novedades sobre educación y tecnología', icon: <FaNewspaper size={38} />, color: '#5e8b7e' },
     { id: 2, name: 'Técnicas de Estudio', description: 'Estrategias y métodos para mejorar el aprendizaje', icon: <FaBook size={38} />, color: '#a7c4bc' },
@@ -29,23 +28,6 @@ const CategoriesListPage = () => {
         card.style.transform = 'translateY(0)';
       }, 100 * index);
     });
-
-    // Ajustar visibilidad de los botones de navegación
-    const handleResize = () => {
-      const gridElement = gridRef.current;
-      if (!gridElement) return;
-      
-      const navButtons = document.querySelectorAll('.nav-button');
-      const isScrollable = gridElement.scrollWidth > gridElement.clientWidth;
-      
-      navButtons.forEach(button => {
-        button.style.display = isScrollable && window.innerWidth > 768 ? 'flex' : 'none';
-      });
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const styles = {
@@ -88,17 +70,9 @@ const CategoriesListPage = () => {
     },
     grid: {
       display: 'grid',
-      gridTemplateColumns: 'repeat(3, 1fr)',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(330px, 1fr))',
       gap: spacing.xl,
-      marginTop: spacing.md,
-      width: '100%',
-      overflowX: 'auto',
-      scrollBehavior: 'smooth',
-      paddingBottom: spacing.md,
-      gridAutoRows: 'min-content',
-      scrollSnapType: 'x mandatory',
-      paddingLeft: '5px',
-      paddingRight: '5px'
+      marginTop: spacing.xxl
     },
     card: {
       backgroundColor: isDarkMode ? '#2a2a2a' : colors.white,
@@ -116,8 +90,7 @@ const CategoriesListPage = () => {
       cursor: 'pointer',
       border: '1px solid rgba(0,0,0,0.05)',
       opacity: 0,
-      transform: 'translateY(30px)',
-      scrollSnapAlign: 'start'
+      transform: 'translateY(30px)'
     },
     iconContainer: (color) => ({
       width: '100px',
@@ -178,8 +151,8 @@ const CategoriesListPage = () => {
       alignItems: 'center',
       justifyContent: 'center',
       gap: '10px',
-      transform: isHovered ? 'scale(1.03)' : 'scale(1)',
-      boxShadow: isHovered ? '0 10px 20px rgba(0,0,0,0.12)' : 'none'
+      transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+      boxShadow: isHovered ? '0 10px 20px rgba(0,0,0,0.15)' : 'none'
     }),
     header: {
       backgroundColor: isDarkMode ? '#0b2b26' : '#0b4444',
@@ -284,37 +257,6 @@ const CategoriesListPage = () => {
     featuredText: {
       fontSize: typography.fontSize.sm,
       color: isDarkMode ? colors.gray200 : colors.textSecondary
-    },
-    navButton: {
-      position: 'absolute',
-      top: '50%',
-      transform: 'translateY(-50%)',
-      width: '40px',
-      height: '40px',
-      borderRadius: '50%',
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: 'pointer',
-      border: 'none',
-      boxShadow: '0 3px 8px rgba(0,0,0,0.1)',
-      transition: 'all 0.3s ease',
-      zIndex: 10,
-      color: isDarkMode ? colors.white : colors.primary,
-      opacity: 0.8
-    },
-    prevButton: {
-      left: '-20px'
-    },
-    nextButton: {
-      right: '-20px'
-    },
-    gridContainer: {
-      position: 'relative',
-      maxWidth: '100%',
-      marginBottom: spacing.xl,
-      padding: '0 25px'
     }
   };
 
@@ -344,18 +286,6 @@ const CategoriesListPage = () => {
       top: 0,
       behavior: 'smooth'
     });
-  };
-
-  const scrollLeft = () => {
-    if (gridRef.current) {
-      gridRef.current.scrollBy({ left: -330, behavior: 'smooth' });
-    }
-  };
-
-  const scrollRight = () => {
-    if (gridRef.current) {
-      gridRef.current.scrollBy({ left: 330, behavior: 'smooth' });
-    }
   };
 
   return (
@@ -406,78 +336,48 @@ const CategoriesListPage = () => {
           </div>
         </div>
 
-        <div style={styles.gridContainer}>
-          <button 
-            className="nav-button"
-            style={{ ...styles.navButton, ...styles.prevButton }} 
-            onClick={scrollLeft}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
-            }}
-          >
-            <FaChevronLeft />
-          </button>
-          
-          <div style={styles.grid} className="categories-grid" ref={gridRef}>
-            {categories.map((category, index) => (
-              <Link 
-                key={category.id} 
-                to={`/categoria/${category.id}`} 
-                style={styles.link}
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.location.href = `/categoria/${category.id}`;
+        <div style={styles.grid}>
+          {categories.map((category, index) => (
+            <Link 
+              key={category.id} 
+              to={`/categoria/${category.id}`} 
+              style={styles.link}
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = `/categoria/${category.id}`;
+              }}
+            >
+              <div 
+                className="category-card"
+                style={{
+                  ...styles.card,
+                  transform: hoveredCard === category.id ? 'translateY(-10px)' : 'translateY(30px)',
+                  boxShadow: hoveredCard === category.id ? '0 20px 40px rgba(0, 0, 0, 0.15)' : '0 10px 30px rgba(0, 0, 0, 0.08)'
                 }}
+                onMouseEnter={() => setHoveredCard(category.id)}
+                onMouseLeave={() => setHoveredCard(null)}
               >
-                <div 
-                  className="category-card"
-                  style={{
-                    ...styles.card,
-                    transform: hoveredCard === category.id ? 'translateY(-5px)' : 'translateY(30px)',
-                    boxShadow: hoveredCard === category.id ? '0 15px 30px rgba(0, 0, 0, 0.12)' : '0 10px 30px rgba(0, 0, 0, 0.08)'
-                  }}
-                  onMouseEnter={() => setHoveredCard(category.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  <div style={styles.categoryBadge(category.color)}>
-                    Categoría {category.id}
-                  </div>
-                  <div 
-                    style={styles.iconContainer(category.color)}
-                    className={`icon-container-${category.id}`}
-                  >
-                    {category.icon}
-                  </div>
-                  <h2 style={styles.categoryName}>
-                    {category.name}
-                    <div style={styles.nameDecoration(hoveredCard === category.id, category.color)}></div>
-                  </h2>
-                  <p style={styles.categoryDescription}>{category.description}</p>
-                  <button style={styles.button(hoveredCard === category.id, category.color)}>
-                    Ver artículos
-                    <FaArrowRight size={14} />
-                  </button>
+                <div style={styles.categoryBadge(category.color)}>
+                  Categoría {category.id}
                 </div>
-              </Link>
-            ))}
-          </div>
-          
-          <button 
-            className="nav-button"
-            style={{ ...styles.navButton, ...styles.nextButton }} 
-            onClick={scrollRight}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)';
-            }}
-          >
-            <FaChevronRight />
-          </button>
+                <div 
+                  style={styles.iconContainer(category.color)}
+                  className={`icon-container-${category.id}`}
+                >
+                  {category.icon}
+                </div>
+                <h2 style={styles.categoryName}>
+                  {category.name}
+                  <div style={styles.nameDecoration(hoveredCard === category.id, category.color)}></div>
+                </h2>
+                <p style={styles.categoryDescription}>{category.description}</p>
+                <button style={styles.button(hoveredCard === category.id, category.color)}>
+                  Ver artículos
+                  <FaArrowRight size={14} />
+                </button>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -508,81 +408,12 @@ const CategoriesListPage = () => {
           }
           
           .icon-container-1:hover, .icon-container-2:hover, .icon-container-3:hover, .icon-container-4:hover, .icon-container-5:hover, .icon-container-6:hover, .icon-container-7:hover {
-            animation: float 2.5s ease-in-out infinite;
-            transform: rotate(3deg) scale(1.05);
+            animation: float 2s ease-in-out infinite;
+            transform: rotate(5deg) scale(1.1);
           }
           
           .category-card {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          }
-          
-          .categories-grid {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0,0,0,0.2) transparent;
-            padding: 10px 5px;
-            display: grid;
-            grid-template-rows: repeat(3, min-content);
-          }
-          
-          .categories-grid::-webkit-scrollbar {
-            height: 8px;
-          }
-          
-          .categories-grid::-webkit-scrollbar-track {
-            background: transparent;
-          }
-          
-          .categories-grid::-webkit-scrollbar-thumb {
-            background-color: rgba(0,0,0,0.2);
-            border-radius: 20px;
-          }
-          
-          .nav-button {
-            transition: opacity 0.3s ease;
-          }
-          
-          .nav-button:hover {
-            opacity: 1;
-            transform: translateY(-50%) scale(1.1);
-          }
-          
-          @media (max-width: 768px) {
-            .nav-button {
-              display: none;
-            }
-            
-            .categories-grid {
-              padding: 10px 0;
-              grid-gap: 15px;
-              scrollbar-width: none;
-            }
-            
-            .categories-grid::-webkit-scrollbar {
-              display: none;
-            }
-          }
-          
-          /* Media queries para hacer el grid responsive */
-          @media (max-width: 1024px) {
-            .categories-grid {
-              grid-template-columns: repeat(2, 1fr);
-            }
-          }
-          
-          @media (max-width: 640px) {
-            .categories-grid {
-              grid-template-columns: 1fr;
-              padding-right: 10px;
-              padding-left: 10px;
-            }
-            
-            h1 {
-              font-size: 2.2rem !important;
-            }
-            
-            .subtitle {
-              font-size: 1rem !important;
-            }
           }
         `}
       </style>
