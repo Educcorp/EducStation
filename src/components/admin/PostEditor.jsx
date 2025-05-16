@@ -676,14 +676,14 @@ const PostEditor = () => {
                 <div
                   style={{
                     padding: `${spacing.sm} ${spacing.md}`,
+                    paddingLeft: spacing.md,
                     cursor: "pointer",
                     borderBottom: `1px solid ${colors.gray200}`,
                     transition: "background-color 0.2s ease",
                     position: "relative",
                     color: colors.primary, // Cambiado a color primario
                     backgroundColor: 'transparent',
-                    borderLeft: `4px solid ${colors.secondary}`,
-                    paddingLeft: spacing.md
+                    borderLeft: '4px solid transparent'
                   }}
                   onClick={() => {
                     handleChange({ target: { name: 'category', value: '' } });
