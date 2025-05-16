@@ -11,7 +11,7 @@ const LoginPage = () => {
     const location = useLocation();
     const { login, isAuth, loading, error: authError } = useContext(AuthContext);
     const { setForceLightMode } = useContext(ThemeContext);
-    
+
     // Refs para las animaciones
     const formRef = useRef(null);
     const titleRef = useRef(null);
@@ -42,7 +42,7 @@ const LoginPage = () => {
     // Estado para controlar la visibilidad de la contraseña
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    
+
     // Estados para animaciones
     const [formActive, setFormActive] = useState(false);
     const [activeField, setActiveField] = useState(null);
@@ -53,7 +53,7 @@ const LoginPage = () => {
         // Secuencia de animaciones
         setTimeout(() => setFormActive(true), 300);
         setTimeout(() => setAnimationComplete(true), 1200);
-        
+
         // Animación de "mecanografía" para el título
         if (titleRef.current) {
             titleRef.current.classList.add('typing-animation');
@@ -151,8 +151,9 @@ const LoginPage = () => {
         }
 
         try {
+            // Enviar el campo usernameOrEmail como username
             await login({
-                username: formData.usernameOrEmail,
+                username: formData.usernameOrEmail, // Enviar este campo como username
                 password: formData.password
             });
         } catch (error) {
@@ -161,7 +162,7 @@ const LoginPage = () => {
                 ...errors,
                 general: error.message || 'Error al iniciar sesión. Verifica tus credenciales e intenta nuevamente.'
             });
-            
+
             // Animación de error en el formulario
             if (formRef.current) {
                 formRef.current.classList.add('form-error');
@@ -675,10 +676,10 @@ const LoginPage = () => {
         ...styles.input,
         ...(activeField === fieldName ? styles.activeInput : {}),
         borderColor: errors[fieldName] ? colors.error : activeField === fieldName ? '#2C7171' : colors.gray200,
-        boxShadow: errors[fieldName] 
-            ? '0 4px 10px rgba(220, 53, 69, 0.1)' 
-            : activeField === fieldName 
-                ? '0 5px 15px rgba(44, 113, 113, 0.15)' 
+        boxShadow: errors[fieldName]
+            ? '0 4px 10px rgba(220, 53, 69, 0.1)'
+            : activeField === fieldName
+                ? '0 5px 15px rgba(44, 113, 113, 0.15)'
                 : '0 2px 4px rgba(0, 0, 0, 0.05)',
     });
 
@@ -686,10 +687,10 @@ const LoginPage = () => {
         ...styles.passwordInput,
         ...(activeField === 'password' ? styles.activePasswordInput : {}),
         borderColor: errors.password ? colors.error : activeField === 'password' ? '#2C7171' : colors.gray200,
-        boxShadow: errors.password 
-            ? '0 4px 10px rgba(220, 53, 69, 0.1)' 
-            : activeField === 'password' 
-                ? '0 5px 15px rgba(44, 113, 113, 0.15)' 
+        boxShadow: errors.password
+            ? '0 4px 10px rgba(220, 53, 69, 0.1)'
+            : activeField === 'password'
+                ? '0 5px 15px rgba(44, 113, 113, 0.15)'
                 : '0 2px 4px rgba(0, 0, 0, 0.05)',
     });
 
@@ -697,7 +698,7 @@ const LoginPage = () => {
     const renderParticles = () => {
         const particles = [];
         const colors = ['#1F4E4E', '#91a8a9', '#d2b99a', '#ffffff'];
-        
+
         for (let i = 0; i < 30; i++) {
             const size = Math.random() * 6 + 4;
             const style = {
@@ -712,7 +713,7 @@ const LoginPage = () => {
             };
             particles.push(<div key={i} style={style} />);
         }
-        
+
         return particles;
     };
 
@@ -729,7 +730,7 @@ const LoginPage = () => {
             </div>
 
             <main style={styles.mainContent}>
-                <div 
+                <div
                     style={styles.formContainer}
                     ref={formRef}
                     className="login-form-container"
@@ -737,9 +738,9 @@ const LoginPage = () => {
                     <div style={styles.loginImage}>
                         <div style={styles.imageOverlay}>
                             <div style={styles.raccoonLogoRow}>
-                                <img 
-                                    src="/assets/images/educstation-logo.png" 
-                                    alt="logo" 
+                                <img
+                                    src="/assets/images/educstation-logo.png"
+                                    alt="logo"
                                     style={styles.raccoonImage}
                                     className="pulse-animation"
                                 />
@@ -759,7 +760,7 @@ const LoginPage = () => {
                     <div style={styles.formContent}>
                         <div style={styles.formContentInner}>
                             <div style={styles.loginHeader}>
-                                <h1 
+                                <h1
                                     style={styles.loginTitle}
                                     ref={titleRef}
                                     className="welcome-text"
@@ -779,25 +780,25 @@ const LoginPage = () => {
                             )}
 
                             <form onSubmit={handleSubmit}>
-                                <div 
+                                <div
                                     style={{
                                         ...styles.formGroup,
                                         ...(activeField === 'usernameOrEmail' ? styles.activeFormGroup : {})
                                     }}
                                     className="form-group-animation"
                                 >
-                                    <label 
+                                    <label
                                         style={{
                                             ...styles.label,
                                             ...(activeField === 'usernameOrEmail' ? styles.activeLabel : {})
-                                        }} 
+                                        }}
                                         htmlFor="usernameOrEmail"
                                     >
                                         Nombre de usuario o correo electrónico
                                     </label>
-                                    <div style={{position: 'relative'}}>
-                                        <i 
-                                            className="fas fa-user" 
+                                    <div style={{ position: 'relative' }}>
+                                        <i
+                                            className="fas fa-user"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'usernameOrEmail' ? styles.activeInputIcon : {})
@@ -825,25 +826,25 @@ const LoginPage = () => {
                                     )}
                                 </div>
 
-                                <div 
+                                <div
                                     style={{
                                         ...styles.formGroup,
                                         ...(activeField === 'password' ? styles.activeFormGroup : {})
                                     }}
                                     className="form-group-animation"
                                 >
-                                    <label 
+                                    <label
                                         style={{
                                             ...styles.label,
                                             ...(activeField === 'password' ? styles.activeLabel : {})
-                                        }} 
+                                        }}
                                         htmlFor="password"
                                     >
                                         Contraseña
                                     </label>
                                     <div style={styles.passwordWrapper}>
-                                        <i 
-                                            className="fas fa-lock" 
+                                        <i
+                                            className="fas fa-lock"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'password' ? styles.activeInputIcon : {})
@@ -887,17 +888,17 @@ const LoginPage = () => {
                                             name="remember"
                                             checked={formData.remember}
                                             onChange={handleChange}
-                                            style={{display: 'none'}}
+                                            style={{ display: 'none' }}
                                         />
-                                        <div 
+                                        <div
                                             style={{
                                                 ...styles.checkmark,
                                                 ...(formData.remember ? styles.activeCheckmark : {})
                                             }}
-                                            onClick={() => setFormData({...formData, remember: !formData.remember})}
+                                            onClick={() => setFormData({ ...formData, remember: !formData.remember })}
                                         >
-                                            <i 
-                                                className="fas fa-check" 
+                                            <i
+                                                className="fas fa-check"
                                                 style={{
                                                     ...styles.checkmarkIcon,
                                                     ...(formData.remember ? styles.activeCheckmarkIcon : {})
@@ -918,7 +919,7 @@ const LoginPage = () => {
                                     <span style={styles.buttonRipple}></span>
                                     {isSubmitting ? (
                                         <>
-                                            <i className="fas fa-circle-notch fa-spin" style={{marginRight: '10px'}}></i>
+                                            <i className="fas fa-circle-notch fa-spin" style={{ marginRight: '10px' }}></i>
                                             Iniciando sesión...
                                         </>
                                     ) : 'Iniciar Sesión'}
@@ -932,7 +933,7 @@ const LoginPage = () => {
 
                                 <div style={styles.registerLink}>
                                     ¿No tienes una cuenta?
-                                    <Link 
+                                    <Link
                                         to="/register"
                                         style={styles.registerLinkText}
                                         className="link-hover-effect"
