@@ -9,6 +9,7 @@ import { FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaNewspaper, FaPenNib, FaC
 const CategoriesListPage = () => {
   const { isDarkMode, colors } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [animate, setAnimate] = useState(false);
   const [categories, setCategories] = useState([
     { id: 1, name: 'Noticias', description: 'Últimas noticias y novedades sobre educación y tecnología', icon: <FaNewspaper size={38} />, color: '#FF6B6B' },
     { id: 2, name: 'Técnicas de Estudio', description: 'Estrategias y métodos para mejorar el aprendizaje', icon: <FaBook size={38} />, color: '#4ECDC4' },
@@ -18,6 +19,12 @@ const CategoriesListPage = () => {
     { id: 6, name: 'Desarrollo Profesional Docente', description: 'Capacitación y crecimiento profesional para docentes', icon: <FaChalkboardTeacher size={38} />, color: '#3D5A80' },
     { id: 7, name: 'Comunidad y Colaboración', description: 'Interacción y trabajo en equipo en el ámbito educativo', icon: <FaUsers size={38} />, color: '#F18F01' }
   ]);
+
+  // Animación de entrada para el título y subtítulo
+  useEffect(() => {
+    const timeout = setTimeout(() => setAnimate(true), 100);
+    return () => clearTimeout(timeout);
+  }, []);
 
   // Animación de entrada para las tarjetas
   useEffect(() => {
@@ -41,11 +48,15 @@ const CategoriesListPage = () => {
       fontSize: '3.5rem',
       fontWeight: typography.fontWeight.bold,
       textAlign: 'center',
-      marginBottom: spacing.md,
+      marginBottom: spacing.xl,
       color: '#ffffff',
       position: 'relative',
       display: 'inline-block',
-      textShadow: '0 2px 10px rgba(0,0,0,0.2)'
+      textShadow: '0 2px 10px rgba(0,0,0,0.2)',
+      paddingBottom: spacing.md,
+      opacity: animate ? 1 : 0,
+      transform: animate ? 'translateY(0)' : 'translateY(20px)',
+      transition: 'opacity 0.5s ease, transform 0.5s ease'
     },
     titleUnderline: {
       position: 'absolute',
@@ -54,7 +65,11 @@ const CategoriesListPage = () => {
       width: '80%',
       height: '4px',
       background: `linear-gradient(90deg, transparent, #FFD166, transparent)`,
-      borderRadius: '2px'
+      borderRadius: '2px',
+      opacity: animate ? 1 : 0,
+      transform: animate ? 'scaleX(1)' : 'scaleX(0)',
+      transition: 'opacity 0.5s ease 0.4s, transform 0.5s ease 0.4s',
+      transformOrigin: 'center'
     },
     titleContainer: {
       textAlign: 'center',
@@ -68,7 +83,10 @@ const CategoriesListPage = () => {
       margin: '20px auto 0',
       color: 'rgba(255,255,255,0.9)',
       lineHeight: '1.6',
-      textShadow: '0 1px 3px rgba(0,0,0,0.2)'
+      textShadow: '0 1px 3px rgba(0,0,0,0.2)',
+      opacity: animate ? 0.9 : 0,
+      transform: animate ? 'translateY(0)' : 'translateY(20px)',
+      transition: 'opacity 0.5s ease 0.2s, transform 0.5s ease 0.2s'
     },
     grid: {
       marginTop: spacing.xxl,
@@ -326,7 +344,9 @@ const CategoriesListPage = () => {
             height: '150px',
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-            zIndex: 1
+            zIndex: 1,
+            opacity: animate ? 1 : 0,
+            transition: 'opacity 0.8s ease 0.3s'
           }}
         ></div>
         <div 
@@ -338,7 +358,9 @@ const CategoriesListPage = () => {
             height: '100px',
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-            zIndex: 1
+            zIndex: 1,
+            opacity: animate ? 1 : 0,
+            transition: 'opacity 0.8s ease 0.5s'
           }}
         ></div>
         <div 
@@ -350,7 +372,9 @@ const CategoriesListPage = () => {
             height: '50px',
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(255,209,102,0.15) 0%, rgba(255,209,102,0) 70%)',
-            zIndex: 1
+            zIndex: 1,
+            opacity: animate ? 1 : 0,
+            transition: 'opacity 0.8s ease 0.7s'
           }}
         ></div>
         <div style={styles.headerContent}>
