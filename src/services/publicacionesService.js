@@ -8,11 +8,17 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
             url += `&estado=${estado}`;
         }
         
+        console.log("Solicitando todas las publicaciones:", url);
+        
         const response = await fetch(url);
         if (!response.ok) {
-            throw new Error('Error al obtener las publicaciones');
+            throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
         }
-        return await response.json();
+        
+        const data = await response.json();
+        console.log(`Obtenidas ${data.length} publicaciones`);
+        
+        return data;
     } catch (error) {
         console.error('Error en getAllPublicaciones:', error);
         throw error;

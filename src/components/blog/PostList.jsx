@@ -6,7 +6,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows } from '../../styles/theme';
 import { FaCalendarAlt, FaTag, FaEye } from 'react-icons/fa';
 
-const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
+const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'recientes' }) => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,13 +23,24 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
         if (searchTerm && searchTerm.trim() !== '') {
           data = await searchPublicaciones(searchTerm, limit || 10, 0);
         }
-        // Si hay filtro de categoría, buscamos por categoría
+        // Si hay filtro de categoría y no es vacío (no es "Todas las categorías")
         else if (categoryFilter && categoryFilter !== '') {
           data = await searchByTags(categoryFilter, limit || 10, 0);
         }
-        // Si no hay filtros, obtenemos todas las publicaciones
+        // Si es "Todas las categorías" o no hay filtros, obtenemos todas las publicaciones
         else {
           data = await getAllPublicaciones(limit || 10, 0, 'publicado');
+        }
+
+        // Ordenar los posts según el criterio seleccionado
+        if (data && data.length > 0) {
+          if (sortOrder === 'recientes') {
+            data.sort((a, b) => new Date(b.Fecha_creacion) - new Date(a.Fecha_creacion));
+          } else if (sortOrder === 'antiguos') {
+            data.sort((a, b) => new Date(a.Fecha_creacion) - new Date(b.Fecha_creacion));
+          } else if (sortOrder === 'alfabetico') {
+            data.sort((a, b) => a.Titulo.localeCompare(b.Titulo));
+          }
         }
 
         console.log("Posts cargados:", data);
@@ -44,7 +55,7 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
     };
 
     fetchPosts();
-  }, [limit, categoryFilter, searchTerm]);
+  }, [limit, categoryFilter, searchTerm, sortOrder]);
 
   // Función para formatear la fecha
   const formatDate = (dateString) => {
