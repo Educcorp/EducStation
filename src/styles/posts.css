@@ -1,0 +1,142 @@
+/* src/styles/posts.css */
+/* Estilos globales para los posts cargados dinámicamente */
+
+/* Contenedor principal del post */
+.post-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding: 20px !important;
+  background-color: #fff !important;
+  margin: 0 !important;
+}
+
+/* Estilos para los elementos del post */
+.post-header {
+  margin-bottom: 25px !important;
+  width: 100% !important;
+}
+
+.post-title {
+  font-size: 28px !important;
+  width: 100% !important;
+}
+
+.post-meta {
+  display: flex !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  flex-wrap: wrap !important;
+}
+
+.post-content {
+  width: 100% !important;
+}
+
+.post-footer {
+  width: 100% !important;
+  margin-top: 40px !important;
+  padding-top: 20px !important;
+}
+
+/* Media queries para responsive */
+@media (max-width: 768px) {
+  .post-container {
+    padding: 15px !important;
+  }
+
+  .post-title {
+    font-size: 24px !important;
+  }
+
+  .post-meta {
+    flex-direction: column !important;
+  }
+}
+
+/* Adaptaciones adicionales para asegurar consistencia */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+}
+
+/* Estilos para componentes comunes dentro de los posts */
+.news-card, 
+.highlight-box, 
+.stat-box,
+.author-section,
+.tags-section,
+.related-posts {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Garantizar que las imágenes no se desborden */
+img {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+/* Estilos para blockquotes */
+blockquote {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 20px 0 !important;
+}
+
+/* Estilos específicos para el footer */
+footer, 
+footer > div,
+footer > nav {
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Asegurar que el contenedor principal del footer mantenga el ancho máximo consistente */
+footer .container,
+footer > div > div {
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Asegurar que todos los elementos del grid tengan el espacio adecuado */
+footer .grid,
+footer .row,
+footer [class*="grid-"],
+footer [class*="col-"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  display: flex !important;
+}
+
+/* Estilo para el fondo del footer */
+footer {
+  background-color: #0b4444 !important; /* Color primario oscuro */
+  color: white !important;
+  padding: 40px 0 20px !important;
+  margin-top: 40px !important;
+}
+
+/* Estilos para el texto y enlaces del footer */
+footer a, 
+footer p, 
+footer h4,
+footer div,
+footer span,
+footer ul,
+footer li {
+  color: inherit !important;
+  box-sizing: border-box !important;
+}
+
+/* Eliminar estilos anteriores que puedan estar causando problemas */
+.footer-dark {
+  all: unset !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background-color: #0b4444 !important;
+  color: white !important;
+} 
