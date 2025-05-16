@@ -169,7 +169,7 @@ const App = () => {
                 path="/blog" 
                 element={
                   <PrivateRoute>
-                    <BlogPage />
+                    <CategoryPage />
                   </PrivateRoute>
                 } 
               />

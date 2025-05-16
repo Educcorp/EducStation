@@ -102,18 +102,7 @@ const Header = () => {
     setConfirmLogout(false);
   };
 
-  // Verificar si la ruta está activa
-  const isActive = (path) => {
-    if (path === '/login') {
-      return location.pathname === '/login';
-    }
-    if (path === '/blog') {
-      return location.pathname.startsWith('/blog') ||
-        location.pathname.includes('/post/') ||
-        location.pathname.includes('/category/');
-    }
-    return location.pathname === path;
-  };
+    // Verificar si la ruta está activa  const isActive = (path) => {    if (path === '/login') {      return location.pathname === '/login';    }    if (path === '/categoria/tecnicas-de-estudio') {      return location.pathname === '/blog' ||        location.pathname.startsWith('/blog/') ||        location.pathname.includes('/post/') ||        location.pathname.includes('/categoria/');    }    return location.pathname === path;  };
 
   // Estilos del header
   const styles = {
@@ -410,34 +399,7 @@ const Header = () => {
     color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#79bd9e" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Cambiado de #ffd700 a #d8d0a9
   });
 
-  const menuItems = [
-    {
-      path: '/',
-      label: 'Inicio',
-      icon: <FaHome size={20} />
-    },
-    {
-      path: '/category/tecnicas-de-estudio',
-      label: 'Blog',
-      icon: <FaFileAlt size={20} />
-    },
-    {
-      path: '/about',
-      label: 'Acerca de',
-      icon: <FaInfo size={20} />
-    },
-    {
-      path: '/contact',
-      label: 'Contacto',
-      icon: <FaPhone size={20} />
-    },
-    {
-      path: '/admin/post',
-      label: 'Crear Post',
-      admin: true,
-      icon: <FaPenSquare size={20} />
-    }
-  ];
+    const menuItems = [    {      path: '/',      label: 'Inicio',      icon: <FaHome size={20} />    },    {      path: '/categoria/tecnicas-de-estudio',      label: 'Blog',      icon: <FaFileAlt size={20} />    },    {      path: '/about',      label: 'Acerca de',      icon: <FaInfo size={20} />    },    {      path: '/contact',      label: 'Contacto',      icon: <FaPhone size={20} />    },    {      path: '/admin/post',      label: 'Crear Post',      admin: true,      icon: <FaPenSquare size={20} />    }  ];
 
   const handleNavigation = (path) => {
     window.location.href = path;

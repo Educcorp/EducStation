@@ -226,27 +226,7 @@ const Footer = () => {
     }
   };
 
-  const footerLinks = [
-    {
-      title: 'Navegación',
-      links: [
-        { path: '/', label: 'Inicio', icon: <FaHome size={20} /> },
-        { path: '/about', label: 'Acerca de', icon: <FaInfo size={20} /> },
-        { path: '/contact', label: 'Contacto', icon: <FaEnvelope size={20} /> },
-        { path: '/cookies', label: 'Política de Cookies', icon: <FaQuestionCircle size={20} /> },
-        { path: '/admin/post', label: 'Crear Post', admin: true, icon: <FaPenSquare size={20} /> }
-      ]
-    },
-    {
-      title: 'Categorías',
-      links: [
-        { path: '/category/tecnicas-de-estudio', label: 'Técnicas de Estudio', icon: <FaBook size={20} /> },
-        { path: '/category/estadisticas', label: 'Estadísticas', icon: <FaChartBar size={20} /> },
-        { path: '/category/logros', label: 'Logros', icon: <FaAward size={20} /> },
-        { path: '/category/comunidad', label: 'Comunidad', icon: <FaUsers size={20} /> },
-        { path: '/settings', label: 'Configuración', icon: <FaCog size={20} /> }
-      ]
-    }
+    const footerLinks = [    {      title: 'Navegación',      links: [        { path: '/', label: 'Inicio', icon: <FaHome size={20} /> },        { path: '/about', label: 'Acerca de', icon: <FaInfo size={20} /> },        { path: '/contact', label: 'Contacto', icon: <FaEnvelope size={20} /> },        { path: '/cookies', label: 'Política de Cookies', icon: <FaQuestionCircle size={20} /> },        { path: '/admin/post', label: 'Crear Post', admin: true, icon: <FaPenSquare size={20} /> }      ]    },    {      title: 'Categorías',      links: [        { path: '/categoria/tecnicas-de-estudio', label: 'Técnicas de Estudio', icon: <FaBook size={20} /> },        { path: '/categoria/estadisticas', label: 'Estadísticas', icon: <FaChartBar size={20} /> },        { path: '/categoria/logros', label: 'Logros', icon: <FaAward size={20} /> },        { path: '/categoria/comunidad', label: 'Comunidad', icon: <FaUsers size={20} /> },        { path: '/settings', label: 'Configuración', icon: <FaCog size={20} /> }      ]    }
   ];
 
   return (
@@ -338,31 +318,31 @@ const Footer = () => {
                 <span style={{ marginRight: 8, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>
                   <FaBook size={18} />
                 </span>
-                <Link to="/category/tecnicas-de-estudio" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/category/tecnicas-de-estudio"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Técnicas de Estudio</Link>
+                <Link to="/categoria/tecnicas-de-estudio" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/categoria/tecnicas-de-estudio"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Técnicas de Estudio</Link>
               </li>
               <li style={styles.link} onMouseEnter={(e) => { e.currentTarget.style.color = colors.secondary; e.currentTarget.style.paddingLeft = spacing.lg; }} onMouseLeave={(e) => { e.currentTarget.style.color = colors.gray200; e.currentTarget.style.paddingLeft = spacing.md; }}>
                 <span style={{ marginRight: 8, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>
                   <FaChartBar size={18} />
                 </span>
-                <Link to="/category/desarrollo-docente" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/category/desarrollo-docente"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Desarrollo Profesional</Link>
+                <Link to="/categoria/desarrollo-docente" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/categoria/desarrollo-docente"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Desarrollo Profesional</Link>
               </li>
               <li style={styles.link} onMouseEnter={(e) => { e.currentTarget.style.color = colors.secondary; e.currentTarget.style.paddingLeft = spacing.lg; }} onMouseLeave={(e) => { e.currentTarget.style.color = colors.gray200; e.currentTarget.style.paddingLeft = spacing.md; }}>
                 <span style={{ marginRight: 8, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>
                   <FaAward size={18} />
                 </span>
-                <Link to="/category/educacion-de-calidad" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/category/educacion-de-calidad"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Educación de Calidad</Link>
+                <Link to="/categoria/educacion-de-calidad" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/categoria/educacion-de-calidad"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Educación de Calidad</Link>
               </li>
               <li style={styles.link} onMouseEnter={(e) => { e.currentTarget.style.color = colors.secondary; e.currentTarget.style.paddingLeft = spacing.lg; }} onMouseLeave={(e) => { e.currentTarget.style.color = colors.gray200; e.currentTarget.style.paddingLeft = spacing.md; }}>
                 <span style={{ marginRight: 8, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>
                   <FaUsers size={18} />
                 </span>
-                <Link to="/category/comunidad" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/category/comunidad"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Comunidad</Link>
+                <Link to="/categoria/comunidad" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/categoria/comunidad"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Comunidad</Link>
               </li>
               <li style={styles.link} onMouseEnter={(e) => { e.currentTarget.style.color = colors.secondary; e.currentTarget.style.paddingLeft = spacing.lg; }} onMouseLeave={(e) => { e.currentTarget.style.color = colors.gray200; e.currentTarget.style.paddingLeft = spacing.md; }}>
                 <span style={{ marginRight: 8, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>
                   <FaCog size={18} />
                 </span>
-                <Link to="/category/herramientas" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/category/herramientas"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Herramientas</Link>
+                <Link to="/categoria/herramientas" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/categoria/herramientas"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Herramientas</Link>
               </li>
             </ul>
           </div>

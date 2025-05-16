@@ -40,41 +40,7 @@ const CategoryPage = () => {
     return () => clearTimeout(timeout);
   }, []);
   
-  // Cargar categorías y posts
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Cargar todas las categorías
-        const categoriesData = await getAllCategorias();
-        setCategories(categoriesData);
-        
-        // Encontrar la categoría actual
-        const category = categoriesData.find(cat => cat.ID_categoria === parseInt(id));
-        setCurrentCategory(category);
-        
-        // Cargar posts de esta categoría
-        const postsData = await searchByTags(id, 12, 0);
-        setPosts(postsData);
-        
-        // Calcular total de páginas
-        const totalPosts = postsData.length;
-        setTotalPages(Math.ceil(totalPosts / 9));
-        
-        setError(null);
-      } catch (err) {
-        console.error('Error al cargar datos:', err);
-        setError('No se pudieron cargar los datos. Por favor, intenta de nuevo más tarde.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    if (id) {
-      fetchData();
-    }
-  }, [id]);
+    // Cargar categorías y posts  useEffect(() => {    const fetchData = async () => {      try {        setLoading(true);                // Cargar todas las categorías        const categoriesData = await getAllCategorias();        setCategories(categoriesData);                // Encontrar la categoría actual        const category = categoriesData.find(cat => cat.ID_categoria === parseInt(id));        setCurrentCategory(category);                // Cargar posts        let postsData;        if (id) {          // Si hay ID, cargar posts de esta categoría          postsData = await searchByTags(id, 12, 0);        } else {          // Si no hay ID, cargar todos los posts (como en BlogPage)          postsData = await searchByTags(null, 12, 0);        }                setPosts(postsData);                // Calcular total de páginas        const totalPosts = postsData.length;        setTotalPages(Math.ceil(totalPosts / 9));                setError(null);      } catch (err) {        console.error('Error al cargar datos:', err);        setError('No se pudieron cargar los datos. Por favor, intenta de nuevo más tarde.');      } finally {        setLoading(false);      }    };        fetchData();  }, [id]);
   
   // Filtrar posts por búsqueda
   const filteredPosts = posts.filter(post => 
@@ -467,24 +433,7 @@ const CategoryPage = () => {
             <section style={styles.hero} className={animate ? "fade-in" : ""}>
               <div style={styles.container}>
                 <div style={styles.heroContent}>
-                  <div style={styles.breadcrumb}>
-                    <Link to="/" style={styles.breadcrumbLink}>Inicio</Link>
-                    <span>›</span>
-                    <Link to="/blog" style={styles.breadcrumbLink}>Blog</Link>
-                    <span>›</span>
-                    <span>{currentCategory?.Nombre_categoria || 'Categoría'}</span>
-                  </div>
-                  
-                  <h1 style={styles.title}>{currentCategory?.Nombre_categoria || 'Categoría'}</h1>
-                  
-                  <p style={styles.subtitle}>
-                    {currentCategory?.Descripcion || 'Artículos relacionados con esta categoría'}
-                  </p>
-                  
-                  <div style={styles.categoryTag}>
-                    {currentCategory?.Nombre_categoria || 'Categoría'}
-                    <span style={styles.categoryCount}>{posts.length}</span>
-                  </div>
+                                    <div style={styles.breadcrumb}>                    <Link to="/" style={styles.breadcrumbLink}>Inicio</Link>                    <span>›</span>                    {id ? (                      <>                        <Link to="/categoria/tecnicas-de-estudio" style={styles.breadcrumbLink}>Blog</Link>                        <span>›</span>                        <span>{currentCategory?.Nombre_categoria || 'Categoría'}</span>                      </>                    ) : (                      <span>Blog</span>                    )}                  </div>                                    <h1 style={styles.title}>{id ? (currentCategory?.Nombre_categoria || 'Categoría') : 'Blog EducStation'}</h1>                                    <p style={styles.subtitle}>                    {id ?                       (currentCategory?.Descripcion || 'Artículos relacionados con esta categoría') :                       'Descubre artículos, tutoriales y recursos sobre educación y tecnología'                    }                  </p>                                    <div style={styles.categoryTag}>                    {id ? (currentCategory?.Nombre_categoria || 'Categoría') : 'Todos los artículos'}                    <span style={styles.categoryCount}>{posts.length}</span>                  </div>
                 </div>
               </div>
             </section>
@@ -493,14 +442,7 @@ const CategoryPage = () => {
               <main style={styles.mainContent}>
                 <div style={styles.filterBar}>
                   <div style={styles.searchBox}>
-                    <span style={styles.searchIcon}>🔍</span>
-                    <input
-                      type="text"
-                      placeholder="Buscar en esta categoría..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      style={styles.searchInput}
-                    />
+                                        <span style={styles.searchIcon}>🔍</span>                    <input                      type="text"                      placeholder={id ? "Buscar en esta categoría..." : "Buscar publicaciones..."}                      value={searchQuery}                      onChange={(e) => setSearchQuery(e.target.value)}                      style={styles.searchInput}                    />
                   </div>
                   
                   <select
@@ -521,10 +463,7 @@ const CategoryPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <div style={styles.noPostsMessage}>
-                    <h3>No hay publicaciones disponibles</h3>
-                    <p>No se encontraron artículos en esta categoría{searchQuery ? ` que coincidan con "${searchQuery}"` : ''}.</p>
-                  </div>
+                                    <div style={styles.noPostsMessage}>                    <h3>No hay publicaciones disponibles</h3>                    {id ? (                      <p>No se encontraron artículos en esta categoría{searchQuery ? ` que coincidan con "${searchQuery}"` : ''}.</p>                    ) : (                      <p>No se encontraron artículos{searchQuery ? ` que coincidan con "${searchQuery}"` : ''}. Vuelve más tarde para ver nuevo contenido.</p>                    )}                  </div>
                 )}
                 
                 {totalPages > 1 && (
@@ -562,20 +501,7 @@ const CategoryPage = () => {
               </main>
               
               <aside style={styles.sidebar}>
-                <div style={styles.relatedCategories}>
-                  <h3 style={styles.relatedCategoriesTitle}>Categorías relacionadas</h3>
-                  <div style={styles.categoryList}>
-                    {categories.filter(cat => cat.ID_categoria !== parseInt(id)).map(category => (
-                      <Link 
-                        key={category.ID_categoria} 
-                        to={`/categoria/${category.ID_categoria}`}
-                        style={styles.categoryLink}
-                      >
-                        {category.Nombre_categoria}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
+                                <div style={styles.relatedCategories}>                  <h3 style={styles.relatedCategoriesTitle}>{id ? 'Categorías relacionadas' : 'Todas las categorías'}</h3>                  <div style={styles.categoryList}>                    {categories                      .filter(cat => id ? cat.ID_categoria !== parseInt(id) : true)                      .map(category => (                        <Link                           key={category.ID_categoria}                           to={`/categoria/${category.ID_categoria}`}                          style={styles.categoryLink}                        >                          {category.Nombre_categoria}                        </Link>                      ))                    }                  </div>                </div>
                 
                 <div style={styles.newsletterBox}>
                   <h3 style={styles.newsletterTitle}>Suscríbete al newsletter</h3>
