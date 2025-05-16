@@ -6,11 +6,12 @@ import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeT
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { AuthContext } from '../../context/AuthContext'; // Importa el contexto de autenticación
 import { FaHome, FaInfo, FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope } from 'react-icons/fa';
+import { updateSuperUserStatus } from '../../services/authService'; // Importar función para actualizar estado de superusuario
 
 const Header = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme(); // Obtén el estado del modo oscuro
-  const { logout } = useContext(AuthContext);
+  const { user, isAuth, isSuperUser, logout } = useContext(AuthContext); // Obtener datos del contexto de autenticación
   const menuRef = useRef(null);
 
   // Estados existentes
@@ -19,12 +20,9 @@ const Header = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState('');
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-  // Nuevo estado para almacenar si el usuario es superusuario
-  const [isSuperUser, setIsSuperUser] = useState(false);
-
+  
   // Nuevo estado para el modal de confirmación
   const [confirmLogout, setConfirmLogout] = useState(false);
 
@@ -32,14 +30,43 @@ const Header = () => {
 
   // Verificar autenticación y permisos del usuario
   useEffect(() => {
-    const token = localStorage.getItem('userToken');
     const storedUserName = localStorage.getItem('userName') || 'Usuario';
-    const userIsSuperUser = localStorage.getItem('isSuperUser') === 'true';
-    
-    setIsAuthenticated(!!token);
     setUserName(storedUserName);
-    setIsSuperUser(userIsSuperUser);
-  }, []);
+    
+    // Depuración: Verificar si el estado de superusuario se está leyendo correctamente
+    console.log('Estado de autenticación en Header:', {
+      isAuth,
+      userName: storedUserName,
+      isSuperUser,
+      contextUser: user,
+      localStorageSuperUser: localStorage.getItem('isSuperUser')
+    });
+    
+    // Actualizar el estado de superusuario desde el servidor al cargar
+    if (isAuth) {
+      updateSuperUserStatus()
+        .then(serverIsSuperUser => {
+          console.log('Estado de superusuario actualizado al cargar:', {
+            contextSuperUser: isSuperUser,
+            serverSuperUser: serverIsSuperUser
+          });
+          
+          // Si hay discrepancia, mostrar una notificación
+          if (isSuperUser !== serverIsSuperUser) {
+            console.log('Corrigiendo discrepancia en estado de superusuario');
+            showNotification(
+              serverIsSuperUser 
+                ? '¡Bienvenido Administrador! Tus privilegios han sido activados.' 
+                : 'Tu sesión ha sido actualizada con tus permisos correctos.',
+              'info'
+            );
+          }
+        })
+        .catch(error => {
+          console.error('Error al actualizar estado de superusuario:', error);
+        });
+    }
+  }, [isAuth, isSuperUser, user]);
 
   // Detectar scroll
   useEffect(() => {
@@ -79,19 +106,57 @@ const Header = () => {
     setIsMenuOpen(false);
   };
 
+  // Toggle del menú con verificación de estado de superusuario
+  const toggleMenu = () => {
+    const newIsMenuOpen = !isMenuOpen;
+    setIsMenuOpen(newIsMenuOpen);
+    
+    // Al abrir el menú, verificar el estado de superusuario
+    if (newIsMenuOpen && isAuth) {
+      updateSuperUserStatus()
+        .then(serverIsSuperUser => {
+          // El estado ahora se actualiza a través del contexto
+          if (serverIsSuperUser !== isSuperUser) {
+            console.log('Discrepancia detectada en estado de superusuario:', {
+              contextSuperUser: isSuperUser,
+              serverSuperUser: serverIsSuperUser
+            });
+            // El contexto se actualizará automáticamente
+          }
+        })
+        .catch(error => {
+          console.error('Error al actualizar estado de superusuario:', error);
+        });
+    }
+  };
+
   // Función para confirmar el cierre de sesión
   const confirmLogoutAction = () => {
     const currentUser = localStorage.getItem('userName') || 'Usuario';
+    const wasSuperUser = localStorage.getItem('isSuperUser') === 'true';
+    
+    console.log('Cerrando sesión, estado actual:', {
+      userName: currentUser,
+      isSuperUser: wasSuperUser,
+      localStorage: {
+        userToken: !!localStorage.getItem('userToken'),
+        userName: localStorage.getItem('userName'),
+        isSuperUser: localStorage.getItem('isSuperUser')
+      }
+    });
 
-    // Eliminar datos de autenticación
-    localStorage.clear(); // Limpiamos todo el localStorage
-    sessionStorage.clear(); // Limpiamos también el sessionStorage por si acaso
-
-    // Actualizar estado
-    setIsAuthenticated(false);
-    setUserName('');
-    setIsSuperUser(false);
+    // Eliminar datos de autenticación usando el contexto
+    logout();
+    
+    // Los estados se actualizarán a través del contexto
     setConfirmLogout(false);
+
+    console.log('Después de limpiar localStorage:', {
+      userToken: localStorage.getItem('userToken'),
+      refreshToken: localStorage.getItem('refreshToken'),
+      userName: localStorage.getItem('userName'),
+      isSuperUser: localStorage.getItem('isSuperUser')
+    });
 
     // Mostrar mensaje
     showNotification(`¡Hasta pronto, ${currentUser}! Has cerrado sesión correctamente.`);
@@ -530,7 +595,7 @@ const Header = () => {
           </nav>
 
           {/* Solo mostrar el botón de Cerrar Sesión cuando esté autenticado */}
-          {isAuthenticated && (
+          {isAuth && (
             <button
               style={styles.logoutButton}
               onClick={initiateLogout}
@@ -558,14 +623,14 @@ const Header = () => {
             }}
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={toggleMenu}
           >
             <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
           </div>
 
           {/* Menú desplegable con perfil del usuario */}
           <div ref={menuRef} style={styles.menu}>
-            {isAuthenticated ? (
+            {isAuth ? (
               <>
                 {/* Sección de perfil del usuario */}
                 <div style={styles.userProfileSection}>

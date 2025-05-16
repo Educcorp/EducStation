@@ -116,7 +116,7 @@ export const register = async (userData) => {
   }
 };
 
-// Inicio de sesión de usuario - Actualizado para aceptar username o email
+// Inicio de sesión de usuario - Actualizado para aceptar username o email y manejar superusuarios
 export const login = async (credentials) => {
   try {
     // Verificar si parece un email (tiene @ y un punto después)
@@ -141,47 +141,73 @@ export const login = async (credentials) => {
     }
 
     const data = await response.json();
+    console.log('Respuesta de inicio de sesión:', data);
+
+    // Limpiar el localStorage antes de guardar nuevos valores
+    // para evitar contaminación con datos anteriores
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('isSuperUser');
 
     // Guardar tokens en localStorage
     localStorage.setItem('userToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
     
-    // Guardar nombre de usuario y estado de superusuario si están disponibles en la respuesta
+    // Guardar nombre de usuario si está disponible
     if (data.username) {
       localStorage.setItem('userName', data.username);
     }
     
     // Guardar explícitamente el estado de superusuario
-    localStorage.setItem('isSuperUser', data.is_superuser ? 'true' : 'false');
+    // Asegurarse de que se convierte a string 'true' o 'false'
+    const isSuperUser = !!data.is_superuser;
+    localStorage.setItem('isSuperUser', isSuperUser ? 'true' : 'false');
+    
+    console.log('Estado de superusuario guardado:', {
+      rawValue: data.is_superuser,
+      processed: isSuperUser,
+      stored: localStorage.getItem('isSuperUser')
+    });
 
-    // Obtener información completa del usuario si no viene en la respuesta inicial
-    if (!data.username || data.is_superuser === undefined) {
-      const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
-        headers: {
-          'Authorization': `Bearer ${data.access}`,
-        },
-      });
+    // Obtener información completa del usuario si es necesario
+    let userData = {
+      username: data.username,
+      is_superuser: isSuperUser
+    };
+    
+    // Si falta información del usuario, obtenerla del servidor
+    if (!data.username) {
+      try {
+        const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
+          headers: {
+            'Authorization': `Bearer ${data.access}`,
+          },
+        });
 
-      if (!userResponse.ok) {
-        throw new Error('Error al obtener información del usuario');
+        if (userResponse.ok) {
+          userData = await userResponse.json();
+          console.log('Información adicional del usuario:', userData);
+          
+          // Actualizar localStorage con información completa
+          localStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
+          localStorage.setItem('isSuperUser', userData.is_superuser ? 'true' : 'false');
+          
+          console.log('LocalStorage actualizado con datos del usuario:', {
+            userName: localStorage.getItem('userName'),
+            isSuperUser: localStorage.getItem('isSuperUser')
+          });
+        } else {
+          console.warn('No se pudo obtener información adicional del usuario');
+        }
+      } catch (error) {
+        console.error('Error al obtener datos adicionales del usuario:', error);
+        // No lanzamos el error para no interrumpir el login
       }
-
-      const userData = await userResponse.json();
-      localStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
-      localStorage.setItem('isSuperUser', userData.is_superuser ? 'true' : 'false');
-      
-      return {
-        user: userData,
-        token: data.access,
-        refresh: data.refresh,
-      };
     }
 
     return {
-      user: {
-        username: data.username,
-        is_superuser: data.is_superuser
-      },
+      user: userData,
       token: data.access,
       refresh: data.refresh,
     };
@@ -197,6 +223,46 @@ export const logout = () => {
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userName');
   localStorage.removeItem('isSuperUser');
+};
+
+// Nueva función para actualizar el estado de superusuario desde el servidor
+export const updateSuperUserStatus = async () => {
+  const token = localStorage.getItem('userToken');
+  
+  if (!token) {
+    console.warn('No hay token de acceso para actualizar el estado de superusuario');
+    return false;
+  }
+  
+  try {
+    console.log('Actualizando estado de superusuario desde el servidor...');
+    const response = await fetch(`${API_URL}/api/auth/user/`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al obtener información del usuario');
+    }
+
+    const userData = await response.json();
+    const isSuperUser = userData.is_superuser === true;
+    
+    console.log('Estado de superusuario actualizado:', {
+      prevValue: localStorage.getItem('isSuperUser'),
+      newValue: isSuperUser ? 'true' : 'false',
+      userData
+    });
+    
+    // Actualizar localStorage con el valor correcto
+    localStorage.setItem('isSuperUser', isSuperUser ? 'true' : 'false');
+    
+    return isSuperUser;
+  } catch (error) {
+    console.error('Error al actualizar estado de superusuario:', error);
+    return false;
+  }
 };
 
 // Refrescar el token de acceso
