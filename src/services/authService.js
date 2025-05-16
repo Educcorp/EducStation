@@ -46,16 +46,29 @@ export const checkUsernameAvailability = async (username) => {
   }
 };
 
-// Registro de usuario - Actualizado para incluir username
+// Registro de usuario - Actualizado para incluir username y mejorar depuración
 export const register = async (userData) => {
   try {
+    console.log('Enviando solicitud de registro con datos:', {
+      username: userData.username,
+      email: userData.email,
+      first_name: userData.first_name,
+      last_name: userData.last_name,
+      // No mostrar contraseñas para seguridad
+    });
+
+    // Convertir username a minúsculas antes de enviar al servidor
+    const usernameToSend = userData.username.toLowerCase();
+
+    console.log('URL de API:', API_URL);
+
     const response = await fetch(`${API_URL}/api/auth/register/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: userData.username.toLowerCase(),
+        username: usernameToSend,
         email: userData.email,
         password: userData.password,
         password2: userData.password2,
@@ -64,28 +77,38 @@ export const register = async (userData) => {
       }),
     });
 
+    console.log('Respuesta del servidor status:', response.status);
     const data = await response.json();
+    console.log('Respuesta del servidor data:', data);
 
     if (!response.ok) {
       // Si hay un error específico del backend, lo lanzamos
       if (data.detail) {
+        console.error('Error específico del backend:', data.detail);
         throw new Error(data.detail);
       }
       // Si hay errores de validación, los formateamos
       if (data.errors) {
-        const errorMessage = Object.values(data.errors).join(', ');
+        const errorMessage = Array.isArray(data.errors)
+          ? data.errors.map(err => err.msg || JSON.stringify(err)).join(', ')
+          : Object.values(data.errors).join(', ');
+        console.error('Errores de validación:', errorMessage);
         throw new Error(errorMessage);
       }
       // Si hay un error de usuario existente
       if (data.username) {
+        console.error('Error de usuario existente:', data.username);
         throw new Error('El nombre de usuario ya está en uso');
       }
       if (data.email) {
+        console.error('Error de email existente:', data.email);
         throw new Error('El correo electrónico ya está en uso');
       }
+      console.error('Error general de registro:', data);
       throw new Error('Error en el registro');
     }
 
+    console.log('Registro exitoso, datos del usuario:', data);
     return data;
   } catch (error) {
     console.error('Error en el registro:', error);
@@ -96,13 +119,18 @@ export const register = async (userData) => {
 // Inicio de sesión de usuario - Actualizado para aceptar username o email
 export const login = async (credentials) => {
   try {
+    // Verificar si parece un email (tiene @ y un punto después)
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.username);
+
+    console.log('Iniciando sesión con:', isEmail ? 'email' : 'username', credentials.username);
+
     const response = await fetch(`${API_URL}/api/auth/token/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: credentials.username || credentials.email, // Acepta username o email
+        username: credentials.username, // Enviamos tal cual - el backend ya verificará username o email
         password: credentials.password,
       }),
     });
@@ -117,23 +145,43 @@ export const login = async (credentials) => {
     // Guardar tokens en localStorage
     localStorage.setItem('userToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
+    
+    // Guardar nombre de usuario y estado de superusuario si están disponibles en la respuesta
+    if (data.username) {
+      localStorage.setItem('userName', data.username);
+    }
+    
+    // Guardar explícitamente el estado de superusuario
+    localStorage.setItem('isSuperUser', data.is_superuser ? 'true' : 'false');
 
-    // Obtener información del usuario
-    const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
-      headers: {
-        'Authorization': `Bearer ${data.access}`,
-      },
-    });
+    // Obtener información completa del usuario si no viene en la respuesta inicial
+    if (!data.username || data.is_superuser === undefined) {
+      const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
+        headers: {
+          'Authorization': `Bearer ${data.access}`,
+        },
+      });
 
-    if (!userResponse.ok) {
-      throw new Error('Error al obtener información del usuario');
+      if (!userResponse.ok) {
+        throw new Error('Error al obtener información del usuario');
+      }
+
+      const userData = await userResponse.json();
+      localStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
+      localStorage.setItem('isSuperUser', userData.is_superuser ? 'true' : 'false');
+      
+      return {
+        user: userData,
+        token: data.access,
+        refresh: data.refresh,
+      };
     }
 
-    const userData = await userResponse.json();
-    localStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
-
     return {
-      user: userData,
+      user: {
+        username: data.username,
+        is_superuser: data.is_superuser
+      },
       token: data.access,
       refresh: data.refresh,
     };
@@ -148,6 +196,7 @@ export const logout = () => {
   localStorage.removeItem('userToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userName');
+  localStorage.removeItem('isSuperUser');
 };
 
 // Refrescar el token de acceso
