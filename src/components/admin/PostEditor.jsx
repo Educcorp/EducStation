@@ -661,7 +661,7 @@ const PostEditor = () => {
                 top: "calc(100% + 5px)",
                 left: 0,
                 right: 0,
-                backgroundColor: "#f8f9fa", // Cambiado a un fondo claro
+                backgroundColor: colors.white,
                 borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
                 borderLeft: `4px solid ${colors.secondary}`,
@@ -709,9 +709,9 @@ const PostEditor = () => {
                         transition: "all 0.2s ease",
                         position: "relative",
                         backgroundColor: hoveredCategory === categoryName
-                          ? colors.secondary + '25' // Color de fondo al pasar el cursor (con transparencia)
+                          ? colors.secondary + '15' // Reducido de 25% a 15% para hover
                           : isSelected
-                            ? colors.secondary + '15' // Color de fondo si está seleccionado
+                            ? colors.secondary + '08' // Reducido de 15% a 8% para selección
                             : 'transparent',
                         color: colors.primary, // Color de texto
                         fontWeight: isSelected ? typography.fontWeight.bold : typography.fontWeight.normal,
