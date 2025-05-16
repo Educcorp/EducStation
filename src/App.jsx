@@ -5,6 +5,7 @@ import ScrollToTop from './components/utils/ScrollToTop';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import './styles/darkMode.css'; // Los estilos oscuros solo se aplicarán cuando se active la clase .dark-mode
+import Chatbot from './components/common/Chatbot';
 
 // Importación de páginas
 import HomePage from './pages/HomePage';
@@ -264,6 +265,7 @@ const App = () => {
               />
             </Routes>
           </div>
+          <Chatbot />
         </Router>
       </AuthProvider>
     </ThemeProvider>
