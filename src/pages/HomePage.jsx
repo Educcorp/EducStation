@@ -256,8 +256,7 @@ const HomePage = () => {
     'Problemáticas',
     'Educación de Calidad',
     'Herramientas',
-    'Desarrollo Docente',
-    'Comunidad'
+    'Desarrollo Docente'
   ];
 
   // Artículo destacado
@@ -267,7 +266,6 @@ const HomePage = () => {
     image: '/assets/images/tecnologia.jpg',
     category: 'desarrollo docente',
     time: '2 horas atrás',
-    number: '01',
     excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
   };
 
@@ -279,7 +277,6 @@ const HomePage = () => {
       image: '/assets/images/tecnologia.jpg',
       category: 'herramientas',
       time: '4 horas atrás',
-      number: '02',
       likes: 124
     },
     {
@@ -288,26 +285,15 @@ const HomePage = () => {
       image: '/assets/images/humanos.jpg',
       category: 'técnicas de estudio',
       time: '4 horas atrás',
-      number: '03',
       likes: 89
     },
     {
       id: 3,
       title: 'Problemas a enfrentar en la actualidad',
       image: '/assets/images/desafio.jpg',
-      category: 'comunidad',
+      category: 'problemáticas',
       time: '4 horas atrás',
-      number: '04',
       likes: 76
-    },
-    {
-      id: 4,
-      title: 'Desarrollo Profesional Docente',
-      image: '/assets/images/maestro.jpg',
-      category: 'educación de calidad',
-      time: '4 horas atrás',
-      number: '05',
-      likes: 112
     }
   ];
 
@@ -494,8 +480,8 @@ const HomePage = () => {
       fontSize: "18px"
     },
     contentWrapper: {
-      display: "grid",
-      gridTemplateColumns: "60% 1fr",
+      display: "flex",
+      flexDirection: "column",
       gap: spacing.xl,
       marginBottom: spacing.xxl,
       animation: "fadeIn 1s ease-out",
@@ -507,12 +493,15 @@ const HomePage = () => {
     },
     featuredPostWrapper: {
       width: "100%",
-      height: "100%",
       position: "relative",
-      minWidth: "300px",
-      // La siguiente propiedad evita que el featuredPost se minimice al hacer scroll
-      position: "sticky",
-      top: spacing.xl,
+      marginBottom: spacing.xl,
+      maxWidth: "800px",
+      margin: "0 auto",
+      transform: "none",
+      transition: "transform 0.3s ease",
+      "&:hover": {
+        transform: "none",
+      }
     },
     postsGridWrapper: {
       width: "100%",
@@ -520,7 +509,7 @@ const HomePage = () => {
     },
     postsGrid: {
       display: "grid",
-      gridTemplateColumns: "1fr",
+      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
       gap: spacing.xl,
     },
     animationStyles: `
@@ -664,12 +653,12 @@ const HomePage = () => {
 
         {/* Featured Post and Posts Grid - CORREGIDO */}
         <div style={styles.contentWrapper}>
-          {/* Featured Post */}
+          {/* Featured Post - Ahora a todo lo ancho */}
           <div style={styles.featuredPostWrapper}>
             <FeaturedPost post={featuredPost} />
           </div>
 
-          {/* Posts Grid */}
+          {/* Posts Grid - Ahora debajo del post destacado */}
           <div style={styles.postsGridWrapper}>
             <div style={styles.postsGrid}>
               {filteredPosts.map((post, index) => (

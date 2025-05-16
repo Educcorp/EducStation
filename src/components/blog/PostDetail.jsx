@@ -1,0 +1,128 @@
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
+import { spacing, typography, borderRadius } from '../../styles/theme';
+
+const PostDetail = ({ post }) => {
+  const { colors, isDarkMode } = useTheme();
+
+  // Función para formatear la fecha
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('es-ES', options);
+  };
+
+  // Estilos para el componente
+  const styles = {
+    article: {
+      maxWidth: '800px',
+      margin: '0 auto',
+      padding: spacing.lg,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+      borderRadius: borderRadius.md,
+      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+    },
+    header: {
+      marginBottom: spacing.xl,
+    },
+    title: {
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.textLight : colors.primary,
+      marginBottom: spacing.md,
+    },
+    meta: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.lg,
+      color: colors.textSecondary,
+      fontSize: typography.fontSize.sm,
+    },
+    featuredImage: {
+      width: '100%',
+      maxHeight: '400px',
+      objectFit: 'cover',
+      borderRadius: borderRadius.md,
+      marginBottom: spacing.lg,
+    },
+    content: {
+      fontSize: typography.fontSize.md,
+      lineHeight: '1.7',
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
+    },
+    categories: {
+      display: 'flex',
+      gap: spacing.sm,
+      marginTop: spacing.lg,
+      flexWrap: 'wrap',
+    },
+    category: {
+      display: 'inline-block',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      backgroundColor: colors.secondary,
+      color: colors.white,
+      borderRadius: borderRadius.sm,
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.medium,
+      textDecoration: 'none',
+    },
+    backLink: {
+      display: 'inline-block',
+      marginTop: spacing.xl,
+      color: colors.secondary,
+      textDecoration: 'none',
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.medium,
+    },
+  };
+
+  if (!post) {
+    return null;
+  }
+
+  return (
+    <article style={styles.article}>
+      <header style={styles.header}>
+        <h1 style={styles.title}>{post.Titulo}</h1>
+        <div style={styles.meta}>
+          <span>Por {post.NombreAdmin || 'Admin'}</span>
+          <span>{formatDate(post.Fecha_creacion)}</span>
+        </div>
+        {post.Imagen_destacada_ID && (
+          <img 
+            src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`} 
+            alt={post.Titulo} 
+            style={styles.featuredImage}
+          />
+        )}
+      </header>
+      
+      <div 
+        style={styles.content}
+        dangerouslySetInnerHTML={{ __html: post.Contenido }}
+      />
+      
+      {post.categorias && post.categorias.length > 0 && (
+        <div style={styles.categories}>
+          <span>Categorías: </span>
+          {post.categorias.map(cat => (
+            <Link 
+              key={cat.ID_categoria} 
+              to={`/categoria/${cat.ID_categoria}`} 
+              style={styles.category}
+            >
+              {cat.Nombre_categoria}
+            </Link>
+          ))}
+        </div>
+      )}
+      
+      <Link to="/blog" style={styles.backLink}>
+        ← Volver al blog
+      </Link>
+    </article>
+  );
+};
+
+export default PostDetail;

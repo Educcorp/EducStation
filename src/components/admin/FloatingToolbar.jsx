@@ -5,6 +5,189 @@ import ColorPicker from './ColorPicker'; // Importamos el componente ColorPicker
 // Tamaños de fuente predeterminados como en Word
 const FONT_SIZES = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72, 120];
 
+// Componente para el popup de enlaces
+const LinkPopup = ({ onApplyLink, onClosePopup }) => {
+  const [linkText, setLinkText] = useState('');
+  const [linkUrl, setLinkUrl] = useState('https://');
+  const [isNewTab, setIsNewTab] = useState(true);
+  const linkTextInputRef = useRef(null);
+
+  useEffect(() => {
+    // Enfocar el campo de texto al abrir
+    if (linkTextInputRef.current) {
+      linkTextInputRef.current.focus();
+    }
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onApplyLink({ text: linkText, url: linkUrl, newTab: isNewTab });
+  };
+
+  const styles = {
+    container: {
+      position: 'absolute',
+      top: 'calc(100% + 5px)',
+      left: '0',
+      zIndex: 1001,
+      backgroundColor: 'white',
+      borderRadius: '8px',
+      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08)',
+      padding: '15px',
+      width: '300px',
+      animation: 'fadeIn 0.2s ease',
+      border: '1px solid rgba(200, 210, 220, 0.5)',
+    },
+    form: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px',
+    },
+    header: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '10px',
+    },
+    title: {
+      margin: 0,
+      color: '#0b4444',
+      fontSize: '16px',
+      fontWeight: 600,
+    },
+    closeButton: {
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+      fontSize: '16px',
+      color: '#666',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '26px',
+      height: '26px',
+      borderRadius: '50%',
+      backgroundColor: '#f0f0f0',
+      transition: 'all 0.2s ease',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+    },
+    field: {
+      marginBottom: '10px',
+    },
+    label: {
+      display: 'block',
+      marginBottom: '5px',
+      color: '#0b4444',
+      fontSize: '14px',
+      fontWeight: 500,
+    },
+    input: {
+      width: '100%',
+      padding: '8px 10px',
+      border: '1px solid #dfe3e8',
+      borderRadius: '6px',
+      fontSize: '14px',
+      color: '#0b4444',
+      boxSizing: 'border-box',
+    },
+    checkbox: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      marginTop: '8px',
+      marginBottom: '15px',
+    },
+    buttonContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      gap: '10px',
+      marginTop: '5px',
+    },
+    button: {
+      padding: '8px 15px',
+      border: 'none',
+      borderRadius: '6px',
+      cursor: 'pointer',
+      fontSize: '14px',
+      fontWeight: 500,
+      transition: 'all 0.2s ease',
+    },
+    cancelButton: {
+      backgroundColor: '#f0f0f0',
+      color: '#0b4444',
+    },
+    applyButton: {
+      backgroundColor: '#0b4444',
+      color: 'white',
+      flex: 1,
+    }
+  };
+
+  return (
+    <div style={styles.container} onClick={(e) => e.stopPropagation()}>
+      <div style={styles.header}>
+        <h3 style={styles.title}>Insertar enlace</h3>
+        <button 
+          style={styles.closeButton} 
+          onClick={onClosePopup}
+          title="Cerrar"
+        >
+          ×
+        </button>
+      </div>
+      <form style={styles.form} onSubmit={handleSubmit}>
+        <div style={styles.field}>
+          <label style={styles.label} htmlFor="linkText">Texto del enlace</label>
+          <input
+            ref={linkTextInputRef}
+            id="linkText"
+            type="text"
+            value={linkText}
+            onChange={(e) => setLinkText(e.target.value)}
+            placeholder="Texto visible"
+            style={styles.input}
+          />
+        </div>
+        <div style={styles.field}>
+          <label style={styles.label} htmlFor="linkUrl">URL</label>
+          <input
+            id="linkUrl"
+            type="text"
+            value={linkUrl}
+            onChange={(e) => setLinkUrl(e.target.value)}
+            placeholder="https://ejemplo.com"
+            style={styles.input}
+          />
+        </div>
+        <div style={styles.checkbox}>
+          <input
+            id="openInNewTab"
+            type="checkbox"
+            checked={isNewTab}
+            onChange={(e) => setIsNewTab(e.target.checked)}
+          />
+          <label htmlFor="openInNewTab">Abrir en nueva pestaña</label>
+        </div>
+        <div style={styles.buttonContainer}>
+          <button 
+            type="button" 
+            style={{...styles.button, ...styles.cancelButton}}
+            onClick={onClosePopup}
+          >
+            Cancelar
+          </button>
+          <button 
+            type="submit" 
+            style={{...styles.button, ...styles.applyButton}}
+          >
+            Aplicar
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
 // FloatingToolbar - Barra de herramientas flotante mejorada para edición de texto
 const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, setFontSize }) => {
   // Estados del componente
@@ -23,6 +206,9 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   // Estados para el selector de color usando el color predeterminado
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [currentIconColor, setCurrentIconColor] = useState(DEFAULT_TEXT_COLOR);
+  
+  // Estado para el popup de enlaces
+  const [showLinkPopup, setShowLinkPopup] = useState(false);
 
   // Guardar el color predeterminado en localStorage al iniciar
   useEffect(() => {
@@ -41,6 +227,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
   const fontSizeMenuRef = useRef(null);
   const customFontInputRef = useRef(null);
   const colorButtonRef = useRef(null);
+  const linkButtonRef = useRef(null);
 
   // Mostrar tooltip
   const showTooltip = (id) => {
@@ -837,6 +1024,80 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     };
   }, [editorRef?.current, isTyping]);
 
+  // Aplicar enlace con los datos del formulario
+  const applyLink = ({ text, url, newTab }) => {
+    if (restoreSelection()) {
+      try {
+        const selection = window.getSelection();
+        // Si hay texto seleccionado, usamos ese texto, si no, usamos el texto proporcionado
+        const selectionText = selection.toString().trim();
+        
+        if (selectionText === '') {
+          // Si no hay texto seleccionado, crear un nuevo nodo de enlace
+          const linkElement = document.createElement('a');
+          linkElement.href = url;
+          linkElement.textContent = text;
+          
+          if (newTab) {
+            linkElement.target = '_blank';
+            linkElement.rel = 'noopener noreferrer';
+          }
+          
+          // Insertar el enlace en la posición del cursor
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          range.insertNode(linkElement);
+          
+          // Mover el cursor después del enlace
+          range.setStartAfter(linkElement);
+          range.setEndAfter(linkElement);
+          selection.removeAllRanges();
+          selection.addRange(range);
+        } else {
+          // Si hay texto seleccionado, primero creamos el enlace usando execCommand
+          document.execCommand('createLink', false, url);
+          
+          // Luego encontramos el enlace creado y le añadimos el atributo target si es necesario
+          const range = selection.getRangeAt(0);
+          const linkElements = range.commonAncestorContainer.querySelectorAll('a[href="' + url + '"]');
+          
+          // Actualizar los atributos del enlace más reciente
+          if (linkElements.length > 0) {
+            const link = linkElements[linkElements.length - 1];
+            
+            if (newTab) {
+              link.target = '_blank';
+              link.rel = 'noopener noreferrer';
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error al aplicar enlace:', e);
+        // Fallback a método simple
+        document.execCommand('createLink', false, url);
+      }
+    }
+    // Cerrar el popup
+    setShowLinkPopup(false);
+  };
+
+  // Manejar clic en el botón de enlace
+  const handleLinkButtonClick = () => {
+    // Guardar la selección actual antes de abrir el popup
+    saveSelection();
+    animateButtonClick('link');
+    // Mostrar u ocultar el popup de enlace
+    setShowLinkPopup(!showLinkPopup);
+    // Ocultar otros menús
+    setShowFontSizeMenu(false);
+    setShowColorPicker(false);
+  };
+
+  // Cerrar el popup de enlace
+  const closeLinkPopup = () => {
+    setShowLinkPopup(false);
+  };
+
   // Cerrar el menú cuando se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -852,13 +1113,21 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
           !event.target.closest('.color-picker-container')) {
         setShowColorPicker(false);
       }
+      
+      // Cerrar popup de enlace si no se está haciendo clic en él o en su botón
+      if (showLinkPopup && 
+          linkButtonRef.current && 
+          !linkButtonRef.current.contains(event.target) &&
+          !event.target.closest('[style*="position: absolute"][style*="z-index: 1001"]')) {
+        setShowLinkPopup(false);
+      }
     };
     
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [showColorPicker]);
+  }, [showColorPicker, showLinkPopup]);
 
   return (
     <>
@@ -1112,23 +1381,32 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
             text="Lista con viñetas"
           />
         </button>
-        <button 
-          type="button"
-          style={styles.button(activeFormats.link, 'link')}
-          onClick={() => {
-            restoreSelection();
-            onFormatText('link');
-            animateButtonClick('link');
-          }}
-          onMouseEnter={() => showTooltip('link')}
-          onMouseLeave={hideTooltip}
-        >
-          <span style={{ fontSize: '16px' }}><img src="/assets/images/icons/LINK_icon.png" alt="Enlace" style={styles.iconImage} /></span>
-          <Tooltip
-            isVisible={activeTooltip === 'link'}
-            text="Insertar enlace"
-          />
-        </button>
+        
+        {/* Botón de enlace con popup personalizado */}
+        <div style={{ position: 'relative' }}>
+          <button 
+            ref={linkButtonRef}
+            type="button"
+            style={styles.button(activeFormats.link, 'link')}
+            onClick={handleLinkButtonClick}
+            onMouseEnter={() => showTooltip('link')}
+            onMouseLeave={hideTooltip}
+          >
+            <span style={{ fontSize: '16px' }}><img src="/assets/images/icons/LINK_icon.png" alt="Enlace" style={styles.iconImage} /></span>
+            <Tooltip
+              isVisible={activeTooltip === 'link'}
+              text="Insertar enlace"
+            />
+          </button>
+          
+          {/* Popup para insertar enlaces */}
+          {showLinkPopup && (
+            <LinkPopup 
+              onApplyLink={applyLink}
+              onClosePopup={closeLinkPopup}
+            />
+          )}
+        </div>
         
         <button 
           type="button"

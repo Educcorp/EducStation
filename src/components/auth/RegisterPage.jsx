@@ -1,13 +1,35 @@
-// src/components/auth/RegisterPage.jsx - Actualizado
-import React, { useState } from 'react';
+// src/components/auth/RegisterPage.jsx - Completamente Renovado
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { register, checkUsernameAvailability } from '../../services/authService';
+import { checkUsernameAvailability } from '../../services/authService';
 import { colors, spacing, typography } from '../../styles/theme';
 import '@fortawesome/fontawesome-free/css/all.css';
-
+import { AuthContext } from '../../context/AuthContext';
+import { ThemeContext } from '../../context/ThemeContext';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
+    const { register, isAuth, loading } = useContext(AuthContext);
+    const { setForceLightMode } = useContext(ThemeContext);
+    
+    // Refs para las animaciones
+    const formRef = useRef(null);
+    const titleRef = useRef(null);
+    const inputRefs = {
+        firstName: useRef(null),
+        lastName: useRef(null),
+        username: useRef(null),
+        email: useRef(null),
+        password: useRef(null),
+        confirmPassword: useRef(null)
+    };
+    const buttonRef = useRef(null);
+    
+    // Estados para animaciones
+    const [formActive, setFormActive] = useState(false);
+    const [activeField, setActiveField] = useState(null);
+    const [animationComplete, setAnimationComplete] = useState(false);
+    
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -39,6 +61,31 @@ const RegisterPage = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Iniciar animaciones al cargar el componente
+    useEffect(() => {
+        // Secuencia de animaciones
+        setTimeout(() => setFormActive(true), 300);
+        setTimeout(() => setAnimationComplete(true), 1200);
+        
+        // Animación de "mecanografía" para el título
+        if (titleRef.current) {
+            titleRef.current.classList.add('typing-animation');
+        }
+    }, []);
+
+    // Forzar el modo claro inmediatamente
+    React.useLayoutEffect(() => {
+        setForceLightMode(true);
+        return () => setForceLightMode(false);
+    }, [setForceLightMode]);
+    
+    // Redirigir si ya está autenticado
+    useEffect(() => {
+        if (isAuth && !loading) {
+            navigate('/');
+        }
+    }, [isAuth, loading, navigate]);
+
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
 
@@ -62,6 +109,14 @@ const RegisterPage = () => {
         if (name === 'username') {
             validateUsername(processedValue);
         }
+    };
+
+    const handleFocus = (field) => {
+        setActiveField(field);
+    };
+
+    const handleBlur = () => {
+        setActiveField(null);
     };
 
     // Funciones para alternar la visibilidad de las contraseñas
@@ -230,6 +285,14 @@ const RegisterPage = () => {
         }
 
         setIsSubmitting(true);
+        
+        // Añadir animación al botón
+        if (buttonRef.current) {
+            buttonRef.current.classList.add('button-press');
+            setTimeout(() => {
+                buttonRef.current?.classList.remove('button-press');
+            }, 300);
+        }
 
         try {
             console.log('Iniciando registro con datos:', {
@@ -275,6 +338,14 @@ const RegisterPage = () => {
                     general: error.message || 'Error al registrar. Por favor intenta nuevamente más tarde.'
                 }));
             }
+            
+            // Animación de error en el formulario
+            if (formRef.current) {
+                formRef.current.classList.add('form-error');
+                setTimeout(() => {
+                    formRef.current?.classList.remove('form-error');
+                }, 500);
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -283,9 +354,53 @@ const RegisterPage = () => {
     const styles = {
         registerContainer: {
             minHeight: '100vh',
-            backgroundColor: colors.background,
+            backgroundImage: 'linear-gradient(135deg, #93ABA3 0%, #1F4E4E 100%)',
             display: 'flex',
             flexDirection: 'column',
+            position: 'relative',
+            overflow: 'hidden',
+        },
+        backgroundElements: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            opacity: 0.08,
+            pointerEvents: 'none',
+        },
+        circle1: {
+            position: 'absolute',
+            width: '400px',
+            height: '400px',
+            borderRadius: '50%',
+            backgroundColor: '#ffffff',
+            bottom: '-100px',
+            right: '-100px',
+            opacity: '0.1',
+            animation: 'float 15s infinite ease-in-out',
+        },
+        circle2: {
+            position: 'absolute',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            backgroundColor: '#d2b99a',
+            top: '-50px',
+            left: '10%',
+            opacity: '0.1',
+            animation: 'float 18s infinite ease-in-out reverse',
+        },
+        circle3: {
+            position: 'absolute',
+            width: '200px',
+            height: '200px',
+            borderRadius: '50%',
+            backgroundColor: '#91a8a9',
+            bottom: '20%',
+            left: '-50px',
+            opacity: '0.1',
+            animation: 'float 20s infinite ease-in-out',
         },
         mainContent: {
             flex: 1,
@@ -293,94 +408,136 @@ const RegisterPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             padding: `${spacing.xl} ${spacing.md}`,
+            position: 'relative',
+            zIndex: 1,
         },
         formContainer: {
             width: "100%",
-            maxWidth: "1000px",
+            maxWidth: "1100px",
             display: "flex",
-            borderRadius: "12px",
+            borderRadius: "16px",
             overflow: "hidden",
-            boxShadow: '0 15px 30px rgba(11, 68, 68, 0.2)',
+            boxShadow: '0 25px 50px rgba(11, 68, 68, 0.25)',
             backgroundColor: colors.white,
+            opacity: formActive ? 1 : 0,
+            transform: formActive ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
         },
         registerImage: {
-            flex: 1,
             backgroundImage: "url('/assets/images/humanos.jpg')",
             backgroundSize: 'cover',
             backgroundPosition: 'center',
+            flex: 1,
             position: 'relative',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            overflow: 'hidden',
             '@media (max-width: 768px)': {
                 display: 'none'
             }
         },
         imageOverlay: {
             position: 'absolute',
-            top: 0,
-            left: 0,
             width: '100%',
             height: '100%',
-            background: `linear-gradient(135deg, ${colors.primary}e6 0%, ${colors.primaryLight}cc 100%)`,
+            background: 'linear-gradient(135deg, rgba(31, 78, 78, 0.85) 0%, rgba(31, 78, 78, 0.7) 100%)',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             padding: spacing.xl,
             color: colors.white,
+            animation: 'fadeIn 1s ease-in-out',
         },
-        logoContainer: {
+        raccoonLogoRow: {
             display: 'flex',
+            flexDirection: 'row',
             alignItems: 'center',
-            marginBottom: spacing.lg,
+            justifyContent: 'flex-start',
+            marginBottom: spacing.xl,
+            opacity: 0,
+            animation: 'fadeInUp 0.8s ease-out forwards',
+            animationDelay: '0.3s',
         },
-        logoIcon: {
-            width: '48px',
-            height: '48px',
-            backgroundColor: colors.white,
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginRight: spacing.sm,
+        raccoonImage: {
+            width: '64px',
+            height: '64px',
+            borderRadius: '12px',
+            marginRight: spacing.md,
+            boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
+            transform: 'rotate(-5deg)',
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+                transform: 'rotate(0deg) scale(1.05)',
+            },
         },
         logoText: {
-            fontSize: '28px',
+            fontSize: '32px',
             fontWeight: typography.fontWeight.bold,
+            color: '#ffffff',
+            margin: 0,
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
+        },
+        logoText2: {
+            fontSize: '32px',
+            fontWeight: typography.fontWeight.bold,
+            color: '#d2b99a',
+            margin: 0,
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.15)',
         },
         imageText: {
             fontSize: typography.fontSize.lg,
             lineHeight: 1.6,
             marginBottom: spacing.xl,
+            opacity: 0,
+            animation: 'fadeInUp 0.8s ease-out forwards',
+            animationDelay: '0.6s',
         },
         imageQuote: {
             fontStyle: 'italic',
-            opacity: 0.9,
             fontSize: typography.fontSize.md,
             position: 'relative',
-            paddingLeft: spacing.lg,
+            padding: spacing.lg,
             borderLeft: `3px solid ${colors.secondary}`,
+            borderRadius: '0 8px 8px 0',
+            background: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(5px)',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+            opacity: 0,
+            animation: 'fadeInUp 0.8s ease-out forwards',
+            animationDelay: '0.9s',
         },
         formContent: {
             flex: 1,
             padding: spacing.xl,
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            position: 'relative',
+            overflow: 'auto',
             maxHeight: '800px',
-            overflowY: 'auto',
+        },
+        formContentInner: {
+            opacity: animationComplete ? 1 : 0,
+            transform: animationComplete ? 'translateY(0)' : 'translateY(20px)',
+            transition: 'all 0.5s ease-out',
         },
         registerHeader: {
-            marginBottom: spacing.lg,
+            marginBottom: spacing.xl,
         },
         registerTitle: {
-            color: colors.primary,
+            color: '#1F4E4E',
             fontSize: typography.fontSize.xxl,
             marginBottom: spacing.sm,
+            position: 'relative',
+            display: 'inline-block',
+            overflow: 'hidden',
         },
         registerSubtitle: {
             color: colors.primaryLight,
             fontSize: typography.fontSize.md,
+            opacity: 0,
+            animation: 'fadeInUp 0.6s ease-out forwards',
+            animationDelay: '1.2s',
         },
         formRow: {
             display: 'flex',
@@ -390,33 +547,73 @@ const RegisterPage = () => {
         formGroup: {
             marginBottom: spacing.lg,
             position: 'relative',
+            transition: 'all 0.3s ease',
+            transform: 'translateY(0)',
             flex: 1,
+        },
+        activeFormGroup: {
+            transform: 'translateY(-5px)',
         },
         label: {
             display: 'block',
             marginBottom: spacing.xs,
-            color: colors.primary,
+            color: '#1F4E4E',
             fontWeight: typography.fontWeight.medium,
             fontSize: typography.fontSize.sm,
+            transition: 'all 0.3s ease',
+            opacity: 0.9,
+        },
+        activeLabel: {
+            color: '#2C7171',
+            opacity: 1,
+            transform: 'translateY(-2px)',
+        },
+        inputIcon: {
+            position: 'absolute',
+            left: '15px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: '#91a8a9',
+            fontSize: '18px',
+            transition: 'all 0.3s ease',
+            zIndex: 1,
+        },
+        activeInputIcon: {
+            color: '#1F4E4E',
+            transform: 'translateY(-50%) scale(1.1)',
         },
         input: {
             width: '100%',
-            padding: `${spacing.sm} ${spacing.md}`,
-            border: `1px solid ${colors.gray200}`,
-            borderRadius: '6px',
+            padding: `${spacing.md} ${spacing.lg}`,
+            paddingLeft: '45px',
+            border: `2px solid ${colors.gray200}`,
+            borderRadius: '12px',
             fontSize: typography.fontSize.md,
             transition: 'all 0.3s ease',
-            backgroundColor: colors.white,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        },
+        activeInput: {
+            border: '2px solid #2C7171',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 5px 15px rgba(44, 113, 113, 0.15)',
         },
         passwordInput: {
             width: '100%',
-            padding: `${spacing.sm} ${spacing.md}`,
-            paddingRight: '40px', // Espacio para el icono
-            border: `1px solid ${colors.gray200}`,
-            borderRadius: '6px',
+            padding: `${spacing.md} ${spacing.lg}`,
+            paddingLeft: '45px',
+            paddingRight: '45px',
+            border: `2px solid ${colors.gray200}`,
+            borderRadius: '12px',
             fontSize: typography.fontSize.md,
             transition: 'all 0.3s ease',
-            backgroundColor: colors.white,
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        },
+        activePasswordInput: {
+            border: '2px solid #2C7171',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 5px 15px rgba(44, 113, 113, 0.15)',
         },
         passwordWrapper: {
             position: 'relative',
@@ -424,7 +621,7 @@ const RegisterPage = () => {
         },
         eyeIcon: {
             position: 'absolute',
-            right: '12px',
+            right: '15px',
             top: '50%',
             transform: 'translateY(-50%)',
             cursor: 'pointer',
@@ -436,78 +633,146 @@ const RegisterPage = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '4px',
+            padding: '8px',
+            borderRadius: '50%',
+            transition: 'all 0.3s ease',
+        },
+        activeEyeIcon: {
+            color: '#1F4E4E',
+            backgroundColor: 'rgba(44, 113, 113, 0.1)',
+        },
+        statusIcon: {
+            position: 'absolute',
+            right: '15px',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            fontSize: '18px',
+            zIndex: 5,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
         },
         errorText: {
             color: colors.error,
             fontSize: typography.fontSize.xs,
             marginTop: spacing.xs,
+            display: 'flex',
+            alignItems: 'center',
+            animation: 'shakeX 0.5s',
+        },
+        errorIcon: {
+            marginRight: spacing.xs,
+            fontSize: '12px',
         },
         termsContainer: {
             display: 'flex',
             alignItems: 'flex-start',
             marginBottom: spacing.lg,
             fontSize: typography.fontSize.sm,
-            color: colors.primaryLight,
+            color: '#1F4E4E',
+            opacity: 0,
+            animation: 'fadeIn 0.6s ease-out forwards',
+            animationDelay: '1.3s',
         },
-        checkbox: {
+        checkmark: {
+            position: 'relative',
+            height: '20px',
+            width: '20px',
+            borderRadius: '4px',
+            border: `2px solid #91a8a9`,
             marginRight: spacing.xs,
             marginTop: '2px',
-            accentColor: colors.primary,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.2s ease',
+            cursor: 'pointer',
+        },
+        activeCheckmark: {
+            backgroundColor: '#1F4E4E',
+            borderColor: '#1F4E4E',
+        },
+        checkmarkIcon: {
+            color: '#ffffff',
+            fontSize: '12px',
+            opacity: 0,
+            transition: 'opacity 0.2s ease',
+        },
+        activeCheckmarkIcon: {
+            opacity: 1,
         },
         termsLink: {
-            color: colors.primary,
+            color: '#1F4E4E',
             textDecoration: 'none',
-            transition: 'color 0.3s ease',
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            paddingBottom: '2px',
         },
         registerButton: {
             width: '100%',
-            padding: spacing.md,
-            background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)`,
+            padding: `${spacing.md} ${spacing.lg}`,
+            backgroundColor: '#1F4E4E',
             color: colors.white,
             border: 'none',
-            borderRadius: '6px',
+            borderRadius: '12px',
             fontSize: typography.fontSize.md,
-            fontWeight: typography.fontWeight.medium,
+            fontWeight: typography.fontWeight.semiBold,
             cursor: 'pointer',
             transition: 'all 0.3s ease',
             marginBottom: spacing.md,
-            '&:hover': {
-                background: `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.primary} 100%)`,
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 12px rgba(11, 68, 68, 0.2)',
-            },
-            '&:disabled': {
-                opacity: 0.7,
-                cursor: 'not-allowed',
-                transform: 'none',
-                boxShadow: 'none',
-            }
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: '0 4px 15px rgba(31, 78, 78, 0.3)',
+            opacity: 0,
+            animation: 'fadeInUp 0.5s ease-out forwards',
+            animationDelay: '1.4s',
+        },
+        buttonRipple: {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            top: '0',
+            left: '0',
+            background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)',
+            transform: 'scale(0)',
+            opacity: '0',
+            transition: 'all 0.5s ease-out',
         },
         loginLink: {
             textAlign: 'center',
             marginTop: spacing.xl,
             fontSize: typography.fontSize.sm,
             color: colors.primaryLight,
+            opacity: 0,
+            animation: 'fadeIn 0.6s ease-out forwards',
+            animationDelay: '1.5s',
         },
         loginLinkText: {
-            color: colors.primary,
+            color: '#1F4E4E',
             fontWeight: typography.fontWeight.semiBold,
             textDecoration: 'none',
-            transition: 'color 0.3s ease',
-            '&:hover': {
-                color: colors.secondary,
-                textDecoration: 'underline',
-            }
+            transition: 'all 0.3s ease',
+            position: 'relative',
+            paddingBottom: '2px',
         },
         generalError: {
-            backgroundColor: `${colors.error}15`,
+            backgroundColor: `rgba(220, 53, 69, 0.1)`,
             color: colors.error,
             padding: spacing.md,
-            borderRadius: '6px',
+            borderRadius: '8px',
             marginBottom: spacing.lg,
             textAlign: 'center',
             fontSize: typography.fontSize.sm,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            animation: 'shakeX 0.5s',
+            boxShadow: '0 4px 10px rgba(220, 53, 69, 0.1)',
+            border: '1px solid rgba(220, 53, 69, 0.2)',
+        },
+        errorAlertIcon: {
+            fontSize: '18px',
+            marginRight: spacing.sm,
         },
         passwordRequirements: {
             fontSize: typography.fontSize.xs,
@@ -515,69 +780,101 @@ const RegisterPage = () => {
             marginTop: spacing.xs,
             lineHeight: 1.4,
         },
-        // Estilos para la barra de navegación simplificada
-        navContainer: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: `${spacing.md} ${spacing.xl}`,
-            backgroundColor: 'transparent',
+        backgroundParticles: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            opacity: 0.4,
+            pointerEvents: 'none',
         },
-        logo: {
-            display: 'flex',
-            alignItems: 'center',
-            textDecoration: 'none',
+        particle: {
+            position: 'absolute',
+            width: '8px',
+            height: '8px',
+            borderRadius: '50%',
+            opacity: 0.2,
+            animation: 'float 15s infinite linear',
         },
-        logoImg: {
-            height: '36px',
-            marginRight: spacing.sm,
-        },
-        logoText: {
-            fontSize: typography.fontSize.lg,
-            fontWeight: typography.fontWeight.bold,
-            color: colors.primary,
-        }
     };
 
-    // Definir estilos específicos para bordes de inputs con error
+    // Estilos para bordes de inputs con error
     const getInputStyle = (fieldName) => ({
         ...styles.input,
-        borderColor: errors[fieldName] ? colors.error : colors.gray200,
-        boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
+        ...(activeField === fieldName ? styles.activeInput : {}),
+        borderColor: errors[fieldName] ? colors.error : activeField === fieldName ? '#2C7171' : colors.gray200,
+        boxShadow: errors[fieldName] 
+            ? '0 4px 10px rgba(220, 53, 69, 0.1)' 
+            : activeField === fieldName 
+                ? '0 5px 15px rgba(44, 113, 113, 0.15)' 
+                : '0 2px 4px rgba(0, 0, 0, 0.05)',
     });
 
-    // Estilos para los inputs de contraseña
     const getPasswordInputStyle = (fieldName) => ({
         ...styles.passwordInput,
-        borderColor: errors[fieldName] ? colors.error : colors.gray200,
-        boxShadow: errors[fieldName] ? `0 0 0 1px ${colors.error}` : 'none',
+        ...(activeField === fieldName ? styles.activePasswordInput : {}),
+        borderColor: errors[fieldName] ? colors.error : activeField === fieldName ? '#2C7171' : colors.gray200,
+        boxShadow: errors[fieldName] 
+            ? '0 4px 10px rgba(220, 53, 69, 0.1)' 
+            : activeField === fieldName 
+                ? '0 5px 15px rgba(44, 113, 113, 0.15)' 
+                : '0 2px 4px rgba(0, 0, 0, 0.05)',
     });
 
-    // Estilos para aplicar hover en el botón
-    const getButtonStyle = () => ({
-        ...styles.registerButton,
-        ...(isSubmitting ? { opacity: 0.7, cursor: 'not-allowed' } : {}),
-    });
+    // Crear partículas para el fondo
+    const renderParticles = () => {
+        const particles = [];
+        const colors = ['#1F4E4E', '#91a8a9', '#d2b99a', '#ffffff'];
+        
+        for (let i = 0; i < 30; i++) {
+            const size = Math.random() * 6 + 4;
+            const style = {
+                ...styles.particle,
+                width: `${size}px`,
+                height: `${size}px`,
+                backgroundColor: colors[Math.floor(Math.random() * colors.length)],
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDuration: `${Math.random() * 20 + 10}s`,
+                animationDelay: `${Math.random() * 5}s`,
+            };
+            particles.push(<div key={i} style={style} />);
+        }
+        
+        return particles;
+    };
 
     return (
         <div style={styles.registerContainer}>
-            {/* Logo simplificado en lugar del Header */}
-            <div style={styles.navContainer}>
-                <Link to="/" style={styles.logo}>
-                    <img src="/assets/images/Icon.png" alt="EducStation Logo" style={styles.logoImg} />
-                    <span style={styles.logoText}>EducStation</span>
-                </Link>
+            {/* Background Elements */}
+            <div style={styles.backgroundElements}>
+                <div style={styles.circle1}></div>
+                <div style={styles.circle2}></div>
+                <div style={styles.circle3}></div>
+                <div style={styles.backgroundParticles}>
+                    {renderParticles()}
+                </div>
             </div>
 
             <main style={styles.mainContent}>
-                <div style={styles.formContainer}>
+                <div 
+                    style={styles.formContainer}
+                    ref={formRef}
+                    className="register-form-container"
+                >
                     <div style={styles.registerImage}>
                         <div style={styles.imageOverlay}>
-                            <div style={styles.logoContainer}>
-                                <div style={styles.logoIcon}>
-                                    <img src="/assets/images/Icon.png" alt="Logo" style={{ width: '30px', height: '30px' }} />
-                                </div>
-                                <div style={styles.logoText}>EducStation</div>
+                            <div style={styles.raccoonLogoRow}>
+                                <img 
+                                    src="/assets/images/educstation-logo.png" 
+                                    alt="logo" 
+                                    style={styles.raccoonImage}
+                                    className="pulse-animation"
+                                />
+                                <span style={styles.logoText}>Educ</span>
+                                <span style={styles.logoText2}>Station</span>
                             </div>
                             <p style={styles.imageText}>
                                 Únete a nuestra comunidad educativa y descubre un mundo de
@@ -590,236 +887,610 @@ const RegisterPage = () => {
                     </div>
 
                     <div style={styles.formContent}>
-                        <div style={styles.registerHeader}>
-                            <h1 style={styles.registerTitle}>Crea tu cuenta</h1>
-                            <p style={styles.registerSubtitle}>Completa el formulario para unirte a nuestra plataforma</p>
-                        </div>
-
-                        {errors.general && (
-                            <div style={styles.generalError}>
-                                {errors.general}
-                            </div>
-                        )}
-
-                        <form onSubmit={handleSubmit}>
-                            <div style={styles.formRow}>
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label} htmlFor="firstName">Nombre</label>
-                                    <input
-                                        type="text"
-                                        id="firstName"
-                                        name="firstName"
-                                        value={formData.firstName}
-                                        onChange={handleChange}
-                                        placeholder="Tu nombre"
-                                        style={getInputStyle('firstName')}
-                                    />
-                                    {errors.firstName && <div style={styles.errorText}>{errors.firstName}</div>}
-                                </div>
-
-                                <div style={styles.formGroup}>
-                                    <label style={styles.label} htmlFor="lastName">Apellido</label>
-                                    <input
-                                        type="text"
-                                        id="lastName"
-                                        name="lastName"
-                                        value={formData.lastName}
-                                        onChange={handleChange}
-                                        placeholder="Tu apellido"
-                                        style={getInputStyle('lastName')}
-                                    />
-                                    {errors.lastName && <div style={styles.errorText}>{errors.lastName}</div>}
-                                </div>
+                        <div style={styles.formContentInner}>
+                            <div style={styles.registerHeader}>
+                                <h1 
+                                    style={styles.registerTitle}
+                                    ref={titleRef}
+                                    className="welcome-text"
+                                >
+                                    Crea tu cuenta
+                                </h1>
+                                <p style={styles.registerSubtitle}>
+                                    Completa el formulario para unirte a nuestra plataforma
+                                </p>
                             </div>
 
-                            <div style={styles.formGroup}>
-                                <label style={styles.label} htmlFor="username">Nombre de usuario</label>
-                                <div style={styles.passwordWrapper}>
-                                    <input
-                                        type="text"
-                                        id="username"
-                                        name="username"
-                                        value={formData.username}
-                                        onChange={handleChange}
-                                        placeholder="usuario123"
-                                        style={getInputStyle('username')}
-                                    />
-                                    {isCheckingUsername && (
-                                        <div style={{ ...styles.eyeIcon, right: '40px' }}>
-                                            <i className="fa-solid fa-spinner fa-spin"></i>
-                                        </div>
-                                    )}
-                                    {usernameAvailable === true && (
-                                        <div style={{ ...styles.eyeIcon, right: '40px', color: colors.success }}>
-                                            <i className="fa-solid fa-check"></i>
-                                        </div>
-                                    )}
-                                    {usernameAvailable === false && (
-                                        <div style={{ ...styles.eyeIcon, right: '40px', color: colors.error }}>
-                                            <i className="fa-solid fa-times"></i>
-                                        </div>
-                                    )}
+                            {errors.general && (
+                                <div style={styles.generalError}>
+                                    <i className="fas fa-exclamation-circle" style={styles.errorAlertIcon}></i>
+                                    {errors.general}
                                 </div>
-                                {errors.username && <div style={styles.errorText}>{errors.username}</div>}
-                                <div style={styles.passwordRequirements}>
-                                    Usa solo letras minúsculas, números, punto y guion bajo
-                                </div>
-                            </div>
+                            )}
 
-                            <div style={styles.formGroup}>
-                                <label style={styles.label} htmlFor="email">Correo electrónico</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    name="email"
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    placeholder="correo@ejemplo.com"
-                                    style={getInputStyle('email')}
-                                />
-                                {errors.email && <div style={styles.errorText}>{errors.email}</div>}
-                            </div>
-
-                            <div style={styles.formGroup}>
-                                <label style={styles.label} htmlFor="password">Contraseña</label>
-                                <div style={styles.passwordWrapper}>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        id="password"
-                                        name="password"
-                                        value={formData.password}
-                                        onChange={handleChange}
-                                        placeholder="Crea una contraseña segura"
-                                        style={getPasswordInputStyle('password')}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={togglePasswordVisibility}
-                                        style={styles.eyeIcon}
-                                        aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                            <form onSubmit={handleSubmit}>
+                                <div style={styles.formRow}>
+                                    <div 
+                                        style={{
+                                            ...styles.formGroup,
+                                            ...(activeField === 'firstName' ? styles.activeFormGroup : {})
+                                        }}
+                                        className="form-group-animation"
                                     >
-                                        {showPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}
-                                    </button>
-                                </div>
-                                {errors.password && <div style={styles.errorText}>{errors.password}</div>}
-                                <div style={styles.passwordRequirements}>
-                                    La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula,
-                                    una minúscula y un número.
-                                </div>
-                            </div>
+                                        <label 
+                                            style={{
+                                                ...styles.label,
+                                                ...(activeField === 'firstName' ? styles.activeLabel : {})
+                                            }} 
+                                            htmlFor="firstName"
+                                        >
+                                            Nombre
+                                        </label>
+                                        <div style={{position: 'relative'}}>
+                                            <i 
+                                                className="fas fa-user" 
+                                                style={{
+                                                    ...styles.inputIcon,
+                                                    ...(activeField === 'firstName' ? styles.activeInputIcon : {})
+                                                }}
+                                            ></i>
+                                            <input
+                                                type="text"
+                                                id="firstName"
+                                                name="firstName"
+                                                ref={inputRefs.firstName}
+                                                value={formData.firstName}
+                                                onChange={handleChange}
+                                                onFocus={() => handleFocus('firstName')}
+                                                onBlur={handleBlur}
+                                                placeholder="Tu nombre"
+                                                style={getInputStyle('firstName')}
+                                                className="input-animation"
+                                            />
+                                        </div>
+                                        {errors.firstName && (
+                                            <div style={styles.errorText}>
+                                                <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
+                                                {errors.firstName}
+                                            </div>
+                                        )}
+                                    </div>
 
-                            <div style={styles.formGroup}>
-                                <label style={styles.label} htmlFor="confirmPassword">Confirmar contraseña</label>
-                                <div style={styles.passwordWrapper}>
-                                    <input
-                                        type={showConfirmPassword ? "text" : "password"}
-                                        id="confirmPassword"
-                                        name="confirmPassword"
-                                        value={formData.confirmPassword}
-                                        onChange={handleChange}
-                                        placeholder="Repite tu contraseña"
-                                        style={getPasswordInputStyle('confirmPassword')}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={toggleConfirmPasswordVisibility}
-                                        style={styles.eyeIcon}
-                                        aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                    <div 
+                                        style={{
+                                            ...styles.formGroup,
+                                            ...(activeField === 'lastName' ? styles.activeFormGroup : {})
+                                        }}
+                                        className="form-group-animation"
                                     >
-                                        {showConfirmPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}
-                                    </button>
+                                        <label 
+                                            style={{
+                                                ...styles.label,
+                                                ...(activeField === 'lastName' ? styles.activeLabel : {})
+                                            }} 
+                                            htmlFor="lastName"
+                                        >
+                                            Apellido
+                                        </label>
+                                        <div style={{position: 'relative'}}>
+                                            <i 
+                                                className="fas fa-user" 
+                                                style={{
+                                                    ...styles.inputIcon,
+                                                    ...(activeField === 'lastName' ? styles.activeInputIcon : {})
+                                                }}
+                                            ></i>
+                                            <input
+                                                type="text"
+                                                id="lastName"
+                                                name="lastName"
+                                                ref={inputRefs.lastName}
+                                                value={formData.lastName}
+                                                onChange={handleChange}
+                                                onFocus={() => handleFocus('lastName')}
+                                                onBlur={handleBlur}
+                                                placeholder="Tu apellido"
+                                                style={getInputStyle('lastName')}
+                                                className="input-animation"
+                                            />
+                                        </div>
+                                        {errors.lastName && (
+                                            <div style={styles.errorText}>
+                                                <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
+                                                {errors.lastName}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                                {errors.confirmPassword && <div style={styles.errorText}>{errors.confirmPassword}</div>}
-                            </div>
 
-                            <div style={styles.termsContainer}>
-                                <input
-                                    type="checkbox"
-                                    id="termsAccepted"
-                                    name="termsAccepted"
-                                    checked={formData.termsAccepted}
-                                    onChange={handleChange}
-                                    style={styles.checkbox}
-                                />
-                                <label htmlFor="termsAccepted">
-                                    He leído y acepto los <Link to="/terms" style={{
-                                        ...styles.termsLink,
-                                        "&:hover": {
-                                            color: colors.secondary,
-                                            textDecoration: 'underline',
-                                        }
+                                <div 
+                                    style={{
+                                        ...styles.formGroup,
+                                        ...(activeField === 'username' ? styles.activeFormGroup : {})
                                     }}
-                                        onMouseEnter={(e) => {
-                                            e.target.style.color = colors.secondary;
-                                            e.target.style.textDecoration = 'underline';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.target.style.color = colors.primary;
-                                            e.target.style.textDecoration = 'none';
-                                        }}>términos y condiciones</Link> y la <Link to="/privacy" style={{
-                                            ...styles.termsLink,
-                                            "&:hover": {
-                                                color: colors.secondary,
-                                                textDecoration: 'underline',
-                                            }
-                                        }}
-                                            onMouseEnter={(e) => {
-                                                e.target.style.color = colors.secondary;
-                                                e.target.style.textDecoration = 'underline';
+                                    className="form-group-animation"
+                                >
+                                    <label 
+                                        style={{
+                                            ...styles.label,
+                                            ...(activeField === 'username' ? styles.activeLabel : {})
+                                        }} 
+                                        htmlFor="username"
+                                    >
+                                        Nombre de usuario
+                                    </label>
+                                    <div style={{position: 'relative'}}>
+                                        <i 
+                                            className="fas fa-at" 
+                                            style={{
+                                                ...styles.inputIcon,
+                                                ...(activeField === 'username' ? styles.activeInputIcon : {})
                                             }}
-                                            onMouseLeave={(e) => {
-                                                e.target.style.color = colors.primary;
-                                                e.target.style.textDecoration = 'none';
-                                            }}>política de privacidad</Link>.
-                                </label>
-                            </div>
-                            {errors.termsAccepted && <div style={styles.errorText}>{errors.termsAccepted}</div>}
+                                        ></i>
+                                        <input
+                                            type="text"
+                                            id="username"
+                                            name="username"
+                                            ref={inputRefs.username}
+                                            value={formData.username}
+                                            onChange={handleChange}
+                                            onFocus={() => handleFocus('username')}
+                                            onBlur={handleBlur}
+                                            placeholder="usuario123"
+                                            style={getInputStyle('username')}
+                                            className="input-animation"
+                                        />
+                                        {isCheckingUsername && (
+                                            <div style={{ 
+                                                ...styles.statusIcon, 
+                                                color: '#91a8a9'
+                                            }}>
+                                                <i className="fas fa-circle-notch fa-spin"></i>
+                                            </div>
+                                        )}
+                                        {usernameAvailable === true && (
+                                            <div style={{ 
+                                                ...styles.statusIcon, 
+                                                color: colors.success 
+                                            }}>
+                                                <i className="fas fa-check-circle"></i>
+                                            </div>
+                                        )}
+                                        {usernameAvailable === false && (
+                                            <div style={{ 
+                                                ...styles.statusIcon, 
+                                                color: colors.error 
+                                            }}>
+                                                <i className="fas fa-times-circle"></i>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {errors.username && (
+                                        <div style={styles.errorText}>
+                                            <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
+                                            {errors.username}
+                                        </div>
+                                    )}
+                                    <div style={styles.passwordRequirements} className="info-fade-in">
+                                        Usa solo letras minúsculas, números, punto y guion bajo
+                                    </div>
+                                </div>
 
-                            <button
-                                type="submit"
-                                style={getButtonStyle()}
-                                disabled={isSubmitting}
-                                onMouseEnter={(e) => {
-                                    if (!isSubmitting) {
-                                        e.target.style.background = `linear-gradient(135deg, ${colors.primaryDark} 0%, ${colors.primary} 100%)`;
-                                        e.target.style.transform = 'translateY(-2px)';
-                                        e.target.style.boxShadow = '0 4px 12px rgba(11, 68, 68, 0.2)';
-                                    }
-                                }}
-                                onMouseLeave={(e) => {
-                                    if (!isSubmitting) {
-                                        e.target.style.background = `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)`;
-                                        e.target.style.transform = 'none';
-                                        e.target.style.boxShadow = 'none';
-                                    }
-                                }}
-                            >
-                                {isSubmitting ? 'Creando cuenta...' : 'Crear cuenta'}
-                            </button>
-
-                            <div style={styles.loginLink}>
-                                ¿Ya tienes una cuenta? <Link to="/login" style={{
-                                    ...styles.loginLinkText,
-                                    "&:hover": {
-                                        color: colors.secondary,
-                                        textDecoration: 'underline',
-                                    }
-                                }}
-                                    onMouseEnter={(e) => {
-                                        e.target.style.color = colors.secondary;
-                                        e.target.style.textDecoration = 'underline';
+                                <div 
+                                    style={{
+                                        ...styles.formGroup,
+                                        ...(activeField === 'email' ? styles.activeFormGroup : {})
                                     }}
-                                    onMouseLeave={(e) => {
-                                        e.target.style.color = colors.primary;
-                                        e.target.style.textDecoration = 'none';
-                                    }}>Inicia sesión</Link>
-                            </div>
-                        </form>
+                                    className="form-group-animation"
+                                >
+                                    <label 
+                                        style={{
+                                            ...styles.label,
+                                            ...(activeField === 'email' ? styles.activeLabel : {})
+                                        }} 
+                                        htmlFor="email"
+                                    >
+                                        Correo electrónico
+                                    </label>
+                                    <div style={{position: 'relative'}}>
+                                        <i 
+                                            className="fas fa-envelope" 
+                                            style={{
+                                                ...styles.inputIcon,
+                                                ...(activeField === 'email' ? styles.activeInputIcon : {})
+                                            }}
+                                        ></i>
+                                        <input
+                                            type="email"
+                                            id="email"
+                                            name="email"
+                                            ref={inputRefs.email}
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            onFocus={() => handleFocus('email')}
+                                            onBlur={handleBlur}
+                                            placeholder="correo@ejemplo.com"
+                                            style={getInputStyle('email')}
+                                            className="input-animation"
+                                        />
+                                    </div>
+                                    {errors.email && (
+                                        <div style={styles.errorText}>
+                                            <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
+                                            {errors.email}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div 
+                                    style={{
+                                        ...styles.formGroup,
+                                        ...(activeField === 'password' ? styles.activeFormGroup : {})
+                                    }}
+                                    className="form-group-animation"
+                                >
+                                    <label 
+                                        style={{
+                                            ...styles.label,
+                                            ...(activeField === 'password' ? styles.activeLabel : {})
+                                        }} 
+                                        htmlFor="password"
+                                    >
+                                        Contraseña
+                                    </label>
+                                    <div style={styles.passwordWrapper}>
+                                        <i 
+                                            className="fas fa-lock" 
+                                            style={{
+                                                ...styles.inputIcon,
+                                                ...(activeField === 'password' ? styles.activeInputIcon : {})
+                                            }}
+                                        ></i>
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            id="password"
+                                            name="password"
+                                            ref={inputRefs.password}
+                                            value={formData.password}
+                                            onChange={handleChange}
+                                            onFocus={() => handleFocus('password')}
+                                            onBlur={handleBlur}
+                                            placeholder="Crea una contraseña segura"
+                                            style={getPasswordInputStyle('password')}
+                                            className="input-animation"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={togglePasswordVisibility}
+                                            style={{
+                                                ...styles.eyeIcon,
+                                                ...(activeField === 'password' ? styles.activeEyeIcon : {})
+                                            }}
+                                            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                            className="eye-icon-animation"
+                                        >
+                                            {showPassword ? 
+                                                <i className="fa-solid fa-eye-slash"></i> : 
+                                                <i className="fa-solid fa-eye"></i>
+                                            }
+                                        </button>
+                                    </div>
+                                    {errors.password && (
+                                        <div style={styles.errorText}>
+                                            <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
+                                            {errors.password}
+                                        </div>
+                                    )}
+                                    <div style={styles.passwordRequirements} className="info-fade-in">
+                                        La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula,
+                                        una minúscula y un número.
+                                    </div>
+                                </div>
+
+                                <div 
+                                    style={{
+                                        ...styles.formGroup,
+                                        ...(activeField === 'confirmPassword' ? styles.activeFormGroup : {})
+                                    }}
+                                    className="form-group-animation"
+                                >
+                                    <label 
+                                        style={{
+                                            ...styles.label,
+                                            ...(activeField === 'confirmPassword' ? styles.activeLabel : {})
+                                        }} 
+                                        htmlFor="confirmPassword"
+                                    >
+                                        Confirmar contraseña
+                                    </label>
+                                    <div style={styles.passwordWrapper}>
+                                        <i 
+                                            className="fas fa-lock" 
+                                            style={{
+                                                ...styles.inputIcon,
+                                                ...(activeField === 'confirmPassword' ? styles.activeInputIcon : {})
+                                            }}
+                                        ></i>
+                                        <input
+                                            type={showConfirmPassword ? "text" : "password"}
+                                            id="confirmPassword"
+                                            name="confirmPassword"
+                                            ref={inputRefs.confirmPassword}
+                                            value={formData.confirmPassword}
+                                            onChange={handleChange}
+                                            onFocus={() => handleFocus('confirmPassword')}
+                                            onBlur={handleBlur}
+                                            placeholder="Repite tu contraseña"
+                                            style={getPasswordInputStyle('confirmPassword')}
+                                            className="input-animation"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={toggleConfirmPasswordVisibility}
+                                            style={{
+                                                ...styles.eyeIcon,
+                                                ...(activeField === 'confirmPassword' ? styles.activeEyeIcon : {})
+                                            }}
+                                            aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+                                            className="eye-icon-animation"
+                                        >
+                                            {showConfirmPassword ? 
+                                                <i className="fa-solid fa-eye-slash"></i> : 
+                                                <i className="fa-solid fa-eye"></i>
+                                            }
+                                        </button>
+                                    </div>
+                                    {errors.confirmPassword && (
+                                        <div style={styles.errorText}>
+                                            <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
+                                            {errors.confirmPassword}
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div style={styles.termsContainer}>
+                                    <div 
+                                        style={{
+                                            ...styles.checkmark,
+                                            ...(formData.termsAccepted ? styles.activeCheckmark : {})
+                                        }}
+                                        onClick={() => setFormData({...formData, termsAccepted: !formData.termsAccepted})}
+                                    >
+                                        <i 
+                                            className="fas fa-check" 
+                                            style={{
+                                                ...styles.checkmarkIcon,
+                                                ...(formData.termsAccepted ? styles.activeCheckmarkIcon : {})
+                                            }}
+                                        ></i>
+                                    </div>
+                                    
+                                    <label>
+                                        He leído y acepto los <Link to="/terms" className="link-hover-effect">términos y condiciones</Link> y 
+                                        la <Link to="/privacy" className="link-hover-effect">política de privacidad</Link>.
+                                    </label>
+                                </div>
+                                {errors.termsAccepted && (
+                                    <div style={styles.errorText}>
+                                        <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
+                                        {errors.termsAccepted}
+                                    </div>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    style={styles.registerButton}
+                                    ref={buttonRef}
+                                    disabled={isSubmitting}
+                                    className="login-button-animation"
+                                >
+                                    <span style={styles.buttonRipple}></span>
+                                    {isSubmitting ? (
+                                        <>
+                                            <i className="fas fa-circle-notch fa-spin" style={{marginRight: '10px'}}></i>
+                                            Creando cuenta...
+                                        </>
+                                    ) : 'Crear cuenta'}
+                                </button>
+
+                                <div style={styles.loginLink}>
+                                    ¿Ya tienes una cuenta?
+                                    <Link 
+                                        to="/login"
+                                        style={styles.loginLinkText}
+                                        className="link-hover-effect"
+                                    > Inicia sesión
+                                    </Link>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </main>
 
-            {/* El Footer ha sido eliminado */}
+            <style jsx="true">{`
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+                
+                @keyframes fadeInUp {
+                    from { 
+                        opacity: 0;
+                        transform: translateY(20px);
+                    }
+                    to { 
+                        opacity: 1;
+                        transform: translateY(0);
+                    }
+                }
+                
+                @keyframes float {
+                    0% {
+                        transform: translateY(0) translateX(0);
+                    }
+                    25% {
+                        transform: translateY(-20px) translateX(10px);
+                    }
+                    50% {
+                        transform: translateY(0) translateX(20px);
+                    }
+                    75% {
+                        transform: translateY(20px) translateX(10px);
+                    }
+                    100% {
+                        transform: translateY(0) translateX(0);
+                    }
+                }
+                
+                @keyframes pulse {
+                    0% {
+                        transform: scale(1);
+                        box-shadow: 0 0 0 0 rgba(44, 113, 113, 0.7);
+                    }
+                    70% {
+                        transform: scale(1.05);
+                        box-shadow: 0 0 0 10px rgba(44, 113, 113, 0);
+                    }
+                    100% {
+                        transform: scale(1);
+                        box-shadow: 0 0 0 0 rgba(44, 113, 113, 0);
+                    }
+                }
+                
+                @keyframes shakeX {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+                
+                @keyframes typing {
+                    from { width: 150% }
+                    to { width: 0% }
+                }
+                
+                .typing-animation::after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    right: 0;
+                    height: 100%;
+                    width: 100%;
+                    background-color: white;
+                    border-left: 2px solid #1F4E4E;
+                    animation: typing 1.5s steps(30) forwards;
+                }
+                
+                .welcome-text {
+                    position: relative;
+                    display: inline-block;
+                }
+                
+                .form-group-animation {
+                    animation: fadeInUp 0.5s ease-out forwards;
+                    opacity: 0;
+                }
+                
+                .form-group-animation:nth-child(1) {
+                    animation-delay: 0.9s;
+                }
+                
+                .form-group-animation:nth-child(2) {
+                    animation-delay: 1s;
+                }
+                
+                .form-group-animation:nth-child(3) {
+                    animation-delay: 1.1s;
+                }
+                
+                .form-group-animation:nth-child(4) {
+                    animation-delay: 1.2s;
+                }
+                
+                .form-group-animation:nth-child(5) {
+                    animation-delay: 1.3s;
+                }
+                
+                .form-group-animation:nth-child(6) {
+                    animation-delay: 1.4s;
+                }
+                
+                .pulse-animation {
+                    animation: pulse 2s infinite;
+                }
+                
+                .login-button-animation:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 8px 25px rgba(31, 78, 78, 0.4);
+                    background-color: #2C7171;
+                }
+                
+                .login-button-animation:active {
+                    transform: translateY(0);
+                    box-shadow: 0 4px 15px rgba(31, 78, 78, 0.3);
+                }
+                
+                .button-press {
+                    animation: buttonPress 0.3s forwards;
+                }
+                
+                @keyframes buttonPress {
+                    0% { transform: scale(1); }
+                    50% { transform: scale(0.95); }
+                    100% { transform: scale(1); }
+                }
+                
+                .link-hover-effect {
+                    position: relative;
+                    color: #1F4E4E;
+                    text-decoration: none;
+                    transition: color 0.3s ease;
+                }
+                
+                .link-hover-effect::after {
+                    content: '';
+                    position: absolute;
+                    width: 0;
+                    height: 2px;
+                    bottom: -2px;
+                    left: 0;
+                    background-color: #2C7171;
+                    transition: width 0.3s ease;
+                }
+                
+                .link-hover-effect:hover {
+                    color: #2C7171;
+                }
+                
+                .link-hover-effect:hover::after {
+                    width: 100%;
+                }
+                
+                .input-animation:focus {
+                    transform: translateY(-2px);
+                }
+                
+                .eye-icon-animation:hover {
+                    background-color: rgba(44, 113, 113, 0.2);
+                    transform: translateY(-50%) scale(1.1);
+                }
+                
+                .form-error {
+                    animation: shakeX 0.5s;
+                }
+                
+                .info-fade-in {
+                    animation: fadeIn 0.5s ease-out forwards;
+                    animation-delay: 0.2s;
+                    opacity: 0;
+                }
+                
+                @media (max-width: 768px) {
+                    .form-container {
+                        max-width: 90%;
+                    }
+                }
+            `}</style>
         </div>
     );
 };

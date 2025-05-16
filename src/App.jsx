@@ -1,19 +1,20 @@
 // src/App.jsx (updated)
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ScrollToTop from './components/utils/ScrollToTop';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
-import './styles/darkMode.css';
+import './styles/darkMode.css'; // Los estilos oscuros solo se aplicarán cuando se active la clase .dark-mode
 
 // Importación de páginas
 import HomePage from './pages/HomePage';
+import BlogPage from './pages/BlogPage';
 import BlogDetailPage from './pages/BlogDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import AdminPostPage from './pages/AdminPostPage';
 import CategoryPage from './pages/CategoryPage';
-import PostViewer from './components/blog/PostViewer';
+import CategoriesListPage from './pages/CategoriesListPage';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
 import ForgotPasswordPage from './components/auth/ForgotPasswordPage';
@@ -22,6 +23,7 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
 import SettingsPage from './pages/SettingsPage';
+import ProfilePage from './pages/ProfilePage';
 
 // Componente LoadingSpinner
 const LoadingSpinner = () => (
@@ -82,6 +84,12 @@ const PublicRoute = ({ children }) => {
 };
 
 const App = () => {
+  // Forzar modo claro como predeterminado
+  useEffect(() => {
+    document.documentElement.classList.add('light-mode');
+    document.documentElement.classList.remove('dark-mode');
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>
@@ -159,15 +167,15 @@ const App = () => {
                 } 
               />
               <Route 
-                path="/blog/:postId" 
+                path="/blog" 
                 element={
                   <PrivateRoute>
-                    <PostViewer />
+                    <BlogPage />
                   </PrivateRoute>
                 } 
               />
               <Route 
-                path="/blog/detail/:blogId" 
+                path="/blog/:id" 
                 element={
                   <PrivateRoute>
                     <BlogDetailPage />
@@ -199,6 +207,14 @@ const App = () => {
                 } 
               />
               <Route 
+                path="/admin/post/new" 
+                element={
+                  <PrivateRoute>
+                    <AdminPostPage />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
                 path="/admin/post/:postId" 
                 element={
                   <PrivateRoute>
@@ -207,10 +223,18 @@ const App = () => {
                 } 
               />
               <Route 
-                path="/category/:categoryName" 
+                path="/categoria/:id" 
                 element={
                   <PrivateRoute>
                     <CategoryPage />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/categorias" 
+                element={
+                  <PrivateRoute>
+                    <CategoriesListPage />
                   </PrivateRoute>
                 } 
               />
@@ -219,6 +243,14 @@ const App = () => {
                 element={
                   <PrivateRoute>
                     <SettingsPage />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/profile" 
+                element={
+                  <PrivateRoute>
+                    <ProfilePage />
                   </PrivateRoute>
                 } 
               />

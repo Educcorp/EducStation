@@ -18,7 +18,7 @@ __pycache__/
 # Archivos de distribución Python
 *.so
 .Python
-env/
+
 build/
 develop-eggs/
 dist/
@@ -35,10 +35,6 @@ var/
 *.egg
 
 # Entorno virtual (si decides mantenerlo dentro del proyecto)
-venv/
-ENV/
-.env
-env/
 Entorno/
 
 # Archivos de logs
@@ -76,12 +72,6 @@ coverage.xml
 /build
 
 # Misc
-.DS_Store
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env
 
 # Logs de Node.js
 npm-debug.log*
@@ -91,3 +81,4 @@ yarn-error.log*
 # Archivos migraciones (opcional, generalmente se deben incluir)
 # */migrations/*.py
 # !*/migrations/__init__.py
+envs.txt
