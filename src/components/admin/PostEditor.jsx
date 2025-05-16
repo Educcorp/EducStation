@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
+import { createPublicacion, createPublicacionFromHTML } from '../../services/publicacionesService';
+import { getAllCategorias } from '../../services/categoriasServices';
 
 // Componentes para el editor
 import DualModeEditor from './DualModeEditor';
@@ -126,17 +128,49 @@ const PostEditor = () => {
   const [saveMessage, setSaveMessage] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
 
-  // Categorías disponibles
-  const categories = [
-    'Noticias',
-    'Técnicas de Estudio',
-    'Problemáticas',
-    'Educación de Calidad',
-    'Herramientas',
-    'Desarrollo Docente',
-    'Comunidad'
-  ];
+  // Cargar categorías desde el backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const data = await getAllCategorias();
+        if (data && Array.isArray(data)) {
+          const categoryNames = data.map(cat => cat.Nombre_categoria);
+          setCategories(categoryNames);
+        } else {
+          // Si no hay datos o no es un array, usar categorías predeterminadas
+          setCategories([
+            'Noticias',
+            'Técnicas de Estudio',
+            'Problemáticas',
+            'Educación de Calidad',
+            'Herramientas',
+            'Desarrollo Docente',
+            'Comunidad'
+          ]);
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        // Usar categorías predeterminadas en caso de error
+        setCategories([
+          'Noticias',
+          'Técnicas de Estudio',
+          'Problemáticas',
+          'Educación de Calidad',
+          'Herramientas',
+          'Desarrollo Docente',
+          'Comunidad'
+        ]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   // Manejador para cambios en los campos del formulario
   const handleChange = (e) => {
@@ -193,15 +227,38 @@ const PostEditor = () => {
     setIsInitialized(true);
   }, []);
 
-  // Simular guardar como borrador
-  const saveDraft = () => {
+  // Guardar como borrador
+  const saveDraft = async () => {
+    // Validación básica
+    if (!post.title.trim()) {
+      setSaveMessage({
+        type: 'error',
+        text: 'Por favor añade un título a tu publicación',
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+      return;
+    }
+    
     setIsSaving(true);
     
-    // Guardar en localStorage
-    savePostToLocalStorage(post);
-    
-    // Simulación de guardado
-    setTimeout(() => {
+    try {
+      // Preparar los datos para el backend
+      const postData = {
+        titulo: post.title,
+        contenido: post.content,
+        resumen: post.title.substring(0, 150), // Usar parte del título como resumen
+        estado: 'borrador',
+        categorias: post.category ? [post.category] : [] // Convertir la categoría en un array
+      };
+      
+      // Guardar en el backend
+      const result = await createPublicacion(postData);
+      
+      // Guardar en localStorage como respaldo
+      savePostToLocalStorage(post);
+      
       setIsSaving(false);
       setSaveMessage({
         type: 'success',
@@ -211,11 +268,21 @@ const PostEditor = () => {
       
       // Limpiar mensaje después de unos segundos
       setTimeout(() => setSaveMessage(null), 3000);
-    }, 1000);
+    } catch (error) {
+      console.error('Error al guardar borrador:', error);
+      setIsSaving(false);
+      setSaveMessage({
+        type: 'error',
+        text: `Error al guardar: ${error.message}`,
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
   };
 
-  // Simular publicación del post
-  const publishPost = () => {
+  // Publicar el post
+  const publishPost = async () => {
     // Validación básica
     if (!post.title.trim() || !post.content.trim() || !post.category) {
       setSaveMessage({
@@ -230,8 +297,30 @@ const PostEditor = () => {
     
     setIsPublishing(true);
     
-    // Simulación de publicación
-    setTimeout(() => {
+    try {
+      // Preparar los datos para el backend
+      const postData = {
+        titulo: post.title,
+        contenido: post.content,
+        resumen: post.title.substring(0, 150), // Usar parte del título como resumen
+        estado: 'publicado',
+        categorias: [post.category] // Convertir la categoría en un array
+      };
+      
+      // Determinar qué endpoint usar según el modo del editor
+      let result;
+      if (post.editorMode === 'html') {
+        result = await createPublicacionFromHTML({
+          titulo: postData.titulo,
+          htmlContent: postData.contenido,
+          resumen: postData.resumen,
+          estado: postData.estado,
+          categorias: postData.categorias
+        });
+      } else {
+        result = await createPublicacion(postData);
+      }
+      
       setIsPublishing(false);
       setPost(prev => ({ ...prev, status: 'published' }));
       setSaveMessage({
@@ -245,7 +334,17 @@ const PostEditor = () => {
       
       // Limpieza del borrador en localStorage después de publicar
       localStorage.removeItem('post_draft');
-    }, 1500);
+    } catch (error) {
+      console.error('Error al publicar:', error);
+      setIsPublishing(false);
+      setSaveMessage({
+        type: 'error',
+        text: `Error al publicar: ${error.message}`,
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
   };
 
   // Exportar el post a HTML para descargar
