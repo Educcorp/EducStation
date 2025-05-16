@@ -39,16 +39,16 @@ const loadPostFromLocalStorage = () => {
 const ContentLabel = () => {
   const [isAnimated, setIsAnimated] = useState(false);
   const { colors, isDarkMode } = useTheme(); // Obtener colores del tema
-  
+
   useEffect(() => {
     // Activar animación después de un breve retraso
     const timer = setTimeout(() => {
       setIsAnimated(true);
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, []);
-  
+
   const styles = {
     container: {
       display: 'flex',
@@ -61,13 +61,13 @@ const ContentLabel = () => {
     icon: {
       fontSize: '22px',
       marginRight: spacing.sm,
-      color: colors?.secondary || '#d2b99a',
+      color: colors.secondary,
       animation: isAnimated ? 'pulseIcon 2s infinite' : 'none'
     },
     label: {
       fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.semiBold,
-      color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.primary || '#0b4444'), // Ajustar color según el tema
+      color: isDarkMode ? colors.textLight : colors.primary, // Ajustar color según el tema
       position: 'relative',
       paddingBottom: '3px'
     },
@@ -77,13 +77,13 @@ const ContentLabel = () => {
       left: 0,
       width: isAnimated ? '100%' : '0%',
       height: '2px',
-      backgroundColor: colors?.secondary || '#d2b99a',
+      backgroundColor: colors.secondary,
       transition: 'width 0.8s ease-in-out',
       transitionDelay: '0.3s'
     },
     badge: {
       display: 'inline-block',
-      backgroundColor: isAnimated ? (colors?.primary || '#0b4444') : 'transparent',
+      backgroundColor: isAnimated ? colors.primary : 'transparent',
       color: 'white',
       padding: `${spacing.xs} ${spacing.sm}`,
       borderRadius: borderRadius.round,
@@ -95,7 +95,7 @@ const ContentLabel = () => {
       boxShadow: isAnimated ? '0 2px 4px rgba(11, 68, 68, 0.2)' : 'none'
     }
   };
-  
+
   return (
     <div style={styles.container}>
       <span style={styles.icon}>📝</span>
@@ -109,61 +109,108 @@ const ContentLabel = () => {
 };
 
 const PostEditor = () => {
-  // Estado para el tema
-  const { colors, isDarkMode } = useTheme(); // Extraer colors y isDarkMode
-  
-  // Estado del post
+  // Obtener los colores del tema actual
+  const { colors, isDarkMode } = useTheme();
+
   const [post, setPost] = useState({
     title: '',
-    content: '',
     category: '',
+    content: '', // Aseguramos que se inicie con una cadena vacía
+    tags: '',
     coverImage: null,
-    status: 'draft',
-    editorMode: 'simple', // Es importante inicializar este valor
-    previewUrl: null,
-    lastSaved: null
+    coverImagePreview: null,
+    status: 'draft', // 'draft', 'published'
+    publishDate: new Date().toISOString().slice(0, 10),
+    editorMode: 'simple', // Set default mode to 'simple'
   });
-  
-  // Otros estados
-  const [categories, setCategories] = useState([]);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [saveMessage, setSaveMessage] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
 
-  // Cargar categorías
-  useEffect(() => {
-    loadCategories();
-    
-    // Cargar borrador del almacenamiento local
-    const savedPost = loadPostFromLocalStorage();
-    if (savedPost) {
-      setPost(prev => ({
-        ...prev,
-        ...savedPost,
-        lastSaved: savedPost.lastSaved || null,
-        // Asegurarnos que editorMode existe y tiene un valor válido
-        editorMode: savedPost.editorMode || 'simple'
-      }));
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState(null);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  // Estado para controlar qué categoría tiene el cursor encima
+  const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Definir descripciones de categorías para los tooltips
+  const categoryDescriptions = {
+    "Noticias": "Información actualizada sobre eventos y novedades en el ámbito educativo.",
+    "Técnicas de Estudio": "Métodos y estrategias para optimizar el aprendizaje y mejorar el rendimiento académico.",
+    "Técnicas": "Métodos y estrategias para optimizar el aprendizaje y mejorar el rendimiento académico.",
+    "Problemáticas": "Análisis de desafíos y obstáculos en el sistema educativo actual.",
+    "Problemáticas en el Estudio": "Análisis de desafíos y obstáculos en el sistema educativo actual.",
+    "Educación de Calidad": "Estándares, prácticas y enfoques para una enseñanza de excelencia.",
+    "Herramientas": "Recursos tecnológicos y pedagógicos para facilitar la labor docente.",
+    "Herramientas Tecnológicas": "Recursos tecnológicos y pedagógicos para facilitar la labor docente.",
+    "Desarrollo Docente": "Oportunidades de crecimiento profesional y capacitación para educadores.",
+    "Desarrollo Profesional Docente": "Oportunidades de crecimiento profesional y capacitación para educadores.",
+    "Comunidad": "Espacios de colaboración e intercambio entre miembros de la comunidad educativa.",
+    "Comunidad y Colaboración": "Espacios de colaboración e intercambio entre miembros de la comunidad educativa."
+  };
+
+  // Estilos para animaciones de tooltips
+  const keyframes = `
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 0.98;
+        transform: translateY(0);
+      }
     }
     
-    // Auto-guardado cada 30 segundos
-    const interval = setInterval(() => {
-      saveDraft();
-    }, 30000);
-    
-    return () => clearInterval(interval);
-  }, []);
+    @keyframes fadeOut {
+      from {
+        opacity: 0.98;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+    }
 
-  // Función para cargar categorías
-  const loadCategories = async () => {
-    try {
-      const data = await getAllCategorias();
-      console.log("Categorías cargadas:", data);
-      if (data && Array.isArray(data)) {
-        setCategories(data);
-      } else {
-        // Si no hay datos o no es un array, usar categorías predeterminadas
+    .tooltip-arrow {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      margin-left: -8px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid white;
+    }
+  `;
+
+  // Cargar categorías desde el backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const data = await getAllCategorias();
+        console.log("Categorías cargadas:", data);
+        if (data && Array.isArray(data)) {
+          setCategories(data);
+        } else {
+          // Si no hay datos o no es un array, usar categorías predeterminadas
+          setCategories([
+            { ID_categoria: 1, Nombre_categoria: 'Noticias' },
+            { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
+            { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
+            { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
+            { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
+            { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
+            { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
+          ]);
+        }
+      } catch (error) {
+        console.error('Error al cargar categorías:', error);
+        // Usar categorías predeterminadas en caso de error
         setCategories([
           { ID_categoria: 1, Nombre_categoria: 'Noticias' },
           { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
@@ -173,32 +220,40 @@ const PostEditor = () => {
           { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
           { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
         ]);
+      } finally {
+        setLoadingCategories(false);
       }
-    } catch (error) {
-      console.error('Error al cargar categorías:', error);
-      // Usar categorías predeterminadas en caso de error
-      setCategories([
-        { ID_categoria: 1, Nombre_categoria: 'Noticias' },
-        { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
-        { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
-        { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
-        { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
-        { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
-        { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
-      ]);
-    }
-  };
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Cerrar el dropdown cuando se hace clic fuera de él
+  useEffect(() => {
+    if (!dropdownOpen) return;
+
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('[data-dropdown]')) {
+        setDropdownOpen(false);
+        setHoveredCategory(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    // Cleanup: remover el listener cuando el componente se desmonte
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   // Manejador para cambios en los campos del formulario
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    console.log(`Campo ${name} cambió a: ${value}`);
-    
-    if (name === 'editorMode') {
-      console.log(`Modo de editor cambiado a: ${value}`);
-    }
-    
+
+    // Log para depuración
+    console.log(`Changing ${name} to ${value}`);
+
     setPost(prev => ({
       ...prev,
       [name]: value
@@ -212,19 +267,49 @@ const PostEditor = () => {
       setPost(prev => ({
         ...prev,
         coverImage: file,
-        previewUrl: URL.createObjectURL(file)
+        coverImagePreview: URL.createObjectURL(file)
       }));
     }
   };
 
+  // Cargar datos guardados en localStorage al iniciar
+  useEffect(() => {
+    // Cargar borrador del almacenamiento local
+    const savedPost = loadPostFromLocalStorage();
+    if (savedPost) {
+      setPost(prev => ({
+        ...prev,
+        ...savedPost,
+        // Asegurarnos que editorMode existe y tiene un valor válido
+        editorMode: savedPost.editorMode || 'simple'
+      }));
+    }
+    
+    // Marcar como inicializado después de cargar
+    setIsInitialized(true);
+    
+    // Auto-guardado cada 30 segundos
+    let interval;
+    setTimeout(() => {
+      interval = setInterval(() => {
+        if (post.title || post.content) {
+          saveDraft();
+        }
+      }, 30000);
+    }, 5000); // Esperar 5 segundos antes de iniciar el intervalo
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, []);
+
   // Autoguardado cuando el contenido cambia
   useEffect(() => {
-    if (!post.content.length > 0 || !post.title.length > 0) {
-      // console.log('Guardado automático'); // Eliminar o comentar esta línea
+    if (post.content.length > 0 || post.title.length > 0) {
       savePostToLocalStorage(post);
     }
   }, [post]);
-  
+
   // Guardar como borrador
   const saveDraft = async () => {
     // Validación básica
@@ -442,12 +527,21 @@ const PostEditor = () => {
         const title = titleMatch ? titleMatch[1] : '';
         
         // Actualizar el estado con el contenido HTML
-        setPost(prevPost => ({
-          ...prevPost,
-          title: title || prevPost.title,
-          content: content,
-          editorMode: 'html'
-        }));
+        setPost(prevPost => {
+          const updatedPost = {
+            ...prevPost,
+            title: title || prevPost.title,
+            content: content,
+            editorMode: 'html'
+          };
+          
+          console.log("Modo de editor actualizado a HTML después de importar archivo");
+          
+          // Guardamos en localStorage inmediatamente
+          savePostToLocalStorage(updatedPost);
+          
+          return updatedPost;
+        });
       } else {
         // Informar que solo se permiten archivos HTML
         setSaveMessage({
@@ -486,10 +580,7 @@ const PostEditor = () => {
       // Cambiado: Invertir el orden de las columnas para que la barra lateral esté a la izquierda
       gridTemplateColumns: "300px 1fr",
       gap: spacing.xl,
-      marginBottom: spacing.xxl,
-      '@media (max-width: 768px)': {
-        gridTemplateColumns: "1fr"
-      }
+      marginBottom: spacing.xxl
     },
     mainEditor: {
       width: "100%",
@@ -503,7 +594,7 @@ const PostEditor = () => {
     },
     actionsContainer: {
       display: "flex",
-      justifyContent: "space-between", 
+      justifyContent: "space-between",
       gap: spacing.md,
       marginTop: spacing.xl
     },
@@ -518,17 +609,17 @@ const PostEditor = () => {
       // Estilos específicos se aplicarán en cada botón
     },
     saveButton: {
-      backgroundColor: colors?.secondary || '#d2b99a',
-      color: colors?.primary || '#0b4444',
+      backgroundColor: colors.secondary,
+      color: colors.primary,
       "&:hover": {
-        backgroundColor: (colors?.secondary || '#d2b99a') + "cc", // Añadir transparencia al hover
+        backgroundColor: colors.secondary + "cc", // Añadir transparencia al hover
       }
     },
     publishButton: {
-      backgroundColor: colors?.primary || '#0b4444',
-      color: colors?.white || '#ffffff',
+      backgroundColor: colors.primary,
+      color: colors.white,
       "&:hover": {
-        backgroundColor: colors?.primaryLight || '#166363',
+        backgroundColor: colors.primaryLight,
       }
     }
   };
@@ -538,7 +629,7 @@ const PostEditor = () => {
     return (
       <div style={{
         marginTop: spacing.lg,
-        backgroundColor: isDarkMode ? (colors?.backgroundDarkSecondary || '#1a3838') : (colors?.white || '#ffffff'),
+        backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
         padding: spacing.md,
         borderRadius: borderRadius.md,
         boxShadow: shadows.sm
@@ -547,50 +638,169 @@ const PostEditor = () => {
           fontSize: typography.fontSize.lg,
           fontWeight: typography.fontWeight.semiBold,
           marginBottom: spacing.md,
-          color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.primary || '#0b4444')
+          color: isDarkMode ? colors.textLight : colors.primary
         }}>Detalles de la publicación</h3>
-        
-        <div style={{ marginBottom: spacing.md }}>
+
+        <div style={{ marginBottom: spacing.md, position: 'relative' }}>
           <label style={{
             display: 'block',
             marginBottom: spacing.xs,
             fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+            color: isDarkMode ? colors.textLight : colors.textPrimary
           }} htmlFor="category">
+            <span style={{ color: colors.secondary, fontSize: '1.1em', marginRight: spacing.xs }}></span>
             Categoría
           </label>
-          <select
-            id="category"
-            name="category"
-            value={post.category}
-            onChange={handleInputChange}
-            style={{
-              width: "100%",
-              padding: spacing.sm,
-              borderRadius: borderRadius.sm,
-              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
-              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
-              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
-            }}
-          >
-            <option value="">Seleccionar categoría</option>
-            {categories.map((cat) => (
-              <option 
-                key={cat.ID_categoria} 
-                value={cat.Nombre_categoria}
+
+          {/* Custom Dropdown Implementation */}
+          <div style={{
+            position: "relative",
+            width: "100%",
+          }}>
+            <div
+              style={{
+                width: "100%",
+                padding: spacing.sm,
+                borderRadius: borderRadius.md,
+                border: `1px solid ${colors.gray200}`,
+                fontSize: typography.fontSize.md,
+                backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+                borderLeft: `4px solid ${colors.secondary}`,
+                transition: "all 0.3s ease",
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                color: isDarkMode ? colors.textLight : colors.textPrimary,
+                boxShadow: dropdownOpen ? `0 0 0 2px ${colors.secondary}30` : 'none'
+              }}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              data-dropdown
+            >
+              {post.category || "Selecciona una categoría"}
+              <span style={{
+                marginLeft: spacing.sm,
+                transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0)',
+                transition: 'transform 0.2s ease-in-out'
+              }}>▼</span>
+            </div>
+
+            {dropdownOpen && (
+              <div style={{
+                position: "absolute",
+                top: "calc(100% + 5px)",
+                left: 0,
+                right: 0,
+                backgroundColor: colors.white,
+                borderRadius: borderRadius.md,
+                border: `1px solid ${colors.gray200}`,
+                //borderLeft: `4px solid ${colors.secondary}`,
+                boxShadow: shadows.md,
+                zIndex: 20,
+                maxHeight: "300px",
+                overflowY: "auto",
+                width: "100%"
+              }}
+                data-dropdown
               >
-                {cat.Nombre_categoria}
-              </option>
-            ))}
-          </select>
+                <div
+                  style={{
+                    padding: `${spacing.sm} ${spacing.md}`,
+                    paddingLeft: spacing.md,
+                    cursor: "pointer",
+                    borderBottom: `1px solid ${colors.gray200}`,
+                    transition: "background-color 0.2s ease",
+                    position: "relative",
+                    color: colors.primary, // Cambiado a color primario
+                    backgroundColor: 'transparent',
+                    borderLeft: 'none'
+                  }}
+                  onClick={() => {
+                    handleChange({ target: { name: 'category', value: '' } });
+                    setDropdownOpen(false);
+                    setHoveredCategory(null);
+                  }}
+                >
+                  Selecciona una categoría
+                </div>
+
+                {categories.map((cat) => {
+                  const categoryName = typeof cat === 'object' ? cat.Nombre_categoria : cat;
+                  const isSelected = post.category === categoryName;
+
+                  return (
+                    <div
+                      key={categoryName}
+                      style={{
+                        padding: `${spacing.sm} ${spacing.md}`,
+                        paddingLeft: spacing.md,
+                        cursor: "pointer",
+                        borderBottom: `1px solid ${colors.gray200}`,
+                        transition: "all 0.2s ease",
+                        position: "relative",
+                        backgroundColor: hoveredCategory === categoryName
+                          ? colors.secondary + '15' // Reducido de 25% a 15% para hover
+                          : isSelected
+                            ? colors.secondary + '08' // Reducido de 15% a 8% para selección
+                            : 'transparent',
+                        color: colors.primary, // Color de texto
+                        fontWeight: isSelected ? typography.fontWeight.bold : typography.fontWeight.normal,
+                        borderLeft: 'none'
+                      }}
+                      onClick={() => {
+                        handleChange({ target: { name: 'category', value: categoryName } });
+                        setDropdownOpen(false);
+                        setHoveredCategory(null);
+                      }}
+                      onMouseEnter={() => setHoveredCategory(categoryName)}
+                      onMouseLeave={() => setHoveredCategory(null)}
+                    >
+                      {categoryName}
+
+                      {/* Tooltip de descripción */}
+                      {hoveredCategory === categoryName && categoryDescriptions[categoryName] && (
+                        <div style={{
+                          position: "absolute",
+                          top: "-50px",
+                          left: 0,
+                          right: 0,
+                          backgroundColor: colors.white,
+                          color: colors.primary,
+                          padding: spacing.sm,
+                          borderRadius: borderRadius.md,
+                          fontSize: typography.fontSize.sm,
+                          border: `1px solid ${colors.gray200}`,
+                          borderLeft: `4px solid ${colors.primary}`,
+                          boxShadow: `0 3px 6px rgba(0,0,0,0.1)`,
+                          zIndex: 100,
+                          width: "100%",
+                          opacity: 0.98,
+                          animation: "fadeIn 0.2s ease-in-out",
+                          pointerEvents: "none",
+                          fontWeight: typography.fontWeight.medium,
+                          maxWidth: "100%",
+                          whiteSpace: "normal",
+                          lineHeight: "1.4",
+                          textAlign: "left"
+                        }}>
+                          {categoryDescriptions[categoryName]}
+                          <span className="tooltip-arrow"></span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
-        
+
         <div style={{ marginBottom: spacing.md }}>
           <label style={{
             display: 'block',
             marginBottom: spacing.xs,
             fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+            color: isDarkMode ? colors.textLight : colors.textPrimary
           }} htmlFor="tags">
             Etiquetas (separadas por comas)
           </label>
@@ -599,25 +809,25 @@ const PostEditor = () => {
             id="tags"
             name="tags"
             value={post.tags}
-            onChange={handleInputChange}
+            onChange={handleChange}
             style={{
               width: "100%",
               padding: spacing.sm,
               borderRadius: borderRadius.sm,
-              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
-              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
-              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+              border: `1px solid ${colors.gray200}`,
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+              color: isDarkMode ? colors.textLight : colors.textPrimary
             }}
             placeholder="ej. educación, tecnología, aprendizaje"
           />
         </div>
-        
+
         <div style={{ marginBottom: spacing.md }}>
           <label style={{
             display: 'block',
             marginBottom: spacing.xs,
             fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+            color: isDarkMode ? colors.textLight : colors.textPrimary
           }} htmlFor="publishDate">
             Fecha de publicación
           </label>
@@ -626,32 +836,32 @@ const PostEditor = () => {
             id="publishDate"
             name="publishDate"
             value={post.publishDate}
-            onChange={handleInputChange}
+            onChange={handleChange}
             style={{
               width: "100%",
               padding: spacing.sm,
               borderRadius: borderRadius.sm,
-              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
-              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
-              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+              border: `1px solid ${colors.gray200}`,
+              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+              color: isDarkMode ? colors.textLight : colors.textPrimary
             }}
           />
         </div>
-        
+
         <div style={{ marginBottom: spacing.md }}>
           <label style={{
             display: 'block',
             marginBottom: spacing.xs,
             fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+            color: isDarkMode ? colors.textLight : colors.textPrimary
           }}>
             Estado actual
           </label>
           <div style={{
             display: 'inline-block',
             padding: `${spacing.xs} ${spacing.sm}`,
-            backgroundColor: post.status === 'draft' ? (colors?.warning || '#f6c23e') : (colors?.success || '#1cc88a'),
-            color: colors?.white || '#ffffff',
+            backgroundColor: post.status === 'draft' ? colors.warning : colors.success,
+            color: colors.white,
             borderRadius: borderRadius.sm,
             fontSize: typography.fontSize.sm,
             fontWeight: typography.fontWeight.medium
@@ -664,7 +874,7 @@ const PostEditor = () => {
   };
 
   // Solo renderizar una vez inicializado para evitar problemas de redimensión
-  if (!categories.length) {
+  if (loadingCategories) {
     return <div style={styles.container}>Cargando categorías...</div>;
   }
 
@@ -699,21 +909,22 @@ const PostEditor = () => {
             10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
             20%, 40%, 60%, 80% { transform: translateX(5px); }
           }
+          ${keyframes}
         `
       }} />
 
       <div style={styles.editorContainer}>
         {/* Sidebar - Ahora a la izquierda */}
         <div style={styles.sidebar}>
-          <CoverImageUploader 
-            coverImagePreview={post.previewUrl} 
-            onChange={handleImageChange} 
+          <CoverImageUploader
+            coverImagePreview={post.coverImagePreview}
+            onChange={handleImageChange}
           />
 
           {renderPostMetadata()}
-          
-          <ImportExportActions 
-            onExport={exportToFile} 
+
+          <ImportExportActions
+            onExport={exportToFile}
             onImport={importFile}
           />
         </div>
@@ -729,35 +940,35 @@ const PostEditor = () => {
               fontWeight: typography.fontWeight.medium,
               color: isDarkMode ? colors.textLight : colors.primary
             }} htmlFor="title">
-              <span style={{color: isDarkMode ? colors.textLight : colors.primary, fontSize: '1.4em'}}>📝</span> Título del post
+              <span style={{ color: isDarkMode ? colors.textLight : colors.primary, fontSize: '1.4em' }}>📝</span> Título del post
             </label>
             <input
               type="text"
               id="title"
               name="title"
               value={post.title}
-              onChange={handleInputChange}
+              onChange={handleChange}
               style={{
                 width: "100%",
                 padding: spacing.md,
                 borderRadius: borderRadius.md,
-                border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
+                border: `1px solid ${colors.gray200}`,
                 fontSize: typography.fontSize.lg,
                 transition: "all 0.3s ease",
                 marginBottom: spacing.md,
                 fontWeight: typography.fontWeight.semiBold,
-                borderLeft: `4px solid ${colors?.primary || '#0b4444'}`,
-                backgroundColor: colors?.white || '#ffffff',
-                color: isDarkMode ? (colors?.textPrimary || '#333333') : "#000000",
+                borderLeft: `4px solid ${colors.primary}`,
+                backgroundColor: colors.white,
+                color: isDarkMode ? colors.textPrimary : "#000000",
               }}
               placeholder="Escribe un título atractivo"
               onFocus={(e) => {
-                e.target.style.boxShadow = `0 0 0 2px ${colors?.primary || '#0b4444'}30`;
-                e.target.style.borderLeft = `4px solid ${colors?.secondary || '#d2b99a'}`;
+                e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`;
+                e.target.style.borderLeft = `4px solid ${colors.secondary}`;
               }}
               onBlur={(e) => {
                 e.target.style.boxShadow = 'none';
-                e.target.style.borderLeft = `4px solid ${colors?.primary || '#0b4444'}`;
+                e.target.style.borderLeft = `4px solid ${colors.primary}`;
               }}
             />
           </div>
@@ -765,24 +976,24 @@ const PostEditor = () => {
           <div style={styles.formGroup}>
             {/* Etiqueta "Contenido" animada */}
             <ContentLabel />
-            
-            <DualModeEditor 
+
+            <DualModeEditor
               content={post.content}
-              onChange={handleInputChange}
+              onChange={handleChange}
               initialMode={post.editorMode}
             />
           </div>
 
           {saveMessage && (
-            <StatusMessage 
-              type={saveMessage.type} 
-              text={saveMessage.text} 
-              icon={saveMessage.icon} 
+            <StatusMessage
+              type={saveMessage.type}
+              text={saveMessage.text}
+              icon={saveMessage.icon}
             />
           )}
 
           <div style={styles.actionsContainer}>
-            <button 
+            <button
               onClick={saveDraft}
               disabled={isSaving}
               style={{
@@ -792,8 +1003,8 @@ const PostEditor = () => {
             >
               {isSaving ? 'Guardando...' : 'Guardar borrador'}
             </button>
-            
-            <button 
+
+            <button
               onClick={publishPost}
               disabled={isPublishing}
               style={{

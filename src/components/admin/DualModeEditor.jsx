@@ -9,13 +9,24 @@ import ImportExportActions from './ImportExportActions';
 
 const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, onImport }) => {
   const textAreaRef = useRef(null);
-  const [mode, setMode] = useState('simple'); // Siempre comenzar con modo simple
+  const [mode, setMode] = useState(initialMode === 'html' ? 'developer' : 'simple');
   const [activeTab, setActiveTab] = useState('code'); // Para el modo desarrollador
   const [internalContent, setInternalContent] = useState(content || '');
   const [isHighlightingEnabled, setIsHighlightingEnabled] = useState(true);
   const [simpleContent, setSimpleContent] = useState(content || '');
   const [showDeveloperModal, setShowDeveloperModal] = useState(false);
   const [hoveredElement, setHoveredElement] = useState(null);
+
+  // Inicializar el modo según initialMode cuando cambie
+  useEffect(() => {
+    if (initialMode === 'html' && mode !== 'developer') {
+      console.log('DualModeEditor - Inicializando en modo HTML desde props');
+      setMode('developer');
+    } else if (initialMode === 'simple' && mode !== 'simple') {
+      console.log('DualModeEditor - Inicializando en modo Simple desde props');
+      setMode('simple');
+    }
+  }, [initialMode]);
 
   // Actualizar contenido cuando cambia externamente
   useEffect(() => {
@@ -64,9 +75,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     
     setMode(newMode);
     
-    // Resetear pestañas a vista de código al cambiar a modo desarrollador
+    // Actualizar el contenido interno al cambiar de modo
     if (newMode === 'developer') {
       setActiveTab('code');
+      // Asegurar que el contenido esté sincronizado
+      setInternalContent(content || '');
+    } else {
+      // Si pasamos a modo simple, sincronizamos el contenido
+      setSimpleContent(internalContent || '');
     }
     
     // Notificar al componente padre sobre el cambio de modo
@@ -85,6 +101,9 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     console.log('DualModeEditor - confirmDeveloperMode: Confirmando cambio a modo HTML');
     setShowDeveloperModal(false);
     setMode('developer');
+    
+    // Asegurar que el contenido esté sincronizado
+    setInternalContent(content || '');
     
     // Notificar al componente padre sobre el cambio de modo
     const event = {
@@ -448,8 +467,9 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
             100% { transform: scale(2.5); opacity: 0; }
           }
           @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
           }
         `
       }} />
