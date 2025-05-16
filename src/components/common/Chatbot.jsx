@@ -1,10 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 
-const API_URL =
-  process.env.NODE_ENV === 'production'
-    ? 'https://educstation-backend-production.up.railway.app/api/chatbot/message'
-    : '/api/chatbot/message';
+const API_URL = 'https://educstation-backend-production.up.railway.app/api/chatbot/message';
 
 const Chatbot = () => {
   const { colors, isDarkMode } = useTheme();
