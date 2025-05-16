@@ -417,7 +417,7 @@ const Header = () => {
       icon: <FaHome size={20} />
     },
     {
-      path: '/category/tecnicas-de-estudio',
+      path: '/blog',
       label: 'Blog',
       icon: <FaFileAlt size={20} />
     },
