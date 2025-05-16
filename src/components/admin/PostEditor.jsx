@@ -630,7 +630,7 @@ const PostEditor = () => {
             <div
               style={{
                 width: "100%",
-                padding: spacing.md,
+                padding: spacing.sm,
                 borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
                 fontSize: typography.fontSize.md,
@@ -661,10 +661,10 @@ const PostEditor = () => {
                 top: "calc(100% + 5px)",
                 left: 0,
                 right: 0,
-                backgroundColor: "#f8f9fa", // Cambiado a un fondo claro
+                backgroundColor: colors.white,
                 borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
-                borderLeft: `4px solid ${colors.secondary}`,
+                //borderLeft: `4px solid ${colors.secondary}`,
                 boxShadow: shadows.md,
                 zIndex: 20,
                 maxHeight: "300px",
@@ -676,14 +676,14 @@ const PostEditor = () => {
                 <div
                   style={{
                     padding: `${spacing.sm} ${spacing.md}`,
+                    paddingLeft: spacing.md,
                     cursor: "pointer",
                     borderBottom: `1px solid ${colors.gray200}`,
                     transition: "background-color 0.2s ease",
                     position: "relative",
                     color: colors.primary, // Cambiado a color primario
                     backgroundColor: 'transparent',
-                    borderLeft: `4px solid ${colors.secondary}`,
-                    paddingLeft: spacing.md
+                    borderLeft: 'none'
                   }}
                   onClick={() => {
                     handleChange({ target: { name: 'category', value: '' } });
@@ -709,13 +709,13 @@ const PostEditor = () => {
                         transition: "all 0.2s ease",
                         position: "relative",
                         backgroundColor: hoveredCategory === categoryName
-                          ? colors.secondary + '25' // Color de fondo al pasar el cursor (con transparencia)
+                          ? colors.secondary + '15' // Reducido de 25% a 15% para hover
                           : isSelected
-                            ? colors.secondary + '15' // Color de fondo si está seleccionado
+                            ? colors.secondary + '08' // Reducido de 15% a 8% para selección
                             : 'transparent',
                         color: colors.primary, // Color de texto
                         fontWeight: isSelected ? typography.fontWeight.bold : typography.fontWeight.normal,
-                        borderLeft: isSelected ? `4px solid ${colors.secondary}` : '4px solid transparent'
+                        borderLeft: 'none'
                       }}
                       onClick={() => {
                         handleChange({ target: { name: 'category', value: categoryName } });
@@ -740,7 +740,7 @@ const PostEditor = () => {
                           borderRadius: borderRadius.md,
                           fontSize: typography.fontSize.sm,
                           border: `1px solid ${colors.gray200}`,
-                          borderLeft: `4px solid ${colors.secondary}`,
+                          borderLeft: `4px solid ${colors.primary}`,
                           boxShadow: `0 3px 6px rgba(0,0,0,0.1)`,
                           zIndex: 100,
                           width: "100%",
