@@ -10,17 +10,38 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
         
         console.log("Solicitando todas las publicaciones:", url);
         
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
+                throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`Obtenidas ${data.length} publicaciones correctamente`);
+            return data;
+        } catch (fetchError) {
+            console.error("Error en la petición principal:", fetchError);
+            
+            // Si falla la petición principal, intentamos un enfoque alternativo
+            console.log("Intentando método alternativo para cargar publicaciones...");
+            
+            // Podemos intentar cargar las últimas publicaciones sin parámetros de estado
+            const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
+            console.log("URL alternativa:", fallbackUrl);
+            
+            const fallbackResponse = await fetch(fallbackUrl);
+            if (!fallbackResponse.ok) {
+                // Si también falla el fallback, lanzamos el error original
+                throw fetchError;
+            }
+            
+            const fallbackData = await fallbackResponse.json();
+            console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
+            return fallbackData;
         }
-        
-        const data = await response.json();
-        console.log(`Obtenidas ${data.length} publicaciones`);
-        
-        return data;
     } catch (error) {
-        console.error('Error en getAllPublicaciones:', error);
+        console.error('Error final en getAllPublicaciones:', error);
         throw error;
     }
 };

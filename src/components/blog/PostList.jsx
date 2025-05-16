@@ -5,6 +5,7 @@ import { searchPublicaciones, searchByTags } from '../../services/searchService'
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows } from '../../styles/theme';
 import { FaCalendarAlt, FaTag, FaEye } from 'react-icons/fa';
+import { getAllCategorias } from '../../services/categoriasServices';
 
 const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'recientes' }) => {
   const [posts, setPosts] = useState([]);
@@ -17,19 +18,57 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        let data;
+        let data = [];
 
         // Si hay término de búsqueda, usamos el servicio de búsqueda
         if (searchTerm && searchTerm.trim() !== '') {
           data = await searchPublicaciones(searchTerm, limit || 10, 0);
         }
-        // Si hay filtro de categoría y no es vacío (no es "Todas las categorías")
+        // Si hay filtro de categoría específica (no es "Todas las categorías")
         else if (categoryFilter && categoryFilter !== '') {
           data = await searchByTags(categoryFilter, limit || 10, 0);
         }
-        // Si es "Todas las categorías" o no hay filtros, obtenemos todas las publicaciones
+        // Si es "Todas las categorías", cargar por categorías de manera independiente
         else {
-          data = await getAllPublicaciones(limit || 10, 0, 'publicado');
+          try {
+            // 1. Obtenemos todas las categorías
+            const categorias = await getAllCategorias();
+            console.log(`Obtenidas ${categorias.length} categorías para cargar publicaciones`);
+            
+            // 2. Hacemos peticiones por cada categoría en paralelo
+            if (categorias && categorias.length > 0) {
+              const promesas = categorias.map(categoria => 
+                searchByTags(categoria.ID_categoria, limit || 10, 0)
+                  .catch(error => {
+                    console.error(`Error al cargar categoría ${categoria.Nombre_categoria}:`, error);
+                    return []; // Si falla una categoría, retornamos un array vacío
+                  })
+              );
+              
+              // Esperamos a que todas las promesas se resuelvan
+              const resultados = await Promise.all(promesas);
+              
+              // 3. Combinamos los resultados y eliminamos duplicados por ID
+              const postMap = new Map();
+              resultados.forEach(publicacionesCategoria => {
+                publicacionesCategoria.forEach(post => {
+                  if (!postMap.has(post.ID_publicaciones)) {
+                    postMap.set(post.ID_publicaciones, post);
+                  }
+                });
+              });
+              
+              data = Array.from(postMap.values());
+              console.log(`Combinadas ${data.length} publicaciones únicas de todas las categorías`);
+            } else {
+              // Si no hay categorías, intentamos el método original como fallback
+              data = await getAllPublicaciones(limit || 10, 0, 'publicado');
+            }
+          } catch (categoryError) {
+            console.error("Error al cargar por categorías:", categoryError);
+            // Intentamos el método general como último recurso
+            data = await getAllPublicaciones(limit || 10, 0, 'publicado');
+          }
         }
 
         // Ordenar los posts según el criterio seleccionado
@@ -43,7 +82,7 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
           }
         }
 
-        console.log("Posts cargados:", data);
+        console.log("Posts cargados:", data.length);
         setPosts(data);
         setError(null);
       } catch (error) {
