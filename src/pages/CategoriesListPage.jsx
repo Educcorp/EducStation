@@ -1,17 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useTheme } from '../context/ThemeContext';
 import { spacing, typography, shadows, borderRadius } from '../styles/theme';
-import { FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaNewspaper, FaPenNib, FaChalkboardTeacher, FaArrowRight } from 'react-icons/fa';
+import { FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaNewspaper, FaPenNib, FaChalkboardTeacher, FaArrowRight, FaSearch, FaHome } from 'react-icons/fa';
+import '../styles/animations.css';
 
 const CategoriesListPage = () => {
   const { isDarkMode, colors } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
   const [animate, setAnimate] = useState(false);
   const [featuredVisible, setFeaturedVisible] = useState(false);
+  const [cardsVisible, setCardsVisible] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredCategories, setFilteredCategories] = useState([]);
+  const navigate = useNavigate();
+  
   const featuredSectionRef = useRef(null);
+  const gridRef = useRef(null);
+  
   const [categories, setCategories] = useState([
     { id: 1, name: 'Noticias', description: 'Últimas noticias y novedades sobre educación y tecnología', icon: <FaNewspaper size={38} />, color: '#FF6B6B' },
     { id: 2, name: 'Técnicas de Estudio', description: 'Estrategias y métodos para mejorar el aprendizaje', icon: <FaBook size={38} />, color: '#4ECDC4' },
@@ -25,19 +34,25 @@ const CategoriesListPage = () => {
   // Animación de entrada para el título y subtítulo
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 100);
-    return () => clearTimeout(timeout);
+    const timeoutCards = setTimeout(() => setCardsVisible(true), 500);
+    return () => {
+      clearTimeout(timeout);
+      clearTimeout(timeoutCards);
+    };
   }, []);
 
   // Animación de entrada para las tarjetas
   useEffect(() => {
-    const cards = document.querySelectorAll('.category-card');
-    cards.forEach((card, index) => {
-      setTimeout(() => {
-        card.style.opacity = '1';
-        card.style.transform = 'translateY(0)';
-      }, 80 * index);
-    });
-  }, []);
+    if (cardsVisible) {
+      const cards = document.querySelectorAll('.category-card');
+      cards.forEach((card, index) => {
+        setTimeout(() => {
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, 80 * index);
+      });
+    }
+  }, [cardsVisible]);
 
   // Animación para la sección "Lo que encontrarás"
   useEffect(() => {
@@ -56,6 +71,64 @@ const CategoriesListPage = () => {
     
     return () => observer.disconnect();
   }, []);
+  
+  // Filtrar categorías según la búsqueda
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredCategories(categories);
+      return;
+    }
+    
+    const filtered = categories.filter(category => 
+      category.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      category.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
+    setFilteredCategories(filtered);
+  }, [searchQuery, categories]);
+  
+  // Búsqueda inteligente
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value.trim() === '') {
+      setIsSearching(false);
+    } else {
+      setIsSearching(true);
+    }
+  };
+  
+  // Limpiar búsqueda
+  const clearSearch = () => {
+    setSearchQuery('');
+    setIsSearching(false);
+  };
+  
+  // Navegar a una categoría
+  const navigateToCategory = (categoryId) => {
+    navigate(`/categoria/${categoryId}`);
+  };
+  
+  // Efectos para tarjetas
+  const getCardTransform = (id) => {
+    if (hoveredCard === id) {
+      return 'translateY(-10px)';
+    } 
+    return 'translateY(0)';
+  };
+  
+  const getCardBoxShadow = (id, color) => {
+    if (hoveredCard === id) {
+      return `0 15px 30px ${color}70`;
+    }
+    return `0 10px 30px rgba(0, 0, 0, 0.08)`;
+  };
+  
+  const getCardBorder = (id, color) => {
+    if (hoveredCard === id) {
+      return `1px solid ${color}40`;
+    }
+    return '1px solid rgba(0,0,0,0.05)';
+  };
 
   const styles = {
     container: {
@@ -108,12 +181,79 @@ const CategoriesListPage = () => {
       transform: animate ? 'translateY(0)' : 'translateY(20px)',
       transition: 'opacity 0.5s ease 0.2s, transform 0.5s ease 0.2s'
     },
+    searchContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: spacing.xl,
+      marginBottom: spacing.xxl,
+      position: 'relative',
+      maxWidth: '600px',
+      margin: '0 auto',
+      opacity: animate ? 1 : 0,
+      transform: animate ? 'translateY(0)' : 'translateY(20px)',
+      transition: 'opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s'
+    },
+    searchInput: {
+      width: '100%',
+      padding: `${spacing.md} ${spacing.xl}`,
+      paddingLeft: '50px',
+      borderRadius: '50px',
+      fontSize: typography.fontSize.md,
+      border: 'none',
+      boxShadow: '0 5px 20px rgba(0,0,0,0.1)',
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.9)',
+      color: isDarkMode ? '#ffffff' : '#333',
+      transition: 'all 0.3s ease',
+      '&:focus': {
+        outline: 'none',
+        boxShadow: '0 5px 25px rgba(0,0,0,0.2)'
+      },
+      backdropFilter: 'blur(10px)'
+    },
+    searchIcon: {
+      position: 'absolute',
+      left: '15px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#555',
+      fontSize: '20px'
+    },
+    clearButton: {
+      position: 'absolute',
+      right: '15px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      backgroundColor: 'transparent',
+      border: 'none',
+      cursor: 'pointer',
+      color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#555',
+      fontSize: '16px',
+      padding: '5px',
+      borderRadius: '50%',
+      display: isSearching ? 'block' : 'none',
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+      }
+    },
+    noResults: {
+      textAlign: 'center',
+      padding: spacing.xl,
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)',
+      borderRadius: borderRadius.md,
+      marginTop: spacing.xl,
+      boxShadow: '0 5px 15px rgba(0,0,0,0.05)',
+      color: isDarkMode ? 'rgba(255,255,255,0.8)' : '#555'
+    },
     grid: {
       marginTop: spacing.xxl,
-      width: '100%'
+      width: '100%',
+      opacity: cardsVisible ? 1 : 0,
+      transition: 'opacity 0.5s ease'
     },
     card: {
-      backgroundColor: isDarkMode ? '#2a2a2a' : colors.white,
+      backgroundColor: isDarkMode ? 'rgba(42, 42, 42, 0.8)' : 'rgba(255, 255, 255, 0.9)',
       borderRadius: borderRadius.lg,
       padding: spacing.xl,
       boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
@@ -129,8 +269,35 @@ const CategoriesListPage = () => {
       cursor: 'pointer',
       border: '1px solid rgba(0,0,0,0.05)',
       opacity: 0,
-      transform: 'translateY(10px)'
+      transform: 'translateY(10px)',
+      backdropFilter: 'blur(5px)'
     },
+    cardBg: (color) => ({
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      background: isDarkMode 
+        ? `linear-gradient(135deg, ${color}20, ${color}10)`
+        : `linear-gradient(135deg, ${color}15, ${color}05)`,
+      opacity: 0.8,
+      zIndex: 0
+    }),
+    cardPattern: (color) => ({
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      width: '100%',
+      height: '40%',
+      backgroundImage: `
+        radial-gradient(circle at 50% 80%, ${color}15 0%, transparent 20%),
+        radial-gradient(circle at 20% 50%, ${color}10 0%, transparent 30%),
+        radial-gradient(circle at 80% 20%, ${color}10 0%, transparent 30%)
+      `,
+      opacity: 0.5,
+      zIndex: 1
+    }),
     iconContainer: (color) => ({
       width: '100px',
       height: '100px',
@@ -143,7 +310,9 @@ const CategoriesListPage = () => {
       color: color,
       transition: 'all 0.3s ease',
       transform: 'rotate(0deg)',
-      boxShadow: `0 8px 16px ${color}33`
+      boxShadow: `0 8px 20px ${color}50`,
+      position: 'relative',
+      zIndex: 2
     }),
     categoryName: {
       fontSize: '1.5rem',
@@ -151,7 +320,8 @@ const CategoriesListPage = () => {
       marginBottom: spacing.sm,
       color: isDarkMode ? colors.white : colors.primary,
       position: 'relative',
-      display: 'inline-block'
+      display: 'inline-block',
+      zIndex: 2
     },
     nameDecoration: (isHovered, color) => ({
       position: 'absolute',
@@ -167,7 +337,9 @@ const CategoriesListPage = () => {
       fontSize: typography.fontSize.md,
       color: isDarkMode ? colors.gray200 : colors.textSecondary,
       marginBottom: spacing.lg,
-      lineHeight: '1.6'
+      lineHeight: '1.6',
+      position: 'relative',
+      zIndex: 2
     },
     link: {
       textDecoration: 'none',
@@ -191,7 +363,9 @@ const CategoriesListPage = () => {
       justifyContent: 'center',
       gap: '10px',
       transform: isHovered ? 'scale(1.05)' : 'scale(1)',
-      boxShadow: isHovered ? `0 10px 20px ${color}40` : 'none'
+      boxShadow: isHovered ? `0 10px 20px ${color}70` : 'none',
+      position: 'relative',
+      zIndex: 2
     }),
     header: {
       backgroundColor: isDarkMode ? '#0b2b26' : '#0b4444',
@@ -199,8 +373,10 @@ const CategoriesListPage = () => {
       marginBottom: spacing.xxl,
       position: 'relative',
       overflow: 'hidden',
-      backgroundImage: 'linear-gradient(135deg, #0b4444 0%, #1a936f 100%)',
-      boxShadow: '0 4px 20px rgba(0,0,0,0.2)'
+      backgroundImage: isDarkMode 
+        ? 'linear-gradient(135deg, #08322c 0%, #0b4444 50%, #1a5c5c 100%)'
+        : 'linear-gradient(135deg, #0b4444 0%, #1a936f 70%, #2a9d8f 100%)',
+      boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
     },
     headerContent: {
       position: 'relative',
@@ -258,11 +434,13 @@ const CategoriesListPage = () => {
       right: '16px',
       backgroundColor: color,
       color: '#fff',
-      padding: '5px 10px',
+      padding: '5px 15px',
       borderRadius: '30px',
       fontSize: '12px',
       fontWeight: 'bold',
-      opacity: 0.85
+      opacity: 0.9,
+      zIndex: 2,
+      boxShadow: '0 3px 8px rgba(0,0,0,0.2)'
     }),
     featuredSection: {
       marginBottom: spacing.xxl,
@@ -413,53 +591,105 @@ const CategoriesListPage = () => {
                 y herramientas adaptados a tus necesidades.
               </p>
             </div>
+            
+            <div style={styles.searchContainer}>
+              <FaSearch style={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Buscar categorías..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                style={styles.searchInput}
+              />
+              {isSearching && (
+                <button 
+                  style={styles.clearButton}
+                  onClick={clearSearch}
+                  aria-label="Limpiar búsqueda"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
 
       <div style={styles.container}>
-        <div style={{...styles.grid, marginTop: spacing.xxl}} className="category-grid">
-          {categories.map((category, index) => (
-            <Link 
-              key={category.id} 
-              to={`/categoria/${category.id}`} 
-              style={styles.link}
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = `/categoria/${category.id}`;
-              }}
-            >
-              <div 
-                className="category-card"
-                style={{
-                  ...styles.card,
-                  transform: hoveredCard === category.id ? 'translateY(-5px)' : 'translateY(0)',
-                  boxShadow: hoveredCard === category.id ? '0 15px 30px rgba(0, 0, 0, 0.12)' : '0 10px 30px rgba(0, 0, 0, 0.08)'
+        <div ref={gridRef} style={{...styles.grid, marginTop: spacing.xxl}} className="category-grid">
+          {filteredCategories.length > 0 ? (
+            filteredCategories.map((category, index) => (
+              <Link 
+                key={category.id} 
+                to={`/categoria/${category.id}`} 
+                style={styles.link}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateToCategory(category.id);
                 }}
-                onMouseEnter={() => setHoveredCard(category.id)}
-                onMouseLeave={() => setHoveredCard(null)}
               >
-                <div style={styles.categoryBadge(category.color)}>
-                  Categoría {category.id}
-                </div>
                 <div 
-                  style={styles.iconContainer(category.color)}
-                  className={`icon-container-${category.id}`}
+                  className="category-card hover-transform"
+                  style={{
+                    ...styles.card,
+                    transform: getCardTransform(category.id),
+                    boxShadow: getCardBoxShadow(category.id, category.color),
+                    border: getCardBorder(category.id, category.color)
+                  }}
+                  onMouseEnter={() => setHoveredCard(category.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
                 >
-                  {category.icon}
+                  <div style={styles.cardBg(category.color)}></div>
+                  <div style={styles.cardPattern(category.color)}></div>
+                  
+                  <div style={styles.categoryBadge(category.color)}>
+                    Categoría {category.id}
+                  </div>
+                  <div 
+                    style={styles.iconContainer(category.color)}
+                    className={`icon-container-${category.id} float-animation`}
+                  >
+                    {category.icon}
+                  </div>
+                  <h2 style={styles.categoryName}>
+                    {category.name}
+                    <div style={styles.nameDecoration(hoveredCard === category.id, category.color)}></div>
+                  </h2>
+                  <p style={styles.categoryDescription}>{category.description}</p>
+                  <button 
+                    style={styles.button(hoveredCard === category.id, category.color)}
+                    className={hoveredCard === category.id ? "pulse-animation" : ""}
+                  >
+                    Ver artículos
+                    <FaArrowRight size={14} />
+                  </button>
                 </div>
-                <h2 style={styles.categoryName}>
-                  {category.name}
-                  <div style={styles.nameDecoration(hoveredCard === category.id, category.color)}></div>
-                </h2>
-                <p style={styles.categoryDescription}>{category.description}</p>
-                <button style={styles.button(hoveredCard === category.id, category.color)}>
-                  Ver artículos
-                  <FaArrowRight size={14} />
-                </button>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))
+          ) : (
+            <div style={{...styles.noResults, gridColumn: '1 / -1'}}>
+              <h3>No se encontraron categorías</h3>
+              <p>No hay categorías que coincidan con "{searchQuery}".</p>
+              <button 
+                onClick={clearSearch}
+                style={{
+                  backgroundColor: colors.primary,
+                  color: '#fff',
+                  border: 'none',
+                  padding: `${spacing.xs} ${spacing.lg}`,
+                  borderRadius: borderRadius.md,
+                  marginTop: spacing.md,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: colors.primaryDark
+                  }
+                }}
+              >
+                Mostrar todas las categorías
+              </button>
+            </div>
+          )}
         </div>
         
         <div 
@@ -473,14 +703,7 @@ const CategoriesListPage = () => {
           <div style={styles.featuredCards}>
             <div 
               style={styles.featuredCard}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-5px)';
-                e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
-              }}
+              className="hover-transform"
             >
               <div style={{...styles.featuredIcon, color: '#FF6B6B'}}>📚</div>
               <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
@@ -490,14 +713,7 @@ const CategoriesListPage = () => {
             </div>
             <div 
               style={styles.featuredCard}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-5px)';
-                e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
-              }}
+              className="hover-transform"
             >
               <div style={{...styles.featuredIcon, color: '#4ECDC4'}}>🔍</div>
               <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
@@ -507,14 +723,7 @@ const CategoriesListPage = () => {
             </div>
             <div 
               style={styles.featuredCard}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-5px)';
-                e.currentTarget.style.boxShadow = '0 15px 30px rgba(0,0,0,0.12)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.08)';
-              }}
+              className="hover-transform"
             >
               <div style={{...styles.featuredIcon, color: '#FFD166'}}>💡</div>
               <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
