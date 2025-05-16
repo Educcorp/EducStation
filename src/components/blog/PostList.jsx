@@ -139,6 +139,25 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
       : plainText;
   };
 
+  // Función para renderizar la imagen HTML de forma segura
+  const renderImageHTML = (html) => {
+    if (!html) return null;
+    
+    return (
+      <div 
+        dangerouslySetInnerHTML={{ __html: html }} 
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden'
+        }}
+      />
+    );
+  };
+
   // Estilos para la lista de posts
   const styles = {
     container: {
@@ -462,7 +481,9 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
           >
             <Link to={`/blog/${post.ID_publicaciones}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%' }}>
               <div style={styles.postImageContainer}>
-                {post.Imagen_destacada_ID ? (
+                {post.imagen_portada_html ? (
+                  renderImageHTML(post.imagen_portada_html)
+                ) : post.Imagen_destacada_ID ? (
                   <img 
                     src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`} 
                     alt={post.Titulo} 
