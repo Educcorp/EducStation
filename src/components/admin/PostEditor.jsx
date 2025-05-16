@@ -731,8 +731,9 @@ const PostEditor = () => {
                       {hoveredCategory === categoryName && categoryDescriptions[categoryName] && (
                         <div style={{
                           position: "absolute",
-                          left: "calc(100% + 10px)", // Cambiado para aparecer a la derecha
-                          top: "0",
+                          top: "-50px",
+                          left: 0,
+                          right: 0,
                           backgroundColor: colors.white,
                           color: colors.primary,
                           padding: spacing.sm,
@@ -742,7 +743,7 @@ const PostEditor = () => {
                           borderLeft: `4px solid ${colors.secondary}`,
                           boxShadow: `0 3px 6px rgba(0,0,0,0.1)`,
                           zIndex: 100,
-                          width: "250px", // Ancho fijo para tooltip
+                          width: "100%",
                           opacity: 0.98,
                           animation: "fadeIn 0.2s ease-in-out",
                           pointerEvents: "none",
@@ -753,6 +754,7 @@ const PostEditor = () => {
                           textAlign: "left"
                         }}>
                           {categoryDescriptions[categoryName]}
+                          <span className="tooltip-arrow"></span>
                         </div>
                       )}
                     </div>
