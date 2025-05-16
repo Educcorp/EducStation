@@ -618,7 +618,7 @@ const PostEditor = () => {
             fontWeight: typography.fontWeight.medium,
             color: isDarkMode ? colors.textLight : colors.textPrimary
           }} htmlFor="category">
-            <span style={{ color: colors.secondary, fontSize: '1.1em', marginRight: spacing.xs }}>📂</span>
+            <span style={{ color: colors.secondary, fontSize: '1.1em', marginRight: spacing.xs }}></span>
             Categoría
           </label>
 
