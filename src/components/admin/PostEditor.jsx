@@ -664,6 +664,7 @@ const PostEditor = () => {
                 backgroundColor: "#f8f9fa", // Cambiado a un fondo claro
                 borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
+                borderLeft: `4px solid ${colors.secondary}`,
                 boxShadow: shadows.md,
                 zIndex: 20,
                 maxHeight: "300px",
@@ -680,7 +681,9 @@ const PostEditor = () => {
                     transition: "background-color 0.2s ease",
                     position: "relative",
                     color: colors.primary, // Cambiado a color primario
-                    backgroundColor: 'transparent'
+                    backgroundColor: 'transparent',
+                    borderLeft: `4px solid ${colors.secondary}`,
+                    paddingLeft: spacing.md
                   }}
                   onClick={() => {
                     handleChange({ target: { name: 'category', value: '' } });
@@ -700,6 +703,7 @@ const PostEditor = () => {
                       key={categoryName}
                       style={{
                         padding: `${spacing.sm} ${spacing.md}`,
+                        paddingLeft: spacing.md,
                         cursor: "pointer",
                         borderBottom: `1px solid ${colors.gray200}`,
                         transition: "all 0.2s ease",
