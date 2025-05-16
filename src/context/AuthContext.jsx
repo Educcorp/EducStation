@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx - Actualizado
 import React, { createContext, useState, useEffect } from 'react';
-import { login, logout, refreshToken } from '../services/authService';
+import { login, logout, refreshToken, register as registerService } from '../services/authService';
 
 export const AuthContext = createContext();
 
@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     // Verificar si hay un token en localStorage cuando la aplicación se carga
     const checkAuth = async () => {
       const token = localStorage.getItem('userToken');
-      
+
       if (token) {
         try {
           // Intentar obtener información del usuario usando el token
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
               'Authorization': `Bearer ${token}`,
             },
           });
-          
+
           if (response.ok) {
             const userData = await response.json();
             setUser(userData);
@@ -39,7 +39,7 @@ export const AuthProvider = ({ children }) => {
                   'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
                 },
               });
-              
+
               if (newResponse.ok) {
                 const userData = await newResponse.json();
                 setUser(userData);
@@ -67,10 +67,10 @@ export const AuthProvider = ({ children }) => {
         setIsAuth(false);
         setUser(null);
       }
-      
+
       setLoading(false);
     };
-    
+
     checkAuth();
   }, []);
 
@@ -81,6 +81,20 @@ export const AuthProvider = ({ children }) => {
       const result = await login(credentials);
       setUser(result.user);
       setIsAuth(true);
+      return result;
+    } catch (error) {
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const registerUser = async (userData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await registerService(userData);
       return result;
     } catch (error) {
       setError(error.message);
@@ -102,14 +116,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuth, 
-      loading, 
+    <AuthContext.Provider value={{
+      user,
+      isAuth,
+      loading,
       error,
-      login: loginUser, 
-      logout: logoutUser, 
-      updateAuthState 
+      login: loginUser,
+      logout: logoutUser,
+      register: registerUser,
+      updateAuthState
     }}>
       {children}
     </AuthContext.Provider>
