@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -10,6 +10,8 @@ const CategoriesListPage = () => {
   const { isDarkMode, colors } = useTheme();
   const [hoveredCard, setHoveredCard] = useState(null);
   const [animate, setAnimate] = useState(false);
+  const [featuredVisible, setFeaturedVisible] = useState(false);
+  const featuredSectionRef = useRef(null);
   const [categories, setCategories] = useState([
     { id: 1, name: 'Noticias', description: 'Últimas noticias y novedades sobre educación y tecnología', icon: <FaNewspaper size={38} />, color: '#FF6B6B' },
     { id: 2, name: 'Técnicas de Estudio', description: 'Estrategias y métodos para mejorar el aprendizaje', icon: <FaBook size={38} />, color: '#4ECDC4' },
@@ -35,6 +37,24 @@ const CategoriesListPage = () => {
         card.style.transform = 'translateY(0)';
       }, 80 * index);
     });
+  }, []);
+
+  // Animación para la sección "Lo que encontrarás"
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          setFeaturedVisible(true);
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.2 });
+    
+    if (featuredSectionRef.current) {
+      observer.observe(featuredSectionRef.current);
+    }
+    
+    return () => observer.disconnect();
   }, []);
 
   const styles = {
@@ -252,7 +272,10 @@ const CategoriesListPage = () => {
       borderRadius: borderRadius.lg,
       boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      opacity: featuredVisible ? 1 : 0,
+      transform: featuredVisible ? 'translateY(0)' : 'translateY(30px)',
+      transition: 'opacity 0.6s ease, transform 0.6s ease'
     },
     featuredTitle: {
       fontSize: typography.fontSize.xl,
@@ -439,7 +462,10 @@ const CategoriesListPage = () => {
           ))}
         </div>
         
-        <div style={{...styles.featuredSection, marginTop: spacing.xxl}}>
+        <div 
+          ref={featuredSectionRef}
+          style={{...styles.featuredSection, marginTop: spacing.xxl}}
+        >
           <h2 style={styles.featuredTitle}>
             Lo que encontrarás
             <div style={styles.titleUnderline}></div>
