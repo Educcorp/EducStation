@@ -22,19 +22,23 @@ const Header = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState('');
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  // Nuevo estado para almacenar si el usuario es superusuario
+  const [isSuperUser, setIsSuperUser] = useState(false);
 
   // Nuevo estado para el modal de confirmación
   const [confirmLogout, setConfirmLogout] = useState(false);
 
   const location = useLocation();
-  const userRole = 'admin';
 
-  // Verificar autenticación
+  // Verificar autenticación y permisos del usuario
   useEffect(() => {
     const token = localStorage.getItem('userToken');
     const storedUserName = localStorage.getItem('userName') || 'Usuario';
+    const userIsSuperUser = localStorage.getItem('isSuperUser') === 'true';
+    
     setIsAuthenticated(!!token);
     setUserName(storedUserName);
+    setIsSuperUser(userIsSuperUser);
   }, []);
 
   // Detectar scroll
@@ -86,6 +90,7 @@ const Header = () => {
     // Actualizar estado
     setIsAuthenticated(false);
     setUserName('');
+    setIsSuperUser(false);
     setConfirmLogout(false);
 
     // Mostrar mensaje
@@ -429,7 +434,7 @@ const Header = () => {
     {
       path: '/admin/post',
       label: 'Crear Post',
-      admin: true,
+      superuser: true, // Cambiado de admin a superuser para una validación más específica
       icon: <FaPenSquare size={20} />
     }
   ];
@@ -494,7 +499,7 @@ const Header = () => {
 
           <nav style={styles.navLinks}>
             {menuItems.map((item, index) => (
-              (!item.admin || userRole === 'admin') && (
+              (!item.superuser || isSuperUser) && (
                 <a
                   key={index}
                   href={item.path}
@@ -568,7 +573,7 @@ const Header = () => {
                     <img src="/assets/images/logoBN.png" alt="Avatar" style={styles.profileImg} />
                   </div>
                   <div style={styles.userName}>{userName}</div>
-                  <div style={styles.userRole}>{userRole === 'admin' ? 'Administrador' : 'Usuario'}</div>
+                  <div style={styles.userRole}>{isSuperUser ? 'Administrador' : 'Usuario'}</div>
                 </div>
 
                 {/* Opciones del menú para usuario autenticado */}
