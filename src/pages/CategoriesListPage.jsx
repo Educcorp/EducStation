@@ -428,20 +428,6 @@ const CategoriesListPage = () => {
       transform: 'translateY(10px)',
       pointerEvents: 'none'
     },
-    categoryBadge: (color) => ({
-      position: 'absolute',
-      top: '16px',
-      right: '16px',
-      backgroundColor: color,
-      color: '#fff',
-      padding: '5px 15px',
-      borderRadius: '30px',
-      fontSize: '12px',
-      fontWeight: 'bold',
-      opacity: 0.9,
-      zIndex: 2,
-      boxShadow: '0 3px 8px rgba(0,0,0,0.2)'
-    }),
     featuredSection: {
       marginBottom: spacing.xxl,
       textAlign: 'center',
@@ -499,7 +485,10 @@ const CategoriesListPage = () => {
       color: isDarkMode ? colors.gray200 : colors.textSecondary,
       lineHeight: '1.6',
       marginTop: spacing.sm
-    }
+    },
+    cardIconRight: (color) => ({
+      // Eliminar toda esta sección ya que no se usa
+    })
   };
 
   // Control del scroll para mostrar/ocultar el botón de "Volver arriba"
@@ -642,15 +631,13 @@ const CategoriesListPage = () => {
                   <div style={styles.cardBg(category.color)}></div>
                   <div style={styles.cardPattern(category.color)}></div>
                   
-                  <div style={styles.categoryBadge(category.color)}>
-                    Categoría {category.id}
-                  </div>
                   <div 
                     style={styles.iconContainer(category.color)}
-                    className={`icon-container-${category.id} float-animation`}
+                    className={`icon-container-${category.id}`}
                   >
                     {category.icon}
                   </div>
+                  
                   <h2 style={styles.categoryName}>
                     {category.name}
                     <div style={styles.nameDecoration(hoveredCard === category.id, category.color)}></div>
@@ -658,7 +645,6 @@ const CategoriesListPage = () => {
                   <p style={styles.categoryDescription}>{category.description}</p>
                   <button 
                     style={styles.button(hoveredCard === category.id, category.color)}
-                    className={hoveredCard === category.id ? "pulse-animation" : ""}
                   >
                     Ver artículos
                     <FaArrowRight size={14} />
@@ -755,17 +741,6 @@ const CategoriesListPage = () => {
 
       <style>
         {`
-          @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-5px); }
-            100% { transform: translateY(0px); }
-          }
-          
-          .icon-container-1:hover, .icon-container-2:hover, .icon-container-3:hover, .icon-container-4:hover, .icon-container-5:hover, .icon-container-6:hover, .icon-container-7:hover {
-            animation: float 1.5s ease-in-out infinite;
-            transform: rotate(3deg) scale(1.05);
-          }
-          
           .category-card {
             transition: all 0.3s ease;
           }

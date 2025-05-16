@@ -9,7 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { searchByTags } from '../services/searchService';
 import { getAllCategorias } from '../services/categoriasServices';
 import '../styles/animations.css';
-import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper } from 'react-icons/fa';
+import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers } from 'react-icons/fa';
 
 const CategoryPage = () => {  
   const { colors, isDarkMode } = useTheme();
@@ -755,6 +755,14 @@ const CategoryPage = () => {
       textAlign: "center",
       padding: spacing.xl,
       color: isDarkMode ? colors.textLight : colors.textSecondary
+    },
+    heroIcon: {
+      position: 'absolute',
+      top: '50%',
+      right: '10%',
+      transform: 'translateY(-50%)',
+      color: 'rgba(255, 255, 255, 0.3)',
+      zIndex: 4
     }
   };
 
@@ -822,14 +830,6 @@ const CategoryPage = () => {
                     Volver a categorías
                   </button>
                   
-                  <div style={styles.breadcrumb}>
-                    <Link to="/" style={styles.breadcrumbLink}>Inicio</Link>
-                    <span>›</span>
-                    <Link to="/categorias" style={styles.breadcrumbLink}>Categorías</Link>
-                    <span>›</span>
-                    <span>{currentCategory?.Nombre_categoria || 'Categoría'}</span>
-                  </div>
-                  
                   <h1 style={styles.title}>{currentCategory?.Nombre_categoria || 'Categoría'}</h1>
                   
                   <p style={styles.subtitle}>
@@ -837,9 +837,20 @@ const CategoryPage = () => {
                   </p>
                   
                   <div style={styles.categoryTag}>
-                    {currentCategory?.Nombre_categoria || 'Categoría'}
+                    Número de posts
                     <span style={styles.categoryCount}>{posts.length}</span>
                   </div>
+                </div>
+                
+                <div style={styles.heroIcon} className="float-animation">
+                  {currentCategory?.ID_categoria === 1 ? <FaNewspaper size={120} /> :
+                   currentCategory?.ID_categoria === 2 ? <FaBook size={120} /> :
+                   currentCategory?.ID_categoria === 3 ? <FaPenNib size={120} /> :
+                   currentCategory?.ID_categoria === 4 ? <FaAward size={120} /> :
+                   currentCategory?.ID_categoria === 5 ? <FaCog size={120} /> :
+                   currentCategory?.ID_categoria === 6 ? <FaChalkboardTeacher size={120} /> :
+                   currentCategory?.ID_categoria === 7 ? <FaUsers size={120} /> :
+                   <FaNewspaper size={120} />}
                 </div>
               </div>
             </section>
