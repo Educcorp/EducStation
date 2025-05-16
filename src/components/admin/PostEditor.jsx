@@ -661,7 +661,7 @@ const PostEditor = () => {
                 top: "calc(100% + 5px)",
                 left: 0,
                 right: 0,
-                backgroundColor: colors.secondary,
+                backgroundColor: "#f8f9fa", // Cambiado a un fondo claro
                 borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
                 boxShadow: shadows.md,
@@ -676,10 +676,11 @@ const PostEditor = () => {
                   style={{
                     padding: `${spacing.sm} ${spacing.md}`,
                     cursor: "pointer",
-                    borderBottom: `1px solid ${colors.gray100}`,
+                    borderBottom: `1px solid ${colors.gray200}`,
                     transition: "background-color 0.2s ease",
                     position: "relative",
-                    color: colors.white
+                    color: colors.primary, // Cambiado a color primario
+                    backgroundColor: 'transparent'
                   }}
                   onClick={() => {
                     handleChange({ target: { name: 'category', value: '' } });
@@ -692,17 +693,25 @@ const PostEditor = () => {
 
                 {categories.map((cat) => {
                   const categoryName = typeof cat === 'object' ? cat.Nombre_categoria : cat;
+                  const isSelected = post.category === categoryName;
+
                   return (
                     <div
                       key={categoryName}
                       style={{
                         padding: `${spacing.sm} ${spacing.md}`,
                         cursor: "pointer",
-                        borderBottom: `1px solid ${colors.gray100}`,
-                        transition: "background-color 0.2s ease",
+                        borderBottom: `1px solid ${colors.gray200}`,
+                        transition: "all 0.2s ease",
                         position: "relative",
-                        backgroundColor: hoveredCategory === categoryName ? colors.white : 'transparent',
-                        color: hoveredCategory === categoryName ? colors.primary : colors.white
+                        backgroundColor: hoveredCategory === categoryName
+                          ? colors.secondary + '25' // Color de fondo al pasar el cursor (con transparencia)
+                          : isSelected
+                            ? colors.secondary + '15' // Color de fondo si está seleccionado
+                            : 'transparent',
+                        color: colors.primary, // Color de texto
+                        fontWeight: isSelected ? typography.fontWeight.bold : typography.fontWeight.normal,
+                        borderLeft: isSelected ? `4px solid ${colors.secondary}` : '4px solid transparent'
                       }}
                       onClick={() => {
                         handleChange({ target: { name: 'category', value: categoryName } });
