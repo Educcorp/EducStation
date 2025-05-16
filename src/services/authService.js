@@ -96,13 +96,18 @@ export const register = async (userData) => {
 // Inicio de sesión de usuario - Actualizado para aceptar username o email
 export const login = async (credentials) => {
   try {
+    // Verificar si parece un email (tiene @ y un punto después)
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(credentials.username);
+
+    console.log('Iniciando sesión con:', isEmail ? 'email' : 'username', credentials.username);
+
     const response = await fetch(`${API_URL}/api/auth/token/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        username: credentials.username || credentials.email, // Acepta username o email
+        username: credentials.username, // Enviamos tal cual - el backend ya verificará username o email
         password: credentials.password,
       }),
     });
