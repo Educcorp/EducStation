@@ -5,7 +5,7 @@ import { colors, spacing, typography, shadows, borderRadius, transitions } from 
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { AuthContext } from '../../context/AuthContext'; // Importa el contexto de autenticación
-import { FaHome, FaInfo, FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags } from 'react-icons/fa';
+import { FaHome, FaInfo, FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope } from 'react-icons/fa';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -427,16 +427,6 @@ const Header = () => {
       icon: <FaTags size={20} />
     },
     {
-      path: '/about',
-      label: 'Acerca de',
-      icon: <FaInfo size={20} />
-    },
-    {
-      path: '/contact',
-      label: 'Contacto',
-      icon: <FaPhone size={20} />
-    },
-    {
       path: '/admin/post',
       label: 'Crear Post',
       admin: true,
@@ -623,10 +613,44 @@ const Header = () => {
 
                 <div style={styles.menuSeparator}></div>
 
+                {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
+                <Link
+                  to="/about"
+                  style={getMenuItemStyle(2)}
+                  onMouseEnter={() => setHoveredItem('menu-2')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    window.location.href = '/about';
+                  }}
+                >
+                  <span style={styles.menuItemIcon}>
+                    <FaInfo size={24} />
+                  </span> Acerca de
+                </Link>
+                <Link
+                  to="/contact"
+                  style={getMenuItemStyle(3)}
+                  onMouseEnter={() => setHoveredItem('menu-3')}
+                  onMouseLeave={() => setHoveredItem(null)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setIsMenuOpen(false);
+                    window.location.href = '/contact';
+                  }}
+                >
+                  <span style={styles.menuItemIcon}>
+                    <FaEnvelope size={24} />
+                  </span> Contacto
+                </Link>
+
+                <div style={styles.menuSeparator}></div>
+
                 <a
                   href="#"
-                  style={getMenuItemStyle(6)}
-                  onMouseEnter={() => setHoveredItem('menu-')}
+                  style={getMenuItemStyle(4)}
+                  onMouseEnter={() => setHoveredItem('menu-4')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -649,7 +673,7 @@ const Header = () => {
                   <span style={styles.menuItemIcon}><FaInfo size={20} /></span> Acerca de
                 </Link>
                 <Link to="/contact" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span style={styles.menuItemIcon}><FaPhone size={20} /></span> Contacto
+                  <span style={styles.menuItemIcon}><FaEnvelope size={20} /></span> Contacto
                 </Link>
 
                 <div style={styles.menuSeparator}></div>
