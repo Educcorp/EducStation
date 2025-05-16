@@ -24,7 +24,7 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
           data = await searchPublicaciones(searchTerm, limit || 10, 0);
         }
         // Si hay filtro de categoría, buscamos por categoría
-        else if (categoryFilter) {
+        else if (categoryFilter && categoryFilter !== '') {
           data = await searchByTags(categoryFilter, limit || 10, 0);
         }
         // Si no hay filtros, obtenemos todas las publicaciones
@@ -32,6 +32,7 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
           data = await getAllPublicaciones(limit || 10, 0, 'publicado');
         }
 
+        console.log("Posts cargados:", data);
         setPosts(data);
         setError(null);
       } catch (error) {
@@ -96,7 +97,7 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
       boxShadow: shadows.md,
-      transition: 'all 0.3s ease',
+      transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
       border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}`,
       height: '100%',
       display: 'flex',
@@ -121,28 +122,34 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
       left: 0,
       right: 0,
       padding: spacing.sm,
-      background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%)',
+      background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%)',
       display: 'flex',
       justifyContent: 'space-between',
-      alignItems: 'center'
+      alignItems: 'center',
+      backdropFilter: 'blur(2px)'
     },
     postDate: {
       color: colors.white,
       fontSize: typography.fontSize.sm,
       display: 'flex',
       alignItems: 'center',
-      gap: '5px'
+      gap: '5px',
+      textShadow: '0 1px 2px rgba(0,0,0,0.5)'
     },
     postCategory: {
       display: 'inline-flex',
       alignItems: 'center',
       gap: '5px',
       padding: `${spacing.xs} ${spacing.sm}`,
-      backgroundColor: colors.secondary,
+      backgroundColor: 'rgba(255,255,255,0.25)',
       color: colors.white,
-      borderRadius: borderRadius.sm,
+      borderRadius: borderRadius.round,
       fontSize: typography.fontSize.xs,
       fontWeight: typography.fontWeight.medium,
+      backdropFilter: 'blur(5px)',
+      border: '1px solid rgba(255,255,255,0.3)',
+      boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+      textShadow: '0 1px 2px rgba(0,0,0,0.3)'
     },
     postContent: {
       padding: spacing.lg,
@@ -238,10 +245,27 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
       100% { transform: rotate(360deg); }
     }
     
+    @keyframes fadeUpIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
     .blog-post-card {
       opacity: 0;
       transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.3s ease;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background-color: transparent;
+    }
+    
+    .blog-post-card:hover {
+      transform: translateY(-10px) !important;
+      box-shadow: 0 15px 30px rgba(0,0,0,0.15) !important;
     }
   `;
 
@@ -300,14 +324,17 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
       )}
       
       <div style={styles.postGrid}>
-        {posts.map((post) => (
+        {posts.map((post, index) => (
           <div 
             key={post.ID_publicaciones} 
             className="blog-post-card"
             style={{
               ...styles.postCard,
               transform: hoveredCard === post.ID_publicaciones ? 'translateY(-5px)' : undefined,
-              boxShadow: hoveredCard === post.ID_publicaciones ? shadows.lg : shadows.md
+              boxShadow: hoveredCard === post.ID_publicaciones ? shadows.lg : shadows.md,
+              animationDelay: `${index * 0.1}s`,
+              animation: 'fadeUpIn 0.6s ease forwards',
+              animationDelay: `${index * 0.1}s`
             }}
             onMouseEnter={() => setHoveredCard(post.ID_publicaciones)}
             onMouseLeave={() => setHoveredCard(null)}
@@ -316,25 +343,32 @@ const PostList = ({ limit, categoryFilter, searchTerm, className }) => {
               <div style={styles.postImageContainer}>
                 {post.Imagen_destacada_ID ? (
                   <img 
-                    src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`} 
+                    src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`} 
                     alt={post.Titulo} 
                     style={{
                       ...styles.postImage,
                       transform: hoveredCard === post.ID_publicaciones ? 'scale(1.05)' : 'scale(1)'
+                    }}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'https://via.placeholder.com/350x200?text=Sin+imagen';
                     }}
                   />
                 ) : (
                   <div 
                     style={{
                       ...styles.postImage,
-                      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.gray200,
+                      backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: isDarkMode ? colors.gray500 : colors.gray500,
+                      color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
                     }}
                   >
-                    Sin imagen
+                    <div style={{textAlign: 'center'}}>
+                      <div style={{fontSize: '32px', marginBottom: '8px'}}>📄</div>
+                      <div>Sin imagen</div>
+                    </div>
                   </div>
                 )}
                 <div style={styles.postImageOverlay}>

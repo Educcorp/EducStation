@@ -142,13 +142,24 @@ const PostCard = ({ post }) => {
         <div style={styles.imageContainer}>
           {post.Imagen_destacada_ID ? (
             <img
-              src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`}
+              src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`}
               alt={post.Titulo}
               style={styles.cardImage}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://via.placeholder.com/350x200?text=Sin+imagen';
+              }}
             />
           ) : (
-            <div style={styles.noImage}>
-              Sin imagen
+            <div style={{
+              ...styles.noImage,
+              backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
+              color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
+            }}>
+              <div style={{textAlign: 'center'}}>
+                <div style={{fontSize: '32px', marginBottom: '8px'}}>📄</div>
+                <div>Sin imagen</div>
+              </div>
             </div>
           )}
         </div>
