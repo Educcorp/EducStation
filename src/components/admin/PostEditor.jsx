@@ -272,35 +272,43 @@ const PostEditor = () => {
     }
   };
 
-  // Autoguardado cuando el contenido cambia
+  // Cargar datos guardados en localStorage al iniciar
   useEffect(() => {
-    if (!isInitialized) return; // Evita guardar durante la inicialización
-
-    const timer = setTimeout(() => {
-      if (post.content.length > 0 || post.title.length > 0) {
-        // console.log('Guardado automático'); // Eliminar o comentar esta línea
-        savePostToLocalStorage(post);
-      }
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [post, isInitialized]);
-
-  // Cargar borrador guardado al iniciar
-  useEffect(() => {
+    // Cargar borrador del almacenamiento local
     const savedPost = loadPostFromLocalStorage();
     if (savedPost) {
-      setPost({
+      setPost(prev => ({
+        ...prev,
         ...savedPost,
-        editorMode: savedPost.editorMode || 'simple' // Ensure 'simple' is the default mode
-      });
-
-      console.log('Loaded post with mode:', savedPost.editorMode || 'simple');
+        // Asegurarnos que editorMode existe y tiene un valor válido
+        editorMode: savedPost.editorMode || 'simple'
+      }));
     }
-
+    
     // Marcar como inicializado después de cargar
     setIsInitialized(true);
+    
+    // Auto-guardado cada 30 segundos
+    let interval;
+    setTimeout(() => {
+      interval = setInterval(() => {
+        if (post.title || post.content) {
+          saveDraft();
+        }
+      }, 30000);
+    }, 5000); // Esperar 5 segundos antes de iniciar el intervalo
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, []);
+
+  // Autoguardado cuando el contenido cambia
+  useEffect(() => {
+    if (post.content.length > 0 || post.title.length > 0) {
+      savePostToLocalStorage(post);
+    }
+  }, [post]);
 
   // Guardar como borrador
   const saveDraft = async () => {
@@ -311,22 +319,22 @@ const PostEditor = () => {
         text: 'Por favor añade un título a tu publicación',
         icon: '✖'
       });
-
+      
       setTimeout(() => setSaveMessage(null), 3000);
       return;
     }
-
+    
     setIsSaving(true);
-
+    
     try {
       // Convertir la categoría seleccionada a un ID numérico si existe
       let categorias = [];
       if (post.category) {
         // Buscar el ID de la categoría seleccionada
-        const categoriaSeleccionada = categories.find(cat =>
+        const categoriaSeleccionada = categories.find(cat => 
           typeof cat === 'object' ? cat.Nombre_categoria === post.category : cat === post.category
         );
-
+        
         if (typeof categoriaSeleccionada === 'object' && categoriaSeleccionada.ID_categoria) {
           categorias = [categoriaSeleccionada.ID_categoria];
         } else if (post.category) {
@@ -335,7 +343,7 @@ const PostEditor = () => {
           categorias = [1];
         }
       }
-
+      
       // Preparar los datos para el backend
       const postData = {
         titulo: post.title,
@@ -344,22 +352,22 @@ const PostEditor = () => {
         estado: 'borrador',
         categorias: categorias
       };
-
+      
       console.log("Guardando borrador con datos:", postData);
-
+      
       // Guardar en el backend
       const result = await createPublicacion(postData);
-
+      
       // Guardar en localStorage como respaldo
       savePostToLocalStorage(post);
-
+      
       setIsSaving(false);
       setSaveMessage({
         type: 'success',
         text: 'Borrador guardado correctamente',
         icon: '✓'
       });
-
+      
       // Limpiar mensaje después de unos segundos
       setTimeout(() => setSaveMessage(null), 3000);
     } catch (error) {
@@ -370,7 +378,7 @@ const PostEditor = () => {
         text: `Error al guardar: ${error.message}`,
         icon: '✖'
       });
-
+      
       setTimeout(() => setSaveMessage(null), 3000);
     }
   };
@@ -384,20 +392,20 @@ const PostEditor = () => {
         text: 'Por favor completa al menos el título, categoría y contenido del post',
         icon: '✖'
       });
-
+      
       setTimeout(() => setSaveMessage(null), 3000);
       return;
     }
-
+    
     setIsPublishing(true);
-
+    
     try {
       // Convertir la categoría seleccionada a un ID numérico
       // Buscar el ID de la categoría seleccionada
-      const categoriaSeleccionada = categories.find(cat =>
+      const categoriaSeleccionada = categories.find(cat => 
         typeof cat === 'object' ? cat.Nombre_categoria === post.category : cat === post.category
       );
-
+      
       let categoriaId;
       if (typeof categoriaSeleccionada === 'object' && categoriaSeleccionada.ID_categoria) {
         categoriaId = categoriaSeleccionada.ID_categoria;
@@ -406,7 +414,7 @@ const PostEditor = () => {
         console.warn("No se pudo encontrar el ID de la categoría, usando valor predeterminado");
         categoriaId = 1;
       }
-
+      
       // Preparar los datos para el backend
       const postData = {
         titulo: post.title,
@@ -415,15 +423,28 @@ const PostEditor = () => {
         estado: 'publicado',
         categorias: [categoriaId] // Usar el ID numérico de la categoría
       };
-
+      
       console.log("Enviando publicación con datos:", postData);
-
+      
       // Determinar qué endpoint usar según el modo del editor
       let result;
       if (post.editorMode === 'html') {
+        console.log("Usando endpoint HTML con contenido HTML de longitud:", post.content.length);
+        console.log("Muestra del contenido HTML:", post.content.substring(0, 150) + "...");
+        
+        // Verificar que el contenido no sea vacío o solo espacios
+        if (!post.content.trim()) {
+          throw new Error("El contenido HTML está vacío o solo contiene espacios");
+        }
+        
+        // Verificar que el contenido tenga etiquetas HTML válidas
+        if (!post.content.includes("<") || !post.content.includes(">")) {
+          console.warn("El contenido no parece contener etiquetas HTML válidas");
+        }
+        
         result = await createPublicacionFromHTML({
           titulo: postData.titulo,
-          htmlContent: postData.contenido,
+          htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
           resumen: postData.resumen,
           estado: postData.estado,
           categorias: postData.categorias
@@ -431,7 +452,7 @@ const PostEditor = () => {
       } else {
         result = await createPublicacion(postData);
       }
-
+      
       setIsPublishing(false);
       setPost(prev => ({ ...prev, status: 'published' }));
       setSaveMessage({
@@ -439,10 +460,10 @@ const PostEditor = () => {
         text: '¡Post publicado correctamente!',
         icon: '🎉'
       });
-
+      
       // Limpiar mensaje después de unos segundos
       setTimeout(() => setSaveMessage(null), 3000);
-
+      
       // Limpieza del borrador en localStorage después de publicar
       localStorage.removeItem('post_draft');
     } catch (error) {
@@ -453,7 +474,7 @@ const PostEditor = () => {
         text: `Error al publicar: ${error.message}`,
         icon: '✖'
       });
-
+      
       setTimeout(() => setSaveMessage(null), 3000);
     }
   };
@@ -462,28 +483,28 @@ const PostEditor = () => {
   const exportToFile = () => {
     // Crear un objeto de texto para descargar
     const content = post.content;
-
+    
     const blob = new Blob([content], { type: 'text/html' });
     const url = URL.createObjectURL(blob);
-
+    
     // Crear un enlace de descarga y hacer clic en él
     const a = document.createElement('a');
     a.href = url;
     a.download = `${post.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.html`;
     document.body.appendChild(a);
     a.click();
-
+    
     // Limpiar
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
+    
     // Mostrar mensaje de éxito
     setSaveMessage({
       type: 'success',
       text: `Archivo HTML descargado correctamente`,
       icon: '📥'
     });
-
+    
     setTimeout(() => setSaveMessage(null), 3000);
   };
 
@@ -491,27 +512,36 @@ const PostEditor = () => {
   const importFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
+    
     const reader = new FileReader();
     reader.onload = (event) => {
       const content = event.target.result;
       const fileExtension = file.name.split('.').pop().toLowerCase();
-
+      
       // Verificar que sea HTML
       const isHTML = fileExtension === 'html' || fileExtension === 'htm';
-
+      
       if (isHTML) {
         // Extraer el título del documento HTML si existe
         const titleMatch = content.match(/<title>(.*?)<\/title>/i);
         const title = titleMatch ? titleMatch[1] : '';
-
+        
         // Actualizar el estado con el contenido HTML
-        setPost(prevPost => ({
-          ...prevPost,
-          title: title || prevPost.title,
-          content: content,
-          editorMode: 'html'
-        }));
+        setPost(prevPost => {
+          const updatedPost = {
+            ...prevPost,
+            title: title || prevPost.title,
+            content: content,
+            editorMode: 'html'
+          };
+          
+          console.log("Modo de editor actualizado a HTML después de importar archivo");
+          
+          // Guardamos en localStorage inmediatamente
+          savePostToLocalStorage(updatedPost);
+          
+          return updatedPost;
+        });
       } else {
         // Informar que solo se permiten archivos HTML
         setSaveMessage({
@@ -519,21 +549,21 @@ const PostEditor = () => {
           text: 'Solo se permiten archivos HTML (.html, .htm)',
           icon: '⚠️'
         });
-
+        
         setTimeout(() => setSaveMessage(null), 3000);
         return;
       }
-
+      
       // Mostrar mensaje de éxito
       setSaveMessage({
         type: 'success',
         text: `Archivo HTML importado correctamente`,
         icon: '📤'
       });
-
+      
       setTimeout(() => setSaveMessage(null), 3000);
     };
-
+    
     reader.readAsText(file);
   };
 
@@ -844,8 +874,8 @@ const PostEditor = () => {
   };
 
   // Solo renderizar una vez inicializado para evitar problemas de redimensión
-  if (!isInitialized) {
-    return <div style={styles.container}>Cargando editor...</div>;
+  if (loadingCategories) {
+    return <div style={styles.container}>Cargando categorías...</div>;
   }
 
   return (
