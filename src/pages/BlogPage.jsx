@@ -4,8 +4,9 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostList from '../components/blog/PostList';
 import { useTheme } from '../context/ThemeContext';
-import { spacing, typography, borderRadius } from '../styles/theme';
+import { spacing, typography, borderRadius, shadows } from '../styles/theme';
 import { getAllCategorias } from '../services/categoriasServices';
+import { FaTags, FaArrowRight } from 'react-icons/fa';
 
 const BlogPage = () => {
   const { colors, isDarkMode } = useTheme();
@@ -13,6 +14,7 @@ const BlogPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [hoveredPromo, setHoveredPromo] = useState(false);
 
   // Cargar categorías al montar el componente
   React.useEffect(() => {
@@ -109,6 +111,71 @@ const BlogPage = () => {
         backgroundColor: colors.secondaryDark,
       },
     },
+    categoriesPromo: {
+      maxWidth: '1200px',
+      margin: '20px auto 30px',
+      padding: `${spacing.lg} ${spacing.xl}`,
+      backgroundColor: isDarkMode ? '#1f3d38' : '#e7f5f3',
+      borderRadius: borderRadius.lg,
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      boxShadow: shadows.md,
+      position: 'relative',
+      overflow: 'hidden'
+    },
+    promoPattern: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
+      backgroundSize: '20px 20px',
+      opacity: 0.5,
+      zIndex: 1
+    },
+    promoContent: {
+      flex: 1,
+      zIndex: 2
+    },
+    promoAction: {
+      marginLeft: spacing.lg,
+      zIndex: 2
+    },
+    promoIcon: {
+      fontSize: '42px',
+      marginBottom: spacing.sm,
+      color: colors.secondary
+    },
+    promoTitle: {
+      fontSize: typography.fontSize.xl,
+      fontWeight: typography.fontWeight.bold,
+      marginBottom: spacing.xs,
+      color: isDarkMode ? colors.white : colors.primary
+    },
+    promoText: {
+      color: isDarkMode ? colors.gray200 : colors.textSecondary,
+      maxWidth: '700px'
+    },
+    promoButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '8px',
+      padding: `${spacing.sm} ${spacing.lg}`,
+      backgroundColor: hoveredPromo ? colors.primary : colors.secondary,
+      color: colors.white,
+      borderRadius: borderRadius.md,
+      border: 'none',
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.semiBold,
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      textDecoration: 'none',
+      transform: hoveredPromo ? 'translateY(-3px)' : 'translateY(0)',
+      boxShadow: hoveredPromo ? shadows.lg : shadows.sm
+    }
   };
 
   return (
@@ -121,6 +188,35 @@ const BlogPage = () => {
             Descubre artículos, tutoriales y recursos sobre educación y tecnología
           </p>
         </section>
+
+        <div style={styles.categoriesPromo}>
+          <div style={styles.promoPattern}></div>
+          <div style={styles.promoContent}>
+            <div style={styles.promoIcon}>
+              <FaTags />
+            </div>
+            <h2 style={styles.promoTitle}>Descubre nuestras categorías</h2>
+            <p style={styles.promoText}>
+              Explora contenido organizado por temas. Tenemos categorías especializadas 
+              que abarcan desde técnicas de estudio hasta desarrollo profesional docente.
+              ¡Encuentra exactamente lo que estás buscando!
+            </p>
+          </div>
+          <div style={styles.promoAction}>
+            <Link 
+              to="/categorias" 
+              style={styles.promoButton}
+              onMouseEnter={() => setHoveredPromo(true)}
+              onMouseLeave={() => setHoveredPromo(false)}
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.href = '/categorias';
+              }}
+            >
+              Explorar categorías <FaArrowRight />
+            </Link>
+          </div>
+        </div>
 
         <div style={styles.filters}>
           <input

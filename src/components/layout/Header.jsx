@@ -5,7 +5,7 @@ import { colors, spacing, typography, shadows, borderRadius, transitions } from 
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { AuthContext } from '../../context/AuthContext'; // Importa el contexto de autenticación
-import { FaHome, FaInfo, FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle } from 'react-icons/fa';
+import { FaHome, FaInfo, FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags } from 'react-icons/fa';
 
 const Header = () => {
   const navigate = useNavigate();
@@ -420,6 +420,11 @@ const Header = () => {
       path: '/blog',
       label: 'Blog',
       icon: <FaFileAlt size={20} />
+    },
+    {
+      path: '/categorias',
+      label: 'Categorías',
+      icon: <FaTags size={20} />
     },
     {
       path: '/about',
