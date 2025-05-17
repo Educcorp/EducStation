@@ -2,10 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getPublicacionById } from '../services/publicacionesService';
+import { getComentarios } from '../services/comentariosService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostDetail from '../components/blog/PostDetail';
 import PostViewer from '../components/blog/PostViewer';
+import CommentButton from '../components/blog/CommentButton';
+import CommentSidebar from '../components/blog/CommentSidebar';
 import { useTheme } from '../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../styles/theme';
 
@@ -14,6 +17,8 @@ const BlogDetailPage = () => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [commentCount, setCommentCount] = useState(0);
+  const [isCommentSidebarOpen, setIsCommentSidebarOpen] = useState(false);
   const { colors, isDarkMode } = useTheme();
 
   useEffect(() => {
@@ -26,6 +31,9 @@ const BlogDetailPage = () => {
         
         // Actualizar título de la página
         document.title = `${data.Titulo} | EducStation`;
+        
+        // Obtener cantidad de comentarios
+        fetchCommentCount();
       } catch (error) {
         console.error('Error al cargar la publicación:', error);
         setError('No se pudo cargar la publicación. Por favor, intenta de nuevo más tarde.');
@@ -39,10 +47,24 @@ const BlogDetailPage = () => {
     }
   }, [id]);
 
+  const fetchCommentCount = async () => {
+    try {
+      const comentarios = await getComentarios(id);
+      setCommentCount(comentarios.length);
+    } catch (error) {
+      console.error('Error al obtener comentarios:', error);
+    }
+  };
+
   // Función para formatear la fecha
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('es-ES', options);
+  };
+
+  // Abrir/cerrar la barra lateral de comentarios
+  const toggleCommentSidebar = () => {
+    setIsCommentSidebarOpen(!isCommentSidebarOpen);
   };
 
   // Estilos para la página de detalles
@@ -217,7 +239,18 @@ const BlogDetailPage = () => {
             <Link to="/blog" style={styles.backLink}>Volver al blog</Link>
           </div>
         ) : post ? (
-          <PostDetail post={post} />
+          <>
+            <PostDetail post={post} />
+            <CommentButton 
+              onClick={toggleCommentSidebar} 
+              commentCount={commentCount} 
+            />
+            <CommentSidebar 
+              publicacionId={id} 
+              isOpen={isCommentSidebarOpen} 
+              onClose={() => setIsCommentSidebarOpen(false)} 
+            />
+          </>
         ) : (
           <div style={styles.errorContainer}>
             <p>No se encontró la publicación solicitada.</p>

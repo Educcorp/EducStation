@@ -74,7 +74,7 @@ const PostDetail = ({ post }) => {
       textDecoration: 'none',
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.medium,
-    },
+    }
   };
 
   if (!post) {
