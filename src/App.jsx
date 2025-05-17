@@ -1,10 +1,10 @@
-// src/App.jsx (updated)
-import React, { useContext, useEffect } from 'react';
+// src/App.jsx (actualizado)
+import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ScrollToTop from './components/utils/ScrollToTop';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
-import './styles/darkMode.css'; // Los estilos oscuros solo se aplicarán cuando se active la clase .dark-mode
+import './styles/theme.css'; // Importamos nuestro nuevo archivo de temas
 
 // Importación de páginas
 import HomePage from './pages/HomePage';
@@ -27,24 +27,22 @@ import ProfilePage from './pages/ProfilePage';
 
 // Componente LoadingSpinner
 const LoadingSpinner = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    height: '100vh' 
-  }}>
-    <div style={{
-      width: '50px',
-      height: '50px',
-      borderRadius: '50%',
-      border: '5px solid #f3f3f3',
-      borderTop: '5px solid #0b4444',
-      animation: 'spin 1s linear infinite'
-    }}></div>
+  <div className="loading-spinner-container">
+    <div className="loading-spinner"></div>
     <style>{`
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
+      .loading-spinner-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 5px solid var(--color-divider);
+        border-top: 5px solid var(--color-primary);
+        animation: spin 1s linear infinite;
       }
     `}</style>
   </div>
@@ -54,12 +52,10 @@ const LoadingSpinner = () => (
 const PrivateRoute = ({ children }) => {
   const { isAuth, loading } = useContext(AuthContext);
   
-  // Mostrar loader mientras se verifica la autenticación
   if (loading) {
     return <LoadingSpinner />;
   }
   
-  // Redirigir a login si no está autenticado
   if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
@@ -67,7 +63,7 @@ const PrivateRoute = ({ children }) => {
   return children;
 };
 
-// Componente para rutas públicas (solo accesibles cuando NO está autenticado)
+// Componente para rutas públicas
 const PublicRoute = ({ children }) => {
   const { isAuth, loading } = useContext(AuthContext);
   
@@ -75,7 +71,6 @@ const PublicRoute = ({ children }) => {
     return <LoadingSpinner />;
   }
   
-  // Redirigir a home si ya está autenticado
   if (isAuth) {
     return <Navigate to="/" replace />;
   }
@@ -84,12 +79,6 @@ const PublicRoute = ({ children }) => {
 };
 
 const App = () => {
-  // Forzar modo claro como predeterminado
-  useEffect(() => {
-    document.documentElement.classList.add('light-mode');
-    document.documentElement.classList.remove('dark-mode');
-  }, []);
-
   return (
     <ThemeProvider>
       <AuthProvider>
@@ -97,7 +86,7 @@ const App = () => {
           <ScrollToTop />
           <div className="app">
             <Routes>
-              {/* Rutas públicas (accesibles sin autenticación) */}
+              {/* Rutas públicas */}
               <Route 
                 path="/login" 
                 element={
@@ -140,24 +129,18 @@ const App = () => {
               />
               <Route 
                 path="/terms" 
-                element={
-                  <TermsPage />
-                } 
+                element={<TermsPage />} 
               />
               <Route 
                 path="/privacy" 
-                element={
-                  <PrivacyPage />
-                } 
+                element={<PrivacyPage />} 
               />
               <Route 
                 path="/cookies" 
-                element={
-                  <CookiesPage />
-                } 
+                element={<CookiesPage />} 
               />
 
-              {/* Rutas protegidas (requieren autenticación) */}
+              {/* Rutas protegidas */}
               <Route 
                 path="/" 
                 element={
@@ -255,12 +238,10 @@ const App = () => {
                 } 
               />
               
-              {/* Ruta por defecto, redirige a login o home dependiendo de la autenticación */}
+              {/* Ruta por defecto */}
               <Route 
                 path="*" 
-                element={
-                  <Navigate to="/login" replace />
-                } 
+                element={<Navigate to="/login" replace />} 
               />
             </Routes>
           </div>

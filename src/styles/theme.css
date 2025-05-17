@@ -1,0 +1,33 @@
+:root {  /* Colores base - modo claro (default) */  --color-primary: #0b4444;  --color-primary-light: #166464;  --color-primary-dark: #093333;    --color-secondary: #2a9d8f;  --color-secondary-light: #3ab7a7;  --color-secondary-dark: #218177;    --color-accent: #e9c46a;  --color-accent-light: #f0d285;  --color-accent-dark: #e0b547;    --color-background: #ffffff;  --color-surface: #f8f9fa;  --color-card: #ffffff;    --color-text-primary: #333333;  --color-text-secondary: #666666;  --color-text-tertiary: #888888;  --color-text-muted: #aaaaaa;    --color-border: #e0e0e0;  --color-divider: #eeeeee;    --color-success: #28a745;  --color-error: #dc3545;  --color-warning: #ffc107;  --color-info: #17a2b8;    /* Sombras */  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);    /* Tipografía */  --font-family: 'Poppins', sans-serif;  --font-size-xs: 0.75rem;  --font-size-sm: 0.875rem;  --font-size-md: 1rem;  --font-size-lg: 1.125rem;  --font-size-xl: 1.25rem;  --font-size-2xl: 1.5rem;  --font-size-3xl: 1.875rem;  --font-size-4xl: 2.25rem;    /* Espaciado */  --spacing-1: 0.25rem;  --spacing-2: 0.5rem;  --spacing-3: 0.75rem;  --spacing-4: 1rem;  --spacing-6: 1.5rem;  --spacing-8: 2rem;  --spacing-12: 3rem;  --spacing-16: 4rem;    /* Bordes */  --border-radius-sm: 0.25rem;  --border-radius-md: 0.375rem;  --border-radius-lg: 0.5rem;  --border-radius-full: 9999px;    /* Transiciones */  --transition-fast: 150ms;  --transition-normal: 300ms;  --transition-slow: 500ms;}/* Estilos para el modo oscuro */html.dark-mode {  --color-primary: #136363;  --color-primary-light: #1a7777;  --color-primary-dark: #0e4d4d;    --color-secondary: #2a9d8f;  --color-secondary-light: #3ab7a7;  --color-secondary-dark: #218177;    --color-accent: #e9c46a;  --color-accent-light: #f0d285;  --color-accent-dark: #e0b547;    --color-background: #121212;  --color-surface: #1e1e1e;  --color-card: #2c2c2c;    --color-text-primary: #e0e0e0;  --color-text-secondary: #b0b0b0;  --color-text-tertiary: #909090;  --color-text-muted: #707070;    --color-border: #404040;  --color-divider: #333333;    --color-success: #28a745;  --color-error: #dc3545;  --color-warning: #ffc107;  --color-info: #17a2b8;    /* Sombras más oscuras para el modo oscuro */  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);}/* Reglas globales de estilo que usan las variables */body {  background-color: var(--color-background);  color: var(--color-text-primary);  font-family: var(--font-family);  font-size: var(--font-size-md);  line-height: 1.5;  transition: background-color var(--transition-normal), color var(--transition-normal);}h1, h2, h3, h4, h5, h6 {  color: var(--color-text-primary);  margin-top: var(--spacing-8);  margin-bottom: var(--spacing-4);}p {  margin-bottom: var(--spacing-4);}a {  color: var(--color-primary);  text-decoration: none;  transition: color var(--transition-fast);}a:hover {  color: var(--color-primary-light);}button, .button {  background-color: var(--color-primary);  color: white;  border: none;  padding: var(--spacing-2) var(--spacing-4);  border-radius: var(--border-radius-md);  cursor: pointer;  transition: background-color var(--transition-fast);}button:hover, .button:hover {  background-color: var(--color-primary-light);}button.secondary, .button.secondary {  background-color: var(--color-secondary);}button.secondary:hover, .button.secondary:hover {  background-color: var(--color-secondary-light);}input, select, textarea {  background-color: var(--color-background);  color: var(--color-text-primary);  border: 1px solid var(--color-border);  border-radius: var(--border-radius-md);  padding: var(--spacing-2) var(--spacing-3);  transition: border-color var(--transition-fast);}input:focus, select:focus, textarea:focus {  border-color: var(--color-primary);  outline: none;}.card {  background-color: var(--color-card);  border-radius: var(--border-radius-lg);  box-shadow: var(--shadow-md);  padding: var(--spacing-6);  transition: box-shadow var(--transition-fast);}.card:hover {  box-shadow: var(--shadow-lg);}/* Utilidades para controlar el color del texto */.text-primary { color: var(--color-text-primary); }.text-secondary { color: var(--color-text-secondary); }.text-tertiary { color: var(--color-text-tertiary); }.text-muted { color: var(--color-text-muted); }.text-accent { color: var(--color-accent); }.text-success { color: var(--color-success); }.text-error { color: var(--color-error); }.text-warning { color: var(--color-warning); }.text-info { color: var(--color-info); }/* Utilidades para controlar el fondo */.bg-primary { background-color: var(--color-primary); }.bg-secondary { background-color: var(--color-secondary); }.bg-accent { background-color: var(--color-accent); }.bg-surface { background-color: var(--color-surface); }.bg-card { background-color: var(--color-card); }/* Utilidades para bordes */.border { border: 1px solid var(--color-border); }.border-t { border-top: 1px solid var(--color-border); }.border-r { border-right: 1px solid var(--color-border); }.border-b { border-bottom: 1px solid var(--color-border); }.border-l { border-left: 1px solid var(--color-border); }.rounded-sm { border-radius: var(--border-radius-sm); }.rounded-md { border-radius: var(--border-radius-md); }.rounded-lg { border-radius: var(--border-radius-lg); }.rounded-full { border-radius: var(--border-radius-full); }
+
+/* Animaciones */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.animate-fade-in { animation: fadeIn var(--transition-normal) ease-out; }
+.animate-fade-in-up { animation: fadeInUp var(--transition-normal) ease-out; }
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }

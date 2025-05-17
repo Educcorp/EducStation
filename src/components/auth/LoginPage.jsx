@@ -10,7 +10,7 @@ const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { login, isAuth, loading, error: authError } = useContext(AuthContext);
-    const { setForceLightMode } = useContext(ThemeContext);
+    const { isDarkMode, colors } = useContext(ThemeContext);
     
     // Refs para las animaciones
     const formRef = useRef(null);
@@ -21,12 +21,7 @@ const LoginPage = () => {
     };
     const buttonRef = useRef(null);
 
-    // Forzar el modo claro inmediatamente
-    React.useLayoutEffect(() => {
-        setForceLightMode(true);
-        return () => setForceLightMode(false);
-    }, [setForceLightMode]);
-
+    // Estados del formulario
     const [formData, setFormData] = useState({
         usernameOrEmail: '',
         password: '',
@@ -47,6 +42,9 @@ const LoginPage = () => {
     const [formActive, setFormActive] = useState(false);
     const [activeField, setActiveField] = useState(null);
     const [animationComplete, setAnimationComplete] = useState(false);
+
+    // Estado para el ancho de la ventana
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
     // Iniciar animaciones al cargar el componente
     useEffect(() => {
@@ -87,6 +85,18 @@ const LoginPage = () => {
             }));
         }
     }, [authError]);
+
+    // Actualizar el ancho de la ventana
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -174,6 +184,24 @@ const LoginPage = () => {
         }
     };
 
+    // Aplicar clases CSS para el tema claro en la página de login
+    React.useEffect(() => {
+        // Guardar el modo anterior
+        const wasInDarkMode = document.body.classList.contains('dark-mode');
+        
+        // Forzar modo claro para la página de login
+        document.body.classList.remove('dark-mode');
+        document.body.classList.add('light-mode');
+        
+        // Restaurar al desmontar
+        return () => {
+            if (wasInDarkMode) {
+                document.body.classList.add('dark-mode');
+                document.body.classList.remove('light-mode');
+            }
+        };
+    }, []);
+
     const styles = {
         loginContainer: {
             minHeight: '100vh',
@@ -225,6 +253,25 @@ const LoginPage = () => {
             opacity: '0.1',
             animation: 'float 20s infinite ease-in-out',
         },
+        navContainer: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '20px 40px',
+            position: 'relative',
+            zIndex: 10,
+        },
+        logo: {
+            display: 'flex',
+            alignItems: 'center',
+            textDecoration: 'none',
+        },
+        logoText: {
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            marginLeft: '8px',
+        },
         mainContent: {
             flex: 1,
             display: 'flex',
@@ -256,9 +303,6 @@ const LoginPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            '@media (max-width: 768px)': {
-                display: 'none'
-            }
         },
         imageOverlay: {
             position: 'absolute',
@@ -734,7 +778,12 @@ const LoginPage = () => {
                     ref={formRef}
                     className="login-form-container"
                 >
-                    <div style={styles.loginImage}>
+                    <div 
+                        style={{
+                            ...styles.loginImage,
+                            display: window.innerWidth <= 768 ? 'none' : 'flex' 
+                        }}
+                    >
                         <div style={styles.imageOverlay}>
                             <div style={styles.raccoonLogoRow}>
                                 <img 
@@ -1050,70 +1099,69 @@ const LoginPage = () => {
                 .form-group-animation:nth-child(2) {
                     animation-delay: 1.1s;
                 }
-                
-                .pulse-animation {
-                    animation: pulse 2s infinite;
-                }
-                
-                .login-button-animation:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 25px rgba(31, 78, 78, 0.4);
-                    background-color: #2C7171;
-                }
-                
-                .login-button-animation:active {
                     transform: translateY(0);
                     box-shadow: 0 4px 15px rgba(31, 78, 78, 0.3);
                 }
                 
                 .button-press {
-                    animation: buttonPress 0.3s forwards;
-                }
+                    animation: buttonPress 0.3s forwards;   animation: pulse 2s infinite;
+                }}
                 
                 @keyframes buttonPress {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(0.95); }
-                    100% { transform: scale(1); }
+                    0% { transform: scale(1); }   transform: translateY(-3px);
+                    50% { transform: scale(0.95); }    box-shadow: 0 8px 25px rgba(31, 78, 78, 0.4);
+                    100% { transform: scale(1); }C7171;
                 }
-                
-                .link-hover-effect {
-                    position: relative;
-                }
-                
                 .link-hover-effect::after {
-                    content: '';
+                .link-hover-effect {;button-press {
+                    position: relative;   transform: translateY(0);tonPress 0.3s forwards;
+                }    box-shadow: 0 4px 15px rgba(31, 78, 78, 0.3);   width: 0;
+                }    height: 2px;
+                
+                .button-press {
+                    animation: buttonPress 0.3s forwards;scale(0.95); }
+                }rm: scale(1); }
+                
+                @keyframes buttonPress {
+                    0% { transform: scale(1); }over::after {
+                    50% { transform: scale(0.95); }tion: relative;
+                    100% { transform: scale(1); }}
+                }
+                :after {
+                .link-hover-effect {ranslateY(-2px);   content: '';
+                    position: relative;;
+                }
+                ion:hover {
+                .link-hover-effect::after {lor: rgba(44, 113, 113, 0.2);   bottom: -2px;
+                    content: '';m: translateY(-50%) scale(1.1);    left: 0;
                     position: absolute;
                     width: 0;
-                    height: 2px;
-                    bottom: -2px;
-                    left: 0;
+                    height: 2px;form-error {
+                    bottom: -2px;    animation: shakeX 0.5s;
+                    left: 0;{
                     background-color: #2C7171;
-                    transition: width 0.3s ease;
-                }
-                
+                    transition: width 0.3s ease;media (max-width: 768px) {
+                }    .form-container {
+                input-animation:focus {
                 .link-hover-effect:hover::after {
                     width: 100%;
-                }
+                }style>
                 
                 .input-animation:focus {
                     transform: translateY(-2px);
                 }
-                
-                .eye-icon-animation:hover {
+                oginPage;                
+                .eye-icon-animation:hover {idth: 768px) {
                     background-color: rgba(44, 113, 113, 0.2);
-                    transform: translateY(-50%) scale(1.1);
-                }
+                    transform: translateY(-50%) scale(1.1);       max-width: 90%;
+                }    }
                 
                 .form-error {
                     animation: shakeX 0.5s;
                 }
                 
                 @media (max-width: 768px) {
-                    .form-container {
-                        max-width: 90%;
-                    }
-                }
-            `}</style>
+                    .form-container { LoginPage;                        max-width: 90%;                    }                }            `}</style>
         </div>
     );
 };

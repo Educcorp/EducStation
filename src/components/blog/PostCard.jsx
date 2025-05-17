@@ -1,198 +1,192 @@
 // src/components/blog/PostCard.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
-import { useTheme } from '../../context/ThemeContext';
+import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import useTheme from '../../hooks/useTheme';
 
 const PostCard = ({ post }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const { colors, isDarkMode } = useTheme();
+  
+  // Obtener el contexto del tema
+  const themeContext = useTheme();
+  const isDarkMode = themeContext?.isDarkMode || false;
+  const colors = themeContext?.colors || {
+    primary: '#0b4444',
+    secondary: '#2a9d8f',
+    white: '#ffffff',
+    background: '#ffffff',
+    gray200: '#e5e7eb',
+    textPrimary: '#333333',
+    textSecondary: '#666666',
+  };
   
   // Función para formatear la fecha
   const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    if (!dateString) return 'Fecha no disponible';
+    
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('es-ES', options);
   };
-
-  // Función para extraer un resumen del contenido HTML
-  const extractSummary = (content, maxLength = 150) => {
-    if (!content) return '';
-    // Eliminar etiquetas HTML
-    const plainText = content.replace(/<[^>]+>/g, '');
-    return plainText.length > maxLength
-      ? plainText.substring(0, maxLength) + '...'
-      : plainText;
-  };
   
+  // Crear una URL amigable basada en el título
+  const createSlug = (title) => {
+    return title
+      .toLowerCase()
+      .replace(/[^\w ]+/g, '')
+      .replace(/ +/g, '-');
+  };
+
+  // Estilos CSS - Ajustados exactamente como en la imagen de referencia
   const styles = {
     card: {
+      border: "none",
+      borderRadius: "12px",
+      overflow: "hidden",
+      transition: "all 0.3s ease",
+      backgroundColor: isDarkMode ? "#1a2e2d" : colors.white,
+      boxShadow: isDarkMode ? "0 8px 20px rgba(0, 0, 0, 0.3)" : "0 6px 12px rgba(0, 0, 0, 0.05)",
+      transform: isHovered ? "translateY(-5px)" : "translateY(0)",
+      height: "100%",
       display: "flex",
       flexDirection: "column",
-      borderRadius: borderRadius.lg,
-      overflow: "hidden",
-      transition: `${transitions.default}, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)`,
-      backgroundColor: isDarkMode ? "#1a1e23" : colors.white,
-      boxShadow: isDarkMode ? `0 8px 20px rgba(0, 0, 0, 0.3)` : shadows.md,
-      transform: isHovered ? "translateY(-5px)" : "translateY(0)",
-      marginBottom: spacing.lg,
-      width: "100%",
-      maxWidth: "400px",
-      height: "100%"
+      position: "relative"
     },
     imageContainer: {
-      position: "relative",
       width: "100%",
       height: "200px",
       overflow: "hidden",
+      borderRadius: "12px 12px 0 0",
+      position: "relative"
     },
-    cardImage: {
+    image: {
       width: "100%",
       height: "100%",
       objectFit: "cover",
       transition: "transform 0.5s ease",
-      transform: isHovered ? "scale(1.05)" : "scale(1)",
+      transform: isHovered ? "scale(1.05)" : "scale(1)"
     },
-    noImage: {
-      width: "100%",
-      height: "100%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: isDarkMode ? "#2a2f38" : colors.gray200,
-      color: isDarkMode ? colors.gray400 : colors.gray500,
-      fontSize: typography.fontSize.sm,
-    },
-    cardNumber: {
+    category: {
       position: "absolute",
-      left: spacing.sm,
-      top: spacing.sm,
-      backgroundColor: "#6ebf99",
-      color: "white",
-      padding: `${spacing.xs} ${spacing.sm}`,
-      borderRadius: borderRadius.round,
-      fontSize: typography.fontSize.xs,
-      fontWeight: typography.fontWeight.bold,
-    },
-    postContent: {
-      flex: "1",
-      padding: spacing.lg,
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "space-between",
-      backgroundColor: isDarkMode ? "#1a1e23" : colors.white,
-    },
-    postCategory: {
-      alignSelf: "flex-start",
+      top: "16px",
+      left: "16px",
       color: "white",
       fontSize: typography.fontSize.xs,
       fontWeight: typography.fontWeight.medium,
-      backgroundColor: "#507c74",
+      backgroundColor: "#0b4444", // Color fijo como en la referencia
       padding: `${spacing.xs} ${spacing.md}`,
-      borderRadius: borderRadius.round,
-      textTransform: "capitalize",
-      marginBottom: spacing.sm,
+      borderRadius: "4px", // Más cuadrado como en la referencia
+      textTransform: "capitalize"
+    },
+    content: {
+      padding: spacing.lg,
+      display: "flex",
+      flexDirection: "column",
+      flex: "1",
+      justifyContent: "space-between"
     },
     postTitle: {
       fontSize: typography.fontSize.lg,
-      color: isDarkMode ? "white" : colors.textPrimary,
+      color: isDarkMode ? "#e0e0e0" : colors.textPrimary,
       fontWeight: typography.fontWeight.bold,
-      transition: transitions.default,
-      marginTop: spacing.sm,
+      transition: "color 0.3s ease",
+      marginTop: spacing.xs,
       marginBottom: spacing.md,
+      lineHeight: "1.4"
     },
     postSummary: {
       fontSize: typography.fontSize.sm,
-      color: isDarkMode ? "rgba(255,255,255,0.8)" : colors.textSecondary,
+      color: isDarkMode ? "#b0b0b0" : colors.textSecondary,
       marginBottom: spacing.md,
-      lineHeight: 1.5,
+      lineHeight: 1.6,
     },
     postMeta: {
       display: "flex",
       alignItems: "center",
       justifyContent: "space-between",
-      marginTop: spacing.md,
+      borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+      paddingTop: spacing.md,
+      marginTop: "auto"
     },
     postTime: {
-      color: isDarkMode ? "rgba(255,255,255,0.6)" : colors.textSecondary,
+      color: isDarkMode ? "#8cc9c9" : colors.textSecondary,
       fontSize: typography.fontSize.xs,
       display: "flex",
       alignItems: "center",
       gap: spacing.xs
     },
-    postAuthor: {
-      color: isDarkMode ? "rgba(255,255,255,0.6)" : colors.textSecondary,
+    readMore: {
+      color: isDarkMode ? "#8cc9c9" : "#0b4444", // Verde oscuro como en la referencia
       fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.medium,
+      textDecoration: "none",
       display: "flex",
       alignItems: "center",
-      gap: spacing.xs,
+      transition: "all 0.3s ease",
+      '&:hover': {
+        color: isDarkMode ? "#a8dcdc" : "#166464",
+        transform: "translateX(3px)"
+      }
     },
+    dateIcon: {
+      marginRight: spacing.xs,
+      fontSize: "12px"
+    },
+    readMoreIcon: {
+      marginLeft: "4px",
+      fontSize: "14px",
+      transition: "transform 0.3s ease",
+      transform: isHovered ? "translateX(3px)" : "translateX(0)"
+    }
+  };
+  
+  // Aplicar hover styles directamente en línea cuando es necesario
+  const readMoreStyle = {
+    ...styles.readMore,
+    ...(isHovered ? { color: isDarkMode ? "#a8dcdc" : "#166464" } : {})
   };
 
-  if (!post || !post.ID_publicaciones) {
-    return null;
-  }
-
   return (
-    <Link to={`/blog/${post.ID_publicaciones}`} style={{ textDecoration: "none" }}>
-      <div 
-        style={styles.card}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-      >
-        <div style={styles.imageContainer}>
-          {post.Imagen_destacada_ID ? (
-            <img
-              src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`}
-              alt={post.Titulo}
-              style={styles.cardImage}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = 'https://via.placeholder.com/350x200?text=Sin+imagen';
-              }}
-            />
-          ) : (
-            <div style={{
-              ...styles.noImage,
-              backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
-              color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
-            }}>
-              <div style={{textAlign: 'center'}}>
-                <div style={{fontSize: '32px', marginBottom: '8px'}}>📄</div>
-                <div>Sin imagen</div>
-              </div>
-            </div>
-          )}
-        </div>
+    <div 
+      className="post-card"
+      style={styles.card}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <div style={styles.imageContainer}>
+        <img 
+          src={post.image} 
+          alt={post.title} 
+          style={styles.image}
+        />
+        {post.category && (
+          <div style={styles.category}>
+            {post.category}
+          </div>
+        )}
+      </div>
+      <div style={styles.content}>
+        <Link to={`/blog/${post.id}/${createSlug(post.title)}`} style={{ textDecoration: 'none' }}>
+          <h3 style={styles.postTitle}>{post.title}</h3>
+        </Link>
+        <p style={styles.postSummary}>{post.excerpt}</p>
         
-        <div style={styles.postContent}>
-          {post.categorias && post.categorias.length > 0 && (
-            <div style={styles.postCategory}>
-              {post.categorias[0].Nombre_categoria}
-            </div>
-          )}
-          
-          <h3 style={styles.postTitle}>{post.Titulo}</h3>
-          
-          <div style={styles.postSummary}>
-            {post.Resumen || extractSummary(post.Contenido)}
-          </div>
-          
-          <div style={styles.postMeta}>
-            <div style={styles.postTime}>
-              <span style={{fontSize: '14px', marginRight: '2px', opacity: 0.8}}>⏱</span> 
-              {formatDate(post.Fecha_creacion)}
-            </div>
-            
-            {post.NombreAdmin && (
-              <div style={styles.postAuthor}>
-                <span style={{fontSize: '14px', marginRight: '2px', opacity: 0.8}}>👤</span>
-                {post.NombreAdmin}
-              </div>
-            )}
-          </div>
+        <div style={styles.postMeta}>
+          <span style={styles.postTime}>
+            <span style={styles.dateIcon}>📅</span>
+            {post.date ? formatDate(post.date) : 'Fecha no disponible'}
+          </span>
+          <Link 
+            to={`/blog/${post.id}/${createSlug(post.title)}`} 
+            style={readMoreStyle}
+            onMouseEnter={() => {}}
+            onMouseLeave={() => {}}
+          >
+            Leer más
+            <span style={styles.readMoreIcon}>→</span>
+          </Link>
         </div>
       </div>
-    </Link>
+    </div>
   );
 };
 

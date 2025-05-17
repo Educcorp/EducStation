@@ -1,104 +1,65 @@
 // src/context/ThemeContext.jsx
 import React, { createContext, useState, useEffect } from 'react';
-import { lightColors, darkColors } from '../styles/theme';
+import { getThemeColors } from '../styles/theme';
 
-// Crear el contexto del tema
-export const ThemeContext = createContext({
-  isDarkMode: false,
-  toggleTheme: () => {},
-  colors: {},
-  lightColors: {}, // Agregamos lightColors
-  forceLightMode: false, // Añadimos propiedad para forzar el modo claro
-});
+// Creamos el contexto
+export const ThemeContext = createContext();
 
-// Proveedor del contexto del tema
 export const ThemeProvider = ({ children }) => {
-  // Estado para forzar el modo claro en ciertas páginas
-  const [forceLightMode, setForceLightMode] = useState(false);
-  
-  // Verificar si hay una preferencia guardada en localStorage
-  const getSavedTheme = () => {
-    const savedTheme = localStorage.getItem('theme');
-    // Siempre retornamos false (modo claro) por defecto, ignorando preferencia del sistema
-    return savedTheme === 'dark';
-  };
+  // Estado para el tema actual
+  const [darkMode, setDarkMode] = useState(false);
 
-  // Estado para controlar si el tema es oscuro o claro
-  const [isDarkMode, setIsDarkMode] = useState(getSavedTheme());
-
-  // Función para cambiar entre tema oscuro y claro
-  const toggleTheme = () => {
-    if (!forceLightMode) {
-      setIsDarkMode(prevMode => !prevMode);
-    }
-  };
-
-  // Aplicar el tema correcto inmediatamente
-  const applyTheme = (darkMode, forceLight) => {
-    // Determinar si debemos usar el tema claro
-    const useLightTheme = forceLight || !darkMode;
-    
-    // Actualizar clases en el documento
-    if (useLightTheme) {
-      document.documentElement.classList.add('light-mode');
-      document.documentElement.classList.remove('dark-mode');
-    } else {
-      document.documentElement.classList.add('dark-mode');
-      document.documentElement.classList.remove('light-mode');
-    }
-
-    // Actualizar colores básicos del body
-    const colors = useLightTheme ? lightColors : darkColors;
-    if (colors) {
-      document.body.style.backgroundColor = colors.background;
-      document.body.style.color = colors.textPrimary;
-    }
-  };
-
-  // Aplicar el tema inmediatamente al montar el componente
+  // Comprobar si hay una preferencia guardada al cargar
   useEffect(() => {
-    applyTheme(isDarkMode, forceLightMode);
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    // Si hay una preferencia guardada, úsala; si no, usa la preferencia del sistema
+    if (savedTheme) {
+      setDarkMode(savedTheme === 'dark');
+    } else if (prefersDark) {
+      setDarkMode(true);
+    }
   }, []);
 
-  // Actualizar localStorage y aplicar tema cuando cambian las preferencias
+  // Actualizar el DOM cuando cambie el tema
   useEffect(() => {
-    // Solo guardamos la preferencia si no estamos forzando el modo claro
-    if (!forceLightMode) {
-      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+    if (darkMode) {
+      document.documentElement.classList.add('dark-mode');
+      document.documentElement.classList.remove('light-mode');
+    } else {
+      document.documentElement.classList.add('light-mode');
+      document.documentElement.classList.remove('dark-mode');
     }
     
-    // Actualizar el tema actual en theme.js si existe la función
-    try {
-      if (require('../styles/theme').setCurrentTheme) {
-        require('../styles/theme').setCurrentTheme((forceLightMode ? false : isDarkMode) ? 'dark' : 'light');
-      }
-    } catch (err) {
-      console.warn('No se pudo actualizar el tema en theme.js:', err.message);
-    }
-    
-    // Aplicar el tema
-    applyTheme(isDarkMode, forceLightMode);
-    
-  }, [isDarkMode, forceLightMode]); // Agregamos forceLightMode como dependencia
+    // Guardar la preferencia en localStorage
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
 
-  // Obtener los colores correctos según el modo
-  const colors = (forceLightMode || !isDarkMode) ? lightColors : darkColors;
+  // Función para cambiar el tema
+  const toggleTheme = () => {
+    setDarkMode(prevMode => !prevMode);
+  };
+
+  // Obtener colores del tema actual (para compatibilidad con código existente)
+  const colors = getThemeColors(darkMode);
+
+  // Valor del contexto que se proporcionará
+  const contextValue = {
+    darkMode,
+    isDarkMode: darkMode, // Para compatibilidad con código existente
+    toggleTheme,
+    colors // Para compatibilidad con código existente
+  };
 
   return (
-    <ThemeContext.Provider value={{ 
-      isDarkMode: forceLightMode ? false : isDarkMode, 
-      toggleTheme, 
-      colors: (forceLightMode || !isDarkMode) ? lightColors : darkColors,
-      lightColors, // Exportamos los colores claros siempre
-      forceLightMode,
-      setForceLightMode // Exportamos la función para forzar el modo claro
-    }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-// Hook personalizado para usar el contexto del tema
+// Función useTheme para compatibilidad con código antiguo
 export const useTheme = () => {
   const context = React.useContext(ThemeContext);
   if (context === undefined) {
@@ -107,10 +68,4 @@ export const useTheme = () => {
   return context;
 };
 
-// Función de envoltorio para componentes que no pueden usar hooks
-export const withTheme = (Component) => {
-  return (props) => {
-    const { isDarkMode, colors, forceLightMode, setForceLightMode } = useTheme();
-    return <Component {...props} isDarkMode={isDarkMode} themeColors={colors} forceLightMode={forceLightMode} setForceLightMode={setForceLightMode} />;
-  };
-};
+export default ThemeProvider;

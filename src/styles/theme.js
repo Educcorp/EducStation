@@ -1,170 +1,204 @@
 // src/styles/theme.js
 // Configuración completa de temas claro y oscuro
 
-// Tema claro (base)
+// Objeto para almacenar el tema actual
+let currentTheme = 'light';
 
-
-export const lightColors = {
-  // Colores principales de la paleta
-  primary: '#0b4444',         // Verde oscuro
-  primaryLight: '#4c7977',    // Verde azulado
-  primaryDark: '#043333',     // Versión más oscura del primary
-  secondary: '#d2b99a',       // Beige
-  background: '#91a8a4',      // Verde grisáceo (fondo)
-  white: '#f0f8f7',           // Blanco hueso/menta
-  
-  // Colores de texto
-  textPrimary: '#0b4444',     // Verde oscuro para textos principales
-  textSecondary: '#4c7977',   // Verde azulado para textos secundarios
-  textLight: '#f0f8f7',       // Blanco hueso para textos en fondos oscuros
-  
-  // Colores adicionales derivados
-  accent: '#d2b99a',          // Beige como color de acento
-  
-  // Tonos de gris
-  gray100: '#e1e7e6',
-  gray200: '#c4d0ce',
-  gray300: '#a7b9b6',
-  
-  // Colores de estado
-  error: '#b53d00',           // Rojo terracota (tono acorde con la paleta)
-  success: '#3b6b69',         // Verde azulado más oscuro
-  warning: '#d2a579',         // Beige más anaranjado
+// Definiciones de color para cada tema
+const themes = {
+  light: {
+    primary: '#0b4444',
+    primaryLight: '#166464',
+    primaryDark: '#093333',
+    secondary: '#2a9d8f',
+    secondaryLight: '#3ab7a7',
+    secondaryDark: '#218177',
+    accent: '#e9c46a',
+    accentLight: '#f0d285',
+    accentDark: '#e0b547',
+    background: '#ffffff',
+    surface: '#f8f9fa',
+    card: '#ffffff',
+    textPrimary: '#333333',
+    textSecondary: '#666666',
+    textTertiary: '#888888',
+    textMuted: '#aaaaaa',
+    border: '#e0e0e0',
+    divider: '#eeeeee',
+    success: '#28a745',
+    error: '#dc3545',
+    warning: '#ffc107',
+    info: '#17a2b8',
+    // Colores específicos
+    gray50: '#f9fafb',
+    gray100: '#f3f4f6',
+    gray200: '#e5e7eb',
+    gray300: '#d1d5db',
+    gray400: '#9ca3af',
+    gray500: '#6b7280',
+    gray600: '#4b5563',
+    gray700: '#374151',
+    gray800: '#1f2937',
+    gray900: '#111827',
+    white: '#ffffff',
+    black: '#000000'
+  },
+  dark: {
+    primary: '#136363',
+    primaryLight: '#1a7777',
+    primaryDark: '#0e4d4d',
+    secondary: '#2a9d8f',
+    secondaryLight: '#3ab7a7',
+    secondaryDark: '#218177',
+    accent: '#e9c46a',
+    accentLight: '#f0d285',
+    accentDark: '#e0b547',
+    background: '#121212',
+    surface: '#1e1e1e',
+    card: '#2c2c2c',
+    textPrimary: '#e0e0e0',
+    textSecondary: '#b0b0b0',
+    textTertiary: '#909090',
+    textMuted: '#707070',
+    border: '#404040',
+    divider: '#333333',
+    success: '#28a745',
+    error: '#dc3545',
+    warning: '#ffc107',
+    info: '#17a2b8',
+    // Colores específicos
+    gray50: '#18191a',
+    gray100: '#242526',
+    gray200: '#3a3b3c',
+    gray300: '#4e4f50',
+    gray400: '#6a6c6d',
+    gray500: '#8a8c8e',
+    gray600: '#a8a9ab',
+    gray700: '#c5c6c7',
+    gray800: '#e4e6eb',
+    gray900: '#f5f6f7',
+    white: '#ffffff',
+    black: '#000000'
+  }
 };
 
-// Tema oscuro 
+// Extraer colores del tema actual para exportarlos directamente
+const colors = themes[currentTheme];
+const lightColors = themes.light;
+const darkColors = themes.dark;
 
-
-export const darkColors = {
-  // Colores principales de la paleta
-  primary: '#4c7977',         // Verde azulado más claro como color principal
-  primaryLight: '#5d8a88',    // Una versión más clara del primaryLight
-  primaryDark: '#0b4444',     // El verde oscuro original como primario oscuro
-  secondary: '#d2b99a',       // Mantener el beige como secundario
-  background: '#1a2e2d',      // Fondo muy oscuro con tono verdoso
-  white: '#0a1919',           // Casi negro con tinte verdoso para fondos
-  
-  // Colores de texto
-  textPrimary: '#e1e7e6',     // Casi blanco para textos principales
-  textSecondary: '#a7b9b6',   // Gris claro para textos secundarios
-  textLight: '#f0f8f7',       // Blanco hueso para textos destacados
-  
-  // Colores adicionales derivados
-  accent: '#e0c7a8',          // Beige más claro como acento
-  
-  // Tonos de gris (invertidos)
-  gray100: '#223938',
-  gray200: '#2d4a49',
-  gray300: '#3a5c5b',
-  
-  // Colores de estado
-  error: '#ff5722',           // Naranja más brillante para errores
-  success: '#4db6ac',         // Verde azulado más claro para éxito
-  warning: '#ffb74d',         // Ámbar más brillante para advertencias
-};
-
-
-
-// Exportar la función para seleccionar colores basados en el tema
-export const getThemeColors = (isDarkMode) => {
-  return isDarkMode ? darkColors : lightColors;
-};
-
-// Sombras para el tema claro
-export const shadows = {
-  sm: '0 1px 3px rgba(11, 68, 68, 0.08)',
-  md: '0 4px 15px rgba(11, 68, 68, 0.1)',
-  lg: '0 10px 30px rgba(11, 68, 68, 0.12)',
-  primary: '0 4px 12px rgba(11, 68, 68, 0.15)',
-};
-
-// Sombras para el tema oscuro
-export const darkShadows = {
-  sm: '0 1px 3px rgba(0, 0, 0, 0.3)',
-  md: '0 4px 15px rgba(0, 0, 0, 0.4)',
-  lg: '0 10px 30px rgba(0, 0, 0, 0.5)',
-  primary: '0 4px 12px rgba(0, 0, 0, 0.4)',
-};
-
-// Función para obtener las sombras según el tema
-export const getThemeShadows = (isDarkMode) => {
-  return isDarkMode ? darkShadows : shadows;
-};
-
-// Espaciados
-export const spacing = {
-  xs: '4px',
-  sm: '8px',
-  md: '16px',
-  lg: '24px',
-  xl: '32px',
-  xxl: '48px',
-};
-
-// Radios de bordes
-export const borderRadius = {
-  sm: '4px',
-  md: '8px',
-  lg: '12px',
-  xl: '16px',
-  round: '24px',
-  circle: '50%',
+// Espaciado consistente
+const spacing = {
+  xs: '0.25rem',
+  sm: '0.5rem',
+  md: '1rem',
+  lg: '1.5rem',
+  xl: '2rem',
+  xxl: '3rem',
+  xxxl: '4rem'
 };
 
 // Tipografía
-export const typography = {
-  fontFamily: "'Poppins', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+const typography = {
+  fontFamily: "'Poppins', sans-serif",
   fontSize: {
-    xs: '12px',
-    sm: '14px',
-    md: '16px',
-    lg: '18px',
-    xl: '24px',
-    xxl: '32px',
-    xxxl: '48px',
+    xs: '0.75rem',
+    sm: '0.875rem',
+    md: '1rem',
+    lg: '1.125rem',
+    xl: '1.25rem',
+    '2xl': '1.5rem',
+    '3xl': '1.875rem',
+    '4xl': '2.25rem',
+    '5xl': '3rem'
   },
   fontWeight: {
-    regular: 400,
+    light: 300,
+    normal: 400,
     medium: 500,
-    semiBold: 600,
-    bold: 700,
+    semibold: 600,
+    bold: 700
   },
+  lineHeight: {
+    none: 1,
+    tight: 1.25,
+    normal: 1.5,
+    relaxed: 1.75,
+    loose: 2
+  }
+};
+
+// Bordes
+const borderRadius = {
+  none: '0',
+  sm: '0.125rem',
+  md: '0.25rem',
+  lg: '0.5rem',
+  xl: '1rem',
+  full: '9999px'
+};
+
+// Sombras
+const shadows = {
+  sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+  md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+  lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+  xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+  '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+  inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)'
 };
 
 // Transiciones
-export const transitions = {
-  default: 'all 0.3s ease',
-  fast: 'all 0.2s ease',
-  slow: 'all 0.5s ease',
+const transitions = {
+  fast: '150ms',
+  default: '300ms',
+  slow: '500ms'
 };
 
-// Función para aplicar estilos de hover de manera consistente
-export const applyHoverStyles = (styleObj) => {
-  const newStyles = { ...styleObj };
-  if (styleObj['&:hover']) {
-    Object.assign(newStyles, styleObj['&:hover']);
-    delete newStyles['&:hover'];
+// Función para obtener el tema currentTheme
+const getTheme = () => {
+  return themes[currentTheme];
+};
+
+// Función para establecer el tema currentTheme
+const setCurrentTheme = (theme) => {
+  if (theme === 'dark' || theme === 'light') {
+    currentTheme = theme;
   }
-  return newStyles;
 };
 
-// Reemplaza la exportación de colors
-let currentTheme = 'light';
-
-// Función para obtener el tema currente
-export const getCurrentTheme = () => currentTheme;
-
-// Función para establecer el tema currente
-export const setCurrentTheme = (theme) => {
-  currentTheme = theme;
-  // Si quieres que esta función realmente cambie los colores exportados,
-  // necesitarías implementar un sistema más complejo con getters/setters
-  console.log('Tema actual cambiado a:', theme);
+// Función para obtener colores según el tema (compatible con código existente)
+const getThemeColors = (isDarkMode) => {
+  return isDarkMode ? themes.dark : themes.light;
 };
 
-// Exportar colors como un getter dinámico
-Object.defineProperty(exports, 'colors', {
-  get: function() {
-    return currentTheme === 'dark' ? darkColors : lightColors;
-  }
-});
+// Función para aplicar estilos de hover (compatible con código existente)
+const applyHoverStyles = (baseColor, hoverColor) => {
+  return {
+    backgroundColor: baseColor,
+    transition: 'background-color 0.3s, transform 0.3s',
+    '&:hover': {
+      backgroundColor: hoverColor,
+      transform: 'translateY(-3px)'
+    }
+  };
+};
+
+// Exportamos todos los componentes de nuestro tema
+export {
+  getTheme,
+  setCurrentTheme,
+  getThemeColors,
+  applyHoverStyles,
+  colors,
+  lightColors,
+  darkColors,
+  spacing,
+  typography,
+  borderRadius,
+  shadows,
+  transitions
+};
+
+// Por defecto, exportamos los colores del tema actual para facilitar el uso
+export default colors;
