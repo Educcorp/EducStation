@@ -6,7 +6,7 @@ import PostList from '../components/blog/PostList';
 import { useTheme } from '../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows } from '../styles/theme';
 import { getAllCategorias } from '../services/categoriasServices';
-import { FaTags, FaArrowRight, FaSearch, FaFilter, FaPen, FaBookOpen } from 'react-icons/fa';
+import { FaTags, FaArrowRight, FaSearch, FaFilter, FaSort, FaBookOpen } from 'react-icons/fa';
 
 const BlogPage = () => {
   const { colors, isDarkMode } = useTheme();
@@ -17,6 +17,7 @@ const BlogPage = () => {
   const [hoveredPromo, setHoveredPromo] = useState(false);
   const [animate, setAnimate] = useState(false);
   const postListRef = useRef(null);
+  const [sortOrder, setSortOrder] = useState('recientes');
 
   // Animación de entrada
   useEffect(() => {
@@ -71,6 +72,10 @@ const BlogPage = () => {
 
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
+  };
+
+  const handleSortChange = (e) => {
+    setSortOrder(e.target.value);
   };
 
   // Estilos para la página del blog
@@ -417,20 +422,18 @@ const BlogPage = () => {
               </select>
             </div>
             
-            <Link 
-              to="/admin/post/new" 
-              style={styles.createButton}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-3px)';
-                e.currentTarget.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-              }}
-            >
-              <FaPen size={16} /> Crear publicación
-            </Link>
+            <div style={styles.categorySelectContainer}>
+              <FaSort style={styles.filterIcon} size={18} />
+              <select 
+                value={sortOrder}
+                onChange={handleSortChange}
+                style={styles.categorySelect}
+              >
+                <option value="recientes">Más recientes</option>
+                <option value="antiguos">Más antiguos</option>
+                <option value="alfabetico">Alfabéticamente</option>
+              </select>
+            </div>
           </div>
 
           <div ref={postListRef}>
@@ -439,6 +442,7 @@ const BlogPage = () => {
               categoryFilter={selectedCategory}
               searchTerm={searchTerm}
               className="blog-post-cards"
+              sortOrder={sortOrder}
             />
           </div>
 

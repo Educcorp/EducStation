@@ -24,6 +24,25 @@ const PostCard = ({ post }) => {
       : plainText;
   };
   
+  // Función para renderizar la imagen HTML de forma segura
+  const renderImageHTML = () => {
+    if (!post.imagen_portada_html) return null;
+    
+    return (
+      <div 
+        dangerouslySetInnerHTML={{ __html: post.imagen_portada_html }} 
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden'
+        }}
+      />
+    );
+  };
+  
   const styles = {
     card: {
       display: "flex",
@@ -140,7 +159,9 @@ const PostCard = ({ post }) => {
         onMouseLeave={() => setIsHovered(false)}
       >
         <div style={styles.imageContainer}>
-          {post.Imagen_destacada_ID ? (
+          {post.imagen_portada_html ? (
+            renderImageHTML()
+          ) : post.Imagen_destacada_ID ? (
             <img
               src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`}
               alt={post.Titulo}

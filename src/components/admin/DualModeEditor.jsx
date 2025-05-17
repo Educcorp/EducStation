@@ -9,13 +9,24 @@ import ImportExportActions from './ImportExportActions';
 
 const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, onImport }) => {
   const textAreaRef = useRef(null);
-  const [mode, setMode] = useState('simple'); // Siempre comenzar con modo simple
+  const [mode, setMode] = useState(initialMode === 'html' ? 'developer' : 'simple');
   const [activeTab, setActiveTab] = useState('code'); // Para el modo desarrollador
   const [internalContent, setInternalContent] = useState(content || '');
   const [isHighlightingEnabled, setIsHighlightingEnabled] = useState(true);
   const [simpleContent, setSimpleContent] = useState(content || '');
   const [showDeveloperModal, setShowDeveloperModal] = useState(false);
   const [hoveredElement, setHoveredElement] = useState(null);
+
+  // Inicializar el modo según initialMode cuando cambie
+  useEffect(() => {
+    if (initialMode === 'html' && mode !== 'developer') {
+      console.log('DualModeEditor - Inicializando en modo HTML desde props');
+      setMode('developer');
+    } else if (initialMode === 'simple' && mode !== 'simple') {
+      console.log('DualModeEditor - Inicializando en modo Simple desde props');
+      setMode('simple');
+    }
+  }, [initialMode]);
 
   // Actualizar contenido cuando cambia externamente
   useEffect(() => {
@@ -26,6 +37,34 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   // Manejar acciones de la barra de herramientas para el modo desarrollador
   const handleToolbarAction = (actionType, placeholder) => {
     if (mode === 'simple') {
+      return;
+    }
+    
+    // Para imágenes, asegurar que se guarden con el atributo data-image-type
+    if (actionType === 'image') {
+      // Abrir diálogo de selección de archivo
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const imgSrc = event.target.result;
+            // Crear HTML con el atributo data-image-type para identificar en vistas de carátulas
+            const imgHTML = `<img src="${imgSrc}" alt="Imagen" data-image-type="html-encoded" style="max-width: 100%; height: auto;" />`;
+            
+            const newContent = internalContent.substring(0, textAreaRef.current.selectionStart) +
+              imgHTML +
+              internalContent.substring(textAreaRef.current.selectionEnd);
+            
+            updateContent(newContent);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+      input.click();
       return;
     }
     
@@ -49,11 +88,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
         value: newContent
       }
     };
+    console.log('DualModeEditor - updateContent: Actualizando contenido del editor', newContent.substring(0, 50) + '...');
     onChange(event);
   };
 
   // Manejar cambio de modo entre simple y desarrollador
   const handleModeToggle = (newMode) => {
+    console.log('DualModeEditor - handleModeToggle: Cambiando modo de', mode, 'a', newMode);
+    
     if (newMode === 'developer' && mode === 'simple') {
       setShowDeveloperModal(true);
       return;
@@ -61,9 +103,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     
     setMode(newMode);
     
-    // Resetear pestañas a vista de código al cambiar a modo desarrollador
+    // Actualizar el contenido interno al cambiar de modo
     if (newMode === 'developer') {
       setActiveTab('code');
+      // Asegurar que el contenido esté sincronizado
+      setInternalContent(content || '');
+    } else {
+      // Si pasamos a modo simple, sincronizamos el contenido
+      setSimpleContent(internalContent || '');
     }
     
     // Notificar al componente padre sobre el cambio de modo
@@ -73,13 +120,18 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
         value: newMode === 'developer' ? 'html' : 'simple'
       }
     };
+    console.log('DualModeEditor - handleModeToggle: Notificando cambio de modo al padre:', event.target.value);
     onChange(event);
   };
 
   // Confirmar cambio al modo desarrollador
   const confirmDeveloperMode = () => {
+    console.log('DualModeEditor - confirmDeveloperMode: Confirmando cambio a modo HTML');
     setShowDeveloperModal(false);
     setMode('developer');
+    
+    // Asegurar que el contenido esté sincronizado
+    setInternalContent(content || '');
     
     // Notificar al componente padre sobre el cambio de modo
     const event = {
@@ -88,6 +140,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
         value: 'html'
       }
     };
+    console.log('DualModeEditor - confirmDeveloperMode: Notificando cambio de modo al padre:', event.target.value);
     onChange(event);
   };
 
@@ -98,8 +151,23 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
 
   // Manejar cambios en el área de texto
   const handleTextAreaChange = (e) => {
-    setInternalContent(e.target.value);
-    onChange(e);
+    console.log('DualModeEditor - handleTextAreaChange llamado con valor:', 
+      e.target.value ? `"${e.target.value.substring(0, 50)}..."` : 'vacío');
+    
+    // Asegurar que no estamos estableciendo a null o undefined
+    const newContent = e.target.value || '';
+    setInternalContent(newContent);
+    
+    // Crear un evento limpio con el contenido adecuado
+    const cleanEvent = {
+      target: {
+        name: 'content',
+        value: newContent
+      }
+    };
+    
+    console.log('DualModeEditor - notificando al padre con contenido de longitud:', newContent.length);
+    onChange(cleanEvent);
   };
 
   // Manejar cambios en el contenido del editor simple
@@ -120,6 +188,56 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   const toggleSyntaxHighlighting = () => {
     setIsHighlightingEnabled(!isHighlightingEnabled);
   };
+
+  // Manejar el pegado de contenido en el textarea
+  const handlePaste = (e) => {
+    if (mode !== 'developer') return;
+    
+    console.log('DualModeEditor - Contenido pegado detectado');
+    
+    // En caso de que algo salga mal, guardamos el evento original
+    const originalEvent = e;
+    
+    try {
+      // Obtener el contenido pegado del portapapeles
+      const clipboardData = e.clipboardData || window.clipboardData;
+      const pastedData = clipboardData.getData('text');
+      
+      console.log('DualModeEditor - Contenido pegado longitud:', pastedData.length);
+      console.log('DualModeEditor - Muestra del contenido pegado:', 
+        pastedData.substring(0, 100) + (pastedData.length > 100 ? '...' : ''));
+      
+      // Actualizar el estado interno con el contenido pegado
+      if (pastedData) {
+        // No prevenimos el comportamiento por defecto para que el textarea maneje el pegado
+        // normalmente, pero luego aseguramos que nuestro estado se actualice correctamente
+        setTimeout(() => {
+          if (textAreaRef.current) {
+            const newContent = textAreaRef.current.value;
+            updateContent(newContent);
+          }
+        }, 0);
+      }
+    } catch (error) {
+      console.error('Error al manejar el pegado:', error);
+      // Si hay un error, dejamos que el comportamiento por defecto maneje el pegado
+    }
+  };
+  
+  // Actualizar la referencia al componente del textarea para acceder al 
+  // contenido directamente
+  useEffect(() => {
+    if (mode === 'developer' && !isHighlightingEnabled && textAreaRef.current) {
+      // Añadir el manejador de eventos de pegado
+      textAreaRef.current.addEventListener('paste', handlePaste);
+      
+      return () => {
+        if (textAreaRef.current) {
+          textAreaRef.current.removeEventListener('paste', handlePaste);
+        }
+      };
+    }
+  }, [mode, isHighlightingEnabled]);
 
   // Estilos para el editor
   const styles = {
@@ -377,8 +495,9 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
             100% { transform: scale(2.5); opacity: 0; }
           }
           @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
           }
         `
       }} />
@@ -506,6 +625,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
                     ref={textAreaRef}
                     value={internalContent}
                     onChange={handleTextAreaChange}
+                    onPaste={handlePaste}
                     style={{
                       width: '100%',
                       height: '600px',

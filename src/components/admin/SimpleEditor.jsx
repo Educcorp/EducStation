@@ -121,80 +121,95 @@ const SimpleEditor = ({ content, onChange }) => {
   };
 
   // Apply formatting commands
-  const applyFormat = (command, value = null) => {
-    if (!editorRef.current) return;
-    
-    // Ensure the editor has focus
-    if (document.activeElement !== editorRef.current) {
-      editorRef.current.focus();
+  const applyFormat = (format, value) => {
+    // Si estamos aplicando formato a una imagen seleccionada, no hacemos nada
+    if (document.querySelector('.selected-image')) {
+      return;
     }
     
-    try {
-      // For some commands we need special handling
-      switch (command) {
-        case 'h1':
-        case 'h2':
-        case 'h3':
-          applyHeadingFormat(command);
-          break;
-        case 'textColor':
-          // Ya no necesitamos usar el prompt porque ahora tenemos un color picker
-          if (value) {
-            document.execCommand('foreColor', false, value);
-          }
-          break;
-        case 'link':
-          const url = prompt('Introduzca la URL del enlace:', 'https://');
-          if (url) {
-            document.execCommand('createLink', false, url);
-          }
-          break;
-        case 'image':
-          handleImageInsert();
-          break;
-        case 'unorderedList':
-          document.execCommand('insertUnorderedList', false, null);
-          break;
-        case 'orderedList':
-          document.execCommand('insertOrderedList', false, null);
-          break;
-        case 'fontSize':
-          // Aplicar el tamaño de fuente usando el elemento span
-          if (value) {
-            // Actualizar el estado compartido con el nuevo tamaño
-            const size = parseFloat(value);
-            setCurrentFontSize(size);
-            
-            // Crear un span con el estilo de tamaño de fuente
-            document.execCommand('fontSize', false, '7'); // Usamos 7 como valor temporal
-            
-            // Después modificamos los elementos con fontSize=7 para usar el valor real
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-              const fontElements = document.querySelectorAll('font[size="7"]');
-              
-              fontElements.forEach(element => {
-                element.removeAttribute('size');
-                element.style.fontSize = value;
-              });
-            }
-            
-            // Notificar a las barras de herramientas sobre el cambio
-            // para mantener la sincronización
-            checkActiveFormats();
-          }
-          break;
-        default:
-          // For basic formatting (bold, italic, underline)
-          document.execCommand(command, false, value);
+    // Si el formato es insertar imagen, manejarlo de forma especial
+    if (format === 'image') {
+      handleImageInsert();
+      return;
+    }
+    
+    // Si el formato es un enlace, manejarlo de forma especial
+    if (format === 'link') {
+      const selection = window.getSelection();
+      if (selection.toString().trim() !== '') {
+        const url = prompt('Ingresa la URL del enlace:', 'https://');
+        if (url && url !== 'https://') {
+          document.execCommand('createLink', false, url);
+        }
+      } else {
+        const linkText = prompt('Ingresa el texto del enlace:', 'Enlace');
+        const url = prompt('Ingresa la URL del enlace:', 'https://');
+        if (linkText && url && url !== 'https://') {
+          document.execCommand('insertHTML', false, `<a href="${url}">${linkText}</a>`);
+        }
       }
-      
-      // Update content and check for active formats
-      handleContentChange();
-      checkActiveFormats();
-    } catch (e) {
-      console.error(`Error applying format ${command}:`, e);
+      return;
     }
+    
+    // Si el formato es color de texto, manejarlo de forma especial
+    if (format === 'textColor') {
+      // Usar un color predeterminado por ahora
+      // En una versión más avanzada podríamos mostrar un selector de color
+      document.execCommand('foreColor', false, '#2B579A');
+      return;
+    }
+    
+    // Para el tamaño de fuente
+    if (format === 'fontSize') {
+      document.execCommand('fontSize', false, '7');
+      
+      // Obtener todos los elementos con el tamaño de fuente 7 (valor predeterminado)
+      // y cambiar su tamaño de fuente al valor proporcionado
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const elements = document.querySelectorAll('font[size="7"]');
+        elements.forEach(el => {
+          el.removeAttribute('size');
+          el.style.fontSize = value;
+        });
+        
+        // Actualizar el estado del tamaño de fuente
+        setCurrentFontSize(parseInt(value, 10));
+        checkActiveFormats();
+      }
+      return;
+    }
+    
+    // Resto de formatos usando execCommand
+    const commandMap = {
+      'bold': 'bold',
+      'italic': 'italic',
+      'underline': 'underline',
+      'h1': () => document.execCommand('formatBlock', false, '<h1>'),
+      'h2': () => document.execCommand('formatBlock', false, '<h2>'),
+      'h3': () => document.execCommand('formatBlock', false, '<h3>'),
+      'normal': () => document.execCommand('formatBlock', false, '<p>'),
+      'unorderedList': 'insertUnorderedList',
+      'orderedList': 'insertOrderedList',
+      'alignLeft': () => document.execCommand('justifyLeft'),
+      'alignCenter': () => document.execCommand('justifyCenter'),
+      'alignRight': () => document.execCommand('justifyRight'),
+      'alignJustify': () => document.execCommand('justifyFull')
+    };
+    
+    const command = commandMap[format];
+    
+    if (typeof command === 'function') {
+      command();
+    } else if (command) {
+      document.execCommand(command, false, null);
+    }
+    
+    // Verificar los formatos activos después de aplicar el formato
+    setTimeout(checkActiveFormats, 10);
+    
+    // Actualizar el contenido
+    handleContentChange();
   };
 
   // Special handling for heading formats
@@ -263,8 +278,9 @@ const SimpleEditor = ({ content, onChange }) => {
             const imgSrc = event.target.result;
             
             // Creamos HTML personalizado para la imagen con atributos para resize y estilos
+            // La imagen se almacena como código HTML para que pueda ser renderizada en vistas de carátulas
             const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-              <img src="${imgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" />
+              <img src="${imgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
               <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
             </div>`;
             
@@ -741,8 +757,9 @@ const SimpleEditor = ({ content, onChange }) => {
             const imgSrc = event.target.result;
             
             // Creamos HTML personalizado para la imagen con atributos para resize y estilos
+            // La imagen se almacena como código HTML para que pueda ser renderizada en vistas de carátulas
             const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-              <img src="${imgSrc}" alt="Imagen pegada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" />
+              <img src="${imgSrc}" alt="Imagen pegada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
               <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
             </div>`;
             
@@ -800,8 +817,9 @@ const SimpleEditor = ({ content, onChange }) => {
           const imgSrc = event.target.result;
           
           // Creamos HTML personalizado para la imagen con atributos para resize y estilos
+          // La imagen se almacena como código HTML para que pueda ser renderizada en vistas de carátulas
           const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-            <img src="${imgSrc}" alt="Imagen arrastrada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" />
+            <img src="${imgSrc}" alt="Imagen arrastrada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
             <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
           </div>`;
           
