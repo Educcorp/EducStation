@@ -368,7 +368,12 @@ export const verifyResetToken = async (token) => {
 // Establecer nueva contraseña
 export const resetPassword = async (token, newPassword) => {
   try {
-    console.log('Intentando restablecer contraseña con token:', token.substring(0, 15) + '...');
+    // Asegurar que el token sea un string
+    const tokenString = String(token).trim();
+    
+    console.log('Intentando restablecer contraseña:');
+    console.log('- Token (primeros 15 caracteres):', tokenString.substring(0, 15) + '...');
+    console.log('- Longitud del token:', tokenString.length);
     
     const response = await fetch(`${API_URL}/api/auth/password-reset/confirm/`, {
       method: 'POST',
@@ -376,32 +381,38 @@ export const resetPassword = async (token, newPassword) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        token: token,
+        token: tokenString,
         password: newPassword,
         password2: newPassword
       }),
     });
 
     // Registrar para depuración
-    console.log('Respuesta del servidor reset password:', 
-      response.status, 
-      response.statusText
-    );
+    console.log('Respuesta del servidor reset password:');
+    console.log('- Status:', response.status);
+    console.log('- StatusText:', response.statusText);
+
+    // Intentar leer la respuesta
+    let responseBody;
+    try {
+      responseBody = await response.json();
+      console.log('- Cuerpo de respuesta:', responseBody);
+    } catch (e) {
+      console.error('- No se pudo leer el cuerpo de la respuesta:', e);
+      responseBody = { detail: 'No se pudo leer la respuesta del servidor' };
+    }
 
     if (!response.ok) {
       // Intentar leer el cuerpo del error
       let errorMessage = 'Error al restablecer la contraseña';
-      try {
-        const errorData = await response.json();
-        errorMessage = errorData.detail || errorMessage;
-      } catch (e) {
-        console.error('No se pudo leer el cuerpo del error:', e);
+      if (responseBody && responseBody.detail) {
+        errorMessage = responseBody.detail;
       }
       
       throw new Error(errorMessage);
     }
 
-    return await response.json();
+    return responseBody;
   } catch (error) {
     console.error('Error al restablecer contraseña:', error);
     throw error;
