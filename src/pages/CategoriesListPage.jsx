@@ -584,48 +584,6 @@ const CategoriesListPage = () => {
                 y herramientas adaptados a tus necesidades.
               </p>
             </div>
-            
-            <div style={styles.searchContainer}>
-              <FaSearch style={styles.searchIcon} size={24} />
-              <input
-                type="text"
-                placeholder="Buscar categorías..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                style={styles.searchInput}
-              />
-              {isSearching && (
-                <button 
-                  style={{
-                    ...styles.clearButton,
-                    position: 'absolute',
-                    right: '20px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    cursor: 'pointer',
-                    color: isDarkMode ? 'rgba(255,255,255,0.7)' : '#555',
-                    fontSize: '18px',
-                    padding: '8px',
-                    borderRadius: '50%',
-                    display: isSearching ? 'flex' : 'none',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'all 0.2s ease',
-                    width: '32px',
-                    height: '32px',
-                    '&:hover': {
-                      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
-                    }
-                  }}
-                  onClick={clearSearch}
-                  aria-label="Limpiar búsqueda"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
           </div>
         </div>
       </div>
