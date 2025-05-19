@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
 
 const PostMetadata = ({ post, categories, onChange }) => {
   // Obtener colores del tema actual
   const { colors, isDarkMode } = useTheme();
-
+  
   // State to track which category is being hovered
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
@@ -41,7 +41,6 @@ const PostMetadata = ({ post, categories, onChange }) => {
       to {
         opacity: 0;
         transform: translateY(8px);
-        visibility: hidden;
       }
     }
   `;
@@ -214,34 +213,8 @@ const PostMetadata = ({ post, categories, onChange }) => {
   // State for custom dropdown
   const [isOpen, setIsOpen] = useState(false);
 
-  // Limpiar la categoría con hover cuando se cierra el dropdown
-  useEffect(() => {
-    if (!isOpen) {
-      setHoveredCategory(null);
-    }
-  }, [isOpen]);
-
-  // Agregar evento para cerrar el dropdown y quitar tooltips cuando se hace clic fuera
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isOpen && !event.target.closest('[data-dropdown]')) {
-        setIsOpen(false);
-        setHoveredCategory(null);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
-
   const toggleDropdown = () => {
     setIsOpen(!isOpen);
-    // Limpiar categoría con hover al cerrar
-    if (isOpen) {
-      setHoveredCategory(null);
-    }
   };
 
   const handleSelectOption = (category) => {
@@ -253,7 +226,6 @@ const PostMetadata = ({ post, categories, onChange }) => {
     };
     onChange(e);
     setIsOpen(false);
-    setHoveredCategory(null);
   };
 
   return (
@@ -269,7 +241,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
         </style>
 
         {/* Custom Dropdown Implementation */}
-        <div style={styles.customSelect} data-dropdown>
+        <div style={styles.customSelect}>
           <div
             style={{
               ...styles.selectedValue,
@@ -286,7 +258,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
           </div>
 
           {isOpen && (
-            <div style={styles.optionsContainer} data-dropdown>
+            <div style={styles.optionsContainer}>
               <div
                 style={{
                   ...styles.optionItem,
@@ -316,7 +288,7 @@ const PostMetadata = ({ post, categories, onChange }) => {
                       ...styles.optionDescription,
                       opacity: 0.98,
                       transform: "translateY(0)",
-                      animation: "fadeIn 0.2s ease-in-out forwards"
+                      animation: "fadeIn 0.2s ease-in-out"
                     }}>
                       {categoryDescriptions[category]}
                     </div>

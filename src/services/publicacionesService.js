@@ -8,13 +8,40 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
             url += `&estado=${estado}`;
         }
         
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error('Error al obtener las publicaciones');
+        console.log("Solicitando todas las publicaciones:", url);
+        
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
+                throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`Obtenidas ${data.length} publicaciones correctamente`);
+            return data;
+        } catch (fetchError) {
+            console.error("Error en la petición principal:", fetchError);
+            
+            // Si falla la petición principal, intentamos un enfoque alternativo
+            console.log("Intentando método alternativo para cargar publicaciones...");
+            
+            // Podemos intentar cargar las últimas publicaciones sin parámetros de estado
+            const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
+            console.log("URL alternativa:", fallbackUrl);
+            
+            const fallbackResponse = await fetch(fallbackUrl);
+            if (!fallbackResponse.ok) {
+                // Si también falla el fallback, lanzamos el error original
+                throw fetchError;
+            }
+            
+            const fallbackData = await fallbackResponse.json();
+            console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
+            return fallbackData;
         }
-        return await response.json();
     } catch (error) {
-        console.error('Error en getAllPublicaciones:', error);
+        console.error('Error final en getAllPublicaciones:', error);
         throw error;
     }
 };
@@ -39,6 +66,22 @@ export const createPublicacion = async (publicacionData) => {
         console.log("Datos enviados al backend:", JSON.stringify(publicacionData, null, 2));
         console.log("URL de la API:", `${API_URL}/api/publicaciones`);
         
+        // Extraer la primera imagen del contenido HTML para la portada si existe
+        let imagen_portada_html = null;
+        const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
+        const match = publicacionData.contenido.match(imgRegex);
+        
+        if (match && match.length > 0) {
+            imagen_portada_html = match[0]; // Guardar la etiqueta img completa
+            console.log("Imagen portada detectada:", imagen_portada_html);
+        }
+        
+        // Añadir la imagen portada HTML a los datos de publicación
+        const dataWithImage = {
+            ...publicacionData,
+            imagen_portada_html
+        };
+        
         const token = localStorage.getItem('userToken');
         console.log("Token de autenticación disponible:", !!token);
         
@@ -48,7 +91,7 @@ export const createPublicacion = async (publicacionData) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(publicacionData)
+            body: JSON.stringify(dataWithImage)
         });
         
         if (!response.ok) {
@@ -64,23 +107,56 @@ export const createPublicacion = async (publicacionData) => {
     }
 };
 
-// Crear una publicación a partir de HTML
+// Crear una publicación desde HTML (método específico para el editor HTML)
 export const createPublicacionFromHTML = async (publicacionData) => {
     try {
-        const response = await fetch(`${API_URL}/api/publicaciones/from-html`, {
+        // Validación básica del contenido HTML
+        if (!publicacionData.htmlContent || publicacionData.htmlContent.trim() === '') {
+            throw new Error('El contenido HTML no puede estar vacío');
+        }
+
+        // Verificar que el contenido tenga etiquetas HTML válidas
+        if (!publicacionData.htmlContent.includes("<") || !publicacionData.htmlContent.includes(">")) {
+            console.warn("El contenido no parece contener etiquetas HTML válidas");
+        }
+
+        // Asegurar que existe un resumen o usar los primeros caracteres del título
+        if (!publicacionData.resumen) {
+            publicacionData.resumen = publicacionData.titulo.substring(0, Math.min(150, publicacionData.titulo.length));
+        }
+        
+        // Extraer la primera imagen del contenido HTML para la portada si existe
+        let imagen_portada_html = null;
+        const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
+        const match = publicacionData.htmlContent.match(imgRegex);
+        
+        if (match && match.length > 0) {
+            imagen_portada_html = match[0]; // Guardar la etiqueta img completa
+            console.log("Imagen portada detectada desde HTML:", imagen_portada_html);
+        }
+        
+        // Añadir la imagen portada HTML a los datos de publicación
+        const dataWithImage = {
+            ...publicacionData,
+            imagen_portada_html
+        };
+
+        // Enviamos los datos al backend
+        const response = await fetch(`${API_URL}/api/publicaciones/html`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-            body: JSON.stringify(publicacionData)
+            body: JSON.stringify(dataWithImage)
         });
-        
+
         if (!response.ok) {
             const errorData = await response.json();
+            console.error('Error response:', errorData);
             throw new Error(errorData.detail || 'Error al crear la publicación desde HTML');
         }
-        
+
         return await response.json();
     } catch (error) {
         console.error('Error en createPublicacionFromHTML:', error);
