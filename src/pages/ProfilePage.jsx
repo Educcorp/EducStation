@@ -5,171 +5,98 @@ import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { getCurrentUser, updateUserAvatar } from '../services/userService';
+import axios from 'axios';
+import { getUserProfile, updateUserAvatar } from '../services/userService';
 
 const ProfilePage = () => {
-  const { user, setUser } = useContext(AuthContext);
+  const { user, isAuth } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [showImageUpload, setShowImageUpload] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
 
-  // Obtener los datos del usuario real del backend
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchUserProfile = async () => {
       try {
-        setIsLoading(true);
-        const token = localStorage.getItem('token');
-        
-        if (token) {
-          try {
-            const userData = await getCurrentUser();
-            setUserProfile({
-              firstName: userData.first_name,
-              lastName: userData.last_name,
-              email: userData.email,
-              username: userData.username,
-              bio: 'Esta es tu biografía. Edita tu perfil para cambiarla.',
-              role: userData.is_staff ? 'Administrador' : 'Estudiante',
-              joinDate: new Date().toLocaleDateString(),
-              avatar: userData.avatar || '/assets/images/logoBN.png',
-              interests: ['Educación', 'Tecnología', 'Ciencia'],
-              socialLinks: {
-                twitter: 'https://twitter.com/',
-                linkedin: 'https://linkedin.com/',
-                github: 'https://github.com/'
-              }
-            });
-          } catch (err) {
-            console.error("Error al obtener datos del usuario:", err);
-            // Seguimos con el flujo normal en caso de error
-          }
-        } else {
-          // Fallback a datos de ejemplo si no hay token
-          setUserProfile({
-            firstName: localStorage.getItem('userName')?.split(' ')[0] || 'Usuario',
-            lastName: localStorage.getItem('userName')?.split(' ')[1] || '',
-            email: 'usuario@example.com',
-            username: 'usuario123',
-            bio: 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
-            role: 'Estudiante',
-            joinDate: '01/01/2023',
-            avatar: '/assets/images/logoBN.png',
-            interests: ['Educación', 'Tecnología', 'Ciencia'],
-            socialLinks: {
-              twitter: 'https://twitter.com/',
-              linkedin: 'https://linkedin.com/',
-              github: 'https://github.com/'
-            }
-          });
+        if (!isAuth) {
+          window.location.href = '/login';
+          return;
         }
-      } catch (error) {
-        console.error("Error al cargar datos del usuario:", error);
-        // Fallback a datos de ejemplo en caso de error
+        
+        // Utilizamos el servicio para obtener los datos reales del usuario
+        const userData = await getUserProfile();
+        
+        // Formatear la fecha de registro
+        const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
+        
+        // Crear objeto de perfil con datos reales y algunos predeterminados para campos aún no implementados
         setUserProfile({
-    firstName: localStorage.getItem('userName')?.split(' ')[0] || 'Usuario',
-    lastName: localStorage.getItem('userName')?.split(' ')[1] || '',
-    email: 'usuario@example.com',
-    username: 'usuario123',
-    bio: 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
-    role: 'Estudiante',
-    joinDate: '01/01/2023',
-    avatar: '/assets/images/logoBN.png',
-    interests: ['Educación', 'Tecnología', 'Ciencia'],
-    socialLinks: {
-      twitter: 'https://twitter.com/',
-      linkedin: 'https://linkedin.com/',
-      github: 'https://github.com/'
-    }
+          firstName: userData.first_name || 'Usuario',
+          lastName: userData.last_name || '',
+          username: userData.username || 'usuario',
+          email: userData.email || 'usuario@ejemplo.com',
+          role: userData.is_superuser ? 'Administrador' : 'Estudiante',
+          joinDate: joinDate,
+          avatar: userData.avatar || '/assets/images/logoBN.png',
+          bio: userData.bio || 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
+          interests: userData.interests || ['Educación', 'Tecnología', 'Ciencia'],
+          socialLinks: userData.social_links || {
+            twitter: 'https://twitter.com/',
+            linkedin: 'https://linkedin.com/',
+            github: 'https://github.com/'
+          }
         });
-      } finally {
-      setIsLoading(false);
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error al cargar el perfil:', error);
+        setErrorMessage('No se pudo cargar el perfil. Por favor, intenta nuevamente.');
+        setIsLoading(false);
       }
     };
 
-    fetchUserData();
-  }, []);
+    fetchUserProfile();
+  }, [isAuth]);
 
-  const handleAvatarClick = () => {
+  const handleImageClick = () => {
     fileInputRef.current.click();
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validar tipo de archivo
-    const fileType = file.type;
-    if (!fileType.match(/image\/(jpeg|jpg|png|gif)/)) {
-      alert('Por favor selecciona una imagen válida (JPEG, PNG, GIF)');
-      return;
-    }
-
-    // Validar tamaño (máximo 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      alert('La imagen es demasiado grande. El tamaño máximo permitido es 2MB.');
-      return;
-    }
-
-    try {
-      setUploading(true);
-      
-      // Convertir archivo a base64
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      
-      reader.onload = async () => {
-        const base64Data = reader.result;
+  const handleFileChange = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      try {
+        setIsUploading(true);
+        const reader = new FileReader();
         
-        // Actualizar avatar en el backend
-        const token = localStorage.getItem('token');
-        if (token) {
+        reader.onloadend = async () => {
           try {
-            console.log('Intentando actualizar avatar...');
-            const response = await updateUserAvatar(base64Data);
-            console.log('Respuesta del servidor:', response);
+            // Usar el servicio para actualizar el avatar
+            await updateUserAvatar(reader.result);
             
-            // Actualizar estado local
-            setUserProfile({
-              ...userProfile,
-              avatar: base64Data
-            });
+            // Actualizar en el estado local
+            setUserProfile(prev => ({
+              ...prev,
+              avatar: reader.result
+            }));
             
-            // También actualizar el contexto de autenticación si es necesario
-            if (setUser && user) {
-              setUser({
-                ...user,
-                avatar: base64Data
-              });
-            }
-            
-            console.log('Avatar actualizado con éxito');
-            alert('¡Avatar actualizado con éxito!');
+            setIsUploading(false);
           } catch (error) {
-            console.error('Error al actualizar avatar:', error);
-            alert('Hubo un problema al actualizar tu avatar: ' + error.message);
+            console.error('Error al actualizar el avatar:', error);
+            setErrorMessage('Error al actualizar el avatar. Por favor, intenta de nuevo.');
+            setIsUploading(false);
           }
-        } else {
-          // Si no hay token, solo actualizar la interfaz
-          setUserProfile({
-            ...userProfile,
-            avatar: base64Data
-          });
-        }
-        
-        setUploading(false);
-      };
-      
-      reader.onerror = (error) => {
-        console.error('Error al leer el archivo:', error);
-        setUploading(false);
-        alert('Hubo un problema al procesar la imagen. Por favor intenta de nuevo.');
-      };
-    } catch (error) {
-      console.error('Error al subir imagen:', error);
-      setUploading(false);
-      alert('Hubo un problema al subir la imagen. Por favor intenta de nuevo.');
+        };
+
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error al procesar la imagen:', error);
+        setIsUploading(false);
+        setErrorMessage('Error al procesar la imagen. Por favor, intenta de nuevo.');
+      }
     }
   };
 
@@ -203,6 +130,13 @@ const ProfilePage = () => {
       alignItems: 'center',
       position: 'relative'
     },
+    avatarContainer: {
+      position: 'relative',
+      cursor: 'pointer',
+      '&:hover .avatarOverlay': {
+        opacity: 1
+      }
+    },
     avatar: {
       width: '120px',
       height: '120px',
@@ -213,9 +147,7 @@ const ProfilePage = () => {
       overflow: 'hidden',
       display: 'flex',
       justifyContent: 'center',
-      alignItems: 'center',
-      cursor: 'pointer',
-      position: 'relative'
+      alignItems: 'center'
     },
     avatarImg: {
       width: '85%',
@@ -229,28 +161,20 @@ const ProfilePage = () => {
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      borderRadius: '50%',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
       opacity: 0,
-      transition: 'opacity 0.3s ease',
-      borderRadius: '50%',
-      color: colors.white,
-      fontWeight: typography.fontWeight.bold
+      transition: 'opacity 0.3s ease'
     },
-    uploadingOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.7)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: '50%',
-      color: colors.white
+    uploadIcon: {
+      color: colors.white,
+      fontSize: '24px'
+    },
+    fileInput: {
+      display: 'none'
     },
     userInfo: {
       marginLeft: spacing.xl
@@ -366,9 +290,6 @@ const ProfilePage = () => {
       fontSize: typography.fontSize.md,
       color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
       marginTop: spacing.xl
-    },
-    fileInput: {
-      display: 'none'
     }
   };
 
@@ -407,45 +328,63 @@ const ProfilePage = () => {
     <div style={styles.container}>
       <Header />
       <div style={styles.content}>
+        {errorMessage && (
+          <div style={{
+            backgroundColor: colors.error,
+            color: colors.white,
+            padding: spacing.md,
+            borderRadius: borderRadius.md,
+            marginBottom: spacing.xl,
+            textAlign: 'center'
+          }}>
+            {errorMessage}
+          </div>
+        )}
         <div style={styles.card}>
           <div style={styles.profileHeader}>
             <div 
-              style={styles.avatar} 
-              onClick={handleAvatarClick}
-              onMouseEnter={(e) => {
-                const overlay = e.currentTarget.querySelector('#avatarOverlay');
-                if (overlay) overlay.style.opacity = 1;
-              }}
-              onMouseLeave={(e) => {
-                const overlay = e.currentTarget.querySelector('#avatarOverlay');
-                if (overlay) overlay.style.opacity = 0;
-              }}
+              style={styles.avatarContainer}
+              onClick={handleImageClick}
             >
-              <img src={userProfile.avatar} alt="Avatar" style={styles.avatarImg} />
-              {!uploading && (
-                <div id="avatarOverlay" style={styles.avatarOverlay}>
-                  Cambiar
-                </div>
-              )}
-              {uploading && (
-                <div style={styles.uploadingOverlay}>
-                  <div 
-                    style={{
-                      width: '20px',
-                      height: '20px',
+              <div style={styles.avatar}>
+                <img 
+                  src={userProfile?.avatar || '/assets/images/logoBN.png'} 
+                  alt="Avatar" 
+                  style={styles.avatarImg} 
+                />
+                {isUploading && (
+                  <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    color: colors.white
+                  }}>
+                    <div style={{
+                      width: '30px',
+                      height: '30px',
                       borderRadius: '50%',
-                      border: '2px solid rgba(255, 255, 255, 0.2)',
-                      borderTop: '2px solid white',
+                      border: `3px solid ${colors.white}`,
+                      borderTop: `3px solid transparent`,
                       animation: 'spin 1s linear infinite'
-                    }}
-                  ></div>
-                </div>
-              )}
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                style={styles.fileInput} 
-                accept="image/jpeg, image/png, image/gif"
+                    }}></div>
+                  </div>
+                )}
+              </div>
+              <div className="avatarOverlay" style={styles.avatarOverlay}>
+                <span style={styles.uploadIcon}>📷</span>
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={styles.fileInput}
+                accept="image/*"
                 onChange={handleFileChange}
               />
             </div>
@@ -557,18 +496,12 @@ const ProfilePage = () => {
           <div style={styles.profileContent}>
             <h2 style={styles.sectionTitle}>Actividad reciente</h2>
             <div style={styles.placeholder}>
-              ¡Esta es una página de perfil de placeholder! Aquí se mostraría la actividad reciente del usuario.
+              Aquí se mostrará la actividad reciente del usuario cuando esta funcionalidad esté disponible.
             </div>
           </div>
         </div>
       </div>
       <Footer />
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 };

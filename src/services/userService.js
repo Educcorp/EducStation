@@ -1,84 +1,94 @@
-import axios from 'axios';
+// src/services/userService.js
+// Servicio para operaciones relacionadas con usuarios y perfiles
 
-// Forzamos la URL local para pruebas
-const API_URL = 'http://localhost:5000';
+const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
 
-// Registro de usuario
-export const registerUser = async (userData) => {
-  try {
-    const response = await axios.post(`${API_URL}/api/users/register`, userData);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  } catch (error) {
-    throw error.response?.data?.msg || 'Error en el registro';
+// Obtener perfil del usuario actual
+export const getUserProfile = async () => {
+  const token = localStorage.getItem('userToken');
+  
+  if (!token) {
+    throw new Error('No hay sesión activa');
   }
-};
-
-// Login de usuario
-export const loginUser = async (credentials) => {
+  
   try {
-    const response = await axios.post(`${API_URL}/api/users/login`, credentials);
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-    }
-    return response.data;
-  } catch (error) {
-    throw error.response?.data?.msg || 'Error en el inicio de sesión';
-  }
-};
-
-// Obtener usuario actual
-export const getCurrentUser = async () => {
-  try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No hay token de autenticación');
-    }
-    
-    const response = await axios.get(`${API_URL}/api/users/current`, {
+    const response = await fetch(`${API_URL}/api/auth/user/`, {
       headers: {
-        'x-auth-token': token
-      }
+        'Authorization': `Bearer ${token}`,
+      },
     });
-    
-    return response.data;
+
+    if (!response.ok) {
+      throw new Error('Error al obtener el perfil de usuario');
+    }
+
+    return await response.json();
   } catch (error) {
-    throw error.response?.data?.msg || 'Error al obtener usuario actual';
+    console.error('Error al obtener perfil de usuario:', error);
+    throw error;
   }
 };
 
 // Actualizar avatar del usuario
 export const updateUserAvatar = async (avatarData) => {
+  const token = localStorage.getItem('userToken');
+  
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+  
   try {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      throw new Error('No hay token de autenticación');
+    const response = await fetch(`${API_URL}/api/auth/user/avatar`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ avatarUrl: avatarData }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al actualizar avatar');
     }
-    
-    console.log('Enviando avatar a:', `${API_URL}/api/users/avatar`);
-    console.log('Token:', token);
-    
-    const response = await axios.put(
-      `${API_URL}/api/users/avatar`,
-      { avatarData },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'x-auth-token': token
-        }
-      }
-    );
-    
-    return response.data;
+
+    return await response.json();
   } catch (error) {
-    console.error('Error completo:', error);
-    throw new Error('Error al actualizar avatar: ' + (error.response?.data?.msg || error.message));
+    console.error('Error al actualizar avatar:', error);
+    throw error;
   }
 };
 
-// Cerrar sesión
-export const logoutUser = () => {
-  localStorage.removeItem('token');
+// Actualizar datos del perfil
+export const updateUserProfile = async (profileData) => {
+  const token = localStorage.getItem('userToken');
+  
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+  
+  try {
+    const response = await fetch(`${API_URL}/api/auth/user/profile`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profileData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al actualizar el perfil');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error al actualizar perfil:', error);
+    throw error;
+  }
+};
+
+export default {
+  getUserProfile,
+  updateUserAvatar,
+  updateUserProfile
 }; 

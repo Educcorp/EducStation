@@ -21,6 +21,7 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [userName, setUserName] = useState('');
+  const [userAvatar, setUserAvatar] = useState('/assets/images/logoBN.png'); // Estado para la imagen de avatar
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   
   // Nuevo estado para el modal de confirmación
@@ -44,6 +45,28 @@ const Header = () => {
     
     // Actualizar el estado de superusuario desde el servidor al cargar
     if (isAuth) {
+      // Obtener los datos del perfil del usuario, incluyendo el avatar
+      fetch(`${process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app'}/api/auth/user/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
+        },
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('Error al obtener perfil');
+      })
+      .then(userData => {
+        console.log('Datos de perfil recibidos:', userData);
+        if (userData.avatar) {
+          setUserAvatar(userData.avatar);
+        }
+      })
+      .catch(error => {
+        console.error('Error al obtener perfil de usuario:', error);
+      });
+      
       updateSuperUserStatus()
         .then(serverIsSuperUser => {
           console.log('Estado de superusuario actualizado al cargar:', {
@@ -111,6 +134,16 @@ const Header = () => {
     const newIsMenuOpen = !isMenuOpen;
     setIsMenuOpen(newIsMenuOpen);
     
+    // Añadir logs para depuración
+    console.log('Estado de autenticación al abrir menú:', {
+      isAuth,
+      user,
+      userName,
+      isSuperUser,
+      token: localStorage.getItem('userToken') || 'No hay token',
+      accessToken: localStorage.getItem('accessToken') || 'No hay accessToken'
+    });
+    
     // Al abrir el menú, verificar el estado de superusuario
     if (newIsMenuOpen && isAuth) {
       updateSuperUserStatus()
@@ -127,6 +160,24 @@ const Header = () => {
         .catch(error => {
           console.error('Error al actualizar estado de superusuario:', error);
         });
+    }
+  };
+
+  // Modificar el manejo del botón de perfil para evitar redirecciones incorrectas
+  const handleProfileNavigation = (path, e = null) => {
+    if (e) e.preventDefault();
+    
+    console.log('Navegando a perfil. Estado de autenticación:', {
+      isAuth,
+      token: !!localStorage.getItem('userToken')
+    });
+    
+    // Solo si está autenticado, ir a la página de perfil
+    if (isAuth && localStorage.getItem('userToken')) {
+      window.location.href = path;
+    } else {
+      console.warn('Usuario no autenticado, redirigiendo a login');
+      window.location.href = '/login';
     }
   };
 
@@ -625,7 +676,7 @@ const Header = () => {
             onMouseLeave={() => setHoveredItem(null)}
             onClick={toggleMenu}
           >
-            <img src="/assets/images/logoBN.png" alt="Profile" style={styles.profileImg} />
+            <img src={userAvatar} alt="Profile" style={styles.profileImg} />
           </div>
 
           {/* Menú desplegable con perfil del usuario */}
@@ -634,9 +685,9 @@ const Header = () => {
               <>
                 {/* Sección de perfil del usuario */}
                 <div style={styles.userProfileSection}>
-                  <div style={styles.userAvatar}>
-                    <img src="/assets/images/logoBN.png" alt="Avatar" style={styles.profileImg} />
-                  </div>
+                                  <div style={styles.userAvatar}>
+                  <img src={userAvatar} alt="Avatar" style={styles.profileImg} />
+                </div>
                   <div style={styles.userName}>{userName}</div>
                   <div style={styles.userRole}>{isSuperUser ? 'Administrador' : 'Usuario'}</div>
                 </div>
@@ -651,7 +702,7 @@ const Header = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
-                    window.location.href = '/profile';
+                    handleProfileNavigation('/profile');
                   }}
                 >
                   <span style={styles.menuItemIcon}>
@@ -676,12 +727,12 @@ const Header = () => {
 
                 <div style={styles.menuSeparator}></div>
 
-                {/* Botón de modo oscuro dentro del menú */}
+                {/* Botón de modo oscuro dentro del menú
                 <div style={{ padding: '8px 12px' }}>
                   <ThemeToggle inMenu={true} />
-                </div>
+                </div> */}
 
-                <div style={styles.menuSeparator}></div>
+                {/* <div style={styles.menuSeparator}></div> */}
 
                 {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
                 <Link

@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx - Actualizado
 import React, { createContext, useState, useEffect } from 'react';
-import { login, logout, refreshToken, register as registerService } from '../services/authService';
+import { login as loginService, logout as logoutService, refreshToken, register as registerService } from '../services/authService';
 
 export const AuthContext = createContext();
 
@@ -9,12 +9,15 @@ export const AuthProvider = ({ children }) => {
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // Nuevo estado para el superusuario
+  const [isSuperUser, setIsSuperUser] = useState(false);
 
   useEffect(() => {
     // Verificar si hay un token en localStorage cuando la aplicación se carga
     const checkAuth = async () => {
       const token = localStorage.getItem('userToken');
-
+      console.log('AuthContext - Verificando autenticación, token existe:', !!token);
+      
       if (token) {
         try {
           // Intentar obtener información del usuario usando el token
@@ -24,12 +27,26 @@ export const AuthProvider = ({ children }) => {
               'Authorization': `Bearer ${token}`,
             },
           });
-
+          
           if (response.ok) {
             const userData = await response.json();
             setUser(userData);
             setIsAuth(true);
+            
+            // Actualizar el estado de superusuario
+            const userIsSuperUser = userData.is_superuser === true;
+            setIsSuperUser(userIsSuperUser);
+            
+            // Guardar en localStorage para mantener consistencia
+            localStorage.setItem('isSuperUser', userIsSuperUser ? 'true' : 'false');
+            
+            console.log('Auth check completo:', { 
+              isAuth: true, 
+              isSuperUser: userIsSuperUser,
+              userData 
+            });
           } else {
+            console.warn('El token es inválido o ha expirado. Intentando refrescar...');
             // El token puede estar expirado, intentar refrescarlo
             try {
               await refreshToken();
@@ -39,50 +56,72 @@ export const AuthProvider = ({ children }) => {
                   'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
                 },
               });
-
+              
               if (newResponse.ok) {
                 const userData = await newResponse.json();
                 setUser(userData);
                 setIsAuth(true);
+                
+                // Actualizar estado de superusuario
+                const userIsSuperUser = userData.is_superuser === true;
+                setIsSuperUser(userIsSuperUser);
+                localStorage.setItem('isSuperUser', userIsSuperUser ? 'true' : 'false');
+                
+                console.log('Auth check después de refresh:', { 
+                  isAuth: true, 
+                  isSuperUser: userIsSuperUser,
+                  userData 
+                });
               } else {
-                // Si aún no funciona, limpiar tokens
-                logout();
-                setUser(null);
-                setIsAuth(false);
+                console.error('No se pudo renovar la autenticación, sesión expirada.');
+                handleLogout();
               }
             } catch (error) {
               // Error al refrescar token
-              logout();
-              setUser(null);
-              setIsAuth(false);
+              console.error('Error al refrescar token:', error);
+              handleLogout();
             }
           }
         } catch (error) {
           console.error('Error al verificar autenticación:', error);
-          logout();
-          setUser(null);
-          setIsAuth(false);
+          handleLogout();
         }
       } else {
-        setIsAuth(false);
-        setUser(null);
+        console.log('No hay token, usuario no autenticado');
+        handleLogout();
       }
-
+      
       setLoading(false);
     };
-
+    
+    // Función para limpiar estado y localStorage
+    const handleLogout = () => {
+      logoutService();
+      setUser(null);
+      setIsAuth(false);
+      setIsSuperUser(false);
+      console.log('Estado de autenticación limpiado');
+    };
+    
     checkAuth();
   }, []);
 
-  const loginUser = async (credentials) => {
+  // Función para registrar usuarios
+  const registerUser = async (userData) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await login(credentials);
-      setUser(result.user);
-      setIsAuth(true);
+      console.log('AuthContext - Registrando usuario:', {
+        username: userData.username,
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name
+      });
+      const result = await registerService(userData);
+      console.log('AuthContext - Registro exitoso:', result);
       return result;
     } catch (error) {
+      console.error('AuthContext - Error en registro:', error);
       setError(error.message);
       throw error;
     } finally {
@@ -90,11 +129,18 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const registerUser = async (userData) => {
+  const loginUser = async (credentials) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await registerService(userData);
+      const result = await loginService(credentials);
+      setUser(result.user);
+      setIsAuth(true);
+      
+      // Actualizar el estado de superusuario
+      const userIsSuperUser = result.user.is_superuser === true;
+      setIsSuperUser(userIsSuperUser);
+      
       return result;
     } catch (error) {
       setError(error.message);
@@ -105,26 +151,33 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logoutUser = () => {
-    logout();
+    logoutService();
     setUser(null);
     setIsAuth(false);
+    setIsSuperUser(false);
   };
 
   const updateAuthState = (userData) => {
     setUser(userData);
     setIsAuth(true);
+    
+    // Actualizar estado de superusuario
+    const userIsSuperUser = userData.is_superuser === true;
+    setIsSuperUser(userIsSuperUser);
+    localStorage.setItem('isSuperUser', userIsSuperUser ? 'true' : 'false');
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuth,
-      loading,
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuth, 
+      loading, 
       error,
-      login: loginUser,
-      logout: logoutUser,
+      isSuperUser,
       register: registerUser,
-      updateAuthState
+      login: loginUser, 
+      logout: logoutUser, 
+      updateAuthState 
     }}>
       {children}
     </AuthContext.Provider>
