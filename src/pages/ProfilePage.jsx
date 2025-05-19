@@ -5,7 +5,6 @@ import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import axios from 'axios';
 import { getUserProfile, updateUserAvatar } from '../services/userService';
 
 const ProfilePage = () => {
@@ -25,13 +24,13 @@ const ProfilePage = () => {
           window.location.href = '/login';
           return;
         }
-        
+
         // Utilizamos el servicio para obtener los datos reales del usuario
         const userData = await getUserProfile();
-        
+
         // Formatear la fecha de registro
         const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
-        
+
         // Crear objeto de perfil con datos reales y algunos predeterminados para campos aún no implementados
         setUserProfile({
           firstName: userData.first_name || 'Usuario',
@@ -49,7 +48,7 @@ const ProfilePage = () => {
             github: 'https://github.com/'
           }
         });
-        
+
         setIsLoading(false);
       } catch (error) {
         console.error('Error al cargar el perfil:', error);
@@ -71,18 +70,18 @@ const ProfilePage = () => {
       try {
         setIsUploading(true);
         const reader = new FileReader();
-        
+
         reader.onloadend = async () => {
           try {
             // Usar el servicio para actualizar el avatar
             await updateUserAvatar(reader.result);
-            
+
             // Actualizar en el estado local
             setUserProfile(prev => ({
               ...prev,
               avatar: reader.result
             }));
-            
+
             setIsUploading(false);
           } catch (error) {
             console.error('Error al actualizar el avatar:', error);
@@ -300,7 +299,7 @@ const ProfilePage = () => {
         <div style={styles.content}>
           <div style={styles.loading}>
             Cargando perfil...
-            <div 
+            <div
               style={{
                 width: '30px',
                 height: '30px',
@@ -342,15 +341,15 @@ const ProfilePage = () => {
         )}
         <div style={styles.card}>
           <div style={styles.profileHeader}>
-            <div 
+            <div
               style={styles.avatarContainer}
               onClick={handleImageClick}
             >
               <div style={styles.avatar}>
-                <img 
-                  src={userProfile?.avatar || '/assets/images/logoBN.png'} 
-                  alt="Avatar" 
-                  style={styles.avatarImg} 
+                <img
+                  src={userProfile?.avatar || '/assets/images/logoBN.png'}
+                  alt="Avatar"
+                  style={styles.avatarImg}
                 />
                 {isUploading && (
                   <div style={{
@@ -393,7 +392,7 @@ const ProfilePage = () => {
               <div style={styles.username}>@{userProfile.username}</div>
               <div style={styles.role}>{userProfile.role}</div>
             </div>
-            <button 
+            <button
               style={styles.editButton}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
@@ -407,11 +406,11 @@ const ProfilePage = () => {
               ✏️ Editar perfil
             </button>
           </div>
-          
+
           <div style={styles.profileContent}>
             <h2 style={styles.sectionTitle}>Acerca de mí</h2>
             <div style={styles.bio}>{userProfile.bio}</div>
-            
+
             <h2 style={styles.sectionTitle}>Información personal</h2>
             <div style={styles.infoGrid}>
               <div style={styles.infoItem}>
@@ -427,20 +426,20 @@ const ProfilePage = () => {
                 <div style={styles.infoValue}>{userProfile.joinDate}</div>
               </div>
             </div>
-            
+
             <h2 style={styles.sectionTitle}>Intereses</h2>
             <div style={styles.interestTags}>
               {userProfile.interests.map((interest, index) => (
                 <div key={index} style={styles.interestTag}>{interest}</div>
               ))}
             </div>
-            
+
             <h2 style={styles.sectionTitle}>Redes sociales</h2>
             <div style={styles.socialLinks}>
-              <a 
-                href={userProfile.socialLinks.twitter} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={userProfile.socialLinks.twitter}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={styles.socialLink}
                 title="Twitter"
                 onMouseEnter={(e) => {
@@ -454,10 +453,10 @@ const ProfilePage = () => {
               >
                 🐦
               </a>
-              <a 
-                href={userProfile.socialLinks.linkedin} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={userProfile.socialLinks.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={styles.socialLink}
                 title="LinkedIn"
                 onMouseEnter={(e) => {
@@ -471,10 +470,10 @@ const ProfilePage = () => {
               >
                 🔗
               </a>
-              <a 
-                href={userProfile.socialLinks.github} 
-                target="_blank" 
-                rel="noopener noreferrer" 
+              <a
+                href={userProfile.socialLinks.github}
+                target="_blank"
+                rel="noopener noreferrer"
                 style={styles.socialLink}
                 title="GitHub"
                 onMouseEnter={(e) => {
@@ -491,7 +490,7 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-        
+
         <div style={styles.card}>
           <div style={styles.profileContent}>
             <h2 style={styles.sectionTitle}>Actividad reciente</h2>
