@@ -6,67 +6,60 @@ import { colors, spacing, typography, shadows, borderRadius } from '../styles/th
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
+import { getUserProfile, updateUserAvatar } from '../services/userService';
 
 const ProfilePage = () => {
-  const { user } = useContext(AuthContext);
+  const { user, isAuth } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // Simulación de datos de perfil en lugar de hacer una petición real
-        // Esto evita el error cuando no hay backend
-        setTimeout(() => {
-          setUserProfile({
-            firstName: 'Usuario',
-            lastName: 'Ejemplo',
-            username: 'usuario.ejemplo',
-            email: 'usuario@ejemplo.com',
-            role: 'Estudiante',
-            joinDate: '01/01/2023',
-            bio: 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
-            interests: ['Educación', 'Tecnología', 'Ciencia'],
-            socialLinks: {
-              twitter: 'https://twitter.com/',
-              linkedin: 'https://linkedin.com/',
-              github: 'https://github.com/'
-            }
-          });
-          setIsLoading(false);
-        }, 1000); // Simular carga durante 1 segundo
-
-        /* Comentamos el código original de la petición API
-        const response = await axios.get('/api/auth/user/', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
+        if (!isAuth) {
+          window.location.href = '/login';
+          return;
+        }
         
+        // Utilizamos el servicio para obtener los datos reales del usuario
+        const userData = await getUserProfile();
+        
+        // Formatear la fecha de registro
+        const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
+        
+        // Crear objeto de perfil con datos reales y algunos predeterminados para campos aún no implementados
         setUserProfile({
-          ...response.data,
-          bio: 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
-          interests: ['Educación', 'Tecnología', 'Ciencia'],
-          socialLinks: {
+          firstName: userData.first_name || 'Usuario',
+          lastName: userData.last_name || '',
+          username: userData.username || 'usuario',
+          email: userData.email || 'usuario@ejemplo.com',
+          role: userData.is_superuser ? 'Administrador' : 'Estudiante',
+          joinDate: joinDate,
+          avatar: userData.avatar || '/assets/images/logoBN.png',
+          bio: userData.bio || 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
+          interests: userData.interests || ['Educación', 'Tecnología', 'Ciencia'],
+          socialLinks: userData.social_links || {
             twitter: 'https://twitter.com/',
             linkedin: 'https://linkedin.com/',
             github: 'https://github.com/'
           }
         });
+        
         setIsLoading(false);
-        */
       } catch (error) {
         console.error('Error al cargar el perfil:', error);
+        setErrorMessage('No se pudo cargar el perfil. Por favor, intenta nuevamente.');
         setIsLoading(false);
       }
     };
 
     fetchUserProfile();
-  }, []);
+  }, [isAuth]);
 
   const handleImageClick = () => {
     fileInputRef.current.click();
@@ -81,35 +74,19 @@ const ProfilePage = () => {
         
         reader.onloadend = async () => {
           try {
-            // Simulamos la actualización sin necesidad de backend
-            setTimeout(() => {
-              setUserProfile(prev => ({
-                ...prev,
-                avatar: reader.result
-              }));
-              setIsUploading(false);
-            }, 1500); // Simulamos un tiempo de carga para la imagen
-
-            /* Comentamos el código original de la petición API
-            // Actualizar en el backend
-            await axios.put('/api/auth/user/avatar', 
-              { avatarUrl: reader.result },
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-                }
-              }
-            );
-
+            // Usar el servicio para actualizar el avatar
+            await updateUserAvatar(reader.result);
+            
             // Actualizar en el estado local
             setUserProfile(prev => ({
               ...prev,
               avatar: reader.result
             }));
-            */
+            
+            setIsUploading(false);
           } catch (error) {
             console.error('Error al actualizar el avatar:', error);
-            alert('Error al actualizar el avatar. Por favor, intenta de nuevo.');
+            setErrorMessage('Error al actualizar el avatar. Por favor, intenta de nuevo.');
             setIsUploading(false);
           }
         };
@@ -118,7 +95,7 @@ const ProfilePage = () => {
       } catch (error) {
         console.error('Error al procesar la imagen:', error);
         setIsUploading(false);
-        alert('Error al procesar la imagen. Por favor, intenta de nuevo.');
+        setErrorMessage('Error al procesar la imagen. Por favor, intenta de nuevo.');
       }
     }
   };
@@ -351,6 +328,18 @@ const ProfilePage = () => {
     <div style={styles.container}>
       <Header />
       <div style={styles.content}>
+        {errorMessage && (
+          <div style={{
+            backgroundColor: colors.error,
+            color: colors.white,
+            padding: spacing.md,
+            borderRadius: borderRadius.md,
+            marginBottom: spacing.xl,
+            textAlign: 'center'
+          }}>
+            {errorMessage}
+          </div>
+        )}
         <div style={styles.card}>
           <div style={styles.profileHeader}>
             <div 
@@ -507,7 +496,7 @@ const ProfilePage = () => {
           <div style={styles.profileContent}>
             <h2 style={styles.sectionTitle}>Actividad reciente</h2>
             <div style={styles.placeholder}>
-              ¡Esta es una página de perfil de placeholder! Aquí se mostraría la actividad reciente del usuario.
+              Aquí se mostrará la actividad reciente del usuario cuando esta funcionalidad esté disponible.
             </div>
           </div>
         </div>
