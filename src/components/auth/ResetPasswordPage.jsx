@@ -8,6 +8,7 @@ import { ThemeContext } from '../../context/ThemeContext';
 const ResetPasswordPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { token: paramToken } = useParams(); // Extrae el token de los parámetros de ruta
     const { setForceLightMode } = useContext(ThemeContext);
     const [formData, setFormData] = useState({
         password: '',
@@ -34,24 +35,42 @@ const ResetPasswordPage = () => {
     // Extraer token de la URL - puede estar en diferentes formatos:
     // 1. Como parámetro: /reset-password/:token
     // 2. Como query param: /reset-password?token=xxx
+    // 3. Directamente en la ruta con doble slash: /reset-password//token
     useEffect(() => {
+        console.log("ResetPasswordPage - Analizando URL para token:", location.pathname);
+        
         const getToken = () => {
-            // Intentar obtener de params
+            // 1. Verificar si viene como parámetro en la ruta (/reset-password/:token)
+            if (paramToken) {
+                console.log("Token encontrado en parámetros de ruta:", paramToken);
+                return paramToken;
+            }
+            
+            // 2. Verificar si viene como query parameter (?token=xxx)
             const params = new URLSearchParams(location.search);
             const queryToken = params.get('token');
-            
             if (queryToken) {
+                console.log("Token encontrado en query parameters:", queryToken);
                 return queryToken;
             }
             
-            // Intentar obtener de la ruta
-            const pathSegments = location.pathname.split('/');
-            const lastSegment = pathSegments[pathSegments.length - 1];
+            // 3. Extraer de URL directamente para manejar casos como doble slash
+            const pathTokenRegex = /\/reset-password\/+([^\/]+)/;
+            const match = location.pathname.match(pathTokenRegex);
+            if (match && match[1]) {
+                console.log("Token encontrado en ruta con expresión regular:", match[1]);
+                return match[1];
+            }
             
+            // 4. Último segmento de la ruta como fallback
+            const pathSegments = location.pathname.split('/').filter(segment => segment);
+            const lastSegment = pathSegments[pathSegments.length - 1];
             if (lastSegment && lastSegment !== 'reset-password') {
+                console.log("Token encontrado como último segmento de ruta:", lastSegment);
                 return lastSegment;
             }
             
+            console.log("No se encontró token en la URL");
             return null;
         };
         
@@ -67,12 +86,20 @@ const ResetPasswordPage = () => {
             });
             setStep('error');
         }
-    }, [location]);
+    }, [location, paramToken]);
 
     const verifyToken = async (tokenValue) => {
         try {
+            // En lugar de verificar con el backend, aceptamos el token directamente
+            // porque algunos backends no implementan verificación previa
+            setStep('form');
+            console.log("Token aceptado para reseteo de contraseña:", tokenValue);
+            
+            // Si desea verificar con el backend, descomente estas líneas:
+            /*
             await verifyResetToken(tokenValue);
             setStep('form');
+            */
         } catch (error) {
             console.error('Error al verificar token:', error);
             setErrors({

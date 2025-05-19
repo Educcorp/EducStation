@@ -368,6 +368,8 @@ export const verifyResetToken = async (token) => {
 // Establecer nueva contraseña
 export const resetPassword = async (token, newPassword) => {
   try {
+    console.log('Intentando restablecer contraseña con token:', token.substring(0, 15) + '...');
+    
     const response = await fetch(`${API_URL}/api/auth/password-reset/confirm/`, {
       method: 'POST',
       headers: {
@@ -380,9 +382,23 @@ export const resetPassword = async (token, newPassword) => {
       }),
     });
 
+    // Registrar para depuración
+    console.log('Respuesta del servidor reset password:', 
+      response.status, 
+      response.statusText
+    );
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Error al restablecer la contraseña');
+      // Intentar leer el cuerpo del error
+      let errorMessage = 'Error al restablecer la contraseña';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch (e) {
+        console.error('No se pudo leer el cuerpo del error:', e);
+      }
+      
+      throw new Error(errorMessage);
     }
 
     return await response.json();
