@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx - Actualizado
 import React, { createContext, useState, useEffect } from 'react';
-import { login as loginService, logout as logoutService, refreshToken } from '../services/authService';
+import { login as loginService, logout as logoutService, refreshToken, register as registerService } from '../services/authService';
 
 export const AuthContext = createContext();
 
@@ -106,6 +106,29 @@ export const AuthProvider = ({ children }) => {
     checkAuth();
   }, []);
 
+  // Función para registrar usuarios
+  const registerUser = async (userData) => {
+    setLoading(true);
+    setError(null);
+    try {
+      console.log('AuthContext - Registrando usuario:', {
+        username: userData.username,
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name
+      });
+      const result = await registerService(userData);
+      console.log('AuthContext - Registro exitoso:', result);
+      return result;
+    } catch (error) {
+      console.error('AuthContext - Error en registro:', error);
+      setError(error.message);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loginUser = async (credentials) => {
     setLoading(true);
     setError(null);
@@ -151,6 +174,7 @@ export const AuthProvider = ({ children }) => {
       loading, 
       error,
       isSuperUser,
+      register: registerUser,
       login: loginUser, 
       logout: logoutUser, 
       updateAuthState 
