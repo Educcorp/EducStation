@@ -611,12 +611,12 @@ const Header = () => {
 
                 <div style={styles.menuSeparator}></div>
 
-                {/* Botón de modo oscuro dentro del menú */}
+                {/* Botón de modo oscuro dentro del menú
                 <div style={{ padding: '8px 12px' }}>
                   <ThemeToggle inMenu={true} />
-                </div>
+                </div> */}
 
-                <div style={styles.menuSeparator}></div>
+                {/* <div style={styles.menuSeparator}></div> */}
 
                 {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
                 <Link

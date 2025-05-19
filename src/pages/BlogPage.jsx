@@ -447,7 +447,11 @@ const BlogPage = () => {
           </div>
 
           <div style={styles.categoriesPromo}>
-            <div style={styles.promoPattern}></div>
+            <div style={{
+              ...styles.promoPattern,
+              backgroundColor: 'rgba(255, 255, 255, 0.7)', // Fondo blanco con 70% de opacidad
+              backdropFilter: 'blur(5px)' // Efecto de desenfoque para mayor contraste
+            }}></div>
             <div style={styles.promoContent}>
               <div style={styles.promoIcon}>
                 <FaTags size={28} />
@@ -508,4 +512,4 @@ const BlogPage = () => {
   );
 };
 
-export default BlogPage; 
+export default BlogPage;
