@@ -7,6 +7,7 @@ import { colors, spacing, typography, shadows, borderRadius } from '../styles/th
 const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showSuccessButton, setShowSuccessButton] = useState(false);
   
   // Efecto para forzar la recarga al montar el componente
   useEffect(() => {
@@ -272,9 +273,13 @@ const SettingsPage = () => {
 
   const handleDeleteAccount = () => {
     // Aquí iría la lógica para eliminar la cuenta
-    alert('Cuenta eliminada correctamente');
+    setShowDeleteModal(false);
+    setShowSuccessButton(true);
     localStorage.clear();
     sessionStorage.clear();
+  };
+
+  const handleReturnHome = () => {
     window.location.href = '/';
   };
 
@@ -601,6 +606,78 @@ const SettingsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Botón de éxito después de eliminar cuenta */}
+      {showSuccessButton && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 10000,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div style={{
+            backgroundColor: isDarkMode ? '#2d2d2d' : colors.white,
+            padding: spacing.xl,
+            borderRadius: borderRadius.lg,
+            textAlign: 'center',
+            maxWidth: '400px',
+            width: '90%',
+            boxShadow: shadows.xl,
+            animation: 'modalFadeIn 0.3s ease-out forwards'
+          }}>
+            <div style={{
+              fontSize: '48px',
+              marginBottom: spacing.md,
+              color: colors.success
+            }}>✓</div>
+            <h3 style={{
+              fontSize: typography.fontSize.xl,
+              fontWeight: typography.fontWeight.bold,
+              marginBottom: spacing.md,
+              color: isDarkMode ? colors.white : colors.textPrimary
+            }}>Cuenta Eliminada</h3>
+            <p style={{
+              fontSize: typography.fontSize.md,
+              marginBottom: spacing.xl,
+              color: isDarkMode ? colors.gray300 : colors.textSecondary
+            }}>
+              Tu cuenta ha sido eliminada exitosamente. Gracias por haber sido parte de nuestra comunidad.
+            </p>
+            <button
+              onClick={handleReturnHome}
+              style={{
+                padding: `${spacing.md} ${spacing.xl}`,
+                backgroundColor: colors.primary,
+                color: colors.white,
+                border: 'none',
+                borderRadius: borderRadius.md,
+                fontSize: typography.fontSize.md,
+                fontWeight: typography.fontWeight.medium,
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                width: '100%'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.primaryDark;
+                e.currentTarget.style.transform = 'translateY(-2px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = colors.primary;
+                e.currentTarget.style.transform = 'translateY(0)';
+              }}
+            >
+              Volver al Inicio
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Animaciones CSS */}
       <style dangerouslySetInnerHTML={{
