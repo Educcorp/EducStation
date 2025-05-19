@@ -8,8 +8,11 @@ import { colors, spacing, typography, shadows, borderRadius } from '../styles/th
 
 const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { logout } = useContext(AuthContext); // Obtener logout del contexto
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSuccessButton, setShowSuccessButton] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false); // Para manejar estado de carga
+  const [error, setError] = useState(null); // Para manejar errores
 
   // Efecto para forzar la recarga al montar el componente
   useEffect(() => {
@@ -273,13 +276,28 @@ const SettingsPage = () => {
     </div>
   );
 
-  const handleDeleteAccount = () => {
-    // Aquí iría la lógica para eliminar la cuenta
-    setShowDeleteModal(false);
-    setShowSuccessButton(true);
-    localStorage.clear();
-    sessionStorage.clear();
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      // Llamar a la función de eliminar cuenta
+      await deleteAccount();
+
+      // Si llega aquí, la eliminación fue exitosa
+      setShowDeleteModal(false);
+      setShowSuccessButton(true);
+      logout(); // Asegúrate de llamar al logout del contexto
+    } catch (error) {
+      // Manejar error
+      console.error('Error al eliminar cuenta:', error);
+      setError(error.message || 'Error al eliminar la cuenta');
+      // Opcionalmente mostrar el error en la UI
+    } finally {
+      setIsDeleting(false);
+    }
   };
+
 
   const handleReturnHome = () => {
     window.location.href = '/';
