@@ -155,17 +155,17 @@ export const login = async (credentials) => {
     localStorage.setItem('userToken', data.access);
     localStorage.setItem('accessToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
-    
+
     // Guardar nombre de usuario si está disponible
     if (data.username) {
       localStorage.setItem('userName', data.username);
     }
-    
+
     // Guardar explícitamente el estado de superusuario
     // Asegurarse de que se convierte a string 'true' o 'false'
     const isSuperUser = !!data.is_superuser;
     localStorage.setItem('isSuperUser', isSuperUser ? 'true' : 'false');
-    
+
     console.log('Estado de superusuario guardado:', {
       rawValue: data.is_superuser,
       processed: isSuperUser,
@@ -177,7 +177,7 @@ export const login = async (credentials) => {
       username: data.username,
       is_superuser: isSuperUser
     };
-    
+
     // Si falta información del usuario, obtenerla del servidor
     if (!data.username) {
       try {
@@ -190,11 +190,11 @@ export const login = async (credentials) => {
         if (userResponse.ok) {
           userData = await userResponse.json();
           console.log('Información adicional del usuario:', userData);
-          
+
           // Actualizar localStorage con información completa
           localStorage.setItem('userName', `${userData.first_name} ${userData.last_name}`);
           localStorage.setItem('isSuperUser', userData.is_superuser ? 'true' : 'false');
-          
+
           console.log('LocalStorage actualizado con datos del usuario:', {
             userName: localStorage.getItem('userName'),
             isSuperUser: localStorage.getItem('isSuperUser')
@@ -226,7 +226,7 @@ export const logout = () => {
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userName');
   localStorage.removeItem('isSuperUser');
-  
+
   console.log('Sesión cerrada, localStorage limpiado:', {
     userToken: localStorage.getItem('userToken'),
     accessToken: localStorage.getItem('accessToken'),
@@ -239,12 +239,12 @@ export const logout = () => {
 // Nueva función para actualizar el estado de superusuario desde el servidor
 export const updateSuperUserStatus = async () => {
   const token = localStorage.getItem('userToken') || localStorage.getItem('accessToken');
-  
+
   if (!token) {
     console.warn('No hay token de acceso para actualizar el estado de superusuario');
     return false;
   }
-  
+
   try {
     console.log('Actualizando estado de superusuario desde el servidor...');
     const response = await fetch(`${API_URL}/api/auth/user/`, {
@@ -259,16 +259,16 @@ export const updateSuperUserStatus = async () => {
 
     const userData = await response.json();
     const isSuperUser = userData.is_superuser === true;
-    
+
     // Actualizar en localStorage para mantener consistencia
     localStorage.setItem('isSuperUser', isSuperUser ? 'true' : 'false');
     localStorage.setItem('userToken', token); // Asegurarnos de que también se guarde como userToken
-    
+
     console.log('Estado de superusuario actualizado:', {
       isSuperUser,
       userData
     });
-    
+
     return isSuperUser;
   } catch (error) {
     console.error('Error al actualizar estado de superusuario:', error);
@@ -388,6 +388,39 @@ export const resetPassword = async (token, newPassword) => {
     return await response.json();
   } catch (error) {
     console.error('Error al restablecer contraseña:', error);
+    throw error;
+  }
+};
+
+// Función para eliminar cuenta
+export const deleteAccount = async () => {
+  const token = localStorage.getItem('userToken');
+
+  if (!token) {
+    throw new Error('No hay sesión activa');
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/api/auth/user/`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || 'Error al eliminar la cuenta');
+    }
+
+    // Si la eliminación fue exitosa, limpiamos localStorage
+    localStorage.clear();
+    sessionStorage.clear();
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error al eliminar cuenta:', error);
     throw error;
   }
 };
