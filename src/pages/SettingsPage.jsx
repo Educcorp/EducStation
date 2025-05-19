@@ -276,16 +276,27 @@ const SettingsPage = () => {
     </div>
   );
 
-  const handleDeleteAccount = () => {
-    // Aquí iría la lógica para eliminar la cuenta
-    setShowDeleteModal(false);
-    setShowSuccessButton(true);
-    localStorage.clear();
-    sessionStorage.clear();
-  };
 
-  const handleReturnHome = () => {
-    window.location.href = '/';
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    setError(null);
+
+    try {
+      // Llamar a la función de eliminar cuenta
+      await deleteAccount();
+
+      // Si llega aquí, la eliminación fue exitosa
+      setShowDeleteModal(false);
+      setShowSuccessButton(true);
+      logout(); // Asegúrate de llamar al logout del contexto
+    } catch (error) {
+      // Manejar error
+      console.error('Error al eliminar cuenta:', error);
+      setError(error.message || 'Error al eliminar la cuenta');
+      // Opcionalmente mostrar el error en la UI
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
