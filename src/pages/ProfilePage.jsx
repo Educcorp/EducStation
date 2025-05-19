@@ -6,74 +6,60 @@ import { colors, spacing, typography, shadows, borderRadius } from '../styles/th
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
-
-// Componente de depuración para verificar el estado de autenticación
-const AuthDebugger = () => {
-  const { user, isAuth, isSuperUser } = useContext(AuthContext);
-  
-  return (
-    <div style={{
-      position: 'fixed',
-      bottom: '10px',
-      right: '10px',
-      padding: '10px',
-      background: 'rgba(0,0,0,0.7)',
-      color: 'white',
-      borderRadius: '5px',
-      fontSize: '12px',
-      zIndex: 9999
-    }}>
-      <h4 style={{ margin: '0 0 5px 0' }}>Estado de Autenticación:</h4>
-      <pre style={{ margin: 0 }}>
-        {JSON.stringify({
-          isAuth,
-          userExists: !!user,
-          userName: user?.username || 'N/A',
-          isSuperUser,
-          token: !!localStorage.getItem('userToken')
-        }, null, 2)}
-      </pre>
-    </div>
-  );
-};
+import { getUserProfile, updateUserAvatar } from '../services/userService';
 
 const ProfilePage = () => {
-  const { user } = useContext(AuthContext);
+  const { user, isAuth } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axios.get('/api/auth/user/', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-          }
-        });
+        if (!isAuth) {
+          window.location.href = '/login';
+          return;
+        }
         
+        // Utilizamos el servicio para obtener los datos reales del usuario
+        const userData = await getUserProfile();
+        
+        // Formatear la fecha de registro
+        const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
+        
+        // Crear objeto de perfil con datos reales y algunos predeterminados para campos aún no implementados
         setUserProfile({
-          ...response.data,
-          bio: 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
-          interests: ['Educación', 'Tecnología', 'Ciencia'],
-          socialLinks: {
+          firstName: userData.first_name || 'Usuario',
+          lastName: userData.last_name || '',
+          username: userData.username || 'usuario',
+          email: userData.email || 'usuario@ejemplo.com',
+          role: userData.is_superuser ? 'Administrador' : 'Estudiante',
+          joinDate: joinDate,
+          avatar: userData.avatar || '/assets/images/logoBN.png',
+          bio: userData.bio || 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
+          interests: userData.interests || ['Educación', 'Tecnología', 'Ciencia'],
+          socialLinks: userData.social_links || {
             twitter: 'https://twitter.com/',
             linkedin: 'https://linkedin.com/',
             github: 'https://github.com/'
           }
         });
+        
         setIsLoading(false);
       } catch (error) {
         console.error('Error al cargar el perfil:', error);
+        setErrorMessage('No se pudo cargar el perfil. Por favor, intenta nuevamente.');
         setIsLoading(false);
       }
     };
 
     fetchUserProfile();
-  }, []);
+  }, [isAuth]);
 
   const handleImageClick = () => {
     fileInputRef.current.click();
@@ -88,25 +74,19 @@ const ProfilePage = () => {
         
         reader.onloadend = async () => {
           try {
-            // Actualizar en el backend
-            await axios.put('/api/auth/user/avatar', 
-              { avatarUrl: reader.result },
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem('accessToken')}`
-                }
-              }
-            );
-
+            // Usar el servicio para actualizar el avatar
+            await updateUserAvatar(reader.result);
+            
             // Actualizar en el estado local
             setUserProfile(prev => ({
               ...prev,
               avatar: reader.result
             }));
+            
+            setIsUploading(false);
           } catch (error) {
             console.error('Error al actualizar el avatar:', error);
-            alert('Error al actualizar el avatar. Por favor, intenta de nuevo.');
-          } finally {
+            setErrorMessage('Error al actualizar el avatar. Por favor, intenta de nuevo.');
             setIsUploading(false);
           }
         };
@@ -115,7 +95,7 @@ const ProfilePage = () => {
       } catch (error) {
         console.error('Error al procesar la imagen:', error);
         setIsUploading(false);
-        alert('Error al procesar la imagen. Por favor, intenta de nuevo.');
+        setErrorMessage('Error al procesar la imagen. Por favor, intenta de nuevo.');
       }
     }
   };
@@ -333,7 +313,6 @@ const ProfilePage = () => {
             ></div>
           </div>
         </div>
-        <AuthDebugger />
         <Footer />
         <style>{`
           @keyframes spin {
@@ -349,6 +328,18 @@ const ProfilePage = () => {
     <div style={styles.container}>
       <Header />
       <div style={styles.content}>
+        {errorMessage && (
+          <div style={{
+            backgroundColor: colors.error,
+            color: colors.white,
+            padding: spacing.md,
+            borderRadius: borderRadius.md,
+            marginBottom: spacing.xl,
+            textAlign: 'center'
+          }}>
+            {errorMessage}
+          </div>
+        )}
         <div style={styles.card}>
           <div style={styles.profileHeader}>
             <div 
@@ -505,12 +496,11 @@ const ProfilePage = () => {
           <div style={styles.profileContent}>
             <h2 style={styles.sectionTitle}>Actividad reciente</h2>
             <div style={styles.placeholder}>
-              ¡Esta es una página de perfil de placeholder! Aquí se mostraría la actividad reciente del usuario.
+              Aquí se mostrará la actividad reciente del usuario cuando esta funcionalidad esté disponible.
             </div>
           </div>
         </div>
       </div>
-      <AuthDebugger />
       <Footer />
     </div>
   );
