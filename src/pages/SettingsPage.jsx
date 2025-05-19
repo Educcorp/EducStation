@@ -1,5 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { AuthContext } from '../context/AuthContext';
+import { deleteAccount } from '../services/authService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
@@ -8,12 +10,12 @@ const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSuccessButton, setShowSuccessButton] = useState(false);
-  
+
   // Efecto para forzar la recarga al montar el componente
   useEffect(() => {
     // Verificar si es la primera carga
     const isFirstLoad = !sessionStorage.getItem('settingsPageLoaded');
-    
+
     if (isFirstLoad) {
       // Marcar que ya se cargó la página
       sessionStorage.setItem('settingsPageLoaded', 'true');
@@ -552,8 +554,8 @@ const SettingsPage = () => {
           }}>
             <p>¿Estás seguro de que deseas eliminar tu cuenta de <strong>EducStation</strong>?</p>
             <p>Esta acción es permanente y no se puede deshacer. Se perderán todos tus datos, incluyendo:</p>
-            <ul style={{ 
-              textAlign: 'left', 
+            <ul style={{
+              textAlign: 'left',
               color: isDarkMode ? '#ff9999' : '#cc0000',
               backgroundColor: isDarkMode ? '#441111' : '#ffe0e0',
               padding: spacing.lg,
