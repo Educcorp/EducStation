@@ -111,6 +111,16 @@ const Header = () => {
     const newIsMenuOpen = !isMenuOpen;
     setIsMenuOpen(newIsMenuOpen);
     
+    // Añadir logs para depuración
+    console.log('Estado de autenticación al abrir menú:', {
+      isAuth,
+      user,
+      userName,
+      isSuperUser,
+      token: localStorage.getItem('userToken') || 'No hay token',
+      accessToken: localStorage.getItem('accessToken') || 'No hay accessToken'
+    });
+    
     // Al abrir el menú, verificar el estado de superusuario
     if (newIsMenuOpen && isAuth) {
       updateSuperUserStatus()
@@ -127,6 +137,24 @@ const Header = () => {
         .catch(error => {
           console.error('Error al actualizar estado de superusuario:', error);
         });
+    }
+  };
+
+  // Modificar el manejo del botón de perfil para evitar redirecciones incorrectas
+  const handleProfileNavigation = (path, e = null) => {
+    if (e) e.preventDefault();
+    
+    console.log('Navegando a perfil. Estado de autenticación:', {
+      isAuth,
+      token: !!localStorage.getItem('userToken')
+    });
+    
+    // Solo si está autenticado, ir a la página de perfil
+    if (isAuth && localStorage.getItem('userToken')) {
+      window.location.href = path;
+    } else {
+      console.warn('Usuario no autenticado, redirigiendo a login');
+      window.location.href = '/login';
     }
   };
 
@@ -651,7 +679,7 @@ const Header = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
-                    window.location.href = '/profile';
+                    handleProfileNavigation('/profile');
                   }}
                 >
                   <span style={styles.menuItemIcon}>

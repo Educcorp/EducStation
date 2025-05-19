@@ -7,6 +7,36 @@ import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 
+// Componente de depuración para verificar el estado de autenticación
+const AuthDebugger = () => {
+  const { user, isAuth, isSuperUser } = useContext(AuthContext);
+  
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: '10px',
+      right: '10px',
+      padding: '10px',
+      background: 'rgba(0,0,0,0.7)',
+      color: 'white',
+      borderRadius: '5px',
+      fontSize: '12px',
+      zIndex: 9999
+    }}>
+      <h4 style={{ margin: '0 0 5px 0' }}>Estado de Autenticación:</h4>
+      <pre style={{ margin: 0 }}>
+        {JSON.stringify({
+          isAuth,
+          userExists: !!user,
+          userName: user?.username || 'N/A',
+          isSuperUser,
+          token: !!localStorage.getItem('userToken')
+        }, null, 2)}
+      </pre>
+    </div>
+  );
+};
+
 const ProfilePage = () => {
   const { user } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
@@ -303,6 +333,7 @@ const ProfilePage = () => {
             ></div>
           </div>
         </div>
+        <AuthDebugger />
         <Footer />
         <style>{`
           @keyframes spin {
@@ -479,6 +510,7 @@ const ProfilePage = () => {
           </div>
         </div>
       </div>
+      <AuthDebugger />
       <Footer />
     </div>
   );
