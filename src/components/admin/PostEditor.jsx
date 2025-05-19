@@ -814,7 +814,7 @@ const PostEditor = () => {
           </div>
         </div>
 
-        <div style={{ marginBottom: spacing.md }}>
+        <div style={{ marginBottom: spacing.md, position: 'relative' }}>
           <label style={{
             display: 'block',
             marginBottom: spacing.xs,
@@ -823,25 +823,60 @@ const PostEditor = () => {
           }} htmlFor="tags">
             Etiquetas (separadas por comas)
           </label>
-          <input
-            type="text"
-            id="tags"
-            name="tags"
-            value={post.tags}
-            onChange={handleChange}
-            style={{
+
+          {/* Campo de etiquetas con estilo similar al selector de categorías */}
+          <div style={{
+            position: "relative",
+            width: "100%",
+          }}>
+            <div style={{
               width: "100%",
               padding: spacing.sm,
-              borderRadius: borderRadius.sm,
+              borderRadius: borderRadius.md,
               border: `1px solid ${colors.gray200}`,
+              fontSize: typography.fontSize.md,
               backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
-              color: isDarkMode ? colors.textLight : colors.textPrimary
-            }}
-            placeholder="ej. educación, tecnología, aprendizaje"
-          />
+              transition: "all 0.3s ease",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              color: isDarkMode ? colors.textLight : colors.textPrimary,
+            }}>
+              <input
+                type="text"
+                id="tags"
+                name="tags"
+                value={post.tags}
+                onChange={handleChange}
+                style={{
+                  width: "100%",
+                  border: "none",
+                  outline: "none",
+                  padding: "0",
+                  fontSize: typography.fontSize.md,
+                  backgroundColor: "transparent",
+                  color: isDarkMode ? colors.textLight : colors.textPrimary
+                }}
+                placeholder="ej. educación, tecnología, aprendizaje"
+                onFocus={(e) => {
+                  e.target.parentElement.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
+                }}
+                onBlur={(e) => {
+                  e.target.parentElement.style.boxShadow = 'none';
+                }}
+              />
+              <span style={{
+                marginLeft: spacing.sm,
+                color: colors.gray400,
+                fontSize: "1em"
+              }}>
+                #
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div style={{ marginBottom: spacing.md }}>
+        <div style={{ marginBottom: spacing.md, position: 'relative' }}>
           <label style={{
             display: 'block',
             marginBottom: spacing.xs,
@@ -850,21 +885,55 @@ const PostEditor = () => {
           }} htmlFor="publishDate">
             Fecha de publicación
           </label>
-          <input
-            type="date"
-            id="publishDate"
-            name="publishDate"
-            value={post.publishDate}
-            onChange={handleChange}
-            style={{
+
+          {/* Campo de fecha con estilo similar a categorías y etiquetas */}
+          <div style={{
+            position: "relative",
+            width: "100%",
+          }}>
+            <div style={{
               width: "100%",
               padding: spacing.sm,
-              borderRadius: borderRadius.sm,
+              borderRadius: borderRadius.md,
               border: `1px solid ${colors.gray200}`,
+              fontSize: typography.fontSize.md,
               backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
-              color: isDarkMode ? colors.textLight : colors.textPrimary
-            }}
-          />
+              transition: "all 0.3s ease",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              color: isDarkMode ? colors.textLight : colors.textPrimary,
+            }}>
+              <input
+                type="date"
+                id="publishDate"
+                name="publishDate"
+                value={post.publishDate}
+                onChange={handleChange}
+                style={{
+                  width: "100%",
+                  border: "none",
+                  outline: "none",
+                  padding: "0",
+                  fontSize: typography.fontSize.md,
+                  backgroundColor: "transparent",
+                  color: isDarkMode ? colors.textLight : colors.textPrimary
+                }}
+                onFocus={(e) => {
+                  e.target.parentElement.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
+                }}
+                onBlur={(e) => {
+                  e.target.parentElement.style.boxShadow = 'none';
+                }}
+              />
+              <span style={{
+                marginLeft: spacing.sm,
+                color: colors.gray400,
+                fontSize: "1em"
+              }}>
+              </span>
+            </div>
+          </div>
         </div>
 
         <div style={{ marginBottom: spacing.md }}>
