@@ -4,11 +4,14 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-pr
 // Búsqueda general
 export const searchPublicaciones = async (term, limite = 10, offset = 0) => {
     try {
+        console.log(`Buscando publicaciones con término "${term}"`);
         const response = await fetch(`${API_URL}/api/publicaciones/search?term=${term}&limite=${limite}&offset=${offset}`);
         if (!response.ok) {
-            throw new Error('Error en la búsqueda');
+            throw new Error(`Error en la búsqueda: ${response.status} ${response.statusText}`);
         }
-        return await response.json();
+        const data = await response.json();
+        console.log(`Encontradas ${data.length} publicaciones para el término "${term}"`);
+        return data;
     } catch (error) {
         console.error('Error en searchPublicaciones:', error);
         throw error;
@@ -20,7 +23,7 @@ export const searchByTitle = async (term, limite = 10, offset = 0) => {
     try {
         const response = await fetch(`${API_URL}/api/publicaciones/search/title?term=${term}&limite=${limite}&offset=${offset}`);
         if (!response.ok) {
-            throw new Error('Error en la búsqueda por título');
+            throw new Error(`Error en la búsqueda por título: ${response.status} ${response.statusText}`);
         }
         return await response.json();
     } catch (error) {
@@ -34,7 +37,7 @@ export const searchByContent = async (term, limite = 10, offset = 0) => {
     try {
         const response = await fetch(`${API_URL}/api/publicaciones/search/content?term=${term}&limite=${limite}&offset=${offset}`);
         if (!response.ok) {
-            throw new Error('Error en la búsqueda por contenido');
+            throw new Error(`Error en la búsqueda por contenido: ${response.status} ${response.statusText}`);
         }
         return await response.json();
     } catch (error) {
@@ -46,14 +49,35 @@ export const searchByContent = async (term, limite = 10, offset = 0) => {
 // Búsqueda por etiquetas/categorías
 export const searchByTags = async (categorias, limite = 10, offset = 0) => {
     try {
-        const response = await fetch(`${API_URL}/api/publicaciones/search/tags?categorias=${categorias}&limite=${limite}&offset=${offset}`);
-        if (!response.ok) {
-            throw new Error('Error en la búsqueda por etiquetas');
+        // Aseguramos que categorias siempre sea un string, aunque venga como número o array
+        let categoriasParam;
+        
+        if (Array.isArray(categorias)) {
+            categoriasParam = categorias.join(',');
+        } else {
+            categoriasParam = String(categorias);
         }
-        return await response.json();
+        
+        console.log(`Buscando publicaciones para categoría(s): ${categoriasParam}`);
+        
+        const url = `${API_URL}/api/publicaciones/search/tags?categorias=${categoriasParam}&limite=${limite}&offset=${offset}`;
+        console.log(`URL de búsqueda por categorías: ${url}`);
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            console.error(`Error en respuesta: ${response.status} ${response.statusText}`);
+            throw new Error(`Error en la búsqueda por etiquetas: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log(`Encontradas ${data.length} publicaciones para categoría(s) ${categoriasParam}`);
+        return data;
     } catch (error) {
-        console.error('Error en searchByTags:', error);
-        throw error;
+        console.error(`Error en searchByTags para categoría(s) ${categorias}:`, error);
+        // En caso de error, retornamos un array vacío para no detener el flujo de la aplicación
+        // cuando se están cargando múltiples categorías en paralelo
+        return [];
     }
 };
 
@@ -74,9 +98,12 @@ export const advancedSearch = async (criteria, limite = 10, offset = 0) => {
     params.append('offset', offset);
 
     try {
-        const response = await fetch(`${API_URL}/api/publicaciones/search/advanced?${params.toString()}`);
+        const url = `${API_URL}/api/publicaciones/search/advanced?${params.toString()}`;
+        console.log(`URL de búsqueda avanzada: ${url}`);
+        
+        const response = await fetch(url);
         if (!response.ok) {
-            throw new Error('Error en la búsqueda avanzada');
+            throw new Error(`Error en la búsqueda avanzada: ${response.status} ${response.statusText}`);
         }
         return await response.json();
     } catch (error) {

@@ -1,0 +1,1567 @@
+
+
+Este es el componente de otra rama PostEditor:
+ Hace que funcione la logica de publicar post desde modo avanzado, 
+ pero en diseño no hay nada que quiera cambiar respecto a mi desño actual, 
+ Así que solo analiza la logica manteniendo el diseño actual de el componente PostEditor editor,
+  no de este que te presento, pero implementa la logica de este:
+
+---------------------------------------------------------------------------
+PostEditor
+
+
+
+
+
+
+
+
+
+
+
+// src/components/admin/PostEditor.jsx
+import React, { useState, useEffect } from 'react';
+import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
+import { createPublicacion, createPublicacionFromHTML } from '../../services/publicacionesService';
+import { getAllCategorias } from '../../services/categoriasServices';
+
+// Componentes para el editor
+import DualModeEditor from './DualModeEditor';
+import PostMetadata from './PostMetadata';
+import CoverImageUploader from './CoverImageUploader';
+import StatusMessage from './StatusMessage';
+import ImportExportActions from './ImportExportActions';
+
+// Funciones para almacenamiento local
+const savePostToLocalStorage = (post) => {
+  try {
+    const postToSave = { ...post };
+    // No guardamos la imagen como tal, sino solo la URL de vista previa
+    delete postToSave.coverImage;
+    localStorage.setItem('post_draft', JSON.stringify(postToSave));
+    console.log('Saved to localStorage:', postToSave); // Debug
+  } catch (error) {
+    console.error('Error saving to localStorage:', error);
+  }
+};
+
+const loadPostFromLocalStorage = () => {
+  try {
+    const savedPost = localStorage.getItem('post_draft');
+    return savedPost ? JSON.parse(savedPost) : null;
+  } catch (error) {
+    console.error('Error loading from localStorage:', error);
+    return null;
+  }
+};
+
+// Componente para la etiqueta de Contenido animada
+const ContentLabel = () => {
+  const [isAnimated, setIsAnimated] = useState(false);
+  const { colors, isDarkMode } = useTheme(); // Obtener colores del tema
+  
+  useEffect(() => {
+    // Activar animación después de un breve retraso
+    const timer = setTimeout(() => {
+      setIsAnimated(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  const styles = {
+    container: {
+      display: 'flex',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+      transform: isAnimated ? 'translateX(0)' : 'translateX(-20px)',
+      opacity: isAnimated ? 1 : 0,
+      transition: 'all 0.6s ease-out'
+    },
+    icon: {
+      fontSize: '22px',
+      marginRight: spacing.sm,
+      color: colors?.secondary || '#d2b99a',
+      animation: isAnimated ? 'pulseIcon 2s infinite' : 'none'
+    },
+    label: {
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.semiBold,
+      color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.primary || '#0b4444'), // Ajustar color según el tema
+      position: 'relative',
+      paddingBottom: '3px'
+    },
+    underline: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      width: isAnimated ? '100%' : '0%',
+      height: '2px',
+      backgroundColor: colors?.secondary || '#d2b99a',
+      transition: 'width 0.8s ease-in-out',
+      transitionDelay: '0.3s'
+    },
+    badge: {
+      display: 'inline-block',
+      backgroundColor: isAnimated ? (colors?.primary || '#0b4444') : 'transparent',
+      color: 'white',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.round,
+      fontSize: typography.fontSize.xs,
+      marginLeft: spacing.md,
+      transform: isAnimated ? 'scale(1)' : 'scale(0)',
+      transition: 'all 0.5s ease-out',
+      transitionDelay: '0.6s',
+      boxShadow: isAnimated ? '0 2px 4px rgba(11, 68, 68, 0.2)' : 'none'
+    }
+  };
+  
+  return (
+    <div style={styles.container}>
+      <span style={styles.icon}>📝</span>
+      <h3 style={styles.label}>
+        Contenido
+        <span style={styles.underline}></span>
+      </h3>
+      <span style={styles.badge}>Editor</span>
+    </div>
+  );
+};
+
+const PostEditor = () => {
+  // Estado para el tema
+  const { colors, isDarkMode } = useTheme(); // Extraer colors y isDarkMode
+  
+  // Estado del post
+  const [post, setPost] = useState({
+    title: '',
+    content: '',
+    category: '',
+    coverImage: null,
+    status: 'draft',
+    editorMode: 'simple', // Es importante inicializar este valor
+    previewUrl: null,
+    lastSaved: null
+  });
+  
+  // Otros estados
+  const [categories, setCategories] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [saveMessage, setSaveMessage] = useState(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  // Cargar categorías
+  useEffect(() => {
+    loadCategories();
+    
+    // Cargar borrador del almacenamiento local
+    const savedPost = loadPostFromLocalStorage();
+    if (savedPost) {
+      setPost(prev => ({
+        ...prev,
+        ...savedPost,
+        lastSaved: savedPost.lastSaved || null,
+        // Asegurarnos que editorMode existe y tiene un valor válido
+        editorMode: savedPost.editorMode || 'simple'
+      }));
+    }
+    
+    // Auto-guardado cada 30 segundos
+    const interval = setInterval(() => {
+      saveDraft();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Función para cargar categorías
+  const loadCategories = async () => {
+    try {
+      const data = await getAllCategorias();
+      console.log("Categorías cargadas:", data);
+      if (data && Array.isArray(data)) {
+        setCategories(data);
+      } else {
+        // Si no hay datos o no es un array, usar categorías predeterminadas
+        setCategories([
+          { ID_categoria: 1, Nombre_categoria: 'Noticias' },
+          { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
+          { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
+          { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
+          { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
+          { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
+          { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
+        ]);
+      }
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+      // Usar categorías predeterminadas en caso de error
+      setCategories([
+        { ID_categoria: 1, Nombre_categoria: 'Noticias' },
+        { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
+        { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
+        { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
+        { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
+        { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
+        { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
+      ]);
+    }
+  };
+
+  // Manejador para cambios en los campos del formulario
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    
+    console.log(`Campo ${name} cambió a: ${value}`);
+    
+    if (name === 'editorMode') {
+      console.log(`Modo de editor cambiado a: ${value}`);
+    }
+    
+    setPost(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  // Manejador para cambios en la imagen de portada
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setPost(prev => ({
+        ...prev,
+        coverImage: file,
+        previewUrl: URL.createObjectURL(file)
+      }));
+    }
+  };
+
+  // Autoguardado cuando el contenido cambia
+  useEffect(() => {
+    if (!post.content.length > 0 || !post.title.length > 0) {
+      // console.log('Guardado automático'); // Eliminar o comentar esta línea
+      savePostToLocalStorage(post);
+    }
+  }, [post]);
+  
+  // Guardar como borrador
+  const saveDraft = async () => {
+    // Validación básica
+    if (!post.title.trim()) {
+      setSaveMessage({
+        type: 'error',
+        text: 'Por favor añade un título a tu publicación',
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+      return;
+    }
+    
+    setIsSaving(true);
+    
+    try {
+      // Convertir la categoría seleccionada a un ID numérico si existe
+      let categorias = [];
+      if (post.category) {
+        // Buscar el ID de la categoría seleccionada
+        const categoriaSeleccionada = categories.find(cat => 
+          typeof cat === 'object' ? cat.Nombre_categoria === post.category : cat === post.category
+        );
+        
+        if (typeof categoriaSeleccionada === 'object' && categoriaSeleccionada.ID_categoria) {
+          categorias = [categoriaSeleccionada.ID_categoria];
+        } else if (post.category) {
+          // Si no encontramos el ID pero hay una categoría seleccionada, usamos 1 como valor predeterminado
+          console.warn("No se pudo encontrar el ID de la categoría, usando valor predeterminado");
+          categorias = [1];
+        }
+      }
+      
+      // Preparar los datos para el backend
+      const postData = {
+        titulo: post.title,
+        contenido: post.content,
+        resumen: post.title.substring(0, 150), // Usar parte del título como resumen
+        estado: 'borrador',
+        categorias: categorias
+      };
+      
+      console.log("Guardando borrador con datos:", postData);
+      
+      // Guardar en el backend
+      const result = await createPublicacion(postData);
+      
+      // Guardar en localStorage como respaldo
+      savePostToLocalStorage(post);
+      
+      setIsSaving(false);
+      setSaveMessage({
+        type: 'success',
+        text: 'Borrador guardado correctamente',
+        icon: '✓'
+      });
+      
+      // Limpiar mensaje después de unos segundos
+      setTimeout(() => setSaveMessage(null), 3000);
+    } catch (error) {
+      console.error('Error al guardar borrador:', error);
+      setIsSaving(false);
+      setSaveMessage({
+        type: 'error',
+        text: `Error al guardar: ${error.message}`,
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
+  };
+
+  // Publicar el post
+  const publishPost = async () => {
+    // Validación básica
+    if (!post.title.trim() || !post.content.trim() || !post.category) {
+      setSaveMessage({
+        type: 'error',
+        text: 'Por favor completa al menos el título, categoría y contenido del post',
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+      return;
+    }
+    
+    setIsPublishing(true);
+    
+    try {
+      // Convertir la categoría seleccionada a un ID numérico
+      // Buscar el ID de la categoría seleccionada
+      const categoriaSeleccionada = categories.find(cat => 
+        typeof cat === 'object' ? cat.Nombre_categoria === post.category : cat === post.category
+      );
+      
+      let categoriaId;
+      if (typeof categoriaSeleccionada === 'object' && categoriaSeleccionada.ID_categoria) {
+        categoriaId = categoriaSeleccionada.ID_categoria;
+      } else {
+        // Si no encontramos el ID, usamos 1 como valor predeterminado (asumiendo que existe)
+        console.warn("No se pudo encontrar el ID de la categoría, usando valor predeterminado");
+        categoriaId = 1;
+      }
+      
+      // Preparar los datos para el backend
+      const postData = {
+        titulo: post.title,
+        contenido: post.content,
+        resumen: post.title.substring(0, 150), // Usar parte del título como resumen
+        estado: 'publicado',
+        categorias: [categoriaId] // Usar el ID numérico de la categoría
+      };
+      
+      console.log("Enviando publicación con datos:", postData);
+      
+      // Determinar qué endpoint usar según el modo del editor
+      let result;
+      if (post.editorMode === 'html') {
+        console.log("Usando endpoint HTML con contenido HTML de longitud:", post.content.length);
+        console.log("Muestra del contenido HTML:", post.content.substring(0, 150) + "...");
+        
+        // Verificar que el contenido no sea vacío o solo espacios
+        if (!post.content.trim()) {
+          throw new Error("El contenido HTML está vacío o solo contiene espacios");
+        }
+        
+        // Verificar que el contenido tenga etiquetas HTML válidas
+        if (!post.content.includes("<") || !post.content.includes(">")) {
+          console.warn("El contenido no parece contener etiquetas HTML válidas");
+        }
+        
+        result = await createPublicacionFromHTML({
+          titulo: postData.titulo,
+          htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
+          resumen: postData.resumen,
+          estado: postData.estado,
+          categorias: postData.categorias
+        });
+      } else {
+        result = await createPublicacion(postData);
+      }
+      
+      setIsPublishing(false);
+      setPost(prev => ({ ...prev, status: 'published' }));
+      setSaveMessage({
+        type: 'success',
+        text: '¡Post publicado correctamente!',
+        icon: '🎉'
+      });
+      
+      // Limpiar mensaje después de unos segundos
+      setTimeout(() => setSaveMessage(null), 3000);
+      
+      // Limpieza del borrador en localStorage después de publicar
+      localStorage.removeItem('post_draft');
+    } catch (error) {
+      console.error('Error al publicar:', error);
+      setIsPublishing(false);
+      setSaveMessage({
+        type: 'error',
+        text: `Error al publicar: ${error.message}`,
+        icon: '✖'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    }
+  };
+
+  // Exportar el post a HTML para descargar
+  const exportToFile = () => {
+    // Crear un objeto de texto para descargar
+    const content = post.content;
+    
+    const blob = new Blob([content], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    // Crear un enlace de descarga y hacer clic en él
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${post.title.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.html`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Limpiar
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Mostrar mensaje de éxito
+    setSaveMessage({
+      type: 'success',
+      text: `Archivo HTML descargado correctamente`,
+      icon: '📥'
+    });
+    
+    setTimeout(() => setSaveMessage(null), 3000);
+  };
+
+  // Importar un archivo HTML
+  const importFile = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target.result;
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+      
+      // Verificar que sea HTML
+      const isHTML = fileExtension === 'html' || fileExtension === 'htm';
+      
+      if (isHTML) {
+        // Extraer el título del documento HTML si existe
+        const titleMatch = content.match(/<title>(.*?)<\/title>/i);
+        const title = titleMatch ? titleMatch[1] : '';
+        
+        // Actualizar el estado con el contenido HTML
+        setPost(prevPost => ({
+          ...prevPost,
+          title: title || prevPost.title,
+          content: content,
+          editorMode: 'html'
+        }));
+      } else {
+        // Informar que solo se permiten archivos HTML
+        setSaveMessage({
+          type: 'error',
+          text: 'Solo se permiten archivos HTML (.html, .htm)',
+          icon: '⚠️'
+        });
+        
+        setTimeout(() => setSaveMessage(null), 3000);
+        return;
+      }
+      
+      // Mostrar mensaje de éxito
+      setSaveMessage({
+        type: 'success',
+        text: `Archivo HTML importado correctamente`,
+        icon: '📤'
+      });
+      
+      setTimeout(() => setSaveMessage(null), 3000);
+    };
+    
+    reader.readAsText(file);
+  };
+
+  // Estilos CSS
+  const styles = {
+    container: {
+      maxWidth: "1200px",
+      margin: "0 auto",
+      padding: `${"100px"} ${spacing.md}`,
+      fontFamily: typography.fontFamily
+    },
+    editorContainer: {
+      display: "grid",
+      // Cambiado: Invertir el orden de las columnas para que la barra lateral esté a la izquierda
+      gridTemplateColumns: "300px 1fr",
+      gap: spacing.xl,
+      marginBottom: spacing.xxl,
+      '@media (max-width: 768px)': {
+        gridTemplateColumns: "1fr"
+      }
+    },
+    mainEditor: {
+      width: "100%",
+      maxWidth: "800px" // Anchura predefinida para el contenido del post
+    },
+    sidebar: {
+      // No necesita cambios específicos de estilo aquí
+    },
+    formGroup: {
+      marginBottom: spacing.lg
+    },
+    actionsContainer: {
+      display: "flex",
+      justifyContent: "space-between", 
+      gap: spacing.md,
+      marginTop: spacing.xl
+    },
+    actionButton: {
+      padding: `${spacing.sm} ${spacing.lg}`,
+      borderRadius: borderRadius.md,
+      fontWeight: typography.fontWeight.medium,
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      fontSize: typography.fontSize.md,
+      border: "none",
+      // Estilos específicos se aplicarán en cada botón
+    },
+    saveButton: {
+      backgroundColor: colors?.secondary || '#d2b99a',
+      color: colors?.primary || '#0b4444',
+      "&:hover": {
+        backgroundColor: (colors?.secondary || '#d2b99a') + "cc", // Añadir transparencia al hover
+      }
+    },
+    publishButton: {
+      backgroundColor: colors?.primary || '#0b4444',
+      color: colors?.white || '#ffffff',
+      "&:hover": {
+        backgroundColor: colors?.primaryLight || '#166363',
+      }
+    }
+  };
+
+  // Modificar el componente PostMetadata para usar las categorías cargadas
+  const renderPostMetadata = () => {
+    return (
+      <div style={{
+        marginTop: spacing.lg,
+        backgroundColor: isDarkMode ? (colors?.backgroundDarkSecondary || '#1a3838') : (colors?.white || '#ffffff'),
+        padding: spacing.md,
+        borderRadius: borderRadius.md,
+        boxShadow: shadows.sm
+      }}>
+        <h3 style={{
+          fontSize: typography.fontSize.lg,
+          fontWeight: typography.fontWeight.semiBold,
+          marginBottom: spacing.md,
+          color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.primary || '#0b4444')
+        }}>Detalles de la publicación</h3>
+        
+        <div style={{ marginBottom: spacing.md }}>
+          <label style={{
+            display: 'block',
+            marginBottom: spacing.xs,
+            fontWeight: typography.fontWeight.medium,
+            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+          }} htmlFor="category">
+            Categoría
+          </label>
+          <select
+            id="category"
+            name="category"
+            value={post.category}
+            onChange={handleInputChange}
+            style={{
+              width: "100%",
+              padding: spacing.sm,
+              borderRadius: borderRadius.sm,
+              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
+              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
+              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+            }}
+          >
+            <option value="">Seleccionar categoría</option>
+            {categories.map((cat) => (
+              <option 
+                key={cat.ID_categoria} 
+                value={cat.Nombre_categoria}
+              >
+                {cat.Nombre_categoria}
+              </option>
+            ))}
+          </select>
+        </div>
+        
+        <div style={{ marginBottom: spacing.md }}>
+          <label style={{
+            display: 'block',
+            marginBottom: spacing.xs,
+            fontWeight: typography.fontWeight.medium,
+            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+          }} htmlFor="tags">
+            Etiquetas (separadas por comas)
+          </label>
+          <input
+            type="text"
+            id="tags"
+            name="tags"
+            value={post.tags}
+            onChange={handleInputChange}
+            style={{
+              width: "100%",
+              padding: spacing.sm,
+              borderRadius: borderRadius.sm,
+              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
+              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
+              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+            }}
+            placeholder="ej. educación, tecnología, aprendizaje"
+          />
+        </div>
+        
+        <div style={{ marginBottom: spacing.md }}>
+          <label style={{
+            display: 'block',
+            marginBottom: spacing.xs,
+            fontWeight: typography.fontWeight.medium,
+            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+          }} htmlFor="publishDate">
+            Fecha de publicación
+          </label>
+          <input
+            type="date"
+            id="publishDate"
+            name="publishDate"
+            value={post.publishDate}
+            onChange={handleInputChange}
+            style={{
+              width: "100%",
+              padding: spacing.sm,
+              borderRadius: borderRadius.sm,
+              border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
+              backgroundColor: isDarkMode ? (colors?.backgroundDark || '#0f2e2e') : (colors?.white || '#ffffff'),
+              color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+            }}
+          />
+        </div>
+        
+        <div style={{ marginBottom: spacing.md }}>
+          <label style={{
+            display: 'block',
+            marginBottom: spacing.xs,
+            fontWeight: typography.fontWeight.medium,
+            color: isDarkMode ? (colors?.textLight || '#e0e0e0') : (colors?.textPrimary || '#333333')
+          }}>
+            Estado actual
+          </label>
+          <div style={{
+            display: 'inline-block',
+            padding: `${spacing.xs} ${spacing.sm}`,
+            backgroundColor: post.status === 'draft' ? (colors?.warning || '#f6c23e') : (colors?.success || '#1cc88a'),
+            color: colors?.white || '#ffffff',
+            borderRadius: borderRadius.sm,
+            fontSize: typography.fontSize.sm,
+            fontWeight: typography.fontWeight.medium
+          }}>
+            {post.status === 'draft' ? 'Borrador' : 'Publicado'}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Solo renderizar una vez inicializado para evitar problemas de redimensión
+  if (!categories.length) {
+    return <div style={styles.container}>Cargando categorías...</div>;
+  }
+
+  return (
+    <div style={styles.container}>
+      {/* Estilos CSS en línea para animaciones */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes pulseIcon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes shine {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+          }
+        `
+      }} />
+
+      <div style={styles.editorContainer}>
+        {/* Sidebar - Ahora a la izquierda */}
+        <div style={styles.sidebar}>
+          <CoverImageUploader 
+            coverImagePreview={post.previewUrl} 
+            onChange={handleImageChange} 
+          />
+
+          {renderPostMetadata()}
+          
+          <ImportExportActions 
+            onExport={exportToFile} 
+            onImport={importFile}
+          />
+        </div>
+
+        {/* Main Editor - Ahora a la derecha */}
+        <div style={styles.mainEditor}>
+          <div style={styles.formGroup}>
+            <label style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: spacing.xs,
+              marginBottom: spacing.xs,
+              fontWeight: typography.fontWeight.medium,
+              color: isDarkMode ? colors.textLight : colors.primary
+            }} htmlFor="title">
+              <span style={{color: isDarkMode ? colors.textLight : colors.primary, fontSize: '1.4em'}}>📝</span> Título del post
+            </label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={post.title}
+              onChange={handleInputChange}
+              style={{
+                width: "100%",
+                padding: spacing.md,
+                borderRadius: borderRadius.md,
+                border: `1px solid ${colors?.gray200 || '#e9e9e9'}`,
+                fontSize: typography.fontSize.lg,
+                transition: "all 0.3s ease",
+                marginBottom: spacing.md,
+                fontWeight: typography.fontWeight.semiBold,
+                borderLeft: `4px solid ${colors?.primary || '#0b4444'}`,
+                backgroundColor: colors?.white || '#ffffff',
+                color: isDarkMode ? (colors?.textPrimary || '#333333') : "#000000",
+              }}
+              placeholder="Escribe un título atractivo"
+              onFocus={(e) => {
+                e.target.style.boxShadow = `0 0 0 2px ${colors?.primary || '#0b4444'}30`;
+                e.target.style.borderLeft = `4px solid ${colors?.secondary || '#d2b99a'}`;
+              }}
+              onBlur={(e) => {
+                e.target.style.boxShadow = 'none';
+                e.target.style.borderLeft = `4px solid ${colors?.primary || '#0b4444'}`;
+              }}
+            />
+          </div>
+
+          <div style={styles.formGroup}>
+            {/* Etiqueta "Contenido" animada */}
+            <ContentLabel />
+            
+            <DualModeEditor 
+              content={post.content}
+              onChange={handleInputChange}
+              initialMode={post.editorMode}
+            />
+          </div>
+
+          {saveMessage && (
+            <StatusMessage 
+              type={saveMessage.type} 
+              text={saveMessage.text} 
+              icon={saveMessage.icon} 
+            />
+          )}
+
+          <div style={styles.actionsContainer}>
+            <button 
+              onClick={saveDraft}
+              disabled={isSaving}
+              style={{
+                ...styles.actionButton,
+                ...styles.saveButton
+              }}
+            >
+              {isSaving ? 'Guardando...' : 'Guardar borrador'}
+            </button>
+            
+            <button 
+              onClick={publishPost}
+              disabled={isPublishing}
+              style={{
+                ...styles.actionButton,
+                ...styles.publishButton
+              }}
+            >
+              {isPublishing ? 'Publicando...' : 'Publicar post'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PostEditor;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+----------------------------------------------------
+
+Este es el componente de otra rama DualModeEditor:
+ Hace que funcione la logica de publicar post desde modo avanzado, 
+ pero en diseño no hay nada que quiera cambiar respecto a mi desño actual, 
+ Así que solo analiza la logica manteniendo el diseño actual de el componente DualModeEditor editor,
+  no de este que te presento, pero implementa la logica de este:
+
+
+
+-------------------------------------------------------------------------------------------
+DualModeEditor
+
+
+
+
+
+
+
+
+
+
+
+import React, { useRef, useState, useEffect } from 'react';
+import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
+import EditorToolbar from './EditorToolbar';
+import { insertHTML } from './utils/editorUtils';
+import HTMLPreview from './HTMLPreview';
+import SyntaxHighlighter from './SyntaxHighlighter';
+import SimpleEditor from './SimpleEditor';
+import ImportExportActions from './ImportExportActions';
+
+const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, onImport }) => {
+  const textAreaRef = useRef(null);
+  const [mode, setMode] = useState('simple'); // Siempre comenzar con modo simple
+  const [activeTab, setActiveTab] = useState('code'); // Para el modo desarrollador
+  const [internalContent, setInternalContent] = useState(content || '');
+  const [isHighlightingEnabled, setIsHighlightingEnabled] = useState(true);
+  const [simpleContent, setSimpleContent] = useState(content || '');
+  const [showDeveloperModal, setShowDeveloperModal] = useState(false);
+  const [hoveredElement, setHoveredElement] = useState(null);
+
+  // Actualizar contenido cuando cambia externamente
+  useEffect(() => {
+    setInternalContent(content || '');
+    setSimpleContent(content || '');
+  }, [content]);
+
+  // Manejar acciones de la barra de herramientas para el modo desarrollador
+  const handleToolbarAction = (actionType, placeholder) => {
+    if (mode === 'simple') {
+      return;
+    }
+    
+    const newContent = insertHTML(
+      internalContent,
+      actionType,
+      placeholder,
+      textAreaRef.current
+    );
+    updateContent(newContent);
+  };
+
+  // Actualizar contenido según el modo actual
+  const updateContent = (newContent) => {
+    setInternalContent(newContent);
+    
+    // Notificar al componente padre sobre el cambio
+    const event = {
+      target: {
+        name: 'content',
+        value: newContent
+      }
+    };
+    console.log('DualModeEditor - updateContent: Actualizando contenido del editor', newContent.substring(0, 50) + '...');
+    onChange(event);
+  };
+
+  // Manejar cambio de modo entre simple y desarrollador
+  const handleModeToggle = (newMode) => {
+    console.log('DualModeEditor - handleModeToggle: Cambiando modo de', mode, 'a', newMode);
+    
+    if (newMode === 'developer' && mode === 'simple') {
+      setShowDeveloperModal(true);
+      return;
+    }
+    
+    setMode(newMode);
+    
+    // Resetear pestañas a vista de código al cambiar a modo desarrollador
+    if (newMode === 'developer') {
+      setActiveTab('code');
+    }
+    
+    // Notificar al componente padre sobre el cambio de modo
+    const event = {
+      target: {
+        name: 'editorMode',
+        value: newMode === 'developer' ? 'html' : 'simple'
+      }
+    };
+    console.log('DualModeEditor - handleModeToggle: Notificando cambio de modo al padre:', event.target.value);
+    onChange(event);
+  };
+
+  // Confirmar cambio al modo desarrollador
+  const confirmDeveloperMode = () => {
+    console.log('DualModeEditor - confirmDeveloperMode: Confirmando cambio a modo HTML');
+    setShowDeveloperModal(false);
+    setMode('developer');
+    
+    // Notificar al componente padre sobre el cambio de modo
+    const event = {
+      target: {
+        name: 'editorMode',
+        value: 'html'
+      }
+    };
+    console.log('DualModeEditor - confirmDeveloperMode: Notificando cambio de modo al padre:', event.target.value);
+    onChange(event);
+  };
+
+  // Cancelar cambio al modo desarrollador
+  const cancelDeveloperMode = () => {
+    setShowDeveloperModal(false);
+  };
+
+  // Manejar cambios en el área de texto
+  const handleTextAreaChange = (e) => {
+    console.log('DualModeEditor - handleTextAreaChange llamado con valor:', 
+      e.target.value ? `"${e.target.value.substring(0, 50)}..."` : 'vacío');
+    
+    // Asegurar que no estamos estableciendo a null o undefined
+    const newContent = e.target.value || '';
+    setInternalContent(newContent);
+    
+    // Crear un evento limpio con el contenido adecuado
+    const cleanEvent = {
+      target: {
+        name: 'content',
+        value: newContent
+      }
+    };
+    
+    console.log('DualModeEditor - notificando al padre con contenido de longitud:', newContent.length);
+    onChange(cleanEvent);
+  };
+
+  // Manejar cambios en el contenido del editor simple
+  const handleSimpleContentChange = (newContent) => {
+    setSimpleContent(newContent);
+    
+    // Notificar al componente padre sobre el cambio
+    const event = {
+      target: {
+        name: 'content',
+        value: newContent
+      }
+    };
+    onChange(event);
+  };
+
+  // Alternar resaltado de sintaxis
+  const toggleSyntaxHighlighting = () => {
+    setIsHighlightingEnabled(!isHighlightingEnabled);
+  };
+
+  // Manejar el pegado de contenido en el textarea
+  const handlePaste = (e) => {
+    if (mode !== 'developer') return;
+    
+    console.log('DualModeEditor - Contenido pegado detectado');
+    
+    // En caso de que algo salga mal, guardamos el evento original
+    const originalEvent = e;
+    
+    try {
+      // Obtener el contenido pegado del portapapeles
+      const clipboardData = e.clipboardData || window.clipboardData;
+      const pastedData = clipboardData.getData('text');
+      
+      console.log('DualModeEditor - Contenido pegado longitud:', pastedData.length);
+      console.log('DualModeEditor - Muestra del contenido pegado:', 
+        pastedData.substring(0, 100) + (pastedData.length > 100 ? '...' : ''));
+      
+      // Actualizar el estado interno con el contenido pegado
+      if (pastedData) {
+        // No prevenimos el comportamiento por defecto para que el textarea maneje el pegado
+        // normalmente, pero luego aseguramos que nuestro estado se actualice correctamente
+        setTimeout(() => {
+          if (textAreaRef.current) {
+            const newContent = textAreaRef.current.value;
+            updateContent(newContent);
+          }
+        }, 0);
+      }
+    } catch (error) {
+      console.error('Error al manejar el pegado:', error);
+      // Si hay un error, dejamos que el comportamiento por defecto maneje el pegado
+    }
+  };
+  
+  // Actualizar la referencia al componente del textarea para acceder al 
+  // contenido directamente
+  useEffect(() => {
+    if (mode === 'developer' && !isHighlightingEnabled && textAreaRef.current) {
+      // Añadir el manejador de eventos de pegado
+      textAreaRef.current.addEventListener('paste', handlePaste);
+      
+      return () => {
+        if (textAreaRef.current) {
+          textAreaRef.current.removeEventListener('paste', handlePaste);
+        }
+      };
+    }
+  }, [mode, isHighlightingEnabled]);
+
+  // Estilos para el editor
+  const styles = {
+    editorContainer: {
+      position: 'relative',
+      border: `1px solid ${colors.gray200}`,
+      borderRadius: borderRadius.md,
+      overflow: 'hidden',
+      boxShadow: shadows.sm,
+      maxWidth: '960px',
+      margin: '0 auto',
+    },
+    editorHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      borderBottom: `1px solid ${colors.gray200}`,
+      backgroundColor: '#F8F9FA',
+      height: '44px',
+      alignItems: 'center'
+    },
+    modeToggle: {
+      display: 'flex',
+      alignItems: 'center',
+      padding: `${spacing.xs} ${spacing.md}`,
+      fontSize: typography.fontSize.sm,
+      gap: spacing.sm,
+      marginLeft: spacing.md
+    },
+    iconButton: {
+      width: '42px',
+      height: '42px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: mode === 'developer' ? '#E34C26' : 'transparent',
+      border: 'none',
+      borderRadius: borderRadius.circle,
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      color: mode === 'developer' ? '#FFFFFF' : colors.textSecondary,
+      marginRight: spacing.md
+    },
+    tabsContainer: {
+      display: 'flex'
+    },
+    tab: {
+      padding: `${spacing.sm} ${spacing.xl}`,
+      cursor: 'pointer',
+      border: 'none',
+      background: 'none',
+      fontWeight: typography.fontWeight.medium,
+      fontSize: typography.fontSize.md,
+      color: colors.textSecondary,
+      borderBottom: '2px solid transparent',
+      transition: 'all 0.2s ease',
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs
+    },
+    activeTab: {
+      color: '#E34C26', // Color HTML
+      borderBottom: `2px solid #E34C26` // Color HTML
+    },
+    editorContent: {
+      backgroundColor: '#f9fafb',
+      borderRadius: `0 0 ${borderRadius.md} ${borderRadius.md}`,
+      padding: spacing.sm,
+      border: 'none'
+    },
+    autoSaveIndicator: {
+      position: 'absolute',
+      bottom: '10px',
+      right: '10px',
+      backgroundColor: mode === 'developer' ? '#E34C26' : '#4CAF50',
+      color: colors.white,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      fontSize: typography.fontSize.xs,
+      opacity: 0.7
+    },
+    modeBadge: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '24px',
+      height: '24px',
+      borderRadius: borderRadius.circle,
+      fontSize: typography.fontSize.xs,
+      backgroundColor: mode === 'developer' ? '#E34C26' : '#4CAF50',
+      color: '#FFFFFF',
+      marginLeft: spacing.sm,
+      boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+      marginRight: spacing.lg
+    },
+    highlighterToggle: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginRight: spacing.md
+    },
+    switchContainer: {
+      display: 'flex',
+      alignItems: 'center',
+      cursor: 'pointer',
+    },
+    switchLabel: {
+      fontSize: typography.fontSize.sm,
+      color: colors.textSecondary,
+      marginRight: spacing.xs,
+    },
+    switch: {
+      position: 'relative',
+      display: 'inline-block',
+      width: '40px',
+      height: '20px',
+    },
+    switchInput: {
+      opacity: 0,
+      width: 0,
+      height: 0,
+    },
+    switchSlider: {
+      position: 'absolute',
+      cursor: 'pointer',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: colors.gray200,
+      transition: '0.4s',
+      borderRadius: '20px',
+    },
+    switchThumb: (isActive) => ({
+      position: 'absolute',
+      cursor: 'pointer',
+      content: '""',
+      height: '16px',
+      width: '16px',
+      left: isActive ? '22px' : '2px',
+      bottom: '2px',
+      backgroundColor: colors.white,
+      transition: '0.4s',
+      borderRadius: '50%',
+    }),
+    // Para el editor simple
+    simpleEditorContainer: {
+      height: '600px',
+      backgroundColor: colors.white,
+      borderRadius: borderRadius.md,
+      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)',
+      padding: 0,
+      overflow: 'auto'
+    },
+    tabIcon: {
+      width: '18px',
+      height: '18px',
+      marginRight: spacing.xs
+    },
+    // Modal de confirmación para modo desarrollador
+    modalOverlay: {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000
+    },
+    modalContent: {
+      backgroundColor: colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      width: '90%',
+      maxWidth: '500px',
+      boxShadow: shadows.lg,
+      position: 'relative',
+      animation: 'fadeIn 0.3s ease-out'
+    },
+    modalTitle: {
+      fontSize: typography.fontSize.xl,
+      fontWeight: typography.fontWeight.semiBold,
+      marginBottom: spacing.lg,
+      color: colors.primary,
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.sm
+    },
+    modalText: {
+      marginBottom: spacing.lg,
+      lineHeight: 1.6,
+      color: colors.textPrimary
+    },
+    modalButtons: {
+      display: 'flex',
+      justifyContent: 'flex-end',
+      gap: spacing.md,
+      marginTop: spacing.xl
+    },
+    modalButton: (isPrimary) => ({
+      padding: `${spacing.sm} ${spacing.xl}`,
+      backgroundColor: isPrimary ? '#E34C26' : colors.gray200,
+      color: isPrimary ? colors.white : colors.textPrimary,
+      border: 'none',
+      borderRadius: borderRadius.md,
+      cursor: 'pointer',
+      fontWeight: typography.fontWeight.medium,
+      transition: 'all 0.3s ease',
+      '&:hover': {
+        backgroundColor: isPrimary ? '#d13a1e' : colors.gray300,
+        transform: 'translateY(-2px)'
+      }
+    }),
+    warningIcon: {
+      fontSize: '24px',
+      color: '#E34C26'
+    },
+    codeIcon: {
+      fontSize: '20px',
+      color: mode === 'developer' ? '#FFFFFF' : colors.textSecondary,
+    },
+    tooltip: {
+      position: 'absolute',
+      top: '-15%',
+      left: '50%', // Centra horizontalmente
+      transform: 'translateX(-50%)', // Ajusta el tooltip al centro del botón
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      color: colors.white,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      fontSize: typography.fontSize.xs,
+      whiteSpace: 'nowrap',
+      visibility: hoveredElement === 'codeButton' ? 'visible' : 'hidden',
+      opacity: hoveredElement === 'codeButton' ? 1 : 0,
+      transition: 'all 0.3s ease',
+      zIndex: 9999, // Asegura que el tooltip esté al frente
+      marginTop: spacing.xs,
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Añade un efecto de sombra para mayor visibilidad
+    }
+  };
+
+  return (
+    <div style={styles.editorContainer}>
+      {/* Estilos de animación */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes ripple {
+            0% { transform: scale(0); opacity: 0.7; }
+            100% { transform: scale(2.5); opacity: 0; }
+          }
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+          }
+        `
+      }} />
+      
+      <div style={styles.editorHeader}>
+        {/* Nombre del editor a la izquierda */}
+        <div style={{ 
+          fontWeight: typography.fontWeight.medium,
+          color: colors.textSecondary,
+          fontSize: typography.fontSize.sm,
+          marginLeft: spacing.md,
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          {mode === 'developer' ? 'Editor HTML' : 'Editor'}
+        </div>
+        
+        {/* Controles de la sección derecha */}
+        <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>
+          {/* Toggle de Resaltado para modo desarrollador */}
+          {mode === 'developer' && (
+            <div style={styles.highlighterToggle}>
+              <div 
+                style={styles.switchContainer}
+                onClick={toggleSyntaxHighlighting}
+              >
+                <span style={styles.switchLabel}>Resaltado:</span>
+                <div style={styles.switch}>
+                  <input 
+                    type="checkbox" 
+                    checked={isHighlightingEnabled}
+                    style={styles.switchInput}
+                    readOnly
+                  />
+                  <span 
+                    style={{
+                      ...styles.switchSlider,
+                      backgroundColor: isHighlightingEnabled ? '#E34C26' : colors.gray200
+                    }}
+                  >
+                    <span style={styles.switchThumb(isHighlightingEnabled)} />
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Botón de modo con ícono (ahora a la derecha) */}
+          <div style={{...styles.modeToggle, marginLeft: 'auto', marginRight: spacing.md}}>
+            <button
+              style={{
+                ...styles.iconButton,
+                ...(hoveredElement === 'codeButton' ? {
+                  backgroundColor: mode === 'developer' ? '#d13a1e' : 'rgba(227, 76, 38, 0.1)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 3px 8px rgba(227, 76, 38, 0.3)'
+                } : {})
+              }}
+              onClick={() => handleModeToggle(mode === 'simple' ? 'developer' : 'simple')}
+              onMouseEnter={() => setHoveredElement('codeButton')}
+              onMouseLeave={() => setHoveredElement(null)}
+            >
+              <div style={styles.buttonRipple}></div>
+              <span style={{
+                ...styles.codeIcon,
+                animation: hoveredElement === 'codeButton' ? 'pulse 1s infinite' : 'none'
+              }}>&lt;/&gt;</span>
+              <span style={styles.tooltip}>{mode === 'developer' ? 'Volver al editor simple' : 'Modo HTML (avanzado)'}</span>
+            </button>
+          </div>
+          
+          {/* Las pestañas se han movido a la sección editorContent */}
+        </div>
+      </div>
+
+      <div style={styles.editorContent}>
+        {/* Selector de pestañas para modo desarrollador */}
+        {mode === 'developer' && (
+          <div style={{
+            display: 'flex',
+            borderBottom: `1px solid ${colors.gray200}`,
+            backgroundColor: '#f9fafb'
+          }}>
+            <button
+              style={{
+                ...styles.tab,
+                ...(activeTab === 'code' ? styles.activeTab : {})
+              }}
+              onClick={() => setActiveTab('code')}
+            >
+              <img src="/assets/images/icons/CODE_icon.png" alt="Code" style={styles.tabIcon} />
+              <span>Code</span>
+            </button>
+            <button
+              style={{
+                ...styles.tab,
+                ...(activeTab === 'preview' ? styles.activeTab : {})
+              }}
+              onClick={() => setActiveTab('preview')}
+            >
+              <img src="/assets/images/icons/PREVIEW_icon.png" alt="Preview" style={styles.tabIcon} />
+              <span>Preview</span>
+            </button>
+          </div>
+        )}
+
+        {/* Modo Desarrollador */}
+        {mode === 'developer' && (
+          <>
+            {activeTab === 'code' && (
+              <>
+                <EditorToolbar 
+                  onInsertMarkdown={handleToolbarAction} 
+                  mode="html"
+                />
+                
+                {isHighlightingEnabled ? (
+                  <SyntaxHighlighter
+                    content={internalContent}
+                    onChange={handleTextAreaChange}
+                    textAreaRef={textAreaRef}
+                  />
+                ) : (
+                  <textarea
+                    ref={textAreaRef}
+                    value={internalContent}
+                    onChange={handleTextAreaChange}
+                    onPaste={handlePaste}
+                    style={{
+                      width: '100%',
+                      height: '600px',
+                      padding: spacing.md,
+                      backgroundColor: '#272822',
+                      color: '#F8F8F2',
+                      fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
+                      fontSize: '14px',
+                      lineHeight: 1.5,
+                      border: `1px solid ${colors.gray200}`,
+                      borderRadius: borderRadius.md,
+                      resize: 'vertical',
+                      outline: 'none',
+                      overflowWrap: 'normal',
+                      whiteSpace: 'pre',
+                      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
+                    }}
+                    placeholder="Escribe o pega tu código HTML aquí..."
+                    spellCheck="false"
+                  />
+                )}
+              </>
+            )}
+
+            {activeTab === 'preview' && (
+              <div style={{
+                width: '100%',
+                height: '600px',
+                padding: spacing.md,
+                backgroundColor: '#f9fafb',
+                border: `1px solid ${colors.gray200}`,
+                borderRadius: borderRadius.md,
+                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)',
+                overflow: 'auto'
+              }}>
+                <HTMLPreview htmlContent={internalContent} />
+              </div>
+            )}
+          </>
+        )}
+        
+        {/* Modo Simple */}
+        {mode === 'simple' && (
+          <div style={styles.simpleEditorContainer}>
+            <SimpleEditor 
+              content={simpleContent}
+              onChange={handleSimpleContentChange}
+            />
+          </div>
+        )}
+
+
+      </div>
+
+      {/* Import/Export Actions moved to the bottom */}
+      <ImportExportActions 
+        onExport={onExport} 
+        onImport={onImport} 
+        isHtmlMode={mode === 'developer'} 
+      />
+
+      {/* Modal de confirmación para el modo desarrollador */}
+      {showDeveloperModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <h3 style={styles.modalTitle}>
+              <span style={styles.warningIcon}>⚠️</span>
+              Modo HTML (Avanzado)
+            </h3>
+            <p style={styles.modalText}>
+              Estás a punto de entrar al modo HTML, diseñado para usuarios con conocimientos de HTML y CSS. En este modo podrás editar directamente el código HTML de tu documento.
+            </p>
+            <p style={styles.modalText}>
+              <strong>Nota:</strong> Este modo es recomendado solo para usuarios avanzados. Si no estás familiarizado con HTML, te recomendamos continuar en el editor simple.
+            </p>
+            <div style={styles.modalButtons}>
+              <button 
+                style={{
+                  ...styles.modalButton(false),
+                  ...(hoveredElement === 'cancelButton' ? { 
+                    backgroundColor: colors.gray300,
+                    transform: 'translateY(-2px)'
+                  } : {})
+                }}
+                onClick={cancelDeveloperMode}
+                onMouseEnter={() => setHoveredElement('cancelButton')}
+                onMouseLeave={() => setHoveredElement(null)}
+              >
+                Cancelar
+              </button>
+              <button 
+                style={{
+                  ...styles.modalButton(true),
+                  ...(hoveredElement === 'confirmButton' ? { 
+                    backgroundColor: '#d13a1e',
+                    transform: 'translateY(-2px)'
+                  } : {})
+                }}
+                onClick={confirmDeveloperMode}
+                onMouseEnter={() => setHoveredElement('confirmButton')}
+                onMouseLeave={() => setHoveredElement(null)}
+              >
+                Continuar al modo HTML
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default DualModeEditor;

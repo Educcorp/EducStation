@@ -161,7 +161,7 @@ export const insertMarkdown = (content, markdownType, placeholder = '', textArea
         formattedText = `<a href="#">${selectedText || 'enlace'}</a>`;
         break;
       case 'image':
-        formattedText = `<img src="imagen.jpg" alt="${selectedText || 'Descripción de la imagen'}" />`;
+        formattedText = `<img src="imagen.jpg" alt="${selectedText || 'Descripción de la imagen'}" data-image-type="html-encoded" style="max-width: 100%; height: auto;" />`;
         break;
       case 'list':
         formattedText = `<ul>\n  <li>${selectedText || 'Elemento 1'}</li>\n  <li>Elemento 2</li>\n</ul>`;
