@@ -1,19 +1,24 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { AuthContext } from '../context/AuthContext';
+import { deleteAccount } from '../services/authService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 
 const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { logout } = useContext(AuthContext); // Obtener logout del contexto
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSuccessButton, setShowSuccessButton] = useState(false);
-  
+  const [isDeleting, setIsDeleting] = useState(false); // Para manejar estado de carga
+  const [error, setError] = useState(null); // Para manejar errores
+
   // Efecto para forzar la recarga al montar el componente
   useEffect(() => {
     // Verificar si es la primera carga
     const isFirstLoad = !sessionStorage.getItem('settingsPageLoaded');
-    
+
     if (isFirstLoad) {
       // Marcar que ya se cargó la página
       sessionStorage.setItem('settingsPageLoaded', 'true');
@@ -50,6 +55,10 @@ const SettingsPage = () => {
       marketing: false
     }
   });
+
+  const handleReturnHome = () => {
+    window.location.href = '/login';  // Redirecciona al login
+  };
 
   const handleSettingChange = (category, setting) => {
     setSettings(prev => ({
@@ -271,16 +280,29 @@ const SettingsPage = () => {
     </div>
   );
 
-  const handleDeleteAccount = () => {
-    // Aquí iría la lógica para eliminar la cuenta
-    setShowDeleteModal(false);
-    setShowSuccessButton(true);
-    localStorage.clear();
-    sessionStorage.clear();
-  };
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    setError(null);
 
-  const handleReturnHome = () => {
-    window.location.href = '/';
+    try {
+      // Llamar a la función de eliminar cuenta
+      await deleteAccount();
+
+      // Notificar al usuario antes de redirigir (opcional)
+      alert('Tu cuenta ha sido eliminada correctamente. Serás redirigido a la página de inicio de sesión.');
+
+      // Cerrar sesión
+      logout();
+
+      // Redirección inmediata al login
+      window.location.href = '/login';
+
+    } catch (error) {
+      // Manejar error
+      console.error('Error al eliminar cuenta:', error);
+      setError(error.message || 'Error al eliminar la cuenta');
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -552,8 +574,8 @@ const SettingsPage = () => {
           }}>
             <p>¿Estás seguro de que deseas eliminar tu cuenta de <strong>EducStation</strong>?</p>
             <p>Esta acción es permanente y no se puede deshacer. Se perderán todos tus datos, incluyendo:</p>
-            <ul style={{ 
-              textAlign: 'left', 
+            <ul style={{
+              textAlign: 'left',
               color: isDarkMode ? '#ff9999' : '#cc0000',
               backgroundColor: isDarkMode ? '#441111' : '#ffe0e0',
               padding: spacing.lg,
@@ -586,22 +608,28 @@ const SettingsPage = () => {
             <button
               style={{
                 ...styles.confirmDeleteButton,
-                backgroundColor: '#ff3333',
-                fontWeight: typography.fontWeight.bold
+                backgroundColor: isDeleting ? '#999999' : '#ff3333',
+                fontWeight: typography.fontWeight.bold,
+                cursor: isDeleting ? 'not-allowed' : 'pointer'
               }}
               onClick={handleDeleteAccount}
+              disabled={isDeleting}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#ff0000';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#ff0000';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#ff3333';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#ff3333';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
               }}
             >
-              Sí, eliminar mi cuenta
+              {isDeleting ? 'Eliminando...' : 'Sí, eliminar mi cuenta'}
             </button>
           </div>
         </div>
@@ -691,16 +719,16 @@ const SettingsPage = () => {
       {/* Animaciones CSS */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          @keyframes modalFadeIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes successIconPop {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); opacity: 1; }
-          }
-        `
+      @keyframes modalFadeIn {
+        0% { transform: scale(0.9); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      @keyframes successIconPop {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+    `
       }} />
       <Footer />
     </>
