@@ -156,20 +156,44 @@ export const login = async (credentials) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
+      mode: 'cors',
+      credentials: 'include',
       body: JSON.stringify({
         username: credentials.username, // Enviamos tal cual - el backend ya verificará username o email
         password: credentials.password,
       }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Error en el inicio de sesión');
+    console.log('Respuesta de login status:', response.status);
+
+    // Manejar específicamente el error 401 (Unauthorized)
+    if (response.status === 401) {
+      throw new Error('Credenciales inválidas');
     }
 
-    const data = await response.json();
-    console.log('Respuesta de inicio de sesión:', data);
+    // Manejar otros errores
+    if (!response.ok) {
+      let errorMessage = 'Error en el inicio de sesión';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch (e) {
+        console.error('No se pudo leer el mensaje de error:', e);
+      }
+      throw new Error(errorMessage);
+    }
+
+    // Intentar obtener la respuesta JSON
+    let data;
+    try {
+      data = await response.json();
+      console.log('Respuesta de inicio de sesión:', data);
+    } catch (e) {
+      console.error('Error al procesar la respuesta JSON:', e);
+      throw new Error('Error en la respuesta del servidor');
+    }
 
     // Limpiar el localStorage antes de guardar nuevos valores
     // para evitar contaminación con datos anteriores
@@ -212,7 +236,10 @@ export const login = async (credentials) => {
         const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
           headers: {
             'Authorization': `Bearer ${data.access}`,
+            'Accept': 'application/json'
           },
+          mode: 'cors',
+          credentials: 'include'
         });
 
         if (userResponse.ok) {
@@ -243,6 +270,12 @@ export const login = async (credentials) => {
     };
   } catch (error) {
     console.error('Error en el login:', error);
+
+    // Si es un error de red, dar un mensaje más claro
+    if (error.message === 'Failed to fetch') {
+      throw new Error('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+    }
+
     throw error;
   }
 };
@@ -456,26 +489,56 @@ export const deleteAccount = async () => {
   }
 
   try {
+    console.log('Intentando eliminar cuenta...');
+
     const response = await fetch(`${API_URL}/api/auth/user/`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      mode: 'cors',
+      credentials: 'include'
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Error al eliminar la cuenta');
+    // Intentar obtener respuesta JSON si está disponible
+    let responseData;
+    try {
+      responseData = await response.json();
+      console.log('Respuesta al eliminar cuenta:', responseData);
+    } catch (e) {
+      console.log('No se pudo obtener respuesta JSON:', e);
+      // Si no hay JSON pero la respuesta es exitosa, seguimos adelante
+      if (response.ok) {
+        responseData = { detail: 'Cuenta eliminada exitosamente' };
+      }
     }
 
-    // Si la eliminación fue exitosa, limpiamos localStorage
+    if (!response.ok) {
+      throw new Error(responseData?.detail || 'Error al eliminar la cuenta');
+    }
+
+    // Si la eliminación fue exitosa, limpiamos localStorage y sessionStorage
+    console.log('Cuenta eliminada exitosamente, limpiando datos locales');
     localStorage.clear();
     sessionStorage.clear();
 
-    return await response.json();
+    // También eliminar cookies relacionadas con la sesión
+    document.cookie.split(';').forEach(cookie => {
+      const [name] = cookie.trim().split('=');
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+    });
+
+    return responseData;
   } catch (error) {
     console.error('Error al eliminar cuenta:', error);
+
+    // Si es un error de red, manejar de forma especial
+    if (error.message === 'Failed to fetch') {
+      throw new Error('No se pudo conectar con el servidor. Verifica tu conexión a internet.');
+    }
+
     throw error;
   }
 };
