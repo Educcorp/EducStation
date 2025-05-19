@@ -592,36 +592,30 @@ const SettingsPage = () => {
             borderTop: `1px solid #ff3333`
           }}>
             <button
-              style={styles.cancelButton}
-              onClick={() => setShowDeleteModal(false)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? '#441111' : '#ffe0e0';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? '#331111' : '#fff0f0';
-              }}
-            >
-              Cancelar
-            </button>
-            <button
               style={{
                 ...styles.confirmDeleteButton,
-                backgroundColor: '#ff3333',
-                fontWeight: typography.fontWeight.bold
+                backgroundColor: isDeleting ? '#999999' : '#ff3333',
+                fontWeight: typography.fontWeight.bold,
+                cursor: isDeleting ? 'not-allowed' : 'pointer'
               }}
               onClick={handleDeleteAccount}
+              disabled={isDeleting}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#ff0000';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#ff0000';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#ff3333';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#ff3333';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
               }}
             >
-              Sí, eliminar mi cuenta
+              {isDeleting ? 'Eliminando...' : 'Sí, eliminar mi cuenta'}
             </button>
           </div>
         </div>
