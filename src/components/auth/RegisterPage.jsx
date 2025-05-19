@@ -7,11 +7,17 @@ import '@fortawesome/fontawesome-free/css/all.css';
 import { AuthContext } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
 
+// Constante para habilitar el modo desarrollo (registro sin backend)
+const DEV_MODE = process.env.NODE_ENV === 'development';
+
 const RegisterPage = () => {
     const navigate = useNavigate();
     const { register, isAuth, loading } = useContext(AuthContext);
     const { setForceLightMode } = useContext(ThemeContext);
-    
+
+    // Estado para modo desarrollo
+    const [devModeEnabled, setDevModeEnabled] = useState(false);
+
     // Refs para las animaciones
     const formRef = useRef(null);
     const titleRef = useRef(null);
@@ -24,12 +30,12 @@ const RegisterPage = () => {
         confirmPassword: useRef(null)
     };
     const buttonRef = useRef(null);
-    
+
     // Estados para animaciones
     const [formActive, setFormActive] = useState(false);
     const [activeField, setActiveField] = useState(null);
     const [animationComplete, setAnimationComplete] = useState(false);
-    
+
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -48,7 +54,8 @@ const RegisterPage = () => {
         password: '',
         confirmPassword: '',
         termsAccepted: '',
-        general: ''
+        general: '',
+        devMode: false
     });
 
     // Estados para controlar la visibilidad de las contraseñas
@@ -66,7 +73,7 @@ const RegisterPage = () => {
         // Secuencia de animaciones
         setTimeout(() => setFormActive(true), 300);
         setTimeout(() => setAnimationComplete(true), 1200);
-        
+
         // Animación de "mecanografía" para el título
         if (titleRef.current) {
             titleRef.current.classList.add('typing-animation');
@@ -78,7 +85,7 @@ const RegisterPage = () => {
         setForceLightMode(true);
         return () => setForceLightMode(false);
     }, [setForceLightMode]);
-    
+
     // Redirigir si ya está autenticado
     useEffect(() => {
         if (isAuth && !loading) {
@@ -155,6 +162,15 @@ const RegisterPage = () => {
         try {
             console.log('Iniciando verificación para:', username);
 
+            // Si el modo desarrollo está activado, asumimos que el username está disponible
+            if (devModeEnabled) {
+                console.log('Modo desarrollo activado - asumiendo username disponible');
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
+                setIsCheckingUsername(false);
+                return;
+            }
+
             // Validación temporal - REMOVER EN PRODUCCIÓN
             // Esta es una solución temporal hasta que se arregle el backend
             const bypassValidation = localStorage.getItem('bypassUsernameValidation') === 'true';
@@ -172,19 +188,18 @@ const RegisterPage = () => {
             setErrors(prev => ({ ...prev, username: '' }));
         } catch (error) {
             console.error('Error en validación de username:', error.message);
-            setUsernameAvailable(false);
-            setErrors(prev => ({
-                ...prev,
-                username: error.message || 'Este nombre de usuario ya está en uso'
-            }));
 
-            // Para depuración - Muestra un botón temporal para bypassear la validación
-            // Solo visible en modo desarrollo
-            if (process.env.NODE_ENV === 'development') {
-                console.log(
-                    'DEPURACIÓN: Para bypassear temporalmente la validación, ejecuta en consola: ' +
-                    'localStorage.setItem("bypassUsernameValidation", "true"); y recarga la página'
-                );
+            // Si es un error de red y estamos en desarrollo, permitir continuar
+            if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
+                console.log('Error de red en desarrollo - asumiendo username disponible');
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
+            } else {
+                setUsernameAvailable(false);
+                setErrors(prev => ({
+                    ...prev,
+                    username: error.message || 'Este nombre de usuario ya está en uso'
+                }));
             }
         } finally {
             setIsCheckingUsername(false);
@@ -201,7 +216,8 @@ const RegisterPage = () => {
             password: '',
             confirmPassword: '',
             termsAccepted: '',
-            general: ''
+            general: '',
+            devMode: false
         };
 
         // Validar nombre
@@ -275,7 +291,9 @@ const RegisterPage = () => {
         if (!validateForm()) return;
 
         // Si hay bypass de validación de username o el username está disponible, continuar
-        if (localStorage.getItem('bypassUsernameValidation') !== 'true' && usernameAvailable === false) {
+        if (localStorage.getItem('bypassUsernameValidation') !== 'true' &&
+            !devModeEnabled &&
+            usernameAvailable === false) {
             // Mostrar mensaje específico
             setErrors(prev => ({
                 ...prev,
@@ -285,7 +303,7 @@ const RegisterPage = () => {
         }
 
         setIsSubmitting(true);
-        
+
         // Añadir animación al botón
         if (buttonRef.current) {
             buttonRef.current.classList.add('button-press');
@@ -303,6 +321,19 @@ const RegisterPage = () => {
                 last_name: formData.lastName
             });
 
+            // Si el modo desarrollo está activado, simulamos un registro exitoso
+            if (devModeEnabled) {
+                console.log('Modo desarrollo - simulando registro exitoso');
+                // Simulamos un pequeño retraso para dar sensación de proceso
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Redirigir a login con mensaje de éxito
+                navigate('/login', {
+                    state: { message: '¡Registro exitoso en modo desarrollo! Ahora puedes iniciar sesión.' }
+                });
+                return;
+            }
+
             await register({
                 username: formData.username,
                 email: formData.email,
@@ -319,8 +350,16 @@ const RegisterPage = () => {
         } catch (error) {
             console.error('Error al registrar usuario:', error);
 
+            // Si es un error de conexión en desarrollo, ofrecer modo desarrollo
+            if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
+                setErrors(prev => ({
+                    ...prev,
+                    general: 'Error de conexión con el servidor. ¿Deseas activar el modo desarrollo para probar la aplicación sin backend?',
+                    devMode: true
+                }));
+            }
             // Manejo específico de errores
-            if (error.message.includes('usuario ya existe') || error.message.includes('ya está en uso')) {
+            else if (error.message.includes('usuario ya existe') || error.message.includes('ya está en uso')) {
                 setErrors(prev => ({
                     ...prev,
                     username: error.message,
@@ -338,7 +377,7 @@ const RegisterPage = () => {
                     general: error.message || 'Error al registrar. Por favor intenta nuevamente más tarde.'
                 }));
             }
-            
+
             // Animación de error en el formulario
             if (formRef.current) {
                 formRef.current.classList.add('form-error');
@@ -349,6 +388,16 @@ const RegisterPage = () => {
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    // Función para activar el modo desarrollo
+    const enableDevMode = () => {
+        setDevModeEnabled(true);
+        setErrors(prev => ({
+            ...prev,
+            general: 'Modo desarrollo activado. Puedes registrarte sin conectar al backend.',
+            devMode: false
+        }));
     };
 
     const styles = {
@@ -805,10 +854,10 @@ const RegisterPage = () => {
         ...styles.input,
         ...(activeField === fieldName ? styles.activeInput : {}),
         borderColor: errors[fieldName] ? colors.error : activeField === fieldName ? '#2C7171' : colors.gray200,
-        boxShadow: errors[fieldName] 
-            ? '0 4px 10px rgba(220, 53, 69, 0.1)' 
-            : activeField === fieldName 
-                ? '0 5px 15px rgba(44, 113, 113, 0.15)' 
+        boxShadow: errors[fieldName]
+            ? '0 4px 10px rgba(220, 53, 69, 0.1)'
+            : activeField === fieldName
+                ? '0 5px 15px rgba(44, 113, 113, 0.15)'
                 : '0 2px 4px rgba(0, 0, 0, 0.05)',
     });
 
@@ -816,10 +865,10 @@ const RegisterPage = () => {
         ...styles.passwordInput,
         ...(activeField === fieldName ? styles.activePasswordInput : {}),
         borderColor: errors[fieldName] ? colors.error : activeField === fieldName ? '#2C7171' : colors.gray200,
-        boxShadow: errors[fieldName] 
-            ? '0 4px 10px rgba(220, 53, 69, 0.1)' 
-            : activeField === fieldName 
-                ? '0 5px 15px rgba(44, 113, 113, 0.15)' 
+        boxShadow: errors[fieldName]
+            ? '0 4px 10px rgba(220, 53, 69, 0.1)'
+            : activeField === fieldName
+                ? '0 5px 15px rgba(44, 113, 113, 0.15)'
                 : '0 2px 4px rgba(0, 0, 0, 0.05)',
     });
 
@@ -827,7 +876,7 @@ const RegisterPage = () => {
     const renderParticles = () => {
         const particles = [];
         const colors = ['#1F4E4E', '#91a8a9', '#d2b99a', '#ffffff'];
-        
+
         for (let i = 0; i < 30; i++) {
             const size = Math.random() * 6 + 4;
             const style = {
@@ -842,7 +891,7 @@ const RegisterPage = () => {
             };
             particles.push(<div key={i} style={style} />);
         }
-        
+
         return particles;
     };
 
@@ -859,7 +908,7 @@ const RegisterPage = () => {
             </div>
 
             <main style={styles.mainContent}>
-                <div 
+                <div
                     style={styles.formContainer}
                     ref={formRef}
                     className="register-form-container"
@@ -867,9 +916,9 @@ const RegisterPage = () => {
                     <div style={styles.registerImage}>
                         <div style={styles.imageOverlay}>
                             <div style={styles.raccoonLogoRow}>
-                                <img 
-                                    src="/assets/images/educstation-logo.png" 
-                                    alt="logo" 
+                                <img
+                                    src="/assets/images/educstation-logo.png"
+                                    alt="logo"
                                     style={styles.raccoonImage}
                                     className="pulse-animation"
                                 />
@@ -889,7 +938,7 @@ const RegisterPage = () => {
                     <div style={styles.formContent}>
                         <div style={styles.formContentInner}>
                             <div style={styles.registerHeader}>
-                                <h1 
+                                <h1
                                     style={styles.registerTitle}
                                     ref={titleRef}
                                     className="welcome-text"
@@ -899,36 +948,73 @@ const RegisterPage = () => {
                                 <p style={styles.registerSubtitle}>
                                     Completa el formulario para unirte a nuestra plataforma
                                 </p>
+
+                                {/* Indicador de modo desarrollo */}
+                                {devModeEnabled && (
+                                    <div style={{
+                                        backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                                        color: '#856404',
+                                        padding: spacing.sm,
+                                        borderRadius: '8px',
+                                        marginTop: spacing.sm,
+                                        fontSize: typography.fontSize.sm,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}>
+                                        <i className="fas fa-code" style={{ marginRight: spacing.xs }}></i>
+                                        Modo desarrollo activado - Sin conexión al backend
+                                    </div>
+                                )}
                             </div>
 
                             {errors.general && (
                                 <div style={styles.generalError}>
                                     <i className="fas fa-exclamation-circle" style={styles.errorAlertIcon}></i>
                                     {errors.general}
+
+                                    {/* Botón para activar modo desarrollo */}
+                                    {errors.devMode && (
+                                        <button
+                                            onClick={enableDevMode}
+                                            style={{
+                                                marginLeft: spacing.md,
+                                                padding: `${spacing.xs} ${spacing.sm}`,
+                                                backgroundColor: '#1F4E4E',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                fontSize: typography.fontSize.xs
+                                            }}
+                                        >
+                                            Activar modo desarrollo
+                                        </button>
+                                    )}
                                 </div>
                             )}
 
                             <form onSubmit={handleSubmit}>
                                 <div style={styles.formRow}>
-                                    <div 
+                                    <div
                                         style={{
                                             ...styles.formGroup,
                                             ...(activeField === 'firstName' ? styles.activeFormGroup : {})
                                         }}
                                         className="form-group-animation"
                                     >
-                                        <label 
+                                        <label
                                             style={{
                                                 ...styles.label,
                                                 ...(activeField === 'firstName' ? styles.activeLabel : {})
-                                            }} 
+                                            }}
                                             htmlFor="firstName"
                                         >
                                             Nombre
                                         </label>
-                                        <div style={{position: 'relative'}}>
-                                            <i 
-                                                className="fas fa-user" 
+                                        <div style={{ position: 'relative' }}>
+                                            <i
+                                                className="fas fa-user"
                                                 style={{
                                                     ...styles.inputIcon,
                                                     ...(activeField === 'firstName' ? styles.activeInputIcon : {})
@@ -956,25 +1042,25 @@ const RegisterPage = () => {
                                         )}
                                     </div>
 
-                                    <div 
+                                    <div
                                         style={{
                                             ...styles.formGroup,
                                             ...(activeField === 'lastName' ? styles.activeFormGroup : {})
                                         }}
                                         className="form-group-animation"
                                     >
-                                        <label 
+                                        <label
                                             style={{
                                                 ...styles.label,
                                                 ...(activeField === 'lastName' ? styles.activeLabel : {})
-                                            }} 
+                                            }}
                                             htmlFor="lastName"
                                         >
                                             Apellido
                                         </label>
-                                        <div style={{position: 'relative'}}>
-                                            <i 
-                                                className="fas fa-user" 
+                                        <div style={{ position: 'relative' }}>
+                                            <i
+                                                className="fas fa-user"
                                                 style={{
                                                     ...styles.inputIcon,
                                                     ...(activeField === 'lastName' ? styles.activeInputIcon : {})
@@ -1003,25 +1089,25 @@ const RegisterPage = () => {
                                     </div>
                                 </div>
 
-                                <div 
+                                <div
                                     style={{
                                         ...styles.formGroup,
                                         ...(activeField === 'username' ? styles.activeFormGroup : {})
                                     }}
                                     className="form-group-animation"
                                 >
-                                    <label 
+                                    <label
                                         style={{
                                             ...styles.label,
                                             ...(activeField === 'username' ? styles.activeLabel : {})
-                                        }} 
+                                        }}
                                         htmlFor="username"
                                     >
                                         Nombre de usuario
                                     </label>
-                                    <div style={{position: 'relative'}}>
-                                        <i 
-                                            className="fas fa-at" 
+                                    <div style={{ position: 'relative' }}>
+                                        <i
+                                            className="fas fa-at"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'username' ? styles.activeInputIcon : {})
@@ -1041,25 +1127,25 @@ const RegisterPage = () => {
                                             className="input-animation"
                                         />
                                         {isCheckingUsername && (
-                                            <div style={{ 
-                                                ...styles.statusIcon, 
+                                            <div style={{
+                                                ...styles.statusIcon,
                                                 color: '#91a8a9'
                                             }}>
                                                 <i className="fas fa-circle-notch fa-spin"></i>
                                             </div>
                                         )}
                                         {usernameAvailable === true && (
-                                            <div style={{ 
-                                                ...styles.statusIcon, 
-                                                color: colors.success 
+                                            <div style={{
+                                                ...styles.statusIcon,
+                                                color: colors.success
                                             }}>
                                                 <i className="fas fa-check-circle"></i>
                                             </div>
                                         )}
                                         {usernameAvailable === false && (
-                                            <div style={{ 
-                                                ...styles.statusIcon, 
-                                                color: colors.error 
+                                            <div style={{
+                                                ...styles.statusIcon,
+                                                color: colors.error
                                             }}>
                                                 <i className="fas fa-times-circle"></i>
                                             </div>
@@ -1076,25 +1162,25 @@ const RegisterPage = () => {
                                     </div>
                                 </div>
 
-                                <div 
+                                <div
                                     style={{
                                         ...styles.formGroup,
                                         ...(activeField === 'email' ? styles.activeFormGroup : {})
                                     }}
                                     className="form-group-animation"
                                 >
-                                    <label 
+                                    <label
                                         style={{
                                             ...styles.label,
                                             ...(activeField === 'email' ? styles.activeLabel : {})
-                                        }} 
+                                        }}
                                         htmlFor="email"
                                     >
                                         Correo electrónico
                                     </label>
-                                    <div style={{position: 'relative'}}>
-                                        <i 
-                                            className="fas fa-envelope" 
+                                    <div style={{ position: 'relative' }}>
+                                        <i
+                                            className="fas fa-envelope"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'email' ? styles.activeInputIcon : {})
@@ -1122,25 +1208,25 @@ const RegisterPage = () => {
                                     )}
                                 </div>
 
-                                <div 
+                                <div
                                     style={{
                                         ...styles.formGroup,
                                         ...(activeField === 'password' ? styles.activeFormGroup : {})
                                     }}
                                     className="form-group-animation"
                                 >
-                                    <label 
+                                    <label
                                         style={{
                                             ...styles.label,
                                             ...(activeField === 'password' ? styles.activeLabel : {})
-                                        }} 
+                                        }}
                                         htmlFor="password"
                                     >
                                         Contraseña
                                     </label>
                                     <div style={styles.passwordWrapper}>
-                                        <i 
-                                            className="fas fa-lock" 
+                                        <i
+                                            className="fas fa-lock"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'password' ? styles.activeInputIcon : {})
@@ -1169,8 +1255,8 @@ const RegisterPage = () => {
                                             aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                                             className="eye-icon-animation"
                                         >
-                                            {showPassword ? 
-                                                <i className="fa-solid fa-eye-slash"></i> : 
+                                            {showPassword ?
+                                                <i className="fa-solid fa-eye-slash"></i> :
                                                 <i className="fa-solid fa-eye"></i>
                                             }
                                         </button>
@@ -1187,25 +1273,25 @@ const RegisterPage = () => {
                                     </div>
                                 </div>
 
-                                <div 
+                                <div
                                     style={{
                                         ...styles.formGroup,
                                         ...(activeField === 'confirmPassword' ? styles.activeFormGroup : {})
                                     }}
                                     className="form-group-animation"
                                 >
-                                    <label 
+                                    <label
                                         style={{
                                             ...styles.label,
                                             ...(activeField === 'confirmPassword' ? styles.activeLabel : {})
-                                        }} 
+                                        }}
                                         htmlFor="confirmPassword"
                                     >
                                         Confirmar contraseña
                                     </label>
                                     <div style={styles.passwordWrapper}>
-                                        <i 
-                                            className="fas fa-lock" 
+                                        <i
+                                            className="fas fa-lock"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'confirmPassword' ? styles.activeInputIcon : {})
@@ -1234,8 +1320,8 @@ const RegisterPage = () => {
                                             aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                                             className="eye-icon-animation"
                                         >
-                                            {showConfirmPassword ? 
-                                                <i className="fa-solid fa-eye-slash"></i> : 
+                                            {showConfirmPassword ?
+                                                <i className="fa-solid fa-eye-slash"></i> :
                                                 <i className="fa-solid fa-eye"></i>
                                             }
                                         </button>
@@ -1249,24 +1335,24 @@ const RegisterPage = () => {
                                 </div>
 
                                 <div style={styles.termsContainer}>
-                                    <div 
+                                    <div
                                         style={{
                                             ...styles.checkmark,
                                             ...(formData.termsAccepted ? styles.activeCheckmark : {})
                                         }}
-                                        onClick={() => setFormData({...formData, termsAccepted: !formData.termsAccepted})}
+                                        onClick={() => setFormData({ ...formData, termsAccepted: !formData.termsAccepted })}
                                     >
-                                        <i 
-                                            className="fas fa-check" 
+                                        <i
+                                            className="fas fa-check"
                                             style={{
                                                 ...styles.checkmarkIcon,
                                                 ...(formData.termsAccepted ? styles.activeCheckmarkIcon : {})
                                             }}
                                         ></i>
                                     </div>
-                                    
+
                                     <label>
-                                        He leído y acepto los <Link to="/terms" className="link-hover-effect">términos y condiciones</Link> y 
+                                        He leído y acepto los <Link to="/terms" className="link-hover-effect">términos y condiciones</Link> y
                                         la <Link to="/privacy" className="link-hover-effect">política de privacidad</Link>.
                                     </label>
                                 </div>
@@ -1287,7 +1373,7 @@ const RegisterPage = () => {
                                     <span style={styles.buttonRipple}></span>
                                     {isSubmitting ? (
                                         <>
-                                            <i className="fas fa-circle-notch fa-spin" style={{marginRight: '10px'}}></i>
+                                            <i className="fas fa-circle-notch fa-spin" style={{ marginRight: '10px' }}></i>
                                             Creando cuenta...
                                         </>
                                     ) : 'Crear cuenta'}
@@ -1295,7 +1381,7 @@ const RegisterPage = () => {
 
                                 <div style={styles.loginLink}>
                                     ¿Ya tienes una cuenta?
-                                    <Link 
+                                    <Link
                                         to="/login"
                                         style={styles.loginLinkText}
                                         className="link-hover-effect"
