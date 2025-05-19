@@ -630,30 +630,25 @@ const SettingsPage = () => {
             maxWidth: '400px',
             width: '90%',
             boxShadow: shadows.xl,
-            animation: 'modalFadeIn 0.3s ease-out forwards',
-            border: `2px solid ${colors.success}`,
-            transform: 'translateY(0)',
-            transition: 'transform 0.3s ease'
+            animation: 'modalFadeIn 0.3s ease-out forwards'
           }}>
             <div style={{
-              fontSize: '64px',
+              fontSize: '48px',
               marginBottom: spacing.md,
-              color: colors.success,
-              animation: 'successIconPop 0.5s ease-out'
+              color: colors.success
             }}>✓</div>
             <h3 style={{
               fontSize: typography.fontSize.xl,
               fontWeight: typography.fontWeight.bold,
               marginBottom: spacing.md,
               color: isDarkMode ? colors.white : colors.textPrimary
-            }}>¡Cuenta Eliminada con Éxito!</h3>
+            }}>Cuenta Eliminada</h3>
             <p style={{
               fontSize: typography.fontSize.md,
               marginBottom: spacing.xl,
-              color: isDarkMode ? colors.gray300 : colors.textSecondary,
-              lineHeight: '1.6'
+              color: isDarkMode ? colors.gray300 : colors.textSecondary
             }}>
-              Tu cuenta ha sido eliminada exitosamente. Gracias por haber sido parte de nuestra comunidad. Esperamos verte pronto.
+              Tu cuenta ha sido eliminada exitosamente. Gracias por haber sido parte de nuestra comunidad.
             </p>
             <button
               onClick={handleReturnHome}
@@ -667,19 +662,15 @@ const SettingsPage = () => {
                 fontWeight: typography.fontWeight.medium,
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
-                width: '100%',
-                position: 'relative',
-                overflow: 'hidden'
+                width: '100%'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = colors.primaryDark;
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = colors.primary;
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
               }}
             >
               Volver al Inicio
@@ -693,11 +684,6 @@ const SettingsPage = () => {
         __html: `
           @keyframes modalFadeIn {
             0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes successIconPop {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); }
             100% { transform: scale(1); opacity: 1; }
           }
         `

@@ -146,14 +146,12 @@ export const login = async (credentials) => {
     // Limpiar el localStorage antes de guardar nuevos valores
     // para evitar contaminación con datos anteriores
     localStorage.removeItem('userToken');
-    localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userName');
     localStorage.removeItem('isSuperUser');
 
     // Guardar tokens en localStorage
     localStorage.setItem('userToken', data.access);
-    localStorage.setItem('accessToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
     
     // Guardar nombre de usuario si está disponible
@@ -222,23 +220,14 @@ export const login = async (credentials) => {
 // Cerrar sesión - limpiar datos de usuario del almacenamiento local
 export const logout = () => {
   localStorage.removeItem('userToken');
-  localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userName');
   localStorage.removeItem('isSuperUser');
-  
-  console.log('Sesión cerrada, localStorage limpiado:', {
-    userToken: localStorage.getItem('userToken'),
-    accessToken: localStorage.getItem('accessToken'),
-    refreshToken: localStorage.getItem('refreshToken'),
-    userName: localStorage.getItem('userName'),
-    isSuperUser: localStorage.getItem('isSuperUser')
-  });
 };
 
 // Nueva función para actualizar el estado de superusuario desde el servidor
 export const updateSuperUserStatus = async () => {
-  const token = localStorage.getItem('userToken') || localStorage.getItem('accessToken');
+  const token = localStorage.getItem('userToken');
   
   if (!token) {
     console.warn('No hay token de acceso para actualizar el estado de superusuario');
@@ -260,14 +249,14 @@ export const updateSuperUserStatus = async () => {
     const userData = await response.json();
     const isSuperUser = userData.is_superuser === true;
     
-    // Actualizar en localStorage para mantener consistencia
-    localStorage.setItem('isSuperUser', isSuperUser ? 'true' : 'false');
-    localStorage.setItem('userToken', token); // Asegurarnos de que también se guarde como userToken
-    
     console.log('Estado de superusuario actualizado:', {
-      isSuperUser,
+      prevValue: localStorage.getItem('isSuperUser'),
+      newValue: isSuperUser ? 'true' : 'false',
       userData
     });
+    
+    // Actualizar localStorage con el valor correcto
+    localStorage.setItem('isSuperUser', isSuperUser ? 'true' : 'false');
     
     return isSuperUser;
   } catch (error) {
@@ -301,7 +290,6 @@ export const refreshToken = async () => {
 
     const data = await response.json();
     localStorage.setItem('userToken', data.access);
-    localStorage.setItem('accessToken', data.access);
     localStorage.setItem('refreshToken', data.refresh);
 
     return data.access;

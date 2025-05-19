@@ -16,7 +16,6 @@ export const AuthProvider = ({ children }) => {
     // Verificar si hay un token en localStorage cuando la aplicación se carga
     const checkAuth = async () => {
       const token = localStorage.getItem('userToken');
-      console.log('AuthContext - Verificando autenticación, token existe:', !!token);
       
       if (token) {
         try {
@@ -46,7 +45,6 @@ export const AuthProvider = ({ children }) => {
               userData 
             });
           } else {
-            console.warn('El token es inválido o ha expirado. Intentando refrescar...');
             // El token puede estar expirado, intentar refrescarlo
             try {
               await refreshToken();
@@ -66,41 +64,35 @@ export const AuthProvider = ({ children }) => {
                 const userIsSuperUser = userData.is_superuser === true;
                 setIsSuperUser(userIsSuperUser);
                 localStorage.setItem('isSuperUser', userIsSuperUser ? 'true' : 'false');
-                
-                console.log('Auth check después de refresh:', { 
-                  isAuth: true, 
-                  isSuperUser: userIsSuperUser,
-                  userData 
-                });
               } else {
-                console.error('No se pudo renovar la autenticación, sesión expirada.');
-                handleLogout();
+                // Si aún no funciona, limpiar tokens
+                logoutService();
+                setUser(null);
+                setIsAuth(false);
+                setIsSuperUser(false);
               }
             } catch (error) {
               // Error al refrescar token
-              console.error('Error al refrescar token:', error);
-              handleLogout();
+              logoutService();
+              setUser(null);
+              setIsAuth(false);
+              setIsSuperUser(false);
             }
           }
         } catch (error) {
           console.error('Error al verificar autenticación:', error);
-          handleLogout();
+          logoutService();
+          setUser(null);
+          setIsAuth(false);
+          setIsSuperUser(false);
         }
       } else {
-        console.log('No hay token, usuario no autenticado');
-        handleLogout();
+        setIsAuth(false);
+        setUser(null);
+        setIsSuperUser(false);
       }
       
       setLoading(false);
-    };
-    
-    // Función para limpiar estado y localStorage
-    const handleLogout = () => {
-      logoutService();
-      setUser(null);
-      setIsAuth(false);
-      setIsSuperUser(false);
-      console.log('Estado de autenticación limpiado');
     };
     
     checkAuth();
