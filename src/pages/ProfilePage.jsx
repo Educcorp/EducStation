@@ -5,7 +5,7 @@ import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import axios from 'axios';
+import { getCurrentUser, updateUserAvatar } from '../services/userService';
 
 const ProfilePage = () => {
   const { user, setUser } = useContext(AuthContext);
@@ -23,29 +23,28 @@ const ProfilePage = () => {
         const token = localStorage.getItem('token');
         
         if (token) {
-          const response = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/current`, {
-            headers: {
-              'x-auth-token': token
-            }
-          });
-          
-          const userData = response.data;
-          setUserProfile({
-            firstName: userData.first_name,
-            lastName: userData.last_name,
-            email: userData.email,
-            username: userData.username,
-            bio: 'Esta es tu biografía. Edita tu perfil para cambiarla.',
-            role: userData.is_staff ? 'Administrador' : 'Estudiante',
-            joinDate: new Date().toLocaleDateString(),
-            avatar: userData.avatar || '/assets/images/logoBN.png',
-            interests: ['Educación', 'Tecnología', 'Ciencia'],
-            socialLinks: {
-              twitter: 'https://twitter.com/',
-              linkedin: 'https://linkedin.com/',
-              github: 'https://github.com/'
-            }
-          });
+          try {
+            const userData = await getCurrentUser();
+            setUserProfile({
+              firstName: userData.first_name,
+              lastName: userData.last_name,
+              email: userData.email,
+              username: userData.username,
+              bio: 'Esta es tu biografía. Edita tu perfil para cambiarla.',
+              role: userData.is_staff ? 'Administrador' : 'Estudiante',
+              joinDate: new Date().toLocaleDateString(),
+              avatar: userData.avatar || '/assets/images/logoBN.png',
+              interests: ['Educación', 'Tecnología', 'Ciencia'],
+              socialLinks: {
+                twitter: 'https://twitter.com/',
+                linkedin: 'https://linkedin.com/',
+                github: 'https://github.com/'
+              }
+            });
+          } catch (err) {
+            console.error("Error al obtener datos del usuario:", err);
+            // Seguimos con el flujo normal en caso de error
+          }
         } else {
           // Fallback a datos de ejemplo si no hay token
           setUserProfile({
@@ -69,23 +68,23 @@ const ProfilePage = () => {
         console.error("Error al cargar datos del usuario:", error);
         // Fallback a datos de ejemplo en caso de error
         setUserProfile({
-          firstName: localStorage.getItem('userName')?.split(' ')[0] || 'Usuario',
-          lastName: localStorage.getItem('userName')?.split(' ')[1] || '',
-          email: 'usuario@example.com',
-          username: 'usuario123',
-          bio: 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
-          role: 'Estudiante',
-          joinDate: '01/01/2023',
-          avatar: '/assets/images/logoBN.png',
-          interests: ['Educación', 'Tecnología', 'Ciencia'],
-          socialLinks: {
-            twitter: 'https://twitter.com/',
-            linkedin: 'https://linkedin.com/',
-            github: 'https://github.com/'
-          }
+    firstName: localStorage.getItem('userName')?.split(' ')[0] || 'Usuario',
+    lastName: localStorage.getItem('userName')?.split(' ')[1] || '',
+    email: 'usuario@example.com',
+    username: 'usuario123',
+    bio: 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
+    role: 'Estudiante',
+    joinDate: '01/01/2023',
+    avatar: '/assets/images/logoBN.png',
+    interests: ['Educación', 'Tecnología', 'Ciencia'],
+    socialLinks: {
+      twitter: 'https://twitter.com/',
+      linkedin: 'https://linkedin.com/',
+      github: 'https://github.com/'
+    }
         });
       } finally {
-        setIsLoading(false);
+      setIsLoading(false);
       }
     };
 
@@ -127,37 +126,29 @@ const ProfilePage = () => {
         const token = localStorage.getItem('token');
         if (token) {
           try {
-            const response = await axios.put(
-              `${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/users/avatar`,
-              { avatarData: base64Data },
-              {
-                headers: {
-                  'Content-Type': 'application/json',
-                  'x-auth-token': token
-                }
-              }
-            );
+            console.log('Intentando actualizar avatar...');
+            const response = await updateUserAvatar(base64Data);
+            console.log('Respuesta del servidor:', response);
             
-            if (response.status === 200) {
-              // Actualizar estado local
-              setUserProfile({
-                ...userProfile,
+            // Actualizar estado local
+            setUserProfile({
+              ...userProfile,
+              avatar: base64Data
+            });
+            
+            // También actualizar el contexto de autenticación si es necesario
+            if (setUser && user) {
+              setUser({
+                ...user,
                 avatar: base64Data
               });
-              
-              // También actualizar el contexto de autenticación si es necesario
-              if (setUser && user) {
-                setUser({
-                  ...user,
-                  avatar: base64Data
-                });
-              }
-              
-              console.log('Avatar actualizado con éxito');
             }
+            
+            console.log('Avatar actualizado con éxito');
+            alert('¡Avatar actualizado con éxito!');
           } catch (error) {
             console.error('Error al actualizar avatar:', error);
-            alert('Hubo un problema al actualizar tu avatar. Por favor intenta de nuevo.');
+            alert('Hubo un problema al actualizar tu avatar: ' + error.message);
           }
         } else {
           // Si no hay token, solo actualizar la interfaz
