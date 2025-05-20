@@ -463,89 +463,163 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
         </div>
       )}
       
-      <div style={styles.postGrid}>
-        {displayPosts.map((post, index) => (
+      <div className="posts-grid" style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+        gap: spacing.lg,
+        marginBottom: spacing.xl
+      }}>
+        {posts.map((post, index) => (
           <div 
-            key={post.ID_publicaciones} 
-            className="blog-post-card"
+            className="post-card-animation blog-post-card" 
+            key={post.ID_publicaciones}
             style={{
-              ...styles.postCard,
-              transform: hoveredCard === post.ID_publicaciones ? 'translateY(-5px)' : undefined,
-              boxShadow: hoveredCard === post.ID_publicaciones ? shadows.lg : shadows.md,
-              animationDelay: `${index * 0.1}s`,
-              animation: 'fadeUpIn 0.6s ease forwards',
-              animationDelay: `${index * 0.1}s`
+              "--animation-order": index,
+              background: "transparent"
             }}
-            onMouseEnter={() => setHoveredCard(post.ID_publicaciones)}
-            onMouseLeave={() => setHoveredCard(null)}
           >
-            <Link to={`/blog/${post.ID_publicaciones}`} style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%' }}>
-              <div style={styles.postImageContainer}>
-                {post.imagen_portada_html ? (
-                  renderImageHTML(post.imagen_portada_html)
-                ) : post.Imagen_destacada_ID ? (
-                  <img 
-                    src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`} 
-                    alt={post.Titulo} 
-                    style={{
-                      ...styles.postImage,
-                      transform: hoveredCard === post.ID_publicaciones ? 'scale(1.05)' : 'scale(1)'
-                    }}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/350x200?text=Sin+imagen';
-                    }}
-                  />
-                ) : (
-                  <div 
-                    style={{
-                      ...styles.postImage,
-                      backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.05)',
+            <Link 
+              to={`/blog/${post.ID_publicaciones}`} 
+              style={{ 
+                textDecoration: "none", 
+                color: "inherit",
+                display: "block"
+              }}
+            >
+              <div style={{
+                borderRadius: borderRadius.md,
+                overflow: "hidden",
+                backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#ffffff',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column'
+              }}>
+                <div style={{
+                  height: '200px',
+                  backgroundColor: '#f5f5f5',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#aaa',
+                  fontSize: typography.fontSize.md
+                }}>
+                  {post.ImagenURL ? (
+                    <img 
+                      src={post.ImagenURL} 
+                      alt={post.Titulo} 
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  ) : (
+                    <div style={{
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)',
-                    }}
-                  >
-                    <div style={{textAlign: 'center'}}>
-                      <div style={{fontSize: '32px', marginBottom: '8px'}}>📄</div>
-                      <div>Sin imagen</div>
+                      height: '100%',
+                      width: '100%',
+                      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#f0f0f0'
+                    }}>
+                      <span style={{ 
+                        color: isDarkMode ? 'rgba(255,255,255,0.3)' : '#cccccc',
+                        fontSize: typography.fontSize.lg
+                      }}>⊡</span>
+                      <span style={{ 
+                        marginTop: spacing.sm,
+                        color: isDarkMode ? 'rgba(255,255,255,0.5)' : '#aaaaaa'
+                      }}>Sin imagen</span>
                     </div>
-                  </div>
-                )}
-                <div style={styles.postImageOverlay}>
-                  <span style={styles.postDate}>
-                    <FaCalendarAlt size={12} /> {formatDate(post.Fecha_creacion)}
-                  </span>
-                  {post.categorias && post.categorias.length > 0 && (
-                    <span style={styles.postCategory}>
-                      <FaTag size={10} /> {post.categorias[0].Nombre_categoria}
-                    </span>
                   )}
                 </div>
-              </div>
-              <div style={styles.postContent}>
-                <h3 style={{
-                  ...styles.postTitle,
-                  color: hoveredCard === post.ID_publicaciones 
-                    ? colors.secondary 
-                    : (isDarkMode ? colors.textLight : colors.textPrimary)
+
+                <div style={{
+                  padding: spacing.lg,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  flexGrow: 1,
+                  justifyContent: 'space-between'
                 }}>
-                  {post.Titulo}
-                </h3>
-                <p style={styles.postSummary}>
-                  {post.Resumen || extractSummary(post.Contenido)}
-                </p>
-                <div style={styles.postFooter}>
-                  <span style={{
-                    ...styles.readMoreLink,
-                    color: hoveredCard === post.ID_publicaciones ? colors.primary : colors.secondary
+                  <div>
+                    {post.categorias && post.categorias.length > 0 && (
+                      <div style={{
+                        display: 'inline-block', 
+                        backgroundColor: post.categorias[0].Color || '#1a936f',
+                        color: '#ffffff',
+                        padding: `${spacing.xs} ${spacing.md}`,
+                        borderRadius: borderRadius.round,
+                        fontSize: typography.fontSize.sm,
+                        fontWeight: typography.fontWeight.medium,
+                        marginBottom: spacing.sm
+                      }}>
+                        {post.categorias[0].Nombre_categoria || 'Técnicas De Estudio'}
+                      </div>
+                    )}
+                    
+                    <h3 style={{
+                      fontSize: typography.fontSize.lg,
+                      fontWeight: typography.fontWeight.semiBold,
+                      margin: `${spacing.sm} 0`,
+                      color: isDarkMode ? colors.textLight : colors.textPrimary,
+                      lineHeight: 1.3,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical"
+                    }}>
+                      {post.Titulo}
+                    </h3>
+                    
+                    <p style={{
+                      fontSize: typography.fontSize.sm,
+                      color: isDarkMode ? 'rgba(255,255,255,0.7)' : colors.textSecondary,
+                      marginBottom: spacing.lg,
+                      lineHeight: 1.5,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical"
+                    }}>
+                      {post.Resumen || post.Contenido?.substring(0, 100) + "..." || "Sin descripción disponible"}
+                    </p>
+                  </div>
+                  
+                  <div style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+                    paddingTop: spacing.md,
+                    marginTop: 'auto'
                   }}>
-                    Leer más &rarr;
-                  </span>
-                  <span style={styles.viewCount}>
-                    <FaEye size={14} /> {Math.floor(Math.random() * 1000) + 100}
-                  </span>
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: typography.fontSize.sm,
+                      color: isDarkMode ? 'rgba(255,255,255,0.6)' : colors.textSecondary,
+                    }}>
+                      <span style={{ marginRight: spacing.xs }}>
+                        {new Date(post.Fecha_creacion).toLocaleDateString('es-ES', { 
+                          day: '2-digit', 
+                          month: 'short', 
+                          year: 'numeric' 
+                        })}
+                      </span>
+                    </div>
+                    
+                    <div style={{
+                      fontSize: typography.fontSize.sm,
+                      color: isDarkMode ? 'rgba(255,255,255,0.6)' : colors.textSecondary,
+                      display: "flex",
+                      alignItems: "center"
+                    }}>
+                      {post.Autor || post.Nombre_usuario || "Autor"}
+                    </div>
+                  </div>
                 </div>
               </div>
             </Link>

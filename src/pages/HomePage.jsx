@@ -15,7 +15,7 @@ const NewsCarousel = ({ notes }) => {
   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredElement, setHoveredElement] = useState(null);
-  const carouselRef = useRef(null);
+  const carouselRef = useRef(null); 
   const autoPlayRef = useRef(null);
 
   // Efecto para el carrusel automático
