@@ -21,11 +21,12 @@ const LoginPage = () => {
     };
     const buttonRef = useRef(null);
 
-    // Forzar el modo claro inmediatamente
-    React.useLayoutEffect(() => {
+    // Usa useEffect normal en lugar de useLayoutEffect
+    useEffect(() => {
         setForceLightMode(true);
-        return () => setForceLightMode(false);
-    }, [setForceLightMode]);
+        // No es necesario limpiar esto si no causa problemas visuales
+        return () => { };
+    }, []); // Elimina setForceLightMode de las dependencias
 
     const [formData, setFormData] = useState({
         usernameOrEmail: '',
@@ -257,9 +258,8 @@ const LoginPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            '@media (max-width: 768px)': {
-                display: 'none'
-            }
+            display: 'flex'
+
         },
         imageOverlay: {
             position: 'absolute',
@@ -947,6 +947,13 @@ const LoginPage = () => {
             </main>
 
             <style jsx="true">{`
+
+                @media (max-width: 768px) {
+                    .login-image {
+                        display: none !important;
+                    }
+                }
+            
                 @keyframes fadeIn {
                     from { opacity: 0; }
                     to { opacity: 1; }
@@ -1115,6 +1122,7 @@ const LoginPage = () => {
                     }
                 }
             `}</style>
+            <div style={styles.loginImage} className="login-image"></div>
         </div>
     );
 };
