@@ -14,23 +14,6 @@ const SettingsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false); // Para manejar estado de carga
   const [error, setError] = useState(null); // Para manejar errores
 
-  // Efecto para forzar la recarga al montar el componente
-  useEffect(() => {
-    // Verificar si es la primera carga
-    const isFirstLoad = !sessionStorage.getItem('settingsPageLoaded');
-
-    if (isFirstLoad) {
-      // Marcar que ya se cargó la página
-      sessionStorage.setItem('settingsPageLoaded', 'true');
-      // Forzar recarga
-      window.location.reload();
-    }
-
-    // Limpiar el marcador cuando se desmonte el componente
-    return () => {
-      sessionStorage.removeItem('settingsPageLoaded');
-    };
-  }, []);
 
   const [settings, setSettings] = useState({
     notifications: {
