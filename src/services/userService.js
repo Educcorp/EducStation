@@ -38,8 +38,8 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
-    // Asegurar que la URL esté correctamente formada
-    const avatarUrl = `${API_URL}/api/users/avatar`;
+    // Volvemos a la ruta original que estaba en producción
+    const avatarUrl = `${API_URL}/api/auth/user/avatar`;
     console.log('Enviando petición a:', avatarUrl);
     
     const response = await fetch(avatarUrl, {
@@ -48,7 +48,8 @@ export const updateUserAvatar = async (avatarData) => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ avatarData: avatarData }),
+      // Probamos con la estructura de datos original
+      body: JSON.stringify({ avatarUrl: avatarData }),
     });
 
     // Log detallado de la respuesta
