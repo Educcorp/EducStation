@@ -29,9 +29,6 @@ const ProfilePage = () => {
         // Utilizamos el servicio para obtener los datos reales del usuario
         const userData = await getUserProfile();
         
-        // Verificar si hay un avatar guardado localmente
-        const localAvatar = localStorage.getItem('userAvatar');
-        
         // Formatear la fecha de registro
         const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
         
@@ -43,8 +40,7 @@ const ProfilePage = () => {
           email: userData.email || 'usuario@ejemplo.com',
           role: userData.is_superuser ? 'Administrador' : 'Estudiante',
           joinDate: joinDate,
-          // Priorizar el avatar local si existe
-          avatar: localAvatar || userData.avatar || '/assets/images/logoBN.png'
+          avatar: userData.avatar || '/assets/images/logoBN.png'
         });
         
         setIsLoading(false);
@@ -68,30 +64,24 @@ const ProfilePage = () => {
       try {
         console.log('Procesando archivo:', file.name, 'tipo:', file.type, 'tamaño:', Math.round(file.size/1024), 'KB');
         setIsUploading(true);
+        setErrorMessage('');
+        
         const reader = new FileReader();
         
         reader.onloadend = async () => {
           try {
             console.log('Imagen convertida a base64, preparando envío al servidor');
             
-            // Almacenar localmente de inmediato
-            localStorage.setItem('userAvatar', reader.result);
+            // Enviar directamente al servidor
+            const result = await updateUserAvatar(reader.result);
             
-            try {
-              // Intentar actualizar en el servidor
-              await updateUserAvatar(reader.result);
-              console.log('Avatar actualizado en el servidor correctamente');
-            } catch (serverError) {
-              console.warn('No se pudo actualizar en el servidor, usando versión local:', serverError.message);
-            }
-            
-            // Actualizar en el estado local de todas formas (ya tenemos una copia local)
+            // Actualizar el avatar en la interfaz con la respuesta del servidor
             setUserProfile(prev => ({
               ...prev,
-              avatar: reader.result
+              avatar: reader.result // Usamos la imagen local para mostrarla de inmediato
             }));
             
-            console.log('Avatar actualizado correctamente en la interfaz');
+            console.log('Avatar actualizado correctamente en el servidor');
             setIsUploading(false);
           } catch (error) {
             console.error('Error al actualizar el avatar:', error);

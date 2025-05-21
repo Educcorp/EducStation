@@ -38,7 +38,7 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
-    // Hacemos una solicitud directamente a updateAvatar del userController
+    // Ahora que la ruta está habilitada en el backend
     const avatarUrl = `${API_URL}/api/users/avatar`;
     console.log('Enviando petición a:', avatarUrl);
     
@@ -48,7 +48,7 @@ export const updateUserAvatar = async (avatarData) => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      // Según updateAvatar en userModel.js
+      // Enviamos el avatarData directamente como lo espera el controlador
       body: JSON.stringify({ avatarData }),
     });
 
@@ -67,24 +67,9 @@ export const updateUserAvatar = async (avatarData) => {
       throw new Error(errorMsg);
     }
 
-    // Respuesta exitosa
     return await response.json();
   } catch (error) {
     console.error('Error al actualizar avatar:', error);
-    
-    // Implementación de almacenamiento local como alternativa
-    console.log('Almacenando avatar localmente como respaldo...');
-    localStorage.setItem('userAvatar', avatarData);
-    
-    // Si estamos en desarrollo, no lanzamos el error para permitir pruebas
-    if (process.env.NODE_ENV === 'development') {
-      return { 
-        success: true, 
-        localOnly: true, 
-        message: 'Avatar almacenado localmente (entorno de desarrollo)' 
-      };
-    }
-    
     throw error;
   }
 };
