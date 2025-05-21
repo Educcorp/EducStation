@@ -37,78 +37,59 @@ export const updateUserAvatar = async (avatarData) => {
     throw new Error('No hay sesión activa');
   }
   
-  try {
-    // Intentamos con ambas posibles rutas
-    const avatarUrl = `${API_URL}/api/users/avatar`;
-    console.log('Enviando petición a:', avatarUrl);
-    
-    const response = await fetch(avatarUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      // Enviamos el campo que espera el controlador (avatarData)
-      body: JSON.stringify({ avatarData: avatarData }),
-    });
-
-    // Log detallado de la respuesta
-    console.log('Respuesta del servidor:', response.status, response.statusText);
-
-    if (!response.ok) {
-      // Si falla la primera ruta, intentamos con la segunda
-      if (response.status === 404) {
-        console.log('Ruta no encontrada, intentando ruta alternativa...');
-        
-        const alternativeUrl = `${API_URL}/api/auth/user/avatar`;
-        console.log('Intentando con:', alternativeUrl);
-        
-        const alternativeResponse = await fetch(alternativeUrl, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            // Probamos con ambos formatos para mayor compatibilidad
-            avatarData: avatarData,
-            avatarUrl: avatarData 
-          }),
-        });
-        
-        console.log('Respuesta alternativa:', alternativeResponse.status, alternativeResponse.statusText);
-        
-        if (!alternativeResponse.ok) {
-          let errorMsg = 'Error al actualizar avatar';
-          try {
-            const errorText = await alternativeResponse.text();
-            console.error('Detalles del error (alternativa):', errorText);
-            errorMsg = `Error ${alternativeResponse.status}: ${errorText || alternativeResponse.statusText}`;
-          } catch (e) {
-            console.error('No se pudo obtener detalle del error');
-          }
-          throw new Error(errorMsg);
-        }
-        
-        return await alternativeResponse.json();
-      }
+  // Intentaremos varias combinaciones de rutas y métodos
+  const possibleEndpoints = [
+    { url: `${API_URL}/api/auth/user/profile`, method: 'PUT' },
+    { url: `${API_URL}/api/users/profile`, method: 'PUT' },
+    { url: `${API_URL}/api/users/avatar`, method: 'POST' },
+    { url: `${API_URL}/api/auth/user/`, method: 'PUT' },
+    { url: `${API_URL}/api/auth/user/avatar`, method: 'POST' }
+  ];
+  
+  let lastError = null;
+  
+  // Probamos cada endpoint hasta que uno funcione
+  for (const endpoint of possibleEndpoints) {
+    try {
+      console.log(`Intentando con: ${endpoint.url} (${endpoint.method})`);
       
-      let errorMsg = 'Error al actualizar avatar';
-      try {
+      const response = await fetch(endpoint.url, {
+        method: endpoint.method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          // Enviamos múltiples formatos para mayor compatibilidad
+          avatar: avatarData,
+          avatarData: avatarData,
+          avatarUrl: avatarData,
+          // Si es una actualización de perfil, incluimos este campo
+          ...(endpoint.url.includes('profile') && { avatar: avatarData })
+        }),
+      });
+      
+      console.log(`Respuesta de ${endpoint.url}: ${response.status} ${response.statusText}`);
+      
+      if (response.ok) {
+        // ¡Éxito! Retornamos la respuesta
+        console.log(`Éxito al actualizar avatar con: ${endpoint.url}`);
+        return await response.json();
+      } else {
+        // Registramos el error para depuración
         const errorText = await response.text();
-        console.error('Detalles del error:', errorText);
-        errorMsg = `Error ${response.status}: ${errorText || response.statusText}`;
-      } catch (e) {
-        console.error('No se pudo obtener detalle del error');
+        console.warn(`Error con ${endpoint.url}: ${response.status}`, errorText);
+        lastError = new Error(`Error ${response.status}: ${errorText}`);
       }
-      throw new Error(errorMsg);
+    } catch (error) {
+      console.warn(`Excepción con ${endpoint.url}:`, error);
+      lastError = error;
     }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error al actualizar avatar:', error);
-    throw error;
   }
+  
+  // Si llegamos aquí, ningún endpoint funcionó
+  console.error('Todos los intentos de actualizar el avatar fallaron');
+  throw lastError || new Error('No se pudo actualizar el avatar después de intentar múltiples endpoints');
 };
 
 // Actualizar datos del perfil
