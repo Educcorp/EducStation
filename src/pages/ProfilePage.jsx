@@ -29,6 +29,9 @@ const ProfilePage = () => {
         // Utilizamos el servicio para obtener los datos reales del usuario
         const userData = await getUserProfile();
         
+        // Verificar si hay un avatar guardado localmente
+        const localAvatar = localStorage.getItem('userAvatar');
+        
         // Formatear la fecha de registro
         const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
         
@@ -40,7 +43,8 @@ const ProfilePage = () => {
           email: userData.email || 'usuario@ejemplo.com',
           role: userData.is_superuser ? 'Administrador' : 'Estudiante',
           joinDate: joinDate,
-          avatar: userData.avatar || '/assets/images/logoBN.png'
+          // Priorizar el avatar local si existe
+          avatar: localAvatar || userData.avatar || '/assets/images/logoBN.png'
         });
         
         setIsLoading(false);
@@ -69,16 +73,25 @@ const ProfilePage = () => {
         reader.onloadend = async () => {
           try {
             console.log('Imagen convertida a base64, preparando envío al servidor');
-            // Usar el servicio para actualizar el avatar
-            await updateUserAvatar(reader.result);
             
-            // Actualizar en el estado local
+            // Almacenar localmente de inmediato
+            localStorage.setItem('userAvatar', reader.result);
+            
+            try {
+              // Intentar actualizar en el servidor
+              await updateUserAvatar(reader.result);
+              console.log('Avatar actualizado en el servidor correctamente');
+            } catch (serverError) {
+              console.warn('No se pudo actualizar en el servidor, usando versión local:', serverError.message);
+            }
+            
+            // Actualizar en el estado local de todas formas (ya tenemos una copia local)
             setUserProfile(prev => ({
               ...prev,
               avatar: reader.result
             }));
             
-            console.log('Avatar actualizado correctamente en frontend');
+            console.log('Avatar actualizado correctamente en la interfaz');
             setIsUploading(false);
           } catch (error) {
             console.error('Error al actualizar el avatar:', error);
