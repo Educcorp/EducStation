@@ -22,35 +22,54 @@ export const checkUsernameAvailability = async (username) => {
     // Log de la respuesta para depuración
     console.log('Status de respuesta:', response.status);
 
-    // Si hay error en la respuesta, no interrumpir el flujo
+    const data = await response.json();
+    console.log('Respuesta del servidor:', data);
+
+    // Si hay error en la respuesta, verificar el tipo de error
     if (!response.ok) {
-      console.error('Error en respuesta checkUsername, asumiendo disponible');
+      console.error('Error en respuesta checkUsername:', data);
+
+      // Si el error indica que el usuario ya existe
+      if (data && data.message && (
+        data.message.includes('ya está en uso') ||
+        data.message.includes('ya existe') ||
+        !data.available
+      )) {
+        console.log('Username no disponible según el servidor');
+        throw new Error(data.message || 'El nombre de usuario ya está en uso');
+      }
+
+      // Para otros errores, asumimos que está disponible para no bloquear el registro
+      console.warn('Error desconocido en verificación, asumiendo disponible');
       return { available: true, message: 'Nombre de usuario disponible (por error de red)' };
     }
 
-    try {
-      const data = await response.json();
-      console.log('Respuesta del servidor:', data);
-
-      // Verificar explícitamente la disponibilidad
-      if (data.hasOwnProperty('available')) {
-        if (!data.available) {
-          throw new Error(data.message || 'El nombre de usuario ya está en uso');
-        }
-        return data;
-      } else {
-        console.error('Respuesta inesperada de la API:', data);
-        // Si la respuesta no tiene el campo 'available', asumimos que está disponible
-        // para evitar bloquear el registro injustamente
-        return { available: true, message: 'Nombre de usuario disponible (asumido)' };
+    // Verificar explícitamente la disponibilidad
+    if (data.hasOwnProperty('available')) {
+      if (!data.available) {
+        console.log('Username no disponible según respuesta');
+        throw new Error(data.message || 'El nombre de usuario ya está en uso');
       }
-    } catch (jsonError) {
-      console.error('Error al procesar respuesta JSON:', jsonError);
-      return { available: true, message: 'Nombre de usuario disponible (error en respuesta)' };
+      console.log('Username disponible según respuesta');
+      return data;
+    } else {
+      console.error('Respuesta inesperada de la API:', data);
+      // Si la respuesta no tiene el campo 'available', asumimos que está disponible
+      // para evitar bloquear el registro injustamente
+      return { available: true, message: 'Nombre de usuario disponible (asumido)' };
     }
   } catch (error) {
     console.error('Error al verificar nombre de usuario:', error);
-    // En caso de error de red, permitir continuar el registro
+
+    // Si el error indica que el usuario ya existe, propagamos el error
+    if (error.message && (
+      error.message.includes('ya está en uso') ||
+      error.message.includes('ya existe')
+    )) {
+      throw error;
+    }
+
+    // Para otros errores, asumimos disponible para no bloquear el registro
     return { available: true, message: 'Nombre de usuario disponible (por error de red)' };
   }
 };
@@ -109,6 +128,17 @@ export const register = async (userData) => {
       // Si hay un error específico del backend, lo lanzamos
       if (data?.detail) {
         console.error('Error específico del backend:', data.detail);
+
+        // Manejar específicamente los errores comunes de registro
+        if (data.detail.includes("usuario ya está en uso") ||
+          data.detail.includes("nombre de usuario ya está en uso")) {
+          throw new Error('El nombre de usuario ya está en uso');
+        }
+        else if (data.detail.includes("correo electrónico ya está registrado") ||
+          data.detail.includes("email ya está registrado")) {
+          throw new Error('El correo electrónico ya está registrado');
+        }
+
         throw new Error(data.detail);
       }
       // Si hay errores de validación, los formateamos
