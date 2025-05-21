@@ -435,6 +435,13 @@ const PostEditor = () => {
       };
       
       console.log("Enviando publicación con datos:", postData);
+      // Verificar si la imagen está presente
+      if (post.Imagen_portada) {
+        console.log("Imagen incluida en la publicación (primeros 50 caracteres):", post.Imagen_portada.substring(0, 50) + "...");
+        console.log("Longitud de la imagen Base64:", post.Imagen_portada.length);
+      } else {
+        console.log("No se incluyó imagen en la publicación");
+      }
       
       // Determinar qué endpoint usar según el modo del editor
       let result;

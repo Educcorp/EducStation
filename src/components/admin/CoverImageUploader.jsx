@@ -2,12 +2,79 @@ import React, { useState } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
 
+// Constante para el tamaño máximo de imagen en bytes (4MB)
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024;
+
 const CoverImageUploader = ({ coverImagePreview, onChange }) => {
   // Estado para mostrar mensaje de conversión exitosa
   const [conversionStatus, setConversionStatus] = useState(null);
+  // Estado para mostrar información del tamaño
+  const [imageInfo, setImageInfo] = useState(null);
 
   // Usar el hook useTheme para obtener los colores según el tema actual
   const { colors } = useTheme();
+
+  // Función para comprimir imagen si es necesario
+  const compressImageIfNeeded = (file, maxSize = MAX_IMAGE_SIZE) => {
+    return new Promise((resolve, reject) => {
+      if (file.size <= maxSize) {
+        // Si la imagen ya es lo suficientemente pequeña, no la comprimimos
+        resolve(file);
+        return;
+      }
+
+      // Crear un canvas para comprimir la imagen
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+
+        img.onload = () => {
+          // Calcular nueva altura y anchura manteniendo la proporción
+          let newWidth = img.width;
+          let newHeight = img.height;
+          
+          // Calculo de ratio de compresión basado en el tamaño
+          const compressionRatio = Math.sqrt(maxSize / file.size);
+          
+          // Reducir tamaño proporcionalmente
+          newWidth = Math.floor(newWidth * compressionRatio);
+          newHeight = Math.floor(newHeight * compressionRatio);
+          
+          // Crear un canvas para la imagen comprimida
+          const canvas = document.createElement('canvas');
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+          
+          // Dibujar la imagen en el canvas con el nuevo tamaño
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+          
+          // Convertir a blob con calidad reducida
+          canvas.toBlob((blob) => {
+            // Crear un nuevo archivo a partir del blob
+            const newFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            
+            // Mostrar información de compresión
+            setImageInfo({
+              originalSize: (file.size / 1024 / 1024).toFixed(2),
+              compressedSize: (newFile.size / 1024 / 1024).toFixed(2),
+              width: newWidth,
+              height: newHeight
+            });
+            
+            resolve(newFile);
+          }, 'image/jpeg', 0.7); // Calidad de JPEG (0.7 = 70%)
+        };
+      };
+      
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
   // Función para convertir la imagen a Base64
   const convertToBase64 = (file) => {
@@ -25,7 +92,16 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
     if (file) {
       try {
         setConversionStatus('converting');
-        const base64String = await convertToBase64(file);
+        
+        // Mostrar el tamaño original
+        const originalSizeMB = (file.size / 1024 / 1024).toFixed(2);
+        setImageInfo({ originalSize: originalSizeMB });
+        
+        // Comprimir la imagen si es necesario
+        const processedFile = await compressImageIfNeeded(file);
+        
+        // Convertir a Base64
+        const base64String = await convertToBase64(processedFile);
         
         // Mostrar mensaje de éxito por 3 segundos
         setConversionStatus('success');
@@ -34,7 +110,7 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
         // Llamar al onChange del componente padre con el archivo original y la versión Base64
         onChange(e, base64String);
       } catch (error) {
-        console.error('Error al convertir imagen a Base64:', error);
+        console.error('Error al procesar imagen:', error);
         // Mostrar mensaje de error por 3 segundos
         setConversionStatus('error');
         setTimeout(() => setConversionStatus(null), 3000);
@@ -128,6 +204,15 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
       backgroundColor: 'rgba(33, 150, 243, 0.1)',
       color: '#2196F3',
       border: '1px solid rgba(33, 150, 243, 0.2)',
+    },
+    infoMessage: {
+      fontSize: typography.fontSize.sm,
+      marginTop: spacing.xs,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      backgroundColor: 'rgba(33, 150, 243, 0.1)', 
+      color: '#2196F3',
+      border: '1px solid rgba(33, 150, 243, 0.2)',
     }
   };
 
@@ -141,15 +226,17 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
     switch (conversionStatus) {
       case 'success':
         statusStyles = styles.successStatus;
-        message = '✓ Imagen convertida exitosamente a Base64';
+        message = imageInfo && imageInfo.compressedSize ? 
+          `✓ Imagen comprimida y convertida: ${imageInfo.originalSize}MB → ${imageInfo.compressedSize}MB` :
+          '✓ Imagen convertida exitosamente';
         break;
       case 'error':
         statusStyles = styles.errorStatus;
-        message = '✗ Error al convertir la imagen a Base64';
+        message = '✗ Error al procesar la imagen';
         break;
       case 'converting':
         statusStyles = styles.convertingStatus;
-        message = '⏳ Convirtiendo imagen...';
+        message = '⏳ Procesando imagen...';
         break;
       default:
         return null;
@@ -158,6 +245,27 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
     return (
       <div style={{...styles.statusMessage, ...statusStyles}}>
         {message}
+      </div>
+    );
+  };
+
+  // Renderizar información de la imagen
+  const renderImageInfo = () => {
+    if (!imageInfo || conversionStatus === 'converting') return null;
+    
+    let infoText = '';
+    
+    if (imageInfo.compressedSize) {
+      infoText = `Imagen comprimida: ${imageInfo.width}x${imageInfo.height}px, ${imageInfo.compressedSize}MB (original: ${imageInfo.originalSize}MB)`;
+    } else if (imageInfo.originalSize) {
+      infoText = `Tamaño de imagen: ${imageInfo.originalSize}MB`;
+    }
+    
+    if (!infoText) return null;
+    
+    return (
+      <div style={styles.infoMessage}>
+        {infoText}
       </div>
     );
   };
@@ -206,9 +314,10 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
           )}
         </label>
         {renderStatusMessage()}
+        {renderImageInfo()}
         <p style={styles.helperText}>
           <span style={{color: colors.primary}}>💡</span>
-          Recomendación: Usar imágenes de al menos 1200x600px para una mejor visualización.
+          Para mejores resultados, usa imágenes de hasta 4MB. Las imágenes más grandes serán comprimidas automáticamente.
         </p>
       </div>
     </div>
