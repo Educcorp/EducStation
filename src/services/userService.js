@@ -38,8 +38,8 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
-    // Volvemos a la ruta original que estaba en producción
-    const avatarUrl = `${API_URL}/api/auth/user/avatar`;
+    // Intentamos con ambas posibles rutas
+    const avatarUrl = `${API_URL}/api/users/avatar`;
     console.log('Enviando petición a:', avatarUrl);
     
     const response = await fetch(avatarUrl, {
@@ -48,14 +48,51 @@ export const updateUserAvatar = async (avatarData) => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      // Probamos con la estructura de datos original
-      body: JSON.stringify({ avatarUrl: avatarData }),
+      // Enviamos el campo que espera el controlador (avatarData)
+      body: JSON.stringify({ avatarData: avatarData }),
     });
 
     // Log detallado de la respuesta
     console.log('Respuesta del servidor:', response.status, response.statusText);
 
     if (!response.ok) {
+      // Si falla la primera ruta, intentamos con la segunda
+      if (response.status === 404) {
+        console.log('Ruta no encontrada, intentando ruta alternativa...');
+        
+        const alternativeUrl = `${API_URL}/api/auth/user/avatar`;
+        console.log('Intentando con:', alternativeUrl);
+        
+        const alternativeResponse = await fetch(alternativeUrl, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            // Probamos con ambos formatos para mayor compatibilidad
+            avatarData: avatarData,
+            avatarUrl: avatarData 
+          }),
+        });
+        
+        console.log('Respuesta alternativa:', alternativeResponse.status, alternativeResponse.statusText);
+        
+        if (!alternativeResponse.ok) {
+          let errorMsg = 'Error al actualizar avatar';
+          try {
+            const errorText = await alternativeResponse.text();
+            console.error('Detalles del error (alternativa):', errorText);
+            errorMsg = `Error ${alternativeResponse.status}: ${errorText || alternativeResponse.statusText}`;
+          } catch (e) {
+            console.error('No se pudo obtener detalle del error');
+          }
+          throw new Error(errorMsg);
+        }
+        
+        return await alternativeResponse.json();
+      }
+      
       let errorMsg = 'Error al actualizar avatar';
       try {
         const errorText = await response.text();
