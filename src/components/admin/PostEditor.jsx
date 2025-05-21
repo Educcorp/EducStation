@@ -265,13 +265,16 @@ const PostEditor = () => {
   };
 
   // Manejador para cambios en la imagen de portada
-  const handleImageChange = (e) => {
+  const handleImageChange = (e, base64Image) => {
     const file = e.target.files[0];
     if (file) {
+      // Guardar tanto el archivo como la vista previa
       setPost(prev => ({
         ...prev,
         coverImage: file,
-        coverImagePreview: URL.createObjectURL(file)
+        coverImagePreview: URL.createObjectURL(file),
+        // Guardar la versión Base64 de la imagen para enviarla al backend
+        imagen_portada: base64Image || null
       }));
     }
   };
@@ -354,7 +357,8 @@ const PostEditor = () => {
         contenido: post.content,
         resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'borrador',
-        categorias: categorias
+        categorias: categorias,
+        Imagen_portada: post.imagen_portada || null // Enviar la imagen en Base64 si existe
       };
       
       console.log("Guardando borrador con datos:", postData);
@@ -425,7 +429,8 @@ const PostEditor = () => {
         contenido: post.content,
         resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'publicado',
-        categorias: [categoriaId] // Usar el ID numérico de la categoría
+        categorias: [categoriaId], // Usar el ID numérico de la categoría
+        Imagen_portada: post.imagen_portada || null // Enviar la imagen en Base64 si existe
       };
       
       console.log("Enviando publicación con datos:", postData);
@@ -451,7 +456,8 @@ const PostEditor = () => {
           htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
           resumen: post.resumen || postData.resumen,
           estado: postData.estado,
-          categorias: postData.categorias
+          categorias: postData.categorias,
+          Imagen_portada: postData.Imagen_portada // Enviar la imagen en Base64
         });
       } else {
         result = await createPublicacion(postData);
