@@ -67,14 +67,14 @@ export const createPublicacion = async (publicacionData) => {
         console.log("URL de la API:", `${API_URL}/api/publicaciones`);
         
         // Si no se proporcionó una imagen en Base64, intentar extraerla del contenido HTML
-        if (!publicacionData.Imagen_portada) {
+        if (!publicacionData.imagen_portada_html) {
             // Extraer la primera imagen del contenido HTML para la portada si existe
             const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
             const match = publicacionData.contenido.match(imgRegex);
             
             if (match && match.length > 0) {
-                publicacionData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
-                console.log("Imagen portada detectada del contenido HTML:", publicacionData.Imagen_portada);
+                publicacionData.imagen_portada_html = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada del contenido HTML:", publicacionData.imagen_portada_html);
             }
         } else {
             console.log("Usando imagen portada proporcionada en Base64");
@@ -124,14 +124,14 @@ export const createPublicacionFromHTML = async (publicacionData) => {
         }
         
         // Si no se proporcionó una imagen en Base64, intentar extraerla del contenido HTML
-        if (!publicacionData.Imagen_portada) {
+        if (!publicacionData.imagen_portada_html) {
             // Extraer la primera imagen del contenido HTML para la portada si existe
             const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
             const match = publicacionData.htmlContent.match(imgRegex);
             
             if (match && match.length > 0) {
-                publicacionData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
-                console.log("Imagen portada detectada desde HTML:", publicacionData.Imagen_portada);
+                publicacionData.imagen_portada_html = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada desde HTML:", publicacionData.imagen_portada_html);
             }
         } else {
             console.log("Usando imagen portada proporcionada en Base64");
