@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
@@ -9,7 +9,7 @@ import axios from 'axios';
 import { getUserProfile, updateUserAvatar } from '../services/userService';
 
 const ProfilePage = () => {
-  const { user, isAuth, checkTokenValidity } = useContext(AuthContext);
+  const { user, isAuth } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
@@ -17,23 +17,17 @@ const ProfilePage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        console.log('ProfilePage - Verificando autenticación:', { isAuth, user });
-        
-        if (!isAuth || !checkTokenValidity()) {
-          console.log('ProfilePage - Usuario no autenticado, redirigiendo a login');
-          navigate('/login');
+        if (!isAuth) {
+          window.location.href = '/login';
           return;
         }
         
-        console.log('ProfilePage - Obteniendo perfil del usuario');
         // Utilizamos el servicio para obtener los datos reales del usuario
         const userData = await getUserProfile();
-        console.log('ProfilePage - Datos del usuario obtenidos:', userData);
         
         // Formatear la fecha de registro
         const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
@@ -58,10 +52,9 @@ const ProfilePage = () => {
     };
 
     fetchUserProfile();
-  }, [isAuth, navigate, checkTokenValidity, user]);
+  }, [isAuth]);
 
   const handleImageClick = () => {
-    console.log('ProfilePage - Abriendo selector de imagen');
     fileInputRef.current.click();
   };
 
@@ -69,13 +62,11 @@ const ProfilePage = () => {
     const file = event.target.files[0];
     if (file) {
       try {
-        console.log('ProfilePage - Archivo seleccionado:', file.name);
         setIsUploading(true);
         const reader = new FileReader();
         
         reader.onloadend = async () => {
           try {
-            console.log('ProfilePage - Imagen convertida a base64, enviando al servidor');
             // Usar el servicio para actualizar el avatar
             await updateUserAvatar(reader.result);
             
@@ -85,7 +76,6 @@ const ProfilePage = () => {
               avatar: reader.result
             }));
             
-            console.log('ProfilePage - Avatar actualizado correctamente');
             setIsUploading(false);
           } catch (error) {
             console.error('Error al actualizar el avatar:', error);

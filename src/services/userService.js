@@ -1,7 +1,7 @@
 // src/services/userService.js
 // Servicio para operaciones relacionadas con usuarios y perfiles
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app/api';
+const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
 
 // Obtener perfil del usuario actual
 export const getUserProfile = async () => {
@@ -12,7 +12,7 @@ export const getUserProfile = async () => {
   }
   
   try {
-    const response = await fetch(`${API_URL}/auth/user/`, {
+    const response = await fetch(`${API_URL}/api/auth/user/`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -38,9 +38,7 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
-    console.log('Enviando petición a:', `${API_URL}/auth/user/avatar`);
-    
-    const response = await fetch(`${API_URL}/auth/user/avatar`, {
+    const response = await fetch(`${API_URL}/api/auth/user/avatar`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -50,9 +48,7 @@ export const updateUserAvatar = async (avatarData) => {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Respuesta de error:', response.status, errorText);
-      throw new Error(`Error al actualizar avatar: ${response.status}`);
+      throw new Error('Error al actualizar avatar');
     }
 
     return await response.json();
@@ -71,7 +67,7 @@ export const updateUserProfile = async (profileData) => {
   }
   
   try {
-    const response = await fetch(`${API_URL}/auth/user/profile`, {
+    const response = await fetch(`${API_URL}/api/auth/user/profile`, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
