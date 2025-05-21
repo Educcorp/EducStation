@@ -66,32 +66,34 @@ const ProfilePage = () => {
     const file = event.target.files[0];
     if (file) {
       try {
+        // Verificar tamaño de la imagen (máximo 2MB para ImgBB en plan gratuito)
+        const fileSizeInMB = file.size / (1024 * 1024);
+        if (fileSizeInMB > 2) {
+          setErrorMessage(`La imagen es demasiado grande (${fileSizeInMB.toFixed(2)}MB). El límite es 2MB.`);
+          return;
+        }
+        
         console.log('Procesando archivo:', file.name, 'tipo:', file.type, 'tamaño:', Math.round(file.size/1024), 'KB');
+        setIsLoading(true);
         setIsUploading(true);
+        setErrorMessage('');
+        
         const reader = new FileReader();
         
         reader.onloadend = async () => {
           try {
-            console.log('Imagen convertida a base64, preparando envío al servidor');
+            console.log('Imagen convertida a base64, enviando a servicio externo...');
             
-            // Almacenar localmente de inmediato
-            localStorage.setItem('userAvatar', reader.result);
+            // Usar el servicio actualizado para guardar el avatar
+            const result = await updateUserAvatar(reader.result);
             
-            try {
-              // Intentar actualizar en el servidor
-              await updateUserAvatar(reader.result);
-              console.log('Avatar actualizado en el servidor correctamente');
-            } catch (serverError) {
-              console.warn('No se pudo actualizar en el servidor, usando versión local:', serverError.message);
-            }
-            
-            // Actualizar en el estado local de todas formas (ya tenemos una copia local)
+            // Actualizar el estado local con la URL de la imagen alojada externamente
             setUserProfile(prev => ({
               ...prev,
-              avatar: reader.result
+              avatar: result.avatarUrl
             }));
             
-            console.log('Avatar actualizado correctamente en la interfaz');
+            console.log('Avatar actualizado correctamente:', result.message);
             setIsUploading(false);
           } catch (error) {
             console.error('Error al actualizar el avatar:', error);
