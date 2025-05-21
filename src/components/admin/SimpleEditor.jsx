@@ -5,6 +5,10 @@ import { spacing, typography, shadows, borderRadius, transitions } from '../../s
 import FloatingToolbar from './FloatingToolbar';
 import { lightColors } from '../../styles/theme'; // Importamos específicamente los colores claros
 
+// Constantes para el tamaño máximo de imagen
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
+const ABSOLUTE_MAX_SIZE = 15 * 1024 * 1024; // 15MB
+
 const SimpleEditor = ({ content, onChange }) => {
   const editorRef = useRef(null);
   const [internalContent, setInternalContent] = useState(content || '');
@@ -258,75 +262,224 @@ const SimpleEditor = ({ content, onChange }) => {
     }
   };
 
-  // Handle image insertion with resizable and movable features
+  // Función para comprimir imagen
+  const compressImage = (file, imgSrc) => {
+    return new Promise((resolve, reject) => {
+      // Verificar si la imagen es demasiado grande
+      if (file.size > ABSOLUTE_MAX_SIZE) {
+        reject(new Error(`La imagen es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es ${ABSOLUTE_MAX_SIZE / 1024 / 1024}MB.`));
+        return;
+      }
+      
+      // Si la imagen es suficientemente pequeña, no comprimir
+      if (file.size <= MAX_IMAGE_SIZE) {
+        resolve(imgSrc);
+        return;
+      }
+      
+      // Crear un objeto de imagen para obtener dimensiones
+      const img = new Image();
+      img.onload = () => {
+        try {
+          // Calcular ratio de compresión
+          let compressionRatio;
+          
+          if (file.size > 10 * 1024 * 1024) { // Más de 10MB
+            compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size) * 0.7;
+          } else if (file.size > 5 * 1024 * 1024) { // Entre 5MB y 10MB
+            compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size) * 0.8;
+          } else {
+            compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size);
+          }
+          
+          // Reducir tamaño proporcionalmente
+          const newWidth = Math.floor(img.width * compressionRatio);
+          const newHeight = Math.floor(img.height * compressionRatio);
+          
+          // Crear canvas para compresión
+          const canvas = document.createElement('canvas');
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+          
+          // Dibujar imagen en canvas
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+          
+          // Calcular calidad JPEG según tamaño
+          let jpegQuality = 0.7; // 70% por defecto
+          
+          if (file.size > 10 * 1024 * 1024) {
+            jpegQuality = 0.5; // 50% para imágenes muy grandes
+          } else if (file.size > 5 * 1024 * 1024) {
+            jpegQuality = 0.6; // 60% para imágenes grandes
+          }
+          
+          // Convertir a data URL con la calidad especificada
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
+          
+          // Verificar tamaño después de compresión (aproximado)
+          const base64Length = compressedDataUrl.length - 'data:image/jpeg;base64,'.length;
+          const compressedSize = (base64Length * 0.75); // aproximación del tamaño en bytes
+          
+          // Si sigue siendo demasiado grande, comprimir más agresivamente
+          if (compressedSize > MAX_IMAGE_SIZE * 1.2) {
+            const secondCanvas = document.createElement('canvas');
+            const reducedWidth = Math.floor(newWidth * 0.8);
+            const reducedHeight = Math.floor(newHeight * 0.8);
+            
+            secondCanvas.width = reducedWidth;
+            secondCanvas.height = reducedHeight;
+            
+            const ctx2 = secondCanvas.getContext('2d');
+            ctx2.drawImage(img, 0, 0, reducedWidth, reducedHeight);
+            
+            const finalDataUrl = secondCanvas.toDataURL('image/jpeg', 0.45);
+            resolve(finalDataUrl);
+          } else {
+            resolve(compressedDataUrl);
+          }
+        } catch (error) {
+          console.error("Error al comprimir imagen:", error);
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => {
+        reject(new Error("Error al cargar la imagen para compresión"));
+      };
+      
+      img.src = imgSrc;
+    });
+  };
+
+  // Actualizar handleImageInsert para usar la compresión
   const handleImageInsert = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     
-    input.onchange = (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            // Guardamos la posición actual del cursor
-            const selection = window.getSelection();
-            const range = selection.getRangeAt(0).cloneRange();
-            
-            // En lugar de insertar la imagen directamente, creamos un contenedor manipulable
-            const imgSrc = event.target.result;
-            
-            // Creamos HTML personalizado para la imagen con atributos para resize y estilos
-            // La imagen se almacena como código HTML para que pueda ser renderizada en vistas de carátulas
-            const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-              <img src="${imgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
-              <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
-            </div>`;
-            
-            // Insertamos el HTML personalizado
-            document.execCommand('insertHTML', false, imgHtml);
-            
-            // Después de insertar, agregamos event listeners para manipulación
-            setTimeout(() => {
-              addImageEventListeners();
-              handleContentChange();
-              
-              // Posicionar el cursor después de la imagen insertada
-              const imageContainers = editorRef.current.querySelectorAll('.image-container');
-              if (imageContainers.length > 0) {
-                const lastImageContainer = imageContainers[imageContainers.length - 1];
-                
-                // Crear un espacio después de la imagen para facilitar la escritura
-                const spaceElement = document.createElement('span');
-                spaceElement.innerHTML = '&nbsp;';
-                lastImageContainer.parentNode.insertBefore(spaceElement, lastImageContainer.nextSibling);
-                
-                // Posicionar el cursor después del espacio
-                const newRange = document.createRange();
-                newRange.setStartAfter(spaceElement);
-                newRange.collapse(true);
-                
-                const newSelection = window.getSelection();
-                newSelection.removeAllRanges();
-                newSelection.addRange(newRange);
-                
-                // Enfocar el editor
-                editorRef.current.focus();
-              }
-            }, 10);
-          } catch (error) {
-            console.error("Error al insertar imagen:", error);
-            // Notificar al usuario del error de forma amistosa
-            alert("No se pudo insertar la imagen. Por favor, inténtelo de nuevo.");
-            
-            // Intentar restaurar el estado del editor
-            if (editorRef.current) {
-              editorRef.current.focus();
-            }
+      input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        // Mostrar un indicador de carga
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.textContent = "Procesando imagen...";
+        loadingIndicator.style.padding = "10px";
+        loadingIndicator.style.margin = "5px";
+        loadingIndicator.style.backgroundColor = "#f0f8ff";
+        loadingIndicator.style.border = "1px solid #add8e6";
+        loadingIndicator.style.borderRadius = "4px";
+        
+        // Guardar la posición del cursor
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0).cloneRange();
+        
+        // Insertar indicador de carga
+        document.execCommand('insertHTML', false, loadingIndicator.outerHTML);
+        
+        // Leer el archivo como Data URL
+        const readFileAsDataURL = new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (event) => resolve(event.target.result);
+          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
+        });
+        
+        // Obtener la imagen como Data URL
+        const imgSrc = await readFileAsDataURL;
+        
+        // Comprimir la imagen si es necesario
+        const processedImgSrc = await compressImage(file, imgSrc);
+        
+        // Verificar el tamaño de la cadena base64 resultante
+        const base64Length = processedImgSrc.length - processedImgSrc.indexOf('base64,') - 7;
+        const base64Size = (base64Length * 0.75);
+        
+        if (base64Size > 45 * 1024 * 1024) { // Limitar a 45MB (por debajo del max_allowed_packet)
+          throw new Error(`La imagen procesada sigue siendo demasiado grande (${(base64Size / 1024 / 1024).toFixed(2)} MB). Por favor, utiliza una imagen más pequeña.`);
+        }
+        
+        // Eliminar el indicador de carga
+        const loadingElements = editorRef.current.querySelectorAll('div');
+        loadingElements.forEach(el => {
+          if (el.textContent === "Procesando imagen...") {
+            el.remove();
           }
-        };
-        reader.readAsDataURL(file);
+        });
+        
+        // Creamos HTML personalizado para la imagen con atributos para resize y estilos
+        const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
+          <img src="${processedImgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
+          <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
+        </div>`;
+        
+        // Insertamos el HTML personalizado
+        document.execCommand('insertHTML', false, imgHtml);
+            
+        // Después de insertar, agregamos event listeners para manipulación
+        setTimeout(() => {
+          addImageEventListeners();
+          handleContentChange();
+          
+          // Posicionar el cursor después de la imagen insertada
+          const imageContainers = editorRef.current.querySelectorAll('.image-container');
+          if (imageContainers.length > 0) {
+            const lastImageContainer = imageContainers[imageContainers.length - 1];
+            
+            // Crear un espacio después de la imagen para facilitar la escritura
+            const spaceElement = document.createElement('span');
+            spaceElement.innerHTML = '&nbsp;';
+            lastImageContainer.parentNode.insertBefore(spaceElement, lastImageContainer.nextSibling);
+            
+            // Posicionar el cursor después del espacio
+            const newRange = document.createRange();
+            newRange.setStartAfter(spaceElement);
+            newRange.collapse(true);
+            
+            const newSelection = window.getSelection();
+            newSelection.removeAllRanges();
+            newSelection.addRange(newRange);
+            
+            // Enfocar el editor
+            editorRef.current.focus();
+          }
+        }, 10);
+      } catch (error) {
+        console.error("Error al insertar imagen:", error);
+        
+        // Limpiar cualquier indicador de carga
+        const loadingElements = editorRef.current.querySelectorAll('div');
+        loadingElements.forEach(el => {
+          if (el.textContent === "Procesando imagen...") {
+            el.remove();
+          }
+        });
+        
+        // Notificar al usuario del error de forma amistosa
+        const errorNode = document.createElement('span');
+        errorNode.style.color = 'red';
+        errorNode.style.fontWeight = 'bold';
+        errorNode.textContent = `Error: ${error.message || 'No se pudo procesar la imagen'}`;
+        
+        // Insertar mensaje de error en el editor
+        document.execCommand('insertHTML', false, errorNode.outerHTML);
+        
+        // Eliminar el mensaje después de unos segundos
+        setTimeout(() => {
+          const errorElements = editorRef.current.querySelectorAll('span');
+          errorElements.forEach(el => {
+            if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
+              el.remove();
+            }
+          });
+        }, 5000);
+        
+        // Intentar restaurar el estado del editor
+        if (editorRef.current) {
+          editorRef.current.focus();
+        }
+      }
       }
     };
     
@@ -750,16 +903,206 @@ const SimpleEditor = ({ content, onChange }) => {
           
           // Get image from clipboard
           const blob = items[i].getAsFile();
+          
+          // Verificar tamaño antes de procesar
+          if (blob.size > ABSOLUTE_MAX_SIZE) {
+            const errorMsg = `La imagen es demasiado grande (${(blob.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es ${ABSOLUTE_MAX_SIZE / 1024 / 1024}MB.`;
+            const errorNode = document.createElement('span');
+            errorNode.style.color = 'red';
+            errorNode.style.fontWeight = 'bold';
+            errorNode.textContent = `Error: ${errorMsg}`;
+            document.execCommand('insertHTML', false, errorNode.outerHTML);
+            
+            // Eliminar mensaje de error después de unos segundos
+            setTimeout(() => {
+              const errorElements = editorRef.current.querySelectorAll('span');
+              errorElements.forEach(el => {
+                if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
+                  el.remove();
+                }
+              });
+            }, 5000);
+            
+            return;
+          }
+          
+          // Mostrar indicador de carga
+          const loadingIndicator = document.createElement('div');
+          loadingIndicator.textContent = "Procesando imagen pegada...";
+          loadingIndicator.style.padding = "10px";
+          loadingIndicator.style.margin = "5px";
+          loadingIndicator.style.backgroundColor = "#f0f8ff";
+          loadingIndicator.style.border = "1px solid #add8e6";
+          loadingIndicator.style.borderRadius = "4px";
+          document.execCommand('insertHTML', false, loadingIndicator.outerHTML);
+          
           const reader = new FileReader();
           
-          reader.onload = (event) => {
-            // Creamos el contenedor para la imagen pegada
-            const imgSrc = event.target.result;
+          reader.onload = async (event) => {
+            try {
+              // Comprimir la imagen pegada
+              const imgSrc = event.target.result;
+              const processedImgSrc = await compressImage(blob, imgSrc);
+              
+              // Eliminar el indicador de carga
+              const loadingElements = editorRef.current.querySelectorAll('div');
+              loadingElements.forEach(el => {
+                if (el.textContent === "Procesando imagen pegada...") {
+                  el.remove();
+                }
+              });
+              
+              // Creamos HTML personalizado para la imagen
+              const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
+                <img src="${processedImgSrc}" alt="Imagen pegada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
+                <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
+              </div>`;
+              
+              document.execCommand('insertHTML', false, imgHtml);
+              
+              // Añadir event listeners
+              setTimeout(() => {
+                addImageEventListeners();
+                handleContentChange();
+                
+                // Posicionar el cursor después de la imagen pegada
+                const imageContainers = editorRef.current.querySelectorAll('.image-container');
+                if (imageContainers.length > 0) {
+                  const lastImageContainer = imageContainers[imageContainers.length - 1];
+                  
+                  // Crear un espacio después de la imagen para facilitar la escritura
+                  const spaceElement = document.createElement('span');
+                  spaceElement.innerHTML = '&nbsp;';
+                  lastImageContainer.parentNode.insertBefore(spaceElement, lastImageContainer.nextSibling);
+                  
+                  // Posicionar el cursor después del espacio
+                  const newRange = document.createRange();
+                  newRange.setStartAfter(spaceElement);
+                  newRange.collapse(true);
+                  
+                  const newSelection = window.getSelection();
+                  newSelection.removeAllRanges();
+                  newSelection.addRange(newRange);
+                  
+                  // Enfocar el editor
+                  editorRef.current.focus();
+                }
+              }, 10);
+            } catch (error) {
+              console.error("Error al procesar imagen pegada:", error);
+              
+              // Limpiar cualquier indicador de carga
+              const loadingElements = editorRef.current.querySelectorAll('div');
+              loadingElements.forEach(el => {
+                if (el.textContent === "Procesando imagen pegada...") {
+                  el.remove();
+                }
+              });
+              
+              // Notificar al usuario del error
+              const errorNode = document.createElement('span');
+              errorNode.style.color = 'red';
+              errorNode.style.fontWeight = 'bold';
+              errorNode.textContent = `Error: ${error.message || 'No se pudo procesar la imagen'}`;
+              document.execCommand('insertHTML', false, errorNode.outerHTML);
+              
+              // Eliminar mensaje después de unos segundos
+              setTimeout(() => {
+                const errorElements = editorRef.current.querySelectorAll('span');
+                errorElements.forEach(el => {
+                  if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
+                    el.remove();
+                  }
+                });
+              }, 5000);
+            }
+          };
+          
+          reader.onerror = (error) => {
+            console.error("Error al leer imagen del portapapeles:", error);
             
-            // Creamos HTML personalizado para la imagen con atributos para resize y estilos
-            // La imagen se almacena como código HTML para que pueda ser renderizada en vistas de carátulas
+            // Limpiar indicador de carga
+            const loadingElements = editorRef.current.querySelectorAll('div');
+            loadingElements.forEach(el => {
+              if (el.textContent === "Procesando imagen pegada...") {
+                el.remove();
+              }
+            });
+            
+            // Mostrar error
+            const errorNode = document.createElement('span');
+            errorNode.style.color = 'red';
+            errorNode.style.fontWeight = 'bold';
+            errorNode.textContent = "Error: No se pudo leer la imagen del portapapeles";
+            document.execCommand('insertHTML', false, errorNode.outerHTML);
+          };
+          
+          reader.readAsDataURL(blob);
+          return;
+        }
+      }
+    }
+  };
+
+  // Handle drag and drop with improved image handling
+  const handleDrop = (e) => {
+    e.preventDefault();
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      
+      if (file.type.startsWith('image/')) {
+        // Verificar tamaño antes de procesar
+        if (file.size > ABSOLUTE_MAX_SIZE) {
+          const errorMsg = `La imagen es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es ${ABSOLUTE_MAX_SIZE / 1024 / 1024}MB.`;
+          const errorNode = document.createElement('span');
+          errorNode.style.color = 'red';
+          errorNode.style.fontWeight = 'bold';
+          errorNode.textContent = `Error: ${errorMsg}`;
+          document.execCommand('insertHTML', false, errorNode.outerHTML);
+          
+          // Eliminar mensaje de error después de unos segundos
+          setTimeout(() => {
+            const errorElements = editorRef.current.querySelectorAll('span');
+            errorElements.forEach(el => {
+              if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
+                el.remove();
+              }
+            });
+          }, 5000);
+          
+          return;
+        }
+        
+        // Mostrar indicador de carga
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.textContent = "Procesando imagen arrastrada...";
+        loadingIndicator.style.padding = "10px";
+        loadingIndicator.style.margin = "5px";
+        loadingIndicator.style.backgroundColor = "#f0f8ff";
+        loadingIndicator.style.border = "1px solid #add8e6";
+        loadingIndicator.style.borderRadius = "4px";
+        document.execCommand('insertHTML', false, loadingIndicator.outerHTML);
+        
+        const reader = new FileReader();
+        
+        reader.onload = async (event) => {
+          try {
+            // Comprimir la imagen arrastrada
+            const imgSrc = event.target.result;
+            const processedImgSrc = await compressImage(file, imgSrc);
+            
+            // Eliminar el indicador de carga
+            const loadingElements = editorRef.current.querySelectorAll('div');
+            loadingElements.forEach(el => {
+              if (el.textContent === "Procesando imagen arrastrada...") {
+                el.remove();
+              }
+            });
+            
+            // Creamos HTML personalizado para la imagen
             const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-              <img src="${imgSrc}" alt="Imagen pegada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
+              <img src="${processedImgSrc}" alt="Imagen arrastrada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
               <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
             </div>`;
             
@@ -770,7 +1113,7 @@ const SimpleEditor = ({ content, onChange }) => {
               addImageEventListeners();
               handleContentChange();
               
-              // Posicionar el cursor después de la imagen pegada
+              // Posicionar el cursor después de la imagen arrastrada
               const imageContainers = editorRef.current.querySelectorAll('.image-container');
               if (imageContainers.length > 0) {
                 const lastImageContainer = imageContainers[imageContainers.length - 1];
@@ -793,66 +1136,34 @@ const SimpleEditor = ({ content, onChange }) => {
                 editorRef.current.focus();
               }
             }, 10);
-          };
-          
-          reader.readAsDataURL(blob);
-          return;
-        }
-      }
-    }
-  };
-
-  // Handle drag and drop with improved image handling
-  const handleDrop = (e) => {
-    e.preventDefault();
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
-      
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        
-        reader.onload = (event) => {
-          // Creamos el contenedor para la imagen arrastrada
-          const imgSrc = event.target.result;
-          
-          // Creamos HTML personalizado para la imagen con atributos para resize y estilos
-          // La imagen se almacena como código HTML para que pueda ser renderizada en vistas de carátulas
-          const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-            <img src="${imgSrc}" alt="Imagen arrastrada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
-            <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
-          </div>`;
-          
-          document.execCommand('insertHTML', false, imgHtml);
-          
-          // Añadir event listeners
-          setTimeout(() => {
-            addImageEventListeners();
-            handleContentChange();
+          } catch (error) {
+            console.error("Error al procesar imagen arrastrada:", error);
             
-            // Posicionar el cursor después de la imagen arrastrada
-            const imageContainers = editorRef.current.querySelectorAll('.image-container');
-            if (imageContainers.length > 0) {
-              const lastImageContainer = imageContainers[imageContainers.length - 1];
-              
-              // Crear un espacio después de la imagen para facilitar la escritura
-              const spaceElement = document.createElement('span');
-              spaceElement.innerHTML = '&nbsp;';
-              lastImageContainer.parentNode.insertBefore(spaceElement, lastImageContainer.nextSibling);
-              
-              // Posicionar el cursor después del espacio
-              const newRange = document.createRange();
-              newRange.setStartAfter(spaceElement);
-              newRange.collapse(true);
-              
-              const newSelection = window.getSelection();
-              newSelection.removeAllRanges();
-              newSelection.addRange(newRange);
-              
-              // Enfocar el editor
-              editorRef.current.focus();
-            }
-          }, 10);
+            // Limpiar cualquier indicador de carga
+            const loadingElements = editorRef.current.querySelectorAll('div');
+            loadingElements.forEach(el => {
+              if (el.textContent === "Procesando imagen arrastrada...") {
+                el.remove();
+              }
+            });
+            
+            // Notificar al usuario del error
+            const errorNode = document.createElement('span');
+            errorNode.style.color = 'red';
+            errorNode.style.fontWeight = 'bold';
+            errorNode.textContent = `Error: ${error.message || 'No se pudo procesar la imagen'}`;
+            document.execCommand('insertHTML', false, errorNode.outerHTML);
+            
+            // Eliminar mensaje después de unos segundos
+            setTimeout(() => {
+              const errorElements = editorRef.current.querySelectorAll('span');
+              errorElements.forEach(el => {
+                if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
+                  el.remove();
+                }
+              });
+            }, 5000);
+          }
         };
         
         reader.readAsDataURL(file);

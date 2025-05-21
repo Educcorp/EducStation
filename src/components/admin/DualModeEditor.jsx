@@ -7,6 +7,100 @@ import SyntaxHighlighter from './SyntaxHighlighter';
 import SimpleEditor from './SimpleEditor';
 import ImportExportActions from './ImportExportActions';
 
+// Constantes para el tamaño máximo de imagen
+const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
+const ABSOLUTE_MAX_SIZE = 15 * 1024 * 1024; // 15MB
+
+// Función para comprimir imagen
+const compressImage = (file, imgSrc) => {
+  return new Promise((resolve, reject) => {
+    // Verificar si la imagen es demasiado grande
+    if (file.size > ABSOLUTE_MAX_SIZE) {
+      reject(new Error(`La imagen es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es ${ABSOLUTE_MAX_SIZE / 1024 / 1024}MB.`));
+      return;
+    }
+    
+    // Si la imagen es suficientemente pequeña, no comprimir
+    if (file.size <= MAX_IMAGE_SIZE) {
+      resolve(imgSrc);
+      return;
+    }
+    
+    // Crear un objeto de imagen para obtener dimensiones
+    const img = new Image();
+    img.onload = () => {
+      try {
+        // Calcular ratio de compresión
+        let compressionRatio;
+        
+        if (file.size > 10 * 1024 * 1024) { // Más de 10MB
+          compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size) * 0.7;
+        } else if (file.size > 5 * 1024 * 1024) { // Entre 5MB y 10MB
+          compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size) * 0.8;
+        } else {
+          compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size);
+        }
+        
+        // Reducir tamaño proporcionalmente
+        const newWidth = Math.floor(img.width * compressionRatio);
+        const newHeight = Math.floor(img.height * compressionRatio);
+        
+        // Crear canvas para compresión
+        const canvas = document.createElement('canvas');
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        
+        // Dibujar imagen en canvas
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, newWidth, newHeight);
+        
+        // Calcular calidad JPEG según tamaño
+        let jpegQuality = 0.7; // 70% por defecto
+        
+        if (file.size > 10 * 1024 * 1024) {
+          jpegQuality = 0.5; // 50% para imágenes muy grandes
+        } else if (file.size > 5 * 1024 * 1024) {
+          jpegQuality = 0.6; // 60% para imágenes grandes
+        }
+        
+        // Convertir a data URL con la calidad especificada
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
+        
+        // Verificar tamaño después de compresión (aproximado)
+        const base64Length = compressedDataUrl.length - 'data:image/jpeg;base64,'.length;
+        const compressedSize = (base64Length * 0.75); // aproximación del tamaño en bytes
+        
+        // Si sigue siendo demasiado grande, comprimir más agresivamente
+        if (compressedSize > MAX_IMAGE_SIZE * 1.2) {
+          const secondCanvas = document.createElement('canvas');
+          const reducedWidth = Math.floor(newWidth * 0.8);
+          const reducedHeight = Math.floor(newHeight * 0.8);
+          
+          secondCanvas.width = reducedWidth;
+          secondCanvas.height = reducedHeight;
+          
+          const ctx2 = secondCanvas.getContext('2d');
+          ctx2.drawImage(img, 0, 0, reducedWidth, reducedHeight);
+          
+          const finalDataUrl = secondCanvas.toDataURL('image/jpeg', 0.45);
+          resolve(finalDataUrl);
+        } else {
+          resolve(compressedDataUrl);
+        }
+      } catch (error) {
+        console.error("Error al comprimir imagen:", error);
+        reject(error);
+      }
+    };
+    
+    img.onerror = () => {
+      reject(new Error("Error al cargar la imagen para compresión"));
+    };
+    
+    img.src = imgSrc;
+  });
+};
+
 const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, onImport }) => {
   const textAreaRef = useRef(null);
   const [mode, setMode] = useState(initialMode === 'html' ? 'developer' : 'simple');
@@ -16,6 +110,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   const [simpleContent, setSimpleContent] = useState(content || '');
   const [showDeveloperModal, setShowDeveloperModal] = useState(false);
   const [hoveredElement, setHoveredElement] = useState(null);
+  const [imageError, setImageError] = useState(null);
 
   // Inicializar el modo según initialMode cuando cambie
   useEffect(() => {
@@ -35,7 +130,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   }, [content]);
 
   // Manejar acciones de la barra de herramientas para el modo desarrollador
-  const handleToolbarAction = (actionType, placeholder) => {
+  const handleToolbarAction = async (actionType, placeholder) => {
     if (mode === 'simple') {
       return;
     }
@@ -46,22 +141,80 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
-      input.onchange = (e) => {
+      input.onchange = async (e) => {
         if (e.target.files && e.target.files[0]) {
           const file = e.target.files[0];
-          const reader = new FileReader();
-          reader.onload = (event) => {
-            const imgSrc = event.target.result;
-            // Crear HTML con el atributo data-image-type para identificar en vistas de carátulas
-            const imgHTML = `<img src="${imgSrc}" alt="Imagen" data-image-type="html-encoded" style="max-width: 100%; height: auto;" />`;
+          
+          // Verificar tamaño antes de procesar
+          if (file.size > ABSOLUTE_MAX_SIZE) {
+            setImageError(`La imagen es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es ${ABSOLUTE_MAX_SIZE / 1024 / 1024}MB.`);
+            setTimeout(() => setImageError(null), 5000);
+            return;
+          }
+          
+          try {
+            // Leer la imagen como Data URL
+            const readFileAsDataURL = () => {
+              return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (event) => resolve(event.target.result);
+                reader.onerror = (error) => reject(error);
+                reader.readAsDataURL(file);
+              });
+            };
             
-            const newContent = internalContent.substring(0, textAreaRef.current.selectionStart) +
-              imgHTML +
-              internalContent.substring(textAreaRef.current.selectionEnd);
+            // Mostrar mensaje de procesamiento
+            const selectionStart = textAreaRef.current.selectionStart;
+            const selectionEnd = textAreaRef.current.selectionEnd;
+            const processingMsg = "<!-- Procesando imagen... -->";
+            
+            const newContent = internalContent.substring(0, selectionStart) +
+              processingMsg +
+              internalContent.substring(selectionEnd);
             
             updateContent(newContent);
-          };
-          reader.readAsDataURL(file);
+            
+            // Obtener y comprimir la imagen
+            const imgSrc = await readFileAsDataURL();
+            const processedImgSrc = await compressImage(file, imgSrc);
+            
+            // Verificar tamaño después de compresión
+            const base64Length = processedImgSrc.length - processedImgSrc.indexOf('base64,') - 7;
+            const base64Size = (base64Length * 0.75);
+            
+            if (base64Size > 45 * 1024 * 1024) {
+              setImageError(`La imagen procesada sigue siendo demasiado grande (${(base64Size / 1024 / 1024).toFixed(2)} MB). Por favor, utiliza una imagen más pequeña.`);
+              
+              // Eliminar mensaje de procesamiento
+              const currentContent = textAreaRef.current.value;
+              const processedContent = currentContent.replace(processingMsg, "");
+              updateContent(processedContent);
+              
+              setTimeout(() => setImageError(null), 5000);
+              return;
+            }
+            
+            // Crear HTML con el atributo data-image-type para identificar en vistas de carátulas
+            const imgHTML = `<img src="${processedImgSrc}" alt="Imagen" data-image-type="html-encoded" style="max-width: 100%; height: auto;" />`;
+            
+            // Eliminar mensaje de procesamiento y agregar la imagen
+            const currentContent = textAreaRef.current.value;
+            const processedContent = currentContent.replace(processingMsg, imgHTML);
+            updateContent(processedContent);
+            
+          } catch (error) {
+            console.error("Error al procesar imagen:", error);
+            setImageError(error.message || "Error al procesar la imagen");
+            
+            // Eliminar mensaje de procesamiento si existe
+            const currentContent = textAreaRef.current.value;
+            if (currentContent.includes(processingMsg)) {
+              const processedContent = currentContent.replace(processingMsg, "");
+              updateContent(processedContent);
+            }
+            
+            setTimeout(() => setImageError(null), 5000);
+          }
         }
       };
       input.click();
@@ -732,6 +885,27 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Mensaje de error de imagen */}
+      {imageError && (
+        <div style={{
+          position: 'absolute',
+          top: '80px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          backgroundColor: 'rgba(244, 67, 54, 0.9)',
+          color: 'white',
+          padding: `${spacing.sm} ${spacing.md}`,
+          borderRadius: borderRadius.md,
+          zIndex: 1000,
+          maxWidth: '80%',
+          boxShadow: shadows.md,
+          textAlign: 'center',
+          fontWeight: typography.fontWeight.medium
+        }}>
+          {imageError}
         </div>
       )}
     </div>
