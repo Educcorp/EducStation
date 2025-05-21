@@ -4,6 +4,7 @@ import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
 import { createPublicacion, createPublicacionFromHTML } from '../../services/publicacionesService';
 import { getAllCategorias } from '../../services/categoriasServices';
+import { Calendar } from 'lucide-react';
 
 // Componentes para el editor
 import DualModeEditor from './DualModeEditor';
@@ -264,13 +265,17 @@ const PostEditor = () => {
   };
 
   // Manejador para cambios en la imagen de portada
-  const handleImageChange = (e) => {
+  const handleImageChange = (e, base64Image) => {
     const file = e.target.files[0];
     if (file) {
+      console.log("Imagen Base64 recibida:", base64Image ? base64Image.substring(0, 50) + "..." : "No hay imagen Base64");
+      // Guardar tanto el archivo como la vista previa
       setPost(prev => ({
         ...prev,
         coverImage: file,
-        coverImagePreview: URL.createObjectURL(file)
+        coverImagePreview: URL.createObjectURL(file),
+        // Guardar la versión Base64 de la imagen para enviarla al backend
+        Imagen_portada: base64Image || null
       }));
     }
   };
@@ -353,7 +358,8 @@ const PostEditor = () => {
         contenido: post.content,
         resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'borrador',
-        categorias: categorias
+        categorias: categorias,
+        Imagen_portada: post.Imagen_portada || null // Enviar la imagen en Base64 si existe
       };
       
       console.log("Guardando borrador con datos:", postData);
@@ -424,7 +430,8 @@ const PostEditor = () => {
         contenido: post.content,
         resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'publicado',
-        categorias: [categoriaId] // Usar el ID numérico de la categoría
+        categorias: [categoriaId], // Usar el ID numérico de la categoría
+        Imagen_portada: post.Imagen_portada || null // Enviar la imagen en Base64 si existe
       };
       
       console.log("Enviando publicación con datos:", postData);
@@ -450,7 +457,8 @@ const PostEditor = () => {
           htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
           resumen: post.resumen || postData.resumen,
           estado: postData.estado,
-          categorias: postData.categorias
+          categorias: postData.categorias,
+          Imagen_portada: postData.Imagen_portada // Enviar la imagen en Base64
         });
       } else {
         result = await createPublicacion(postData);
@@ -814,67 +822,6 @@ const PostEditor = () => {
           </div>
         </div>
 
-        <div style={{ marginBottom: spacing.md, position: 'relative' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: spacing.xs,
-            fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? colors.textLight : colors.textPrimary
-          }} htmlFor="tags">
-            Etiquetas (separadas por comas)
-          </label>
-
-          {/* Campo de etiquetas con estilo similar al selector de categorías */}
-          <div style={{
-            position: "relative",
-            width: "100%",
-          }}>
-            <div style={{
-              width: "100%",
-              padding: spacing.sm,
-              borderRadius: borderRadius.md,
-              border: `1px solid ${colors.gray200}`,
-              fontSize: typography.fontSize.md,
-              backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
-              transition: "all 0.3s ease",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              color: isDarkMode ? colors.textLight : colors.textPrimary,
-            }}>
-              <input
-                type="text"
-                id="tags"
-                name="tags"
-                value={post.tags}
-                onChange={handleChange}
-                style={{
-                  width: "100%",
-                  border: "none",
-                  outline: "none",
-                  padding: "0",
-                  fontSize: typography.fontSize.md,
-                  backgroundColor: "transparent",
-                  color: isDarkMode ? colors.textLight : colors.textPrimary
-                }}
-                placeholder="ej. educación, tecnología, aprendizaje"
-                onFocus={(e) => {
-                  e.target.parentElement.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
-                }}
-                onBlur={(e) => {
-                  e.target.parentElement.style.boxShadow = 'none';
-                }}
-              />
-              <span style={{
-                marginLeft: spacing.sm,
-                color: colors.gray400,
-                fontSize: "1em"
-              }}>
-                #
-              </span>
-            </div>
-          </div>
-        </div>
 
         <div style={{ marginBottom: spacing.md, position: 'relative' }}>
           <label style={{
@@ -903,13 +850,14 @@ const PostEditor = () => {
               justifyContent: "space-between",
               alignItems: "center",
               color: isDarkMode ? colors.textLight : colors.textPrimary,
+              pointerEvents: "none", // Deshabilita interacciones con el contenedor
             }}>
               <input
-                type="date"
+                type="text"
                 id="publishDate"
                 name="publishDate"
-                value={post.publishDate}
-                onChange={handleChange}
+                value={new Date().toLocaleDateString('es-ES')}
+                readOnly
                 style={{
                   width: "100%",
                   border: "none",
@@ -917,44 +865,12 @@ const PostEditor = () => {
                   padding: "0",
                   fontSize: typography.fontSize.md,
                   backgroundColor: "transparent",
-                  color: isDarkMode ? colors.textLight : colors.textPrimary
-                }}
-                onFocus={(e) => {
-                  e.target.parentElement.style.boxShadow = `0 0 0 2px ${colors.secondary}30`;
-                }}
-                onBlur={(e) => {
-                  e.target.parentElement.style.boxShadow = 'none';
+                  color: isDarkMode ? colors.textLight : colors.textPrimary,
+                  cursor: "default" // Cambia el cursor para indicar que no es interactivo
                 }}
               />
-              <span style={{
-                marginLeft: spacing.sm,
-                color: colors.gray400,
-                fontSize: "1em"
-              }}>
-              </span>
+              <Calendar size={18} color={colors.gray400} />
             </div>
-          </div>
-        </div>
-
-        <div style={{ marginBottom: spacing.md }}>
-          <label style={{
-            display: 'block',
-            marginBottom: spacing.xs,
-            fontWeight: typography.fontWeight.medium,
-            color: isDarkMode ? colors.textLight : colors.textPrimary
-          }}>
-            Estado actual
-          </label>
-          <div style={{
-            display: 'inline-block',
-            padding: `${spacing.xs} ${spacing.sm}`,
-            backgroundColor: post.status === 'draft' ? colors.warning : colors.success,
-            color: colors.white,
-            borderRadius: borderRadius.sm,
-            fontSize: typography.fontSize.sm,
-            fontWeight: typography.fontWeight.medium
-          }}>
-            {post.status === 'draft' ? 'Borrador' : 'Publicado'}
           </div>
         </div>
       </div>

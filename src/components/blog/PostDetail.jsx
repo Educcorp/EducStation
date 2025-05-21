@@ -12,6 +12,45 @@ const PostDetail = ({ post }) => {
     return new Date(dateString).toLocaleDateString('es-ES', options);
   };
 
+  // Función para renderizar la imagen de portada (Base64 o HTML)
+  const renderFeaturedImage = () => {
+    // Prioridad 1: Imagen en Base64 desde Imagen_portada
+    if (post.Imagen_portada) {
+      // Verificar si es Base64
+      if (post.Imagen_portada.startsWith('data:image')) {
+        return (
+          <img 
+            src={post.Imagen_portada} 
+            alt={post.Titulo} 
+            style={styles.featuredImage}
+          />
+        );
+      } else {
+        // Si es HTML, renderizarlo como tal
+        return (
+          <div 
+            style={styles.featuredImageContainer}
+            dangerouslySetInnerHTML={{ __html: post.Imagen_portada }}
+          />
+        );
+      }
+    }
+    
+    // Prioridad 2: Imagen desde Imagen_destacada_ID
+    if (post.Imagen_destacada_ID) {
+      return (
+        <img 
+          src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`} 
+          alt={post.Titulo} 
+          style={styles.featuredImage}
+        />
+      );
+    }
+    
+    // Si no hay imagen, no mostrar nada
+    return null;
+  };
+
   // Estilos para el componente
   const styles = {
     article: {
@@ -45,6 +84,17 @@ const PostDetail = ({ post }) => {
       objectFit: 'cover',
       borderRadius: borderRadius.md,
       marginBottom: spacing.lg,
+    },
+    featuredImageContainer: {
+      width: '100%',
+      maxHeight: '400px',
+      overflow: 'hidden',
+      borderRadius: borderRadius.md,
+      marginBottom: spacing.lg,
+      '& img': {
+        width: '100%',
+        objectFit: 'cover',
+      }
     },
     content: {
       fontSize: typography.fontSize.md,
@@ -89,13 +139,7 @@ const PostDetail = ({ post }) => {
           <span>Por {post.NombreAdmin || 'Admin'}</span>
           <span>{formatDate(post.Fecha_creacion)}</span>
         </div>
-        {post.Imagen_destacada_ID && (
-          <img 
-            src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`} 
-            alt={post.Titulo} 
-            style={styles.featuredImage}
-          />
-        )}
+        {renderFeaturedImage()}
       </header>
       
       <div 

@@ -296,21 +296,21 @@ const Footer = () => {
               <li style={{
                 ...styles.link,
                 paddingLeft: 0 // Eliminar el padding izquierdo
-              }} 
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.transform = "translateX(5px)"; 
-              }} 
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.transform = "translateX(0)"; 
-              }}>
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
                 <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
                   <FaHome size={22} />
                 </span>
-                <Link 
-                  to="/" 
-                  style={styles.linkAnchor} 
-                  onClick={e => { e.preventDefault(); window.location.href = "/"; }} 
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary} 
+                <Link
+                  to="/"
+                  style={styles.linkAnchor}
+                  onClick={e => { e.preventDefault(); window.location.href = "/"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   Inicio
@@ -320,21 +320,21 @@ const Footer = () => {
               <li style={{
                 ...styles.link,
                 paddingLeft: 0
-              }} 
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.transform = "translateX(5px)"; 
-              }} 
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.transform = "translateX(0)"; 
-              }}>
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
                 <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
                   <FaInfo size={22} />
                 </span>
-                <Link 
-                  to="/about" 
+                <Link
+                  to="/about"
                   style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/about"; }} 
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary} 
+                  onClick={e => { e.preventDefault(); window.location.href = "/about"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   Acerca de
@@ -344,21 +344,21 @@ const Footer = () => {
               <li style={{
                 ...styles.link,
                 paddingLeft: 0
-              }} 
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.transform = "translateX(5px)"; 
-              }} 
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.transform = "translateX(0)"; 
-              }}>
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
                 <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
                   <FaEnvelope size={22} />
                 </span>
-                <Link 
-                  to="/contact" 
+                <Link
+                  to="/contact"
                   style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/contact"; }}  
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary} 
+                  onClick={e => { e.preventDefault(); window.location.href = "/contact"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   Contacto
@@ -368,21 +368,21 @@ const Footer = () => {
               <li style={{
                 ...styles.link,
                 paddingLeft: 0
-              }} 
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.transform = "translateX(5px)"; 
-              }} 
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.transform = "translateX(0)"; 
-              }}>
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
                 <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
                   <FaQuestionCircle size={22} />
                 </span>
-                <Link 
-                  to="/contact#faq-section" 
+                <Link
+                  to="/contact#faq-section"
                   style={styles.linkAnchor}
                   onClick={e => { e.preventDefault(); window.location.href = "/contact#faq-section"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary} 
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   FAQ
@@ -392,21 +392,21 @@ const Footer = () => {
               <li style={{
                 ...styles.link,
                 paddingLeft: 0
-              }} 
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.transform = "translateX(5px)"; 
-              }} 
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.transform = "translateX(0)"; 
-              }}>
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
                 <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
                   <FaTags size={22} />
                 </span>
-                <Link 
-                  to="/categorias" 
+                <Link
+                  to="/categorias"
                   style={styles.linkAnchor}
                   onClick={e => { e.preventDefault(); window.location.href = "/categorias"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary} 
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   Categorías
@@ -419,116 +419,150 @@ const Footer = () => {
           <div>
             <h3 style={styles.title}>Categorías</h3>
             <ul style={styles.links}>
-              <li style={styles.link} onMouseEnter={(e) => { e.currentTarget.style.color = colors.secondary; e.currentTarget.style.paddingLeft = spacing.lg; }} onMouseLeave={(e) => { e.currentTarget.style.color = colors.gray200; e.currentTarget.style.paddingLeft = spacing.md; }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle', color: '#ffffff' }}>
-                  <FaBook size={22} />
-                </span>
-                <Link to="/categoria/1" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/categoria/1"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Noticias</Link>
-              </li>
-              <li style={styles.link} onMouseEnter={(e) => { e.currentTarget.style.color = colors.secondary; e.currentTarget.style.paddingLeft = spacing.lg; }} onMouseLeave={(e) => { e.currentTarget.style.color = colors.gray200; e.currentTarget.style.paddingLeft = spacing.md; }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle', color: '#ffffff' }}>
-                  <FaChartBar size={22} />
-                </span>
-                <Link to="/categoria/2" style={styles.linkAnchor} onClick={e => { e.preventDefault(); window.location.href = "/categoria/2"; }} onMouseEnter={e => e.currentTarget.style.color = colors.secondary} onMouseLeave={e => e.currentTarget.style.color = colors.gray200}>Técnicas de Estudio</Link>
-              </li>
               <li style={{
                 ...styles.link,
-                maxWidth: '100%', // Usamos el 100% del ancho disponible
-                width: '100%', 
-                overflow: 'visible', 
+                paddingLeft: 0 // Usar paddingLeft fijo en lugar de cambiarlo en hover
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)"; // Usar transform en lugar de paddingLeft
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
+                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
+                  <FaBook size={22} />
+                </span>
+                <Link
+                  to="/categoria/1"
+                  style={styles.linkAnchor}
+                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/1"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
+                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
+                >
+                  Noticias
+                </Link>
+              </li>
+
+              <li style={{
+                ...styles.link,
+                paddingLeft: 0
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
+                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
+                  <FaChartBar size={22} />
+                </span>
+                <Link
+                  to="/categoria/2"
+                  style={styles.linkAnchor}
+                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/2"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
+                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
+                >
+                  Técnicas de Estudio
+                </Link>
+              </li>
+
+              <li style={{
+                ...styles.link,
+                paddingLeft: 0,
+                maxWidth: '100%',
+                width: '100%',
+                overflow: 'visible',
                 display: 'flex',
                 alignItems: 'center'
-              }} 
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.color = colors.secondary; 
-                e.currentTarget.style.paddingLeft = spacing.lg; 
-              }} 
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.color = colors.gray200; 
-                e.currentTarget.style.paddingLeft = spacing.md; 
-              }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle', flexShrink: 0, color: '#ffffff' }}>
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
+                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
                   <FaAward size={22} />
                 </span>
-                <Link 
-                  to="/categoria/6" 
+                <Link
+                  to="/categoria/6"
                   style={{
                     ...styles.linkAnchor,
                     whiteSpace: 'nowrap',
-                    overflow: 'visible', // Cambiamos a visible para que no oculte el texto
-                    // Eliminamos textOverflow: 'ellipsis' para que no muestre los puntos suspensivos
-                    maxWidth: 'none' // Quitamos la restricción de ancho máximo
-                  }} 
-                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/6"; }} 
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary} 
+                    overflow: 'visible',
+                    maxWidth: 'none'
+                  }}
+                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/6"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   Desarrollo Profesional Docente
                 </Link>
               </li>
+
               <li style={{
                 ...styles.link,
+                paddingLeft: 0,
                 maxWidth: '100%',
-                width: '100%', 
-                overflow: 'visible', 
+                width: '100%',
+                overflow: 'visible',
                 display: 'flex',
                 alignItems: 'center'
-              }} 
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.color = colors.secondary; 
-                e.currentTarget.style.paddingLeft = spacing.lg; 
-              }} 
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.color = colors.gray200; 
-                e.currentTarget.style.paddingLeft = spacing.md; 
-              }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle', flexShrink: 0, color: '#ffffff' }}>
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
+                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
                   <FaUsers size={22} />
                 </span>
-                <Link 
-                  to="/categoria/7" 
+                <Link
+                  to="/categoria/7"
                   style={{
                     ...styles.linkAnchor,
                     whiteSpace: 'nowrap',
                     overflow: 'visible',
                     maxWidth: 'none'
-                  }} 
-                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/7"; }} 
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary} 
+                  }}
+                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/7"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   Comunidad y Colaboración
                 </Link>
               </li>
+
               <li style={{
                 ...styles.link,
+                paddingLeft: 0,
                 maxWidth: '100%',
-                width: '100%', 
-                overflow: 'visible', 
+                width: '100%',
+                overflow: 'visible',
                 display: 'flex',
                 alignItems: 'center'
-              }} 
-              onMouseEnter={(e) => { 
-                e.currentTarget.style.color = colors.secondary; 
-                e.currentTarget.style.paddingLeft = spacing.lg; 
-              }} 
-              onMouseLeave={(e) => { 
-                e.currentTarget.style.color = colors.gray200; 
-                e.currentTarget.style.paddingLeft = spacing.md; 
-              }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle', flexShrink: 0, color: '#ffffff' }}>
+              }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateX(5px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }}>
+                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
                   <FaCog size={22} />
                 </span>
-                <Link 
-                  to="/categoria/5" 
+                <Link
+                  to="/categoria/5"
                   style={{
                     ...styles.linkAnchor,
                     whiteSpace: 'nowrap',
                     overflow: 'visible',
                     maxWidth: 'none'
-                  }} 
-                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/5"; }} 
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary} 
+                  }}
+                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/5"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   Herramientas Tecnológicas

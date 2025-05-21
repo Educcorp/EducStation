@@ -63,24 +63,30 @@ export const getPublicacionById = async (id) => {
 // Crear una nueva publicación
 export const createPublicacion = async (publicacionData) => {
     try {
-        console.log("Datos enviados al backend:", JSON.stringify(publicacionData, null, 2));
-        console.log("URL de la API:", `${API_URL}/api/publicaciones`);
+        // Clonar los datos para no modificar el objeto original
+        const formattedData = { ...publicacionData };
         
-        // Extraer la primera imagen del contenido HTML para la portada si existe
-        let imagen_portada_html = null;
-        const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
-        const match = publicacionData.contenido.match(imgRegex);
-        
-        if (match && match.length > 0) {
-            imagen_portada_html = match[0]; // Guardar la etiqueta img completa
-            console.log("Imagen portada detectada:", imagen_portada_html);
+        // Si el campo Imagen_portada existe, moverlo a Imagen_portada
+        if ('Imagen_portada' in formattedData) {
+            // Ya está con el nombre correcto, no necesitamos renombrarlo
         }
         
-        // Añadir la imagen portada HTML a los datos de publicación
-        const dataWithImage = {
-            ...publicacionData,
-            imagen_portada_html
-        };
+        console.log("Datos enviados al backend:", JSON.stringify(formattedData, null, 2));
+        console.log("URL de la API:", `${API_URL}/api/publicaciones`);
+        
+        // Si no se proporcionó una imagen, intentar extraerla del contenido HTML
+        if (!formattedData.Imagen_portada) {
+            // Extraer la primera imagen del contenido HTML para la portada si existe
+            const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
+            const match = formattedData.contenido.match(imgRegex);
+            
+            if (match && match.length > 0) {
+                formattedData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada del contenido HTML:", formattedData.Imagen_portada);
+            }
+        } else {
+            console.log("Usando imagen portada proporcionada");
+        }
         
         const token = localStorage.getItem('userToken');
         console.log("Token de autenticación disponible:", !!token);
@@ -91,7 +97,7 @@ export const createPublicacion = async (publicacionData) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(dataWithImage)
+            body: JSON.stringify(formattedData)
         });
         
         if (!response.ok) {
@@ -110,45 +116,51 @@ export const createPublicacion = async (publicacionData) => {
 // Crear una publicación desde HTML (método específico para el editor HTML)
 export const createPublicacionFromHTML = async (publicacionData) => {
     try {
+        // Clonar los datos para no modificar el objeto original
+        const formattedData = { ...publicacionData };
+        
+        // Si el campo Imagen_portada existe, moverlo a Imagen_portada
+        if ('Imagen_portada' in formattedData) {
+            // Ya está con el nombre correcto, no necesitamos renombrarlo
+        }
+        
         // Validación básica del contenido HTML
-        if (!publicacionData.htmlContent || publicacionData.htmlContent.trim() === '') {
+        if (!formattedData.htmlContent || formattedData.htmlContent.trim() === '') {
             throw new Error('El contenido HTML no puede estar vacío');
         }
 
         // Verificar que el contenido tenga etiquetas HTML válidas
-        if (!publicacionData.htmlContent.includes("<") || !publicacionData.htmlContent.includes(">")) {
+        if (!formattedData.htmlContent.includes("<") || !formattedData.htmlContent.includes(">")) {
             console.warn("El contenido no parece contener etiquetas HTML válidas");
         }
 
         // Asegurar que existe un resumen o usar los primeros caracteres del título
-        if (!publicacionData.resumen) {
-            publicacionData.resumen = publicacionData.titulo.substring(0, Math.min(150, publicacionData.titulo.length));
+        if (!formattedData.resumen) {
+            formattedData.resumen = formattedData.titulo.substring(0, Math.min(150, formattedData.titulo.length));
         }
         
-        // Extraer la primera imagen del contenido HTML para la portada si existe
-        let imagen_portada_html = null;
-        const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
-        const match = publicacionData.htmlContent.match(imgRegex);
-        
-        if (match && match.length > 0) {
-            imagen_portada_html = match[0]; // Guardar la etiqueta img completa
-            console.log("Imagen portada detectada desde HTML:", imagen_portada_html);
+        // Si no se proporcionó una imagen, intentar extraerla del contenido HTML
+        if (!formattedData.Imagen_portada) {
+            // Extraer la primera imagen del contenido HTML para la portada si existe
+            const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
+            const match = formattedData.htmlContent.match(imgRegex);
+            
+            if (match && match.length > 0) {
+                formattedData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada desde HTML:", formattedData.Imagen_portada);
+            }
+        } else {
+            console.log("Usando imagen portada proporcionada");
         }
-        
-        // Añadir la imagen portada HTML a los datos de publicación
-        const dataWithImage = {
-            ...publicacionData,
-            imagen_portada_html
-        };
 
         // Enviamos los datos al backend
-        const response = await fetch(`${API_URL}/api/publicaciones/html`, {
+        const response = await fetch(`${API_URL}/api/publicaciones/from-html`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
             },
-            body: JSON.stringify(dataWithImage)
+            body: JSON.stringify(formattedData)
         });
 
         if (!response.ok) {

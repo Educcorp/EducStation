@@ -1,10 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
 
 const CoverImageUploader = ({ coverImagePreview, onChange }) => {
+  // Estado para mostrar mensaje de conversión exitosa
+  const [conversionStatus, setConversionStatus] = useState(null);
+
   // Usar el hook useTheme para obtener los colores según el tema actual
   const { colors } = useTheme();
+
+  // Función para convertir la imagen a Base64
+  const convertToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Manejar el cambio de archivo y convertir a Base64
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        setConversionStatus('converting');
+        const base64String = await convertToBase64(file);
+        
+        // Mostrar mensaje de éxito por 3 segundos
+        setConversionStatus('success');
+        setTimeout(() => setConversionStatus(null), 3000);
+        
+        // Llamar al onChange del componente padre con el archivo original y la versión Base64
+        onChange(e, base64String);
+      } catch (error) {
+        console.error('Error al convertir imagen a Base64:', error);
+        // Mostrar mensaje de error por 3 segundos
+        setConversionStatus('error');
+        setTimeout(() => setConversionStatus(null), 3000);
+        
+        // En caso de error, llamar al onChange solo con el evento original
+        onChange(e);
+      }
+    }
+  };
 
   const styles = {
     card: {
@@ -65,7 +104,62 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
       display: "flex",
       alignItems: "center",
       gap: spacing.xs
+    },
+    statusMessage: {
+      fontSize: typography.fontSize.sm,
+      marginTop: spacing.sm,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      textAlign: 'center',
+      fontWeight: typography.fontWeight.medium,
+      transition: 'all 0.3s ease',
+    },
+    successStatus: {
+      backgroundColor: 'rgba(0, 200, 83, 0.1)',
+      color: '#00C853',
+      border: '1px solid rgba(0, 200, 83, 0.2)',
+    },
+    errorStatus: {
+      backgroundColor: 'rgba(244, 67, 54, 0.1)',
+      color: '#F44336',
+      border: '1px solid rgba(244, 67, 54, 0.2)',
+    },
+    convertingStatus: {
+      backgroundColor: 'rgba(33, 150, 243, 0.1)',
+      color: '#2196F3',
+      border: '1px solid rgba(33, 150, 243, 0.2)',
     }
+  };
+
+  // Renderizar mensaje de estado
+  const renderStatusMessage = () => {
+    if (!conversionStatus) return null;
+
+    let statusStyles = {};
+    let message = '';
+
+    switch (conversionStatus) {
+      case 'success':
+        statusStyles = styles.successStatus;
+        message = '✓ Imagen convertida exitosamente a Base64';
+        break;
+      case 'error':
+        statusStyles = styles.errorStatus;
+        message = '✗ Error al convertir la imagen a Base64';
+        break;
+      case 'converting':
+        statusStyles = styles.convertingStatus;
+        message = '⏳ Convirtiendo imagen...';
+        break;
+      default:
+        return null;
+    }
+
+    return (
+      <div style={{...styles.statusMessage, ...statusStyles}}>
+        {message}
+      </div>
+    );
   };
 
   return (
@@ -76,7 +170,7 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
           type="file"
           id="coverImage"
           name="coverImage"
-          onChange={onChange}
+          onChange={handleFileChange}
           accept="image/*"
           style={{ display: 'none' }}
         />
@@ -111,6 +205,7 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
             </div>
           )}
         </label>
+        {renderStatusMessage()}
         <p style={styles.helperText}>
           <span style={{color: colors.primary}}>💡</span>
           Recomendación: Usar imágenes de al menos 1200x600px para una mejor visualización.

@@ -1,31 +1,20 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import { AuthContext } from '../context/AuthContext';
+import { deleteAccount } from '../services/authService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
+import { useNavigate } from 'react-router-dom';
 
 const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
+  const { logout } = useContext(AuthContext); // Obtener logout del contexto
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSuccessButton, setShowSuccessButton] = useState(false);
-  
-  // Efecto para forzar la recarga al montar el componente
-  useEffect(() => {
-    // Verificar si es la primera carga
-    const isFirstLoad = !sessionStorage.getItem('settingsPageLoaded');
-    
-    if (isFirstLoad) {
-      // Marcar que ya se cargó la página
-      sessionStorage.setItem('settingsPageLoaded', 'true');
-      // Forzar recarga
-      window.location.reload();
-    }
-
-    // Limpiar el marcador cuando se desmonte el componente
-    return () => {
-      sessionStorage.removeItem('settingsPageLoaded');
-    };
-  }, []);
+  const [isDeleting, setIsDeleting] = useState(false); // Para manejar estado de carga
+  const [error, setError] = useState(null); // Para manejar errores
+  const navigate = useNavigate();
 
   const [settings, setSettings] = useState({
     notifications: {
@@ -50,6 +39,10 @@ const SettingsPage = () => {
       marketing: false
     }
   });
+
+  const handleReturnHome = () => {
+    navigate('/login', { replace: true });
+  };
 
   const handleSettingChange = (category, setting) => {
     setSettings(prev => ({
@@ -271,16 +264,114 @@ const SettingsPage = () => {
     </div>
   );
 
-  const handleDeleteAccount = () => {
-    // Aquí iría la lógica para eliminar la cuenta
-    setShowDeleteModal(false);
-    setShowSuccessButton(true);
-    localStorage.clear();
-    sessionStorage.clear();
-  };
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    setError(null);
 
-  const handleReturnHome = () => {
-    window.location.href = '/';
+    try {
+      // Llamar a la función de eliminar cuenta
+      await deleteAccount();
+
+      // Cerrar el modal de confirmación de eliminación
+      setShowDeleteModal(false);
+
+      // Primero realizar el logout para limpiar el estado de autenticación
+      logout();
+
+      // Mostrar el mensaje de éxito estilizado
+      const successModal = document.createElement('div');
+      successModal.style.position = 'fixed';
+      successModal.style.top = '0';
+      successModal.style.left = '0';
+      successModal.style.right = '0';
+      successModal.style.bottom = '0';
+      successModal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+      successModal.style.display = 'flex';
+      successModal.style.justifyContent = 'center';
+      successModal.style.alignItems = 'center';
+      successModal.style.zIndex = '10000';
+      successModal.style.backdropFilter = 'blur(3px)';
+      successModal.style.willChange = 'opacity';
+
+      const messageBox = document.createElement('div');
+      messageBox.style.backgroundColor = isDarkMode ? '#2d2d2d' : '#ffffff';
+      messageBox.style.padding = '30px';
+      messageBox.style.borderRadius = '12px';
+      messageBox.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.3)';
+      messageBox.style.textAlign = 'center';
+      messageBox.style.maxWidth = '400px';
+      messageBox.style.width = '90%';
+      messageBox.style.border = `2px solid ${colors.success}`;
+      messageBox.style.willChange = 'transform, opacity';
+      messageBox.style.transform = 'scale(0.9)';
+      messageBox.style.opacity = '0';
+      messageBox.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
+
+      const iconContainer = document.createElement('div');
+      iconContainer.innerHTML = '✓';
+      iconContainer.style.fontSize = '64px';
+      iconContainer.style.marginBottom = '15px';
+      iconContainer.style.color = colors.success;
+      iconContainer.style.transform = 'scale(0)';
+      iconContainer.style.opacity = '0';
+      iconContainer.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out';
+      iconContainer.style.willChange = 'transform, opacity';
+
+      const title = document.createElement('h3');
+      title.innerText = '¡Cuenta Eliminada con Éxito!';
+      title.style.fontSize = '20px';
+      title.style.fontWeight = 'bold';
+      title.style.marginBottom = '15px';
+      title.style.color = isDarkMode ? '#ffffff' : '#333333';
+
+      const message = document.createElement('p');
+      message.innerText = 'Tu cuenta ha sido eliminada exitosamente. Serás redirigido a la página de inicio de sesión.';
+      message.style.fontSize = '16px';
+      message.style.marginBottom = '0';
+      message.style.color = isDarkMode ? '#cccccc' : '#666666';
+      message.style.lineHeight = '1.5';
+
+      // Añadir elementos al DOM
+      messageBox.appendChild(iconContainer);
+      messageBox.appendChild(title);
+      messageBox.appendChild(message);
+      successModal.appendChild(messageBox);
+      document.body.appendChild(successModal);
+
+      // Aplicar las animaciones con un pequeño retraso para asegurar que el DOM se ha actualizado
+      requestAnimationFrame(() => {
+        messageBox.style.transform = 'scale(1)';
+        messageBox.style.opacity = '1';
+
+        setTimeout(() => {
+          iconContainer.style.transform = 'scale(1)';
+          iconContainer.style.opacity = '1';
+        }, 100);
+      });
+
+      // Redireccionar después de mostrar el mensaje por 2 segundos
+      setTimeout(() => {
+        // Animación de salida
+        messageBox.style.transform = 'scale(0.9)';
+        messageBox.style.opacity = '0';
+        successModal.style.opacity = '0';
+
+        // Esperar a que termine la animación de salida antes de navegar
+        setTimeout(() => {
+          // Eliminar el modal antes de navegar
+          document.body.removeChild(successModal);
+
+          // Usar navigate con replace para evitar problemas con el historial
+          navigate('/login', { replace: true });
+        }, 300);
+      }, 2000);
+
+    } catch (error) {
+      // Manejar error
+      console.error('Error al eliminar cuenta:', error);
+      setError(error.message || 'Error al eliminar la cuenta');
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -552,8 +643,8 @@ const SettingsPage = () => {
           }}>
             <p>¿Estás seguro de que deseas eliminar tu cuenta de <strong>EducStation</strong>?</p>
             <p>Esta acción es permanente y no se puede deshacer. Se perderán todos tus datos, incluyendo:</p>
-            <ul style={{ 
-              textAlign: 'left', 
+            <ul style={{
+              textAlign: 'left',
               color: isDarkMode ? '#ff9999' : '#cc0000',
               backgroundColor: isDarkMode ? '#441111' : '#ffe0e0',
               padding: spacing.lg,
@@ -586,121 +677,46 @@ const SettingsPage = () => {
             <button
               style={{
                 ...styles.confirmDeleteButton,
-                backgroundColor: '#ff3333',
-                fontWeight: typography.fontWeight.bold
+                backgroundColor: isDeleting ? '#999999' : '#ff3333',
+                fontWeight: typography.fontWeight.bold,
+                cursor: isDeleting ? 'not-allowed' : 'pointer'
               }}
               onClick={handleDeleteAccount}
+              disabled={isDeleting}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#ff0000';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#ff0000';
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#ff3333';
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                if (!isDeleting) {
+                  e.currentTarget.style.backgroundColor = '#ff3333';
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }
               }}
             >
-              Sí, eliminar mi cuenta
+              {isDeleting ? 'Eliminando...' : 'Sí, eliminar mi cuenta'}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Botón de éxito después de eliminar cuenta */}
-      {showSuccessButton && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 10000,
-          backdropFilter: 'blur(4px)'
-        }}>
-          <div style={{
-            backgroundColor: isDarkMode ? '#2d2d2d' : colors.white,
-            padding: spacing.xl,
-            borderRadius: borderRadius.lg,
-            textAlign: 'center',
-            maxWidth: '400px',
-            width: '90%',
-            boxShadow: shadows.xl,
-            animation: 'modalFadeIn 0.3s ease-out forwards',
-            border: `2px solid ${colors.success}`,
-            transform: 'translateY(0)',
-            transition: 'transform 0.3s ease'
-          }}>
-            <div style={{
-              fontSize: '64px',
-              marginBottom: spacing.md,
-              color: colors.success,
-              animation: 'successIconPop 0.5s ease-out'
-            }}>✓</div>
-            <h3 style={{
-              fontSize: typography.fontSize.xl,
-              fontWeight: typography.fontWeight.bold,
-              marginBottom: spacing.md,
-              color: isDarkMode ? colors.white : colors.textPrimary
-            }}>¡Cuenta Eliminada con Éxito!</h3>
-            <p style={{
-              fontSize: typography.fontSize.md,
-              marginBottom: spacing.xl,
-              color: isDarkMode ? colors.gray300 : colors.textSecondary,
-              lineHeight: '1.6'
-            }}>
-              Tu cuenta ha sido eliminada exitosamente. Gracias por haber sido parte de nuestra comunidad. Esperamos verte pronto.
-            </p>
-            <button
-              onClick={handleReturnHome}
-              style={{
-                padding: `${spacing.md} ${spacing.xl}`,
-                backgroundColor: colors.primary,
-                color: colors.white,
-                border: 'none',
-                borderRadius: borderRadius.md,
-                fontSize: typography.fontSize.md,
-                fontWeight: typography.fontWeight.medium,
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                width: '100%',
-                position: 'relative',
-                overflow: 'hidden'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = colors.primaryDark;
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.2)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = colors.primary;
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-              }}
-            >
-              Volver al Inicio
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Animaciones CSS */}
       <style dangerouslySetInnerHTML={{
         __html: `
-          @keyframes modalFadeIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-          }
-          @keyframes successIconPop {
-            0% { transform: scale(0); opacity: 0; }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); opacity: 1; }
-          }
-        `
+      @keyframes modalFadeIn {
+        0% { transform: scale(0.9); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
+      @keyframes successIconPop {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); opacity: 1; }
+      }
+    `
       }} />
       <Footer />
     </>
