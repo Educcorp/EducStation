@@ -268,6 +268,7 @@ const PostEditor = () => {
   const handleImageChange = (e, base64Image) => {
     const file = e.target.files[0];
     if (file) {
+      console.log("Imagen Base64 recibida:", base64Image ? base64Image.substring(0, 50) + "..." : "No hay imagen Base64");
       // Guardar tanto el archivo como la vista previa
       setPost(prev => ({
         ...prev,
@@ -358,7 +359,7 @@ const PostEditor = () => {
         resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'borrador',
         categorias: categorias,
-        Imagen_portada: post.imagen_portada || null // Enviar la imagen en Base64 si existe
+        Imagen_portada: post.Imagen_portada || null // Enviar la imagen en Base64 si existe
       };
       
       console.log("Guardando borrador con datos:", postData);
@@ -430,7 +431,7 @@ const PostEditor = () => {
         resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'publicado',
         categorias: [categoriaId], // Usar el ID numérico de la categoría
-        Imagen_portada: post.imagen_portada || null // Enviar la imagen en Base64 si existe
+        Imagen_portada: post.Imagen_portada || null // Enviar la imagen en Base64 si existe
       };
       
       console.log("Enviando publicación con datos:", postData);
