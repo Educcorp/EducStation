@@ -38,36 +38,69 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
-    // Según app.js, el enrutador correcto es /api/users
-    const avatarUrl = `${API_URL}/api/users/avatar`;
-    console.log('Enviando petición a:', avatarUrl);
+    // Probamos con método POST en lugar de PUT y con varias rutas posibles
+    const methodsToTry = ['POST', 'PUT'];
+    const routesToTry = [
+      '/api/users/avatar',
+      '/api/auth/user/avatar',
+      '/api/users/profile',
+      '/api/auth/user/profile',
+      '/api/auth/user',
+      '/api/users'
+    ];
     
-    const response = await fetch(avatarUrl, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      // Según el controlador, necesita "avatarData"
-      body: JSON.stringify({ avatarData: avatarData }),
-    });
-
-    // Log detallado de la respuesta
-    console.log('Respuesta del servidor:', response.status, response.statusText);
-
-    if (!response.ok) {
-      let errorMsg = 'Error al actualizar avatar';
-      try {
-        const errorText = await response.text();
-        console.error('Detalles del error:', errorText);
-        errorMsg = `Error ${response.status}: ${errorText || response.statusText}`;
-      } catch (e) {
-        console.error('No se pudo obtener detalle del error');
+    let lastError = null;
+    
+    // Probamos cada combinación de método y ruta
+    for (const method of methodsToTry) {
+      for (const route of routesToTry) {
+        try {
+          const avatarUrl = `${API_URL}${route}`;
+          console.log(`Intentando con ${method} a ${avatarUrl}`);
+          
+          // Diferentes formatos de datos para probar
+          const payloads = [
+            { avatarData },
+            { avatar: avatarData },
+            { avatarUrl: avatarData },
+            { image: avatarData },
+            { user: { avatar: avatarData } },
+            { profile: { avatar: avatarData } }
+          ];
+          
+          // Probamos cada formato de datos
+          for (const payload of payloads) {
+            try {
+              console.log(`Probando con formato:`, Object.keys(payload)[0]);
+              
+              const response = await fetch(avatarUrl, {
+                method,
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+              });
+              
+              console.log(`Respuesta para ${method} ${avatarUrl}:`, response.status);
+              
+              if (response.ok) {
+                console.log('¡ÉXITO! Imagen actualizada correctamente');
+                return await response.json();
+              }
+            } catch (e) {
+              console.warn(`Error con formato ${Object.keys(payload)[0]}:`, e.message);
+            }
+          }
+        } catch (e) {
+          lastError = e;
+          console.warn(`Error general con ${method} ${route}:`, e.message);
+        }
       }
-      throw new Error(errorMsg);
     }
-
-    return await response.json();
+    
+    // Si llegamos aquí, todas las combinaciones fallaron
+    throw lastError || new Error('No se pudo actualizar el avatar después de probar múltiples opciones');
   } catch (error) {
     console.error('Error al actualizar avatar:', error);
     throw error;
