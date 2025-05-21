@@ -16,6 +16,9 @@ const PostDetail = ({ post }) => {
   const renderFeaturedImage = () => {
     // Prioridad 1: Imagen en Base64 desde Imagen_portada
     if (post.Imagen_portada) {
+      console.log("Tipo de imagen detectado:", 
+        post.Imagen_portada.startsWith('data:image') ? 'Base64' : 'HTML');
+
       // Verificar si es Base64
       if (post.Imagen_portada.startsWith('data:image')) {
         return (
@@ -25,12 +28,25 @@ const PostDetail = ({ post }) => {
             style={styles.featuredImage}
           />
         );
-      } else {
-        // Si es HTML, renderizarlo como tal
+      } else if (post.Imagen_portada.includes('<img')) {
+        // Si es etiqueta HTML img, renderizarla como tal
         return (
           <div 
             style={styles.featuredImageContainer}
             dangerouslySetInnerHTML={{ __html: post.Imagen_portada }}
+          />
+        );
+      } else {
+        // Si no es Base64 ni etiqueta img, intentar renderizar como URL
+        return (
+          <img 
+            src={post.Imagen_portada} 
+            alt={post.Titulo} 
+            style={styles.featuredImage}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = 'https://via.placeholder.com/800x400?text=Error+al+cargar+imagen';
+            }}
           />
         );
       }

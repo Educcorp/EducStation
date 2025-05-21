@@ -28,6 +28,10 @@ const PostCard = ({ post }) => {
   const renderImageHTML = () => {
     if (!post.Imagen_portada) return null;
     
+    console.log("PostCard - Tipo de imagen:", 
+      post.Imagen_portada.startsWith('data:image') ? 'Base64' : 
+      post.Imagen_portada.includes('<img') ? 'HTML' : 'Otro');
+    
     // Verificar si la imagen está en formato Base64
     const isBase64 = post.Imagen_portada.startsWith('data:image');
     
@@ -44,7 +48,7 @@ const PostCard = ({ post }) => {
           }}
         />
       );
-    } else {
+    } else if (post.Imagen_portada.includes('<img')) {
       // Si es HTML, renderizar como HTML
       return (
         <div 
@@ -56,6 +60,23 @@ const PostCard = ({ post }) => {
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden'
+          }}
+        />
+      );
+    } else {
+      // Si no es Base64 ni HTML, intentar mostrar como URL
+      return (
+        <img 
+          src={post.Imagen_portada}
+          alt={post.Titulo}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://via.placeholder.com/350x200?text=Error+al+cargar+imagen';
           }}
         />
       );

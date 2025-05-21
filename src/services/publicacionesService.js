@@ -103,6 +103,17 @@ export const createPublicacion = async (publicacionData) => {
         if (!response.ok) {
             const errorData = await response.json().catch(e => ({ detail: 'Error al procesar la respuesta' }));
             console.error("Respuesta del servidor:", response.status, errorData);
+            
+            // Detectar error específico de tamaño de imagen
+            if (errorData.sqlMessage && errorData.sqlMessage.includes('Data too long for column')) {
+                // Calcular tamaño de la imagen en MB para mostrar al usuario
+                const imageSizeMB = formattedData.Imagen_portada ? 
+                    (formattedData.Imagen_portada.length * 0.75 / 1024 / 1024).toFixed(2) : 
+                    'desconocido';
+                
+                throw new Error(`La imagen es demasiado grande (${imageSizeMB} MB). El límite recomendado es de 4MB. Por favor, usa una imagen más pequeña o redúcela antes de subirla.`);
+            }
+            
             throw new Error(errorData.detail || `Error del servidor: ${response.status}`);
         }
         
@@ -166,6 +177,17 @@ export const createPublicacionFromHTML = async (publicacionData) => {
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Error response:', errorData);
+            
+            // Detectar error específico de tamaño de imagen
+            if (errorData.sqlMessage && errorData.sqlMessage.includes('Data too long for column')) {
+                // Calcular tamaño de la imagen en MB para mostrar al usuario
+                const imageSizeMB = formattedData.Imagen_portada ? 
+                    (formattedData.Imagen_portada.length * 0.75 / 1024 / 1024).toFixed(2) : 
+                    'desconocido';
+                
+                throw new Error(`La imagen es demasiado grande (${imageSizeMB} MB). El límite recomendado es de 4MB. Por favor, usa una imagen más pequeña o redúcela antes de subirla.`);
+            }
+            
             throw new Error(errorData.detail || 'Error al crear la publicación desde HTML');
         }
 
