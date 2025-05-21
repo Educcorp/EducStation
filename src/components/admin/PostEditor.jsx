@@ -358,7 +358,7 @@ const PostEditor = () => {
         resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'borrador',
         categorias: categorias,
-        Imagen_portada: post.imagen_portada || null // Enviar la imagen en Base64 si existe
+        imagen_portada_html: post.imagen_portada || null // Enviar la imagen en Base64 si existe
       };
       
       console.log("Guardando borrador con datos:", postData);
@@ -430,7 +430,7 @@ const PostEditor = () => {
         resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
         estado: 'publicado',
         categorias: [categoriaId], // Usar el ID numérico de la categoría
-        Imagen_portada: post.imagen_portada || null // Enviar la imagen en Base64 si existe
+        imagen_portada_html: post.imagen_portada || null // Enviar la imagen en Base64 si existe
       };
       
       console.log("Enviando publicación con datos:", postData);
@@ -457,7 +457,7 @@ const PostEditor = () => {
           resumen: post.resumen || postData.resumen,
           estado: postData.estado,
           categorias: postData.categorias,
-          Imagen_portada: postData.Imagen_portada // Enviar la imagen en Base64
+          imagen_portada_html: postData.imagen_portada_html // Enviar la imagen en Base64
         });
       } else {
         result = await createPublicacion(postData);
