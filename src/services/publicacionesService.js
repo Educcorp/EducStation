@@ -66,21 +66,19 @@ export const createPublicacion = async (publicacionData) => {
         console.log("Datos enviados al backend:", JSON.stringify(publicacionData, null, 2));
         console.log("URL de la API:", `${API_URL}/api/publicaciones`);
         
-        // Extraer la primera imagen del contenido HTML para la portada si existe
-        let imagen_portada_html = null;
-        const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
-        const match = publicacionData.contenido.match(imgRegex);
-        
-        if (match && match.length > 0) {
-            imagen_portada_html = match[0]; // Guardar la etiqueta img completa
-            console.log("Imagen portada detectada:", imagen_portada_html);
+        // Si no se proporcionó una imagen en Base64, intentar extraerla del contenido HTML
+        if (!publicacionData.Imagen_portada) {
+            // Extraer la primera imagen del contenido HTML para la portada si existe
+            const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
+            const match = publicacionData.contenido.match(imgRegex);
+            
+            if (match && match.length > 0) {
+                publicacionData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada del contenido HTML:", publicacionData.Imagen_portada);
+            }
+        } else {
+            console.log("Usando imagen portada proporcionada en Base64");
         }
-        
-        // Añadir la imagen portada HTML a los datos de publicación
-        const dataWithImage = {
-            ...publicacionData,
-            imagen_portada_html
-        };
         
         const token = localStorage.getItem('userToken');
         console.log("Token de autenticación disponible:", !!token);
@@ -91,7 +89,7 @@ export const createPublicacion = async (publicacionData) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(dataWithImage)
+            body: JSON.stringify(publicacionData)
         });
         
         if (!response.ok) {
@@ -125,30 +123,28 @@ export const createPublicacionFromHTML = async (publicacionData) => {
             publicacionData.resumen = publicacionData.titulo.substring(0, Math.min(150, publicacionData.titulo.length));
         }
         
-        // Extraer la primera imagen del contenido HTML para la portada si existe
-        let imagen_portada_html = null;
-        const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
-        const match = publicacionData.htmlContent.match(imgRegex);
-        
-        if (match && match.length > 0) {
-            imagen_portada_html = match[0]; // Guardar la etiqueta img completa
-            console.log("Imagen portada detectada desde HTML:", imagen_portada_html);
+        // Si no se proporcionó una imagen en Base64, intentar extraerla del contenido HTML
+        if (!publicacionData.Imagen_portada) {
+            // Extraer la primera imagen del contenido HTML para la portada si existe
+            const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
+            const match = publicacionData.htmlContent.match(imgRegex);
+            
+            if (match && match.length > 0) {
+                publicacionData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada desde HTML:", publicacionData.Imagen_portada);
+            }
+        } else {
+            console.log("Usando imagen portada proporcionada en Base64");
         }
-        
-        // Añadir la imagen portada HTML a los datos de publicación
-        const dataWithImage = {
-            ...publicacionData,
-            imagen_portada_html
-        };
 
         // Enviamos los datos al backend
-        const response = await fetch(`${API_URL}/api/publicaciones/html`, {
+        const response = await fetch(`${API_URL}/api/publicaciones/from-html`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
             },
-            body: JSON.stringify(dataWithImage)
+            body: JSON.stringify(publicacionData)
         });
 
         if (!response.ok) {

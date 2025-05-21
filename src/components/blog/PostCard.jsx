@@ -24,23 +24,42 @@ const PostCard = ({ post }) => {
       : plainText;
   };
   
-  // Función para renderizar la imagen HTML de forma segura
+  // Función para renderizar la imagen HTML o Base64 de forma segura
   const renderImageHTML = () => {
-    if (!post.imagen_portada_html) return null;
+    if (!post.Imagen_portada) return null;
     
-    return (
-      <div 
-        dangerouslySetInnerHTML={{ __html: post.imagen_portada_html }} 
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          overflow: 'hidden'
-        }}
-      />
-    );
+    // Verificar si la imagen está en formato Base64
+    const isBase64 = post.Imagen_portada.startsWith('data:image');
+    
+    if (isBase64) {
+      // Si es Base64, mostrar como una imagen normal
+      return (
+        <img 
+          src={post.Imagen_portada}
+          alt={post.Titulo}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+      );
+    } else {
+      // Si es HTML, renderizar como HTML
+      return (
+        <div 
+          dangerouslySetInnerHTML={{ __html: post.Imagen_portada }} 
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            overflow: 'hidden'
+          }}
+        />
+      );
+    }
   };
   
   const styles = {
@@ -159,7 +178,7 @@ const PostCard = ({ post }) => {
         onMouseLeave={() => setIsHovered(false)}
       >
         <div style={styles.imageContainer}>
-          {post.imagen_portada_html ? (
+          {post.Imagen_portada ? (
             renderImageHTML()
           ) : post.Imagen_destacada_ID ? (
             <img
