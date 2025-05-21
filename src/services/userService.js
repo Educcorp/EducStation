@@ -38,17 +38,32 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
-    const response = await fetch(`${API_URL}/api/auth/user/avatar`, {
+    // Asegurar que la URL esté correctamente formada
+    const avatarUrl = `${API_URL}/api/users/avatar`;
+    console.log('Enviando petición a:', avatarUrl);
+    
+    const response = await fetch(avatarUrl, {
       method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ avatarUrl: avatarData }),
+      body: JSON.stringify({ avatarData: avatarData }),
     });
 
+    // Log detallado de la respuesta
+    console.log('Respuesta del servidor:', response.status, response.statusText);
+
     if (!response.ok) {
-      throw new Error('Error al actualizar avatar');
+      let errorMsg = 'Error al actualizar avatar';
+      try {
+        const errorText = await response.text();
+        console.error('Detalles del error:', errorText);
+        errorMsg = `Error ${response.status}: ${errorText || response.statusText}`;
+      } catch (e) {
+        console.error('No se pudo obtener detalle del error');
+      }
+      throw new Error(errorMsg);
     }
 
     return await response.json();

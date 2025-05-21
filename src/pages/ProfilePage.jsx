@@ -62,11 +62,13 @@ const ProfilePage = () => {
     const file = event.target.files[0];
     if (file) {
       try {
+        console.log('Procesando archivo:', file.name, 'tipo:', file.type, 'tamaño:', Math.round(file.size/1024), 'KB');
         setIsUploading(true);
         const reader = new FileReader();
         
         reader.onloadend = async () => {
           try {
+            console.log('Imagen convertida a base64, preparando envío al servidor');
             // Usar el servicio para actualizar el avatar
             await updateUserAvatar(reader.result);
             
@@ -76,12 +78,19 @@ const ProfilePage = () => {
               avatar: reader.result
             }));
             
+            console.log('Avatar actualizado correctamente en frontend');
             setIsUploading(false);
           } catch (error) {
             console.error('Error al actualizar el avatar:', error);
-            setErrorMessage('Error al actualizar el avatar. Por favor, intenta de nuevo.');
+            setErrorMessage(`Error al actualizar el avatar: ${error.message}`);
             setIsUploading(false);
           }
+        };
+
+        reader.onerror = (error) => {
+          console.error('Error en FileReader:', error);
+          setErrorMessage('Error al procesar la imagen. Por favor, intenta con otra imagen.');
+          setIsUploading(false);
         };
 
         reader.readAsDataURL(file);
