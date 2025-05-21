@@ -14,13 +14,13 @@ const PostDetail = ({ post }) => {
 
   // Función para renderizar la imagen de portada (Base64 o HTML)
   const renderFeaturedImage = () => {
-    // Prioridad 1: Imagen en Base64 desde imagen_portada_html
-    if (post.imagen_portada_html) {
+    // Prioridad 1: Imagen en Base64 desde Imagen_portada
+    if (post.Imagen_portada) {
       // Verificar si es Base64
-      if (post.imagen_portada_html.startsWith('data:image')) {
+      if (post.Imagen_portada.startsWith('data:image')) {
         return (
           <img 
-            src={post.imagen_portada_html} 
+            src={post.Imagen_portada} 
             alt={post.Titulo} 
             style={styles.featuredImage}
           />
@@ -30,7 +30,7 @@ const PostDetail = ({ post }) => {
         return (
           <div 
             style={styles.featuredImageContainer}
-            dangerouslySetInnerHTML={{ __html: post.imagen_portada_html }}
+            dangerouslySetInnerHTML={{ __html: post.Imagen_portada }}
           />
         );
       }

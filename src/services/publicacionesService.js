@@ -66,24 +66,23 @@ export const createPublicacion = async (publicacionData) => {
         // Clonar los datos para no modificar el objeto original
         const formattedData = { ...publicacionData };
         
-        // Si el campo Imagen_portada existe, moverlo a imagen_portada_html
+        // Si el campo Imagen_portada existe, moverlo a Imagen_portada
         if ('Imagen_portada' in formattedData) {
-            formattedData.imagen_portada_html = formattedData.Imagen_portada;
-            delete formattedData.Imagen_portada;
+            // Ya está con el nombre correcto, no necesitamos renombrarlo
         }
         
         console.log("Datos enviados al backend:", JSON.stringify(formattedData, null, 2));
         console.log("URL de la API:", `${API_URL}/api/publicaciones`);
         
-        // Si no se proporcionó una imagen en Base64, intentar extraerla del contenido HTML
-        if (!formattedData.imagen_portada_html) {
+        // Si no se proporcionó una imagen, intentar extraerla del contenido HTML
+        if (!formattedData.Imagen_portada) {
             // Extraer la primera imagen del contenido HTML para la portada si existe
             const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
             const match = formattedData.contenido.match(imgRegex);
             
             if (match && match.length > 0) {
-                formattedData.imagen_portada_html = match[0]; // Guardar la etiqueta img completa
-                console.log("Imagen portada detectada del contenido HTML:", formattedData.imagen_portada_html);
+                formattedData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada del contenido HTML:", formattedData.Imagen_portada);
             }
         } else {
             console.log("Usando imagen portada proporcionada");
@@ -120,10 +119,9 @@ export const createPublicacionFromHTML = async (publicacionData) => {
         // Clonar los datos para no modificar el objeto original
         const formattedData = { ...publicacionData };
         
-        // Si el campo Imagen_portada existe, moverlo a imagen_portada_html
+        // Si el campo Imagen_portada existe, moverlo a Imagen_portada
         if ('Imagen_portada' in formattedData) {
-            formattedData.imagen_portada_html = formattedData.Imagen_portada;
-            delete formattedData.Imagen_portada;
+            // Ya está con el nombre correcto, no necesitamos renombrarlo
         }
         
         // Validación básica del contenido HTML
@@ -141,15 +139,15 @@ export const createPublicacionFromHTML = async (publicacionData) => {
             formattedData.resumen = formattedData.titulo.substring(0, Math.min(150, formattedData.titulo.length));
         }
         
-        // Si no se proporcionó una imagen en Base64, intentar extraerla del contenido HTML
-        if (!formattedData.imagen_portada_html) {
+        // Si no se proporcionó una imagen, intentar extraerla del contenido HTML
+        if (!formattedData.Imagen_portada) {
             // Extraer la primera imagen del contenido HTML para la portada si existe
             const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
             const match = formattedData.htmlContent.match(imgRegex);
             
             if (match && match.length > 0) {
-                formattedData.imagen_portada_html = match[0]; // Guardar la etiqueta img completa
-                console.log("Imagen portada detectada desde HTML:", formattedData.imagen_portada_html);
+                formattedData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada desde HTML:", formattedData.Imagen_portada);
             }
         } else {
             console.log("Usando imagen portada proporcionada");
