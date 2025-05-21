@@ -4,6 +4,8 @@ import { useTheme } from '../../context/ThemeContext';
 
 // Constante para el tamaño máximo de imagen en bytes (4MB)
 const MAX_IMAGE_SIZE = 4 * 1024 * 1024;
+// Tamaño máximo absoluto - no se permitirán imágenes mayores a este tamaño ni siquiera comprimidas (15MB)
+const ABSOLUTE_MAX_SIZE = 15 * 1024 * 1024;
 
 const CoverImageUploader = ({ coverImagePreview, onChange }) => {
   // Estado para mostrar mensaje de conversión exitosa
@@ -17,6 +19,12 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
   // Función para comprimir imagen si es necesario
   const compressImageIfNeeded = (file, maxSize = MAX_IMAGE_SIZE) => {
     return new Promise((resolve, reject) => {
+      // Verificar si la imagen excede el tamaño máximo absoluto
+      if (file.size > ABSOLUTE_MAX_SIZE) {
+        reject(new Error(`La imagen es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es de ${ABSOLUTE_MAX_SIZE / 1024 / 1024} MB.`));
+        return;
+      }
+
       if (file.size <= maxSize) {
         // Si la imagen ya es lo suficientemente pequeña, no la comprimimos
         resolve(file);
@@ -36,7 +44,19 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
           let newHeight = img.height;
           
           // Calculo de ratio de compresión basado en el tamaño
-          const compressionRatio = Math.sqrt(maxSize / file.size);
+          // Para imágenes muy grandes, usamos un factor más agresivo
+          let compressionRatio;
+          
+          if (file.size > 10 * 1024 * 1024) { // Más de 10MB
+            // Compresión muy agresiva
+            compressionRatio = Math.sqrt(maxSize / file.size) * 0.7;
+          } else if (file.size > 5 * 1024 * 1024) { // Entre 5MB y 10MB
+            // Compresión agresiva
+            compressionRatio = Math.sqrt(maxSize / file.size) * 0.8;
+          } else {
+            // Compresión estándar
+            compressionRatio = Math.sqrt(maxSize / file.size);
+          }
           
           // Reducir tamaño proporcionalmente
           newWidth = Math.floor(newWidth * compressionRatio);
@@ -51,6 +71,15 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, newWidth, newHeight);
           
+          // Calcular calidad de JPEG según tamaño original
+          let jpegQuality = 0.7; // Calidad por defecto (70%)
+          
+          if (file.size > 10 * 1024 * 1024) {
+            jpegQuality = 0.5; // 50% para imágenes muy grandes
+          } else if (file.size > 5 * 1024 * 1024) {
+            jpegQuality = 0.6; // 60% para imágenes grandes
+          }
+          
           // Convertir a blob con calidad reducida
           canvas.toBlob((blob) => {
             // Crear un nuevo archivo a partir del blob
@@ -59,16 +88,48 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
               lastModified: Date.now()
             });
             
-            // Mostrar información de compresión
-            setImageInfo({
-              originalSize: (file.size / 1024 / 1024).toFixed(2),
-              compressedSize: (newFile.size / 1024 / 1024).toFixed(2),
-              width: newWidth,
-              height: newHeight
-            });
-            
-            resolve(newFile);
-          }, 'image/jpeg', 0.7); // Calidad de JPEG (0.7 = 70%)
+            // Verificar si después de la compresión todavía es demasiado grande
+            if (newFile.size > MAX_IMAGE_SIZE * 1.2) { // Permitimos un poco de margen
+              // Intentar comprimir de nuevo con calidad más baja
+              const secondCanvas = document.createElement('canvas');
+              const reducedWidth = Math.floor(newWidth * 0.8); // Reducir tamaño en un 20% adicional
+              const reducedHeight = Math.floor(newHeight * 0.8);
+              
+              secondCanvas.width = reducedWidth;
+              secondCanvas.height = reducedHeight;
+              
+              const ctx2 = secondCanvas.getContext('2d');
+              ctx2.drawImage(img, 0, 0, reducedWidth, reducedHeight);
+              
+              secondCanvas.toBlob((secondBlob) => {
+                const finalFile = new File([secondBlob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                
+                setImageInfo({
+                  originalSize: (file.size / 1024 / 1024).toFixed(2),
+                  compressedSize: (finalFile.size / 1024 / 1024).toFixed(2),
+                  width: reducedWidth,
+                  height: reducedHeight,
+                  compressionLevel: 'alta' // Indicar compresión alta
+                });
+                
+                resolve(finalFile);
+              }, 'image/jpeg', 0.45); // Calidad muy reducida (45%)
+            } else {
+              // Mostrar información de compresión
+              setImageInfo({
+                originalSize: (file.size / 1024 / 1024).toFixed(2),
+                compressedSize: (newFile.size / 1024 / 1024).toFixed(2),
+                width: newWidth,
+                height: newHeight,
+                compressionLevel: file.size > 5 * 1024 * 1024 ? 'media' : 'normal'
+              });
+              
+              resolve(newFile);
+            }
+          }, 'image/jpeg', jpegQuality);
         };
       };
       
@@ -97,11 +158,24 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
         const originalSizeMB = (file.size / 1024 / 1024).toFixed(2);
         setImageInfo({ originalSize: originalSizeMB });
         
+        // Verificar si la imagen es demasiado grande antes de intentar procesarla
+        if (file.size > ABSOLUTE_MAX_SIZE) {
+          throw new Error(`La imagen es demasiado grande (${originalSizeMB} MB). El tamaño máximo permitido es de ${ABSOLUTE_MAX_SIZE / 1024 / 1024} MB.`);
+        }
+        
         // Comprimir la imagen si es necesario
         const processedFile = await compressImageIfNeeded(file);
         
         // Convertir a Base64
         const base64String = await convertToBase64(processedFile);
+        
+        // Verificar el tamaño de la cadena Base64
+        const base64SizeBytes = base64String.length * 0.75; // Aproximación del tamaño en bytes
+        const base64SizeMB = (base64SizeBytes / 1024 / 1024).toFixed(2);
+        
+        if (base64SizeBytes > 45 * 1024 * 1024) { // Límite de 45MB para Base64 (menor que max_allowed_packet)
+          throw new Error(`La imagen procesada sigue siendo demasiado grande (${base64SizeMB} MB). Por favor, utiliza una imagen más pequeña.`);
+        }
         
         // Mostrar mensaje de éxito por 3 segundos
         setConversionStatus('success');
@@ -111,12 +185,16 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
         onChange(e, base64String);
       } catch (error) {
         console.error('Error al procesar imagen:', error);
-        // Mostrar mensaje de error por 3 segundos
+        // Mostrar mensaje de error
         setConversionStatus('error');
-        setTimeout(() => setConversionStatus(null), 3000);
+        setImageInfo({ 
+          error: true, 
+          message: error.message || 'Error al procesar la imagen'
+        });
+        setTimeout(() => setConversionStatus(null), 5000);
         
-        // En caso de error, llamar al onChange solo con el evento original
-        onChange(e);
+        // Limpiar el input de archivo
+        e.target.value = '';
       }
     }
   };
@@ -229,10 +307,15 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
         message = imageInfo && imageInfo.compressedSize ? 
           `✓ Imagen comprimida y convertida: ${imageInfo.originalSize}MB → ${imageInfo.compressedSize}MB` :
           '✓ Imagen convertida exitosamente';
+        if (imageInfo && imageInfo.compressionLevel === 'alta') {
+          message += ' (compresión alta)';
+        }
         break;
       case 'error':
         statusStyles = styles.errorStatus;
-        message = '✗ Error al procesar la imagen';
+        message = imageInfo && imageInfo.error ? 
+          `✗ ${imageInfo.message}` : 
+          '✗ Error al procesar la imagen';
         break;
       case 'converting':
         statusStyles = styles.convertingStatus;
