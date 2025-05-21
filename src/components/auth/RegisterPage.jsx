@@ -1,7 +1,7 @@
 // src/components/auth/RegisterPage.jsx - Completamente Renovado
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { checkUsernameAvailability } from '../../services/authService';
+import { checkUsernameAvailability, checkEmailAvailability } from '../../services/authService';
 import { colors, spacing, typography } from '../../styles/theme';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { AuthContext } from '../../context/AuthContext';
@@ -66,6 +66,10 @@ const RegisterPage = () => {
     const [isCheckingUsername, setIsCheckingUsername] = useState(false);
     const [usernameAvailable, setUsernameAvailable] = useState(null);
 
+    // Estado para controlar la validación del email
+    const [isCheckingEmail, setIsCheckingEmail] = useState(false);
+    const [emailAvailable, setEmailAvailable] = useState(null);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Iniciar animaciones al cargar el componente
@@ -115,6 +119,26 @@ const RegisterPage = () => {
         // Validar username en tiempo real
         if (name === 'username') {
             validateUsername(processedValue);
+        }
+        
+        // Validar email cuando cambia el valor y tiene formato válido
+        if (name === 'email') {
+            // Reiniciar estado de disponibilidad si se cambia el valor
+            if (emailAvailable !== null) {
+                setEmailAvailable(null);
+            }
+            
+            // Solo validar si el formato es correcto
+            if (value && /\S+@\S+\.\S+/.test(value)) {
+                // Usar un temporizador para no hacer demasiadas peticiones mientras se escribe
+                if (window.emailValidationTimer) {
+                    clearTimeout(window.emailValidationTimer);
+                }
+                
+                window.emailValidationTimer = setTimeout(() => {
+                    validateEmail(value);
+                }, 800); // Esperar 800ms después de que el usuario deje de escribir
+            }
         }
     };
 
@@ -216,6 +240,81 @@ const RegisterPage = () => {
         }
     };
 
+    // Función para verificar disponibilidad del email
+    const validateEmail = async (email) => {
+        if (!email) {
+            setErrors(prev => ({ ...prev, email: 'El correo electrónico es requerido' }));
+            setEmailAvailable(null);
+            return;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            setErrors(prev => ({
+                ...prev,
+                email: 'Ingresa un correo electrónico válido'
+            }));
+            setEmailAvailable(null);
+            return;
+        }
+
+        setIsCheckingEmail(true);
+        try {
+            console.log('Iniciando verificación de email para:', email);
+
+            // Si el modo desarrollo está activado, asumimos que el email está disponible
+            if (devModeEnabled) {
+                console.log('Modo desarrollo activado - asumiendo email disponible');
+                setEmailAvailable(true);
+                setErrors(prev => ({ ...prev, email: '' }));
+                setIsCheckingEmail(false);
+                return;
+            }
+
+            // Validación temporal - REMOVER EN PRODUCCIÓN
+            // Esta es una solución temporal hasta que se arregle el backend
+            const bypassValidation = localStorage.getItem('bypassEmailValidation') === 'true';
+            if (bypassValidation) {
+                console.log('Bypass de validación activado - asumiendo email disponible');
+                setEmailAvailable(true);
+                setErrors(prev => ({ ...prev, email: '' }));
+                setIsCheckingEmail(false);
+                return;
+            }
+
+            await checkEmailAvailability(email);
+            console.log('Email disponible:', email);
+            setEmailAvailable(true);
+            setErrors(prev => ({ ...prev, email: '' }));
+        } catch (error) {
+            console.error('Error en validación de email:', error.message);
+
+            // Si el error indica que el email ya existe
+            if (error.message && (
+                error.message.includes('ya está registrado') ||
+                error.message.includes('ya existe')
+            )) {
+                console.log('Email no disponible:', email);
+                setEmailAvailable(false);
+                setErrors(prev => ({
+                    ...prev,
+                    email: error.message || 'Este correo electrónico ya está registrado'
+                }));
+            }
+            // Si es un error de red y estamos en desarrollo, permitir continuar
+            else if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
+                console.log('Error de red en desarrollo - asumiendo email disponible');
+                setEmailAvailable(true);
+                setErrors(prev => ({ ...prev, email: '' }));
+            } else {
+                // Para otros errores, asumimos disponible para no bloquear el registro
+                setEmailAvailable(true);
+                setErrors(prev => ({ ...prev, email: '' }));
+            }
+        } finally {
+            setIsCheckingEmail(false);
+        }
+    };
+
     const validateForm = () => {
         let valid = true;
         const newErrors = {
@@ -248,6 +347,9 @@ const RegisterPage = () => {
             valid = false;
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Ingresa un correo electrónico válido';
+            valid = false;
+        } else if (emailAvailable === false) {
+            newErrors.email = 'Este correo electrónico ya está registrado';
             valid = false;
         }
 
@@ -309,6 +411,22 @@ const RegisterPage = () => {
                 ...prev,
                 username: 'Este nombre de usuario ya está en uso. Intenta con otro.'
             }));
+            // Hacer scroll al campo con error
+            inputRefs.username.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // Si hay bypass de validación de email o el email está disponible, continuar
+        if (localStorage.getItem('bypassEmailValidation') !== 'true' &&
+            !devModeEnabled &&
+            emailAvailable === false) {
+            // Mostrar mensaje específico
+            setErrors(prev => ({
+                ...prev,
+                email: 'Este correo electrónico ya está registrado. Intenta con otro.'
+            }));
+            // Hacer scroll al campo con error
+            inputRefs.email.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
 
@@ -372,6 +490,7 @@ const RegisterPage = () => {
             else if (error.message.toLowerCase().includes('nombre de usuario') ||
                 error.message.toLowerCase().includes('usuario ya está') ||
                 error.message.toLowerCase().includes('username')) {
+                setUsernameAvailable(false); // Actualizar estado de disponibilidad
                 setErrors(prev => ({
                     ...prev,
                     username: error.message,
@@ -382,6 +501,7 @@ const RegisterPage = () => {
             }
             else if (error.message.toLowerCase().includes('correo') ||
                 error.message.toLowerCase().includes('email')) {
+                setEmailAvailable(false); // Actualizar estado de disponibilidad
                 setErrors(prev => ({
                     ...prev,
                     email: error.message,
@@ -1213,11 +1333,40 @@ const RegisterPage = () => {
                                             value={formData.email}
                                             onChange={handleChange}
                                             onFocus={() => handleFocus('email')}
-                                            onBlur={handleBlur}
+                                            onBlur={(e) => {
+                                                handleBlur();
+                                                if (e.target.value && /\S+@\S+\.\S+/.test(e.target.value)) {
+                                                    validateEmail(e.target.value);
+                                                }
+                                            }}
                                             placeholder="correo@ejemplo.com"
                                             style={getInputStyle('email')}
                                             className="input-animation"
                                         />
+                                        {isCheckingEmail && (
+                                            <div style={{
+                                                ...styles.statusIcon,
+                                                color: '#91a8a9'
+                                            }}>
+                                                <i className="fas fa-circle-notch fa-spin"></i>
+                                            </div>
+                                        )}
+                                        {emailAvailable === true && (
+                                            <div style={{
+                                                ...styles.statusIcon,
+                                                color: colors.success
+                                            }}>
+                                                <i className="fas fa-check-circle"></i>
+                                            </div>
+                                        )}
+                                        {emailAvailable === false && (
+                                            <div style={{
+                                                ...styles.statusIcon,
+                                                color: colors.error
+                                            }}>
+                                                <i className="fas fa-times-circle"></i>
+                                            </div>
+                                        )}
                                     </div>
                                     {errors.email && (
                                         <div style={styles.errorText}>
