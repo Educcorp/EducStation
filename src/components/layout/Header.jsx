@@ -23,7 +23,7 @@ const Header = () => {
   const [userName, setUserName] = useState('');
   const [userAvatar, setUserAvatar] = useState('/assets/images/logoBN.png'); // Estado para la imagen de avatar
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-  
+
   // Nuevo estado para el modal de confirmación
   const [confirmLogout, setConfirmLogout] = useState(false);
 
@@ -33,7 +33,7 @@ const Header = () => {
   useEffect(() => {
     const storedUserName = localStorage.getItem('userName') || 'Usuario';
     setUserName(storedUserName);
-    
+
     // Depuración: Verificar si el estado de superusuario se está leyendo correctamente
     console.log('Estado de autenticación en Header:', {
       isAuth,
@@ -42,7 +42,7 @@ const Header = () => {
       contextUser: user,
       localStorageSuperUser: localStorage.getItem('isSuperUser')
     });
-    
+
     // Actualizar el estado de superusuario desde el servidor al cargar
     if (isAuth) {
       // Obtener los datos del perfil del usuario, incluyendo el avatar
@@ -51,35 +51,35 @@ const Header = () => {
           'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
         },
       })
-      .then(response => {
-        if (response.ok) {
-          return response.json();
-        }
-        throw new Error('Error al obtener perfil');
-      })
-      .then(userData => {
-        console.log('Datos de perfil recibidos:', userData);
-        if (userData.avatar) {
-          setUserAvatar(userData.avatar);
-        }
-      })
-      .catch(error => {
-        console.error('Error al obtener perfil de usuario:', error);
-      });
-      
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error('Error al obtener perfil');
+        })
+        .then(userData => {
+          console.log('Datos de perfil recibidos:', userData);
+          if (userData.avatar) {
+            setUserAvatar(userData.avatar);
+          }
+        })
+        .catch(error => {
+          console.error('Error al obtener perfil de usuario:', error);
+        });
+
       updateSuperUserStatus()
         .then(serverIsSuperUser => {
           console.log('Estado de superusuario actualizado al cargar:', {
             contextSuperUser: isSuperUser,
             serverSuperUser: serverIsSuperUser
           });
-          
+
           // Si hay discrepancia, mostrar una notificación
           if (isSuperUser !== serverIsSuperUser) {
             console.log('Corrigiendo discrepancia en estado de superusuario');
             showNotification(
-              serverIsSuperUser 
-                ? '¡Bienvenido Administrador! Tus privilegios han sido activados.' 
+              serverIsSuperUser
+                ? '¡Bienvenido Administrador! Tus privilegios han sido activados.'
                 : 'Tu sesión ha sido actualizada con tus permisos correctos.',
               'info'
             );
@@ -133,7 +133,7 @@ const Header = () => {
   const toggleMenu = () => {
     const newIsMenuOpen = !isMenuOpen;
     setIsMenuOpen(newIsMenuOpen);
-    
+
     // Añadir logs para depuración
     console.log('Estado de autenticación al abrir menú:', {
       isAuth,
@@ -143,7 +143,7 @@ const Header = () => {
       token: localStorage.getItem('userToken') || 'No hay token',
       accessToken: localStorage.getItem('accessToken') || 'No hay accessToken'
     });
-    
+
     // Al abrir el menú, verificar el estado de superusuario
     if (newIsMenuOpen && isAuth) {
       updateSuperUserStatus()
@@ -166,18 +166,18 @@ const Header = () => {
   // Modificar el manejo del botón de perfil para evitar redirecciones incorrectas
   const handleProfileNavigation = (path, e = null) => {
     if (e) e.preventDefault();
-    
+
     console.log('Navegando a perfil. Estado de autenticación:', {
       isAuth,
       token: !!localStorage.getItem('userToken')
     });
-    
+
     // Solo si está autenticado, ir a la página de perfil
     if (isAuth && localStorage.getItem('userToken')) {
-      window.location.href = path;
+      navigate(path);
     } else {
       console.warn('Usuario no autenticado, redirigiendo a login');
-      window.location.href = '/login';
+      navigate('/login');
     }
   };
 
@@ -185,7 +185,7 @@ const Header = () => {
   const confirmLogoutAction = () => {
     const currentUser = localStorage.getItem('userName') || 'Usuario';
     const wasSuperUser = localStorage.getItem('isSuperUser') === 'true';
-    
+
     console.log('Cerrando sesión, estado actual:', {
       userName: currentUser,
       isSuperUser: wasSuperUser,
@@ -198,7 +198,7 @@ const Header = () => {
 
     // Eliminar datos de autenticación usando el contexto
     logout();
-    
+
     // Los estados se actualizarán a través del contexto
     setConfirmLogout(false);
 
@@ -212,9 +212,9 @@ const Header = () => {
     // Mostrar mensaje
     showNotification(`¡Hasta pronto, ${currentUser}! Has cerrado sesión correctamente.`);
 
-    // Redireccionar a login después de un breve delay para que se vea la notificación
+    // Usar navigate en lugar de window.location.href para evitar el refresh completo
     setTimeout(() => {
-      window.location.href = '/login'; // Forzamos un refresh completo
+      navigate('/login');
     }, 1500);
   };
 
@@ -556,7 +556,7 @@ const Header = () => {
   ];
 
   const handleNavigation = (path) => {
-    window.location.href = path;
+    navigate(path);
   };
 
   // Manejador de clics fuera del menú
@@ -588,7 +588,7 @@ const Header = () => {
             onMouseLeave={() => setHoveredItem(null)}
             onClick={e => {
               e.preventDefault();
-              window.location.href = '/';
+              navigate('/');
             }}
           >
             <div style={{
@@ -624,7 +624,7 @@ const Header = () => {
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
-                    handleNavigation(item.path);
+                    navigate(item.path);
                   }}
                 >
                   <span style={{ marginRight: 10, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>{item.icon}</span>
@@ -685,9 +685,9 @@ const Header = () => {
               <>
                 {/* Sección de perfil del usuario */}
                 <div style={styles.userProfileSection}>
-                                  <div style={styles.userAvatar}>
-                  <img src={userAvatar} alt="Avatar" style={styles.profileImg} />
-                </div>
+                  <div style={styles.userAvatar}>
+                    <img src={userAvatar} alt="Avatar" style={styles.profileImg} />
+                  </div>
                   <div style={styles.userName}>{userName}</div>
                   <div style={styles.userRole}>{isSuperUser ? 'Administrador' : 'Usuario'}</div>
                 </div>
@@ -717,7 +717,7 @@ const Header = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
-                    window.location.href = '/settings';
+                    navigate('/settings');
                   }}
                 >
                   <span style={styles.menuItemIcon}>
@@ -726,13 +726,6 @@ const Header = () => {
                 </a>
 
                 <div style={styles.menuSeparator}></div>
-
-                {/* Botón de modo oscuro dentro del menú
-                <div style={{ padding: '8px 12px' }}>
-                  <ThemeToggle inMenu={true} />
-                </div> */}
-
-                {/* <div style={styles.menuSeparator}></div> */}
 
                 {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
                 <Link
@@ -743,7 +736,7 @@ const Header = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
-                    window.location.href = '/about';
+                    navigate('/about');
                   }}
                 >
                   <span style={styles.menuItemIcon}>
@@ -808,20 +801,14 @@ const Header = () => {
 
                 <div style={styles.menuSeparator}></div>
 
-                {/* Botón de modo oscuro */}
-                <div
-                  style={{
-                    ...getMenuItemStyle(5), // Aplica el mismo estilo que los demás elementos del menú
-                    padding: '8px 12px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    cursor: 'pointer',
-                  }}
-                  onMouseEnter={() => setHoveredItem('menu-5')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
+                {/* Botón de modo oscuro dentro del menú
+                <div style={{ padding: '8px 12px' }}>
                   <ThemeToggle inMenu={true} />
-                </div>
+                </div> */}
+
+                {/* <div style={styles.menuSeparator}></div> */}
+
+                {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
               </>
             )}
           </div>
