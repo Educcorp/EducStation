@@ -91,6 +91,16 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
         }
 
         console.log("Posts cargados:", data.length);
+        
+        // Depuración: verificar el formato de las imágenes de portada
+        if (data && data.length > 0) {
+          console.log("Primer post:", data[0].ID_publicaciones, "Tipo de Imagen_portada:", typeof data[0].Imagen_portada);
+          if (data[0].Imagen_portada) {
+            console.log("Es base64:", data[0].Imagen_portada.startsWith('data:image'));
+            console.log("Es HTML:", data[0].Imagen_portada.includes('<img'));
+          }
+        }
+        
         setPosts(data);
         
         // Mostrar solo los primeros POSTS_PER_PAGE posts inicialmente
@@ -503,14 +513,56 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
                   color: '#aaa',
                   fontSize: typography.fontSize.md
                 }}>
-                  {post.ImagenURL ? (
-                    <img 
-                      src={post.ImagenURL} 
-                      alt={post.Titulo} 
+                  {post.Imagen_portada ? (
+                    post.Imagen_portada.startsWith('data:image') ? (
+                      <img 
+                        src={post.Imagen_portada} 
+                        alt={post.Titulo} 
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    ) : post.Imagen_portada.includes('<img') ? (
+                      <div 
+                        dangerouslySetInnerHTML={{ __html: post.Imagen_portada }} 
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          overflow: 'hidden'
+                        }}
+                      />
+                    ) : (
+                      <img 
+                        src={post.Imagen_portada}
+                        alt={post.Titulo}
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover'
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = 'https://via.placeholder.com/350x200?text=Error+al+cargar+imagen';
+                        }}
+                      />
+                    )
+                  ) : post.Imagen_destacada_ID ? (
+                    <img
+                      src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`}
+                      alt={post.Titulo}
                       style={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover'
+                      }}
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = 'https://via.placeholder.com/350x200?text=Sin+imagen';
                       }}
                     />
                   ) : (
