@@ -16,6 +16,18 @@ const PostDetail = ({ post }) => {
   const renderFeaturedImage = () => {
     // Prioridad 1: Imagen en Base64 desde Imagen_portada
     if (post.Imagen_portada) {
+      // Verificar primero si Imagen_portada es un string
+      if (typeof post.Imagen_portada !== 'string') {
+        console.error("Error: Imagen_portada no es un string", post.Imagen_portada);
+        return (
+          <img 
+            src="https://via.placeholder.com/800x400?text=Error+de+imagen"
+            alt={post.Titulo} 
+            style={styles.featuredImage}
+          />
+        );
+      }
+      
       console.log("Tipo de imagen detectado:", 
         post.Imagen_portada.startsWith('data:image') ? 'Base64' : 'HTML');
 

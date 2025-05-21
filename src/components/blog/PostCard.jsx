@@ -28,6 +28,22 @@ const PostCard = ({ post }) => {
   const renderImageHTML = () => {
     if (!post.Imagen_portada) return null;
     
+    // Verificar primero si Imagen_portada es un string
+    if (typeof post.Imagen_portada !== 'string') {
+      console.error("Error: Imagen_portada no es un string", post.Imagen_portada);
+      return (
+        <img 
+          src="https://via.placeholder.com/350x200?text=Error+de+imagen"
+          alt={post.Titulo} 
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+        />
+      );
+    }
+    
     console.log("PostCard - Tipo de imagen:", 
       post.Imagen_portada.startsWith('data:image') ? 'Base64' : 
       post.Imagen_portada.includes('<img') ? 'HTML' : 'Otro');
