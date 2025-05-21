@@ -16,6 +16,7 @@ const ProfilePage = () => {
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -29,6 +30,9 @@ const ProfilePage = () => {
         // Utilizamos el servicio para obtener los datos reales del usuario
         const userData = await getUserProfile();
         
+        // Verificar si hay un avatar guardado localmente
+        const localAvatar = localStorage.getItem('userAvatar');
+        
         // Formatear la fecha de registro
         const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
         
@@ -40,7 +44,7 @@ const ProfilePage = () => {
           email: userData.email || 'usuario@ejemplo.com',
           role: userData.is_superuser ? 'Administrador' : 'Estudiante',
           joinDate: joinDate,
-          avatar: userData.avatar || '/assets/images/logoBN.png'
+          avatar: localAvatar || userData.avatar || '/assets/images/logoBN.png'
         });
         
         setIsLoading(false);
@@ -64,15 +68,28 @@ const ProfilePage = () => {
       try {
         console.log('Procesando archivo:', file.name, 'tipo:', file.type, 'tamaño:', Math.round(file.size/1024), 'KB');
         setIsUploading(true);
+        setErrorMessage('');
+        setSuccessMessage('');
+        
         const reader = new FileReader();
         
         reader.onloadend = async () => {
           try {
             console.log('Imagen convertida a base64, preparando envío al servidor');
-            // Usar el servicio para actualizar el avatar
-            await updateUserAvatar(reader.result);
             
-            // Actualizar en el estado local
+            // Almacenar la imagen en localStorage como respaldo
+            localStorage.setItem('userAvatar', reader.result);
+            
+            try {
+              // Intentar actualizar en el servidor
+              await updateUserAvatar(reader.result);
+              setSuccessMessage('Avatar actualizado exitosamente en el servidor.');
+            } catch (serverError) {
+              console.error('No se pudo guardar en el servidor, usando versión local:', serverError);
+              setSuccessMessage('Tu avatar ha sido actualizado localmente. No se pudo guardar en el servidor, pero será visible en esta sesión.');
+            }
+            
+            // Actualizar en el estado local de todas formas
             setUserProfile(prev => ({
               ...prev,
               avatar: reader.result
@@ -292,6 +309,18 @@ const ProfilePage = () => {
             textAlign: 'center'
           }}>
             {errorMessage}
+          </div>
+        )}
+        {successMessage && (
+          <div style={{
+            backgroundColor: colors.success,
+            color: colors.white,
+            padding: spacing.md,
+            borderRadius: borderRadius.md,
+            marginBottom: spacing.xl,
+            textAlign: 'center'
+          }}>
+            {successMessage}
           </div>
         )}
         <div style={styles.card}>

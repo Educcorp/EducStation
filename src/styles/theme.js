@@ -168,3 +168,32 @@ Object.defineProperty(exports, 'colors', {
     return currentTheme === 'dark' ? darkColors : lightColors;
   }
 });
+
+export const colors = {
+  primary: '#064A74',
+  primaryDark: '#053959',
+  primaryLight: '#356F9E',
+  secondary: '#2B6CA3',
+  secondaryDark: '#1B4D78',
+  secondaryLight: '#5791C2',
+  accent: '#FFA000',
+  accentDark: '#CC8000',
+  accentLight: '#FFB333',
+  background: '#F5F7FA',
+  white: '#FFFFFF',
+  black: '#000000',
+  gray100: '#F0F2F5',
+  gray200: '#E1E4E8',
+  gray300: '#D1D5DA',
+  gray400: '#959DA5',
+  gray500: '#6A737D',
+  gray600: '#586069',
+  gray700: '#444D56',
+  gray800: '#2F363D',
+  gray900: '#24292E',
+  textPrimary: '#24292E',
+  textSecondary: '#586069',
+  error: '#E53935',
+  success: '#43A047',
+  warning: '#FFA000'
+};

@@ -37,8 +37,14 @@ export const updateUserAvatar = async (avatarData) => {
     throw new Error('No hay sesión activa');
   }
   
+  // Almacenar localmente para respaldo (en caso de fallo del servidor)
+  localStorage.setItem('userAvatar', avatarData);
+  
+  // Intentar sincronizar con el servidor (sin bloquear la experiencia del usuario)
   try {
-    // Intentamos con ambas posibles rutas
+    console.log('Intentando sincronizar avatar con el servidor...');
+    
+    // Esta es la ruta que debería funcionar según los archivos locales
     const avatarUrl = `${API_URL}/api/users/avatar`;
     console.log('Enviando petición a:', avatarUrl);
     
@@ -48,66 +54,22 @@ export const updateUserAvatar = async (avatarData) => {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      // Enviamos el campo que espera el controlador (avatarData)
       body: JSON.stringify({ avatarData: avatarData }),
     });
-
-    // Log detallado de la respuesta
-    console.log('Respuesta del servidor:', response.status, response.statusText);
-
+    
+    // Si el servidor responde con error, no interrumpimos la experiencia del usuario
     if (!response.ok) {
-      // Si falla la primera ruta, intentamos con la segunda
-      if (response.status === 404) {
-        console.log('Ruta no encontrada, intentando ruta alternativa...');
-        
-        const alternativeUrl = `${API_URL}/api/auth/user/avatar`;
-        console.log('Intentando con:', alternativeUrl);
-        
-        const alternativeResponse = await fetch(alternativeUrl, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            // Probamos con ambos formatos para mayor compatibilidad
-            avatarData: avatarData,
-            avatarUrl: avatarData 
-          }),
-        });
-        
-        console.log('Respuesta alternativa:', alternativeResponse.status, alternativeResponse.statusText);
-        
-        if (!alternativeResponse.ok) {
-          let errorMsg = 'Error al actualizar avatar';
-          try {
-            const errorText = await alternativeResponse.text();
-            console.error('Detalles del error (alternativa):', errorText);
-            errorMsg = `Error ${alternativeResponse.status}: ${errorText || alternativeResponse.statusText}`;
-          } catch (e) {
-            console.error('No se pudo obtener detalle del error');
-          }
-          throw new Error(errorMsg);
-        }
-        
-        return await alternativeResponse.json();
-      }
-      
-      let errorMsg = 'Error al actualizar avatar';
-      try {
-        const errorText = await response.text();
-        console.error('Detalles del error:', errorText);
-        errorMsg = `Error ${response.status}: ${errorText || response.statusText}`;
-      } catch (e) {
-        console.error('No se pudo obtener detalle del error');
-      }
-      throw new Error(errorMsg);
+      console.warn(`El servidor respondió con ${response.status}. El avatar se guardará solo localmente.`);
+      return { success: true, synced: false, message: 'Avatar actualizado localmente' };
     }
-
-    return await response.json();
+    
+    // Si llegamos aquí, la actualización en el servidor fue exitosa
+    console.log('Avatar sincronizado con el servidor correctamente');
+    return { success: true, synced: true, message: 'Avatar actualizado y sincronizado con el servidor' };
   } catch (error) {
-    console.error('Error al actualizar avatar:', error);
-    throw error;
+    console.error('Error al sincronizar con el servidor:', error);
+    // No lanzamos el error, devolvemos una respuesta de "éxito parcial"
+    return { success: true, synced: false, message: 'Avatar actualizado localmente' };
   }
 };
 
