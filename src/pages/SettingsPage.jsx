@@ -5,6 +5,7 @@ import { deleteAccount } from '../services/authService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
+import { useNavigate } from 'react-router-dom';
 
 const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -13,7 +14,7 @@ const SettingsPage = () => {
   const [showSuccessButton, setShowSuccessButton] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // Para manejar estado de carga
   const [error, setError] = useState(null); // Para manejar errores
-
+  const navigate = useNavigate();
 
   const [settings, setSettings] = useState({
     notifications: {
@@ -40,7 +41,7 @@ const SettingsPage = () => {
   });
 
   const handleReturnHome = () => {
-    window.location.href = '/login';  // Redirecciona al login
+    navigate('/login', { replace: true });
   };
 
   const handleSettingChange = (category, setting) => {
@@ -274,80 +275,16 @@ const SettingsPage = () => {
       // Cerrar el modal de confirmación de eliminación
       setShowDeleteModal(false);
 
-      // Mostrar el mensaje de éxito estilizado
-      const successModal = document.createElement('div');
-      successModal.style.position = 'fixed';
-      successModal.style.top = '0';
-      successModal.style.left = '0';
-      successModal.style.right = '0';
-      successModal.style.bottom = '0';
-      successModal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-      successModal.style.display = 'flex';
-      successModal.style.justifyContent = 'center';
-      successModal.style.alignItems = 'center';
-      successModal.style.zIndex = '10000';
-      successModal.style.backdropFilter = 'blur(4px)';
-
-      const messageBox = document.createElement('div');
-      messageBox.style.backgroundColor = isDarkMode ? '#2d2d2d' : '#ffffff';
-      messageBox.style.padding = '30px';
-      messageBox.style.borderRadius = '12px';
-      messageBox.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.3)';
-      messageBox.style.textAlign = 'center';
-      messageBox.style.maxWidth = '400px';
-      messageBox.style.width = '90%';
-      messageBox.style.border = `2px solid ${colors.success}`;
-      messageBox.style.animation = 'fadeIn 0.5s ease-out forwards';
-
-      const iconContainer = document.createElement('div');
-      iconContainer.innerHTML = '✓';
-      iconContainer.style.fontSize = '64px';
-      iconContainer.style.marginBottom = '15px';
-      iconContainer.style.color = colors.success;
-      iconContainer.style.animation = 'pop 0.5s ease-out';
-
-      const title = document.createElement('h3');
-      title.innerText = '¡Cuenta Eliminada con Éxito!';
-      title.style.fontSize = '20px';
-      title.style.fontWeight = 'bold';
-      title.style.marginBottom = '15px';
-      title.style.color = isDarkMode ? '#ffffff' : '#333333';
-
-      const message = document.createElement('p');
-      message.innerText = 'Tu cuenta ha sido eliminada exitosamente. Serás redirigido a la página de inicio de sesión.';
-      message.style.fontSize = '16px';
-      message.style.marginBottom = '0';
-      message.style.color = isDarkMode ? '#cccccc' : '#666666';
-      message.style.lineHeight = '1.5';
-
-      // Añadir animaciones CSS
-      const style = document.createElement('style');
-      style.textContent = `
-        @keyframes fadeIn {
-          0% { opacity: 0; transform: scale(0.9); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-        @keyframes pop {
-          0% { transform: scale(0); opacity: 0; }
-          50% { transform: scale(1.2); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `;
-
-      // Añadir elementos al DOM
-      messageBox.appendChild(iconContainer);
-      messageBox.appendChild(title);
-      messageBox.appendChild(message);
-      successModal.appendChild(messageBox);
-      document.body.appendChild(style);
-      document.body.appendChild(successModal);
-
-      // Cerrar sesión
+      // Primero realizar el logout para limpiar el estado de autenticación
       logout();
+
+      // Crear un modal de éxito React en lugar de manipular el DOM directamente
+      setShowSuccessButton(true);
 
       // Redireccionar después de mostrar el mensaje por 2.5 segundos
       setTimeout(() => {
-        window.location.href = '/login';
+        // Usar navigate directamente sin intentar actualizar el estado
+        navigate('/login', { replace: true });
       }, 2500);
 
     } catch (error) {
