@@ -40,14 +40,7 @@ const ProfilePage = () => {
           email: userData.email || 'usuario@ejemplo.com',
           role: userData.is_superuser ? 'Administrador' : 'Estudiante',
           joinDate: joinDate,
-          avatar: userData.avatar || '/assets/images/logoBN.png',
-          bio: userData.bio || 'Esta es una página de perfil de ejemplo. Aquí puedes ver y editar tu información personal.',
-          interests: userData.interests || ['Educación', 'Tecnología', 'Ciencia'],
-          socialLinks: userData.social_links || {
-            twitter: 'https://twitter.com/',
-            linkedin: 'https://linkedin.com/',
-            github: 'https://github.com/'
-          }
+          avatar: userData.avatar || '/assets/images/logoBN.png'
         });
         
         setIsLoading(false);
@@ -196,20 +189,6 @@ const ProfilePage = () => {
       borderRadius: borderRadius.md,
       fontSize: typography.fontSize.sm
     },
-    editButton: {
-      position: 'absolute',
-      top: spacing.xl,
-      right: spacing.xl,
-      backgroundColor: 'rgba(255, 255, 255, 0.2)',
-      color: colors.white,
-      border: 'none',
-      borderRadius: borderRadius.md,
-      padding: `${spacing.sm} ${spacing.md}`,
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      transition: 'all 0.3s ease'
-    },
     profileContent: {
       padding: spacing.xl,
       color: isDarkMode ? colors.white : colors.textPrimary,
@@ -221,10 +200,6 @@ const ProfilePage = () => {
       marginBottom: spacing.md,
       borderBottom: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.gray200}`,
       paddingBottom: spacing.sm
-    },
-    bio: {
-      marginBottom: spacing.xl,
-      lineHeight: 1.6
     },
     infoGrid: {
       display: 'grid',
@@ -243,36 +218,6 @@ const ProfilePage = () => {
     infoValue: {
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.medium
-    },
-    interestTags: {
-      display: 'flex',
-      flexWrap: 'wrap',
-      gap: spacing.sm,
-      marginTop: spacing.md
-    },
-    interestTag: {
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.background,
-      color: isDarkMode ? colors.white : colors.primary,
-      padding: `${spacing.xs} ${spacing.md}`,
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm
-    },
-    socialLinks: {
-      display: 'flex',
-      gap: spacing.md,
-      marginTop: spacing.md
-    },
-    socialLink: {
-      width: '40px',
-      height: '40px',
-      borderRadius: '50%',
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.background,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      color: isDarkMode ? colors.white : colors.primary,
-      textDecoration: 'none',
-      transition: 'all 0.3s ease'
     },
     loading: {
       display: 'flex',
@@ -393,25 +338,9 @@ const ProfilePage = () => {
               <div style={styles.username}>@{userProfile.username}</div>
               <div style={styles.role}>{userProfile.role}</div>
             </div>
-            <button 
-              style={styles.editButton}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.3)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              ✏️ Editar perfil
-            </button>
           </div>
           
           <div style={styles.profileContent}>
-            <h2 style={styles.sectionTitle}>Acerca de mí</h2>
-            <div style={styles.bio}>{userProfile.bio}</div>
-            
             <h2 style={styles.sectionTitle}>Información personal</h2>
             <div style={styles.infoGrid}>
               <div style={styles.infoItem}>
@@ -426,68 +355,6 @@ const ProfilePage = () => {
                 <div style={styles.infoLabel}>Miembro desde</div>
                 <div style={styles.infoValue}>{userProfile.joinDate}</div>
               </div>
-            </div>
-            
-            <h2 style={styles.sectionTitle}>Intereses</h2>
-            <div style={styles.interestTags}>
-              {userProfile.interests.map((interest, index) => (
-                <div key={index} style={styles.interestTag}>{interest}</div>
-              ))}
-            </div>
-            
-            <h2 style={styles.sectionTitle}>Redes sociales</h2>
-            <div style={styles.socialLinks}>
-              <a 
-                href={userProfile.socialLinks.twitter} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                style={styles.socialLink}
-                title="Twitter"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.2)' : colors.secondary;
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.background;
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                🐦
-              </a>
-              <a 
-                href={userProfile.socialLinks.linkedin} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                style={styles.socialLink}
-                title="LinkedIn"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.2)' : colors.secondary;
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.background;
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                🔗
-              </a>
-              <a 
-                href={userProfile.socialLinks.github} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                style={styles.socialLink}
-                title="GitHub"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.2)' : colors.secondary;
-                  e.currentTarget.style.transform = 'translateY(-3px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.background;
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                🐱
-              </a>
             </div>
           </div>
         </div>
