@@ -189,17 +189,27 @@ const RegisterPage = () => {
         } catch (error) {
             console.error('Error en validación de username:', error.message);
 
-            // Si es un error de red y estamos en desarrollo, permitir continuar
-            if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
-                console.log('Error de red en desarrollo - asumiendo username disponible');
-                setUsernameAvailable(true);
-                setErrors(prev => ({ ...prev, username: '' }));
-            } else {
+            // Si el error indica que el usuario ya existe
+            if (error.message && (
+                error.message.includes('ya está en uso') ||
+                error.message.includes('ya existe')
+            )) {
+                console.log('Username no disponible:', username);
                 setUsernameAvailable(false);
                 setErrors(prev => ({
                     ...prev,
                     username: error.message || 'Este nombre de usuario ya está en uso'
                 }));
+            }
+            // Si es un error de red y estamos en desarrollo, permitir continuar
+            else if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
+                console.log('Error de red en desarrollo - asumiendo username disponible');
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
+            } else {
+                // Para otros errores, asumimos disponible para no bloquear el registro
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
             }
         } finally {
             setIsCheckingUsername(false);
@@ -359,19 +369,28 @@ const RegisterPage = () => {
                 }));
             }
             // Manejo específico de errores
-            else if (error.message.includes('usuario ya existe') || error.message.includes('ya está en uso')) {
+            else if (error.message.toLowerCase().includes('nombre de usuario') ||
+                error.message.toLowerCase().includes('usuario ya está') ||
+                error.message.toLowerCase().includes('username')) {
                 setErrors(prev => ({
                     ...prev,
                     username: error.message,
-                    general: 'Error en el registro. Verifica los datos e intenta nuevamente.'
+                    general: 'Error en el registro: ' + error.message
                 }));
-            } else if (error.message.includes('correo') || error.message.includes('email')) {
+                // Hacer scroll al campo con error
+                inputRefs.username.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            else if (error.message.toLowerCase().includes('correo') ||
+                error.message.toLowerCase().includes('email')) {
                 setErrors(prev => ({
                     ...prev,
                     email: error.message,
-                    general: 'Error en el registro. Verifica los datos e intenta nuevamente.'
+                    general: 'Error en el registro: ' + error.message
                 }));
-            } else {
+                // Hacer scroll al campo con error
+                inputRefs.email.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            else {
                 setErrors(prev => ({
                     ...prev,
                     general: error.message || 'Error al registrar. Por favor intenta nuevamente más tarde.'
