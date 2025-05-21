@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
+import ComentariosList from '../comentarios/ComentariosList';
 
 const PostDetail = ({ post }) => {
   const { colors, isDarkMode } = useTheme();
@@ -189,6 +190,8 @@ const PostDetail = ({ post }) => {
           ))}
         </div>
       )}
+      
+      <ComentariosList postId={post.ID_post} />
       
       <Link to="/blog" style={styles.backLink}>
         ← Volver al blog
