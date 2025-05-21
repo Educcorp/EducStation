@@ -63,21 +63,30 @@ export const getPublicacionById = async (id) => {
 // Crear una nueva publicación
 export const createPublicacion = async (publicacionData) => {
     try {
-        console.log("Datos enviados al backend:", JSON.stringify(publicacionData, null, 2));
+        // Clonar los datos para no modificar el objeto original
+        const formattedData = { ...publicacionData };
+        
+        // Si el campo Imagen_portada existe, moverlo a imagen_portada_html
+        if ('Imagen_portada' in formattedData) {
+            formattedData.imagen_portada_html = formattedData.Imagen_portada;
+            delete formattedData.Imagen_portada;
+        }
+        
+        console.log("Datos enviados al backend:", JSON.stringify(formattedData, null, 2));
         console.log("URL de la API:", `${API_URL}/api/publicaciones`);
         
         // Si no se proporcionó una imagen en Base64, intentar extraerla del contenido HTML
-        if (!publicacionData.imagen_portada_html) {
+        if (!formattedData.imagen_portada_html) {
             // Extraer la primera imagen del contenido HTML para la portada si existe
             const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
-            const match = publicacionData.contenido.match(imgRegex);
+            const match = formattedData.contenido.match(imgRegex);
             
             if (match && match.length > 0) {
-                publicacionData.imagen_portada_html = match[0]; // Guardar la etiqueta img completa
-                console.log("Imagen portada detectada del contenido HTML:", publicacionData.imagen_portada_html);
+                formattedData.imagen_portada_html = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada del contenido HTML:", formattedData.imagen_portada_html);
             }
         } else {
-            console.log("Usando imagen portada proporcionada en Base64");
+            console.log("Usando imagen portada proporcionada");
         }
         
         const token = localStorage.getItem('userToken');
@@ -89,7 +98,7 @@ export const createPublicacion = async (publicacionData) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify(publicacionData)
+            body: JSON.stringify(formattedData)
         });
         
         if (!response.ok) {
@@ -108,33 +117,42 @@ export const createPublicacion = async (publicacionData) => {
 // Crear una publicación desde HTML (método específico para el editor HTML)
 export const createPublicacionFromHTML = async (publicacionData) => {
     try {
+        // Clonar los datos para no modificar el objeto original
+        const formattedData = { ...publicacionData };
+        
+        // Si el campo Imagen_portada existe, moverlo a imagen_portada_html
+        if ('Imagen_portada' in formattedData) {
+            formattedData.imagen_portada_html = formattedData.Imagen_portada;
+            delete formattedData.Imagen_portada;
+        }
+        
         // Validación básica del contenido HTML
-        if (!publicacionData.htmlContent || publicacionData.htmlContent.trim() === '') {
+        if (!formattedData.htmlContent || formattedData.htmlContent.trim() === '') {
             throw new Error('El contenido HTML no puede estar vacío');
         }
 
         // Verificar que el contenido tenga etiquetas HTML válidas
-        if (!publicacionData.htmlContent.includes("<") || !publicacionData.htmlContent.includes(">")) {
+        if (!formattedData.htmlContent.includes("<") || !formattedData.htmlContent.includes(">")) {
             console.warn("El contenido no parece contener etiquetas HTML válidas");
         }
 
         // Asegurar que existe un resumen o usar los primeros caracteres del título
-        if (!publicacionData.resumen) {
-            publicacionData.resumen = publicacionData.titulo.substring(0, Math.min(150, publicacionData.titulo.length));
+        if (!formattedData.resumen) {
+            formattedData.resumen = formattedData.titulo.substring(0, Math.min(150, formattedData.titulo.length));
         }
         
         // Si no se proporcionó una imagen en Base64, intentar extraerla del contenido HTML
-        if (!publicacionData.imagen_portada_html) {
+        if (!formattedData.imagen_portada_html) {
             // Extraer la primera imagen del contenido HTML para la portada si existe
             const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
-            const match = publicacionData.htmlContent.match(imgRegex);
+            const match = formattedData.htmlContent.match(imgRegex);
             
             if (match && match.length > 0) {
-                publicacionData.imagen_portada_html = match[0]; // Guardar la etiqueta img completa
-                console.log("Imagen portada detectada desde HTML:", publicacionData.imagen_portada_html);
+                formattedData.imagen_portada_html = match[0]; // Guardar la etiqueta img completa
+                console.log("Imagen portada detectada desde HTML:", formattedData.imagen_portada_html);
             }
         } else {
-            console.log("Usando imagen portada proporcionada en Base64");
+            console.log("Usando imagen portada proporcionada");
         }
 
         // Enviamos los datos al backend
@@ -144,7 +162,7 @@ export const createPublicacionFromHTML = async (publicacionData) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('userToken')}`
             },
-            body: JSON.stringify(publicacionData)
+            body: JSON.stringify(formattedData)
         });
 
         if (!response.ok) {
