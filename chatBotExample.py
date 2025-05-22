@@ -1,5 +1,4 @@
 #hola
-#import os
 import requests
 import json
 #hola
