@@ -13,6 +13,7 @@ const ComentariosList = ({ postId }) => {
     const [comentarios, setComentarios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [orden, setOrden] = useState('reciente');
     const { user } = useAuth();
 
     const cargarComentarios = async () => {
@@ -65,50 +66,68 @@ const ComentariosList = ({ postId }) => {
         }
     };
 
+    // Ordenar comentarios según el filtro seleccionado
+    const comentariosOrdenados = [...comentarios].sort((a, b) => {
+        if (orden === 'reciente') {
+            return new Date(b.fechaCreacion) - new Date(a.fechaCreacion);
+        } else {
+            return new Date(a.fechaCreacion) - new Date(b.fechaCreacion);
+        }
+    });
+
     return (
-        <div className="comentarios-container">
+        <div className="comentarios-area-externa">
             <div className="comentarios-header">
-                <span className="comentarios-header-icon">
-                    <FaRegComments />
-                </span>
-                <span className="comentarios-header-title">Comentarios&nbsp;{comentarios.length}</span>
-                <span className="comentarios-header-line"></span>
+                <span className="comentarios-header-title">Comentarios {comentarios.length}</span>
             </div>
-            {user && (
-                <ComentarioForm 
-                    onSubmit={handleCrearComentario}
-                    postId={postId}
-                    icon={<FaPaperPlane />}
-                />
-            )}
-            {loading ? (
-                <div className="comentarios-loading">Cargando comentarios...</div>
-            ) : error ? (
-                <div className="comentarios-error">
-                    {error}
-                    <br />
-                    <button className="btn-reintentar" onClick={cargarComentarios}>Reintentar</button>
+            <div className="comentarios-area-interna">
+                {user && (
+                    <ComentarioForm 
+                        onSubmit={handleCrearComentario}
+                        postId={postId}
+                        icon={<FaPaperPlane />}
+                    />
+                )}
+                <div className="comentarios-filtro">
+                    <label htmlFor="ordenComentarios">Ordenar por:</label>
+                    <select
+                        id="ordenComentarios"
+                        value={orden}
+                        onChange={e => setOrden(e.target.value)}
+                    >
+                        <option value="reciente">Más reciente</option>
+                        <option value="antiguo">Más antiguo</option>
+                    </select>
                 </div>
-            ) : (
-                <div className="comentarios-list">
-                    {comentarios.length === 0 ? (
-                        <div className="no-comentarios">
-                            <span className="no-comentarios-icon"><BiMessageSquareDots /></span>
-                            No hay comentarios todavía. ¡Sé el primero en comentar!
-                        </div>
-                    ) : (
-                        comentarios.map(comentario => (
-                            <ComentarioItem
-                                key={comentario.id}
-                                comentario={comentario}
-                                onDelete={handleEliminarComentario}
-                                onUpdate={handleActualizarComentario}
-                                currentUser={user}
-                            />
-                        ))
-                    )}
-                </div>
-            )}
+                {loading ? (
+                    <div className="comentarios-loading">Cargando comentarios...</div>
+                ) : error ? (
+                    <div className="comentarios-error">
+                        {error}
+                        <br />
+                        <button className="btn-reintentar" onClick={cargarComentarios}>Reintentar</button>
+                    </div>
+                ) : (
+                    <div className="comentarios-list">
+                        {comentariosOrdenados.length === 0 ? (
+                            <div className="no-comentarios">
+                                <span className="no-comentarios-icon"><BiMessageSquareDots /></span>
+                                No hay comentarios todavía. ¡Sé el primero en comentar!
+                            </div>
+                        ) : (
+                            comentariosOrdenados.map(comentario => (
+                                <ComentarioItem
+                                    key={comentario.id}
+                                    comentario={comentario}
+                                    onDelete={handleEliminarComentario}
+                                    onUpdate={handleActualizarComentario}
+                                    currentUser={user}
+                                />
+                            ))
+                        )}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
