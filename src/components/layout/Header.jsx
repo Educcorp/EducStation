@@ -5,7 +5,7 @@ import { colors, spacing, typography, shadows, borderRadius, transitions } from 
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { AuthContext } from '../../context/AuthContext'; // Importa el contexto de autenticación
-import { FaHome, FaInfo, FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope } from 'react-icons/fa';
+import { FaHome, FaInfo, FaGlobe,  FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope } from 'react-icons/fa';
 import { updateSuperUserStatus } from '../../services/authService'; // Importar función para actualizar estado de superusuario
 
 const Header = () => {
@@ -628,7 +628,7 @@ const Header = () => {
     {
       path: '/blog',
       label: 'Blog',
-      icon: <FaFileAlt size={20} />
+      icon: <FaGlobe size={20} />
     },
     {
       path: '/categorias',

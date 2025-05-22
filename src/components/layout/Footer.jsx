@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, transitions } from '../../styles/theme';
-import { FaHome, FaInfo, FaEnvelope, FaQuestionCircle, FaPenSquare, FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaList, FaTags } from 'react-icons/fa';
+import { FaHome, FaInfo, FaEnvelope, FaQuestionCircle, FaPenSquare, FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaList, FaTags, FaGlobe } from 'react-icons/fa';
 
 const Footer = () => {
   const { isDarkMode, colors } = useTheme(); // Obtener colores actualizados del contexto
@@ -425,6 +425,20 @@ const Footer = () => {
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
                 >
                   Categorías
+                </Link>
+              </li>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaGlobe size={22} /></span>
+                <Link
+                  to="/blog"
+                  style={styles.linkAnchor}
+                  onClick={e => { e.preventDefault(); window.location.href = "/blog"; }}
+                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
+                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
+                >
+                  Blog
                 </Link>
               </li>
             </ul>
