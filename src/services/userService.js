@@ -37,6 +37,11 @@ export const updateUserAvatar = async (avatarData) => {
     throw new Error('No hay sesión activa');
   }
   
+  // Verificar que avatarData exista
+  if (!avatarData) {
+    throw new Error('No se proporcionaron datos para el avatar');
+  }
+  
   try {
     // Usamos una URL alternativa para evitar confusiones con las rutas
     // La ruta correcta según userRoutes.js del backend es /api/users/avatar
@@ -51,6 +56,19 @@ export const updateUserAvatar = async (avatarData) => {
       console.warn('Imagen demasiado grande, considera usar una imagen más pequeña');
     }
     
+    // Verificar formato de avatarData
+    let processedData = avatarData;
+    
+    // Asegurarnos de que sea una cadena
+    if (typeof processedData !== 'string') {
+      throw new Error('Formato de imagen inválido');
+    }
+    
+    // Para mayor seguridad, si no tiene el prefijo data:image, lo añadimos
+    if (!processedData.includes('data:image')) {
+      processedData = `data:image/jpeg;base64,${processedData}`;
+    }
+    
     const response = await fetch(avatarUrl, {
       method: 'PUT',
       headers: {
@@ -59,9 +77,9 @@ export const updateUserAvatar = async (avatarData) => {
         // Añadimos también el x-auth-token para mayor compatibilidad
         'x-auth-token': token
       },
-      // Enviamos el avatarData en un formato más simple para reducir problemas
+      // Enviamos el avatarData en formato adecuado
       body: JSON.stringify({ 
-        avatarData: avatarData.includes('base64,') ? avatarData : `data:image/jpeg;base64,${avatarData}`
+        avatarData: processedData
       }),
     });
 
