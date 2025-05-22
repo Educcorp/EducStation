@@ -40,7 +40,9 @@ const ProfilePage = () => {
           email: userData.email || 'usuario@ejemplo.com',
           role: userData.is_superuser ? 'Administrador' : 'Estudiante',
           joinDate: joinDate,
-          avatar: userData.avatar || '/assets/images/logoBN.png'
+          avatar: userData.avatar
+            ? (userData.avatar.startsWith('data:image') ? userData.avatar : `data:image/jpeg;base64,${userData.avatar}`)
+            : '/assets/images/logoBN.png'
         });
         
         setIsLoading(false);
