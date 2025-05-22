@@ -1,5 +1,5 @@
 // src/pages/ContactPage.jsx
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
@@ -21,7 +21,7 @@ const ContactPage = () => {
     subject: '',
     message: ''
   });
-  
+
   // Estado para gestionar el envío del formulario
   const [formStatus, setFormStatus] = useState({
     submitting: false,
@@ -29,7 +29,35 @@ const ContactPage = () => {
     error: false,
     message: ''
   });
-  
+
+  const sendEmail = async (templateParams) => {
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: templateParams.from_name,
+          email: templateParams.from_email,
+          subject: templateParams.subject,
+          message: templateParams.message
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al enviar mensaje');
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error al enviar mensaje:', error);
+      throw error;
+    }
+  };
+
   // Manejar los cambios en el formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -38,11 +66,11 @@ const ContactPage = () => {
       [name]: value
     }));
   };
-  
+
   // Manejar el envío del formulario
   const handleSubmit = (e) => {
     e.preventDefault();
-    
+
     // Validación básica
     if (!formData.name || !formData.email || !formData.message || !formData.subject) {
       setFormStatus({
@@ -53,7 +81,7 @@ const ContactPage = () => {
       });
       return;
     }
-    
+
     // Simulación de envío
     setFormStatus({
       submitting: true,
@@ -61,7 +89,7 @@ const ContactPage = () => {
       error: false,
       message: ''
     });
-    
+
     // Simular una petición a un servidor (reemplazar con llamada real a API)
     setTimeout(() => {
       setFormStatus({
@@ -70,7 +98,7 @@ const ContactPage = () => {
         error: false,
         message: 'Tu mensaje ha sido enviado correctamente. Nos pondremos en contacto contigo pronto.'
       });
-      
+
       // Reiniciar el formulario
       setFormData({
         name: '',
@@ -78,7 +106,7 @@ const ContactPage = () => {
         subject: '',
         message: ''
       });
-      
+
       // Reiniciar el mensaje de éxito después de 5 segundos
       setTimeout(() => {
         setFormStatus({
@@ -90,7 +118,7 @@ const ContactPage = () => {
       }, 5000);
     }, 1500);
   };
-  
+
   // Datos de información de contacto
   const contactInfo = [
     {
@@ -114,7 +142,7 @@ const ContactPage = () => {
       content: 'Lunes a Viernes: 7:00 - 22:00'
     }
   ];
-  
+
   // Preguntas frecuentes
   const faqs = [
     {
@@ -137,7 +165,7 @@ const ContactPage = () => {
 
   // Estado para gestionar las FAQ abiertas
   const [openFaq, setOpenFaq] = useState(null);
-  
+
   // Manejar apertura de FAQ
   const toggleFaq = (index) => {
     if (openFaq === index) {
@@ -411,32 +439,32 @@ const ContactPage = () => {
   };
 
   return (
-    
+
     <div style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
       <Header />
       <main>
         {/* Hero Section */}
         <section style={styles.hero}>
           <div style={styles.container}>
-            <h1 
-              className={animate ?"page-animation" : ""}
+            <h1
+              className={animate ? "page-animation" : ""}
               style={styles.title}>Contáctanos</h1>
-            <p 
-              className={animate ?"page-animation" : ""}
+            <p
+              className={animate ? "page-animation" : ""}
               style={styles.subtitle}>
               Estamos aquí para ayudarte. Resolveremos cualquier incognita que tengas relacionada con nuestro blog,
-              No dudes en contactarte con nosotros!. Respondemos a todas las consultas 
+              No dudes en contactarte con nosotros!. Respondemos a todas las consultas
               en un plazo máximo de 48 horas.
             </p>
           </div>
         </section>
-        
+
         <div style={styles.container}>
           {/* Contact Info and Form */}
           <div style={styles.contentWrapper}>
             {/* Contact Info Section */}
             <div style={styles.contactInfoSection}>
-              <h2 style={{...styles.sectionTitle, '&:after': {...styles.sectionTitle['&:after'], content: '""'}}}>
+              <h2 style={{ ...styles.sectionTitle, '&:after': { ...styles.sectionTitle['&:after'], content: '""' } }}>
                 Información de Contacto
                 <span style={{
                   position: "absolute",
@@ -447,11 +475,11 @@ const ContactPage = () => {
                   backgroundColor: colors.secondary
                 }}></span>
               </h2>
-              
+
               <div style={styles.contactGrid}>
                 {contactInfo.map((info, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     style={styles.contactCard}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = "rgba(210, 185, 154, 0.15)";
@@ -468,22 +496,22 @@ const ContactPage = () => {
                   </div>
                 ))}
               </div>
-              
+
               <div style={styles.mapContainer}>
-                <iframe 
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3769.6293535527034!2d-104.40488172201485!3d19.123909435912225!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x84255a99f51cf4b5%3A0x71073f9935f08f0a!2sFacultad%20de%20Ingenier%C3%ADa%20Electromec%C3%A1nica%20(FIE)!5e0!3m2!1sen!2sus!4v1741748318372!5m2!1sen!2sus" 
-                  style={styles.map} 
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3769.6293535527034!2d-104.40488172201485!3d19.123909435912225!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x84255a99f51cf4b5%3A0x71073f9935f08f0a!2sFacultad%20de%20Ingenier%C3%ADa%20Electromec%C3%A1nica%20(FIE)!5e0!3m2!1sen!2sus!4v1741748318372!5m2!1sen!2sus"
+                  style={styles.map}
                   title="Mapa de ubicación"
-                  allowFullScreen 
-                  loading="lazy" 
+                  allowFullScreen
+                  loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 ></iframe>
               </div>
             </div>
-            
+
             {/* Contact Form Section */}
             <div id="contact-from" style={styles.formSection}> {/* Añadir id="middle" para enlazar con el botón de scroll */}
-              <h2 style={{...styles.sectionTitle, '&:after': {...styles.sectionTitle['&:after'], content: '""'}}}>
+              <h2 style={{ ...styles.sectionTitle, '&:after': { ...styles.sectionTitle['&:after'], content: '""' } }}>
                 Envíanos un Mensaje
                 <span style={{
                   position: "absolute",
@@ -494,7 +522,7 @@ const ContactPage = () => {
                   backgroundColor: colors.secondary
                 }}></span>
               </h2>
-              
+
               <form style={styles.form} onSubmit={handleSubmit}>
                 <div style={styles.formRow}>
                   <div style={styles.formGroup}>
@@ -517,7 +545,7 @@ const ContactPage = () => {
                       required
                     />
                   </div>
-                  
+
                   <div style={styles.formGroup}>
                     <label style={styles.label} htmlFor="email">
                       Email <span style={styles.required}>*</span>
@@ -539,7 +567,7 @@ const ContactPage = () => {
                     />
                   </div>
                 </div>
-                
+
                 <div style={styles.formGroup}>
                   <label style={styles.label} htmlFor="subject">
                     Asunto<span style={styles.required}>*</span>
@@ -565,7 +593,7 @@ const ContactPage = () => {
                     <option value="Otro">Otro</option>
                   </select>
                 </div>
-                
+
                 <div style={styles.formGroup}>
                   <label style={styles.label} htmlFor="message">
                     Mensaje <span style={styles.required}>*</span>
@@ -585,8 +613,8 @@ const ContactPage = () => {
                     required
                   ></textarea>
                 </div>
-                
-                <button 
+
+                <button
                   type="submit"
                   style={{
                     ...styles.submitButton,
@@ -610,13 +638,13 @@ const ContactPage = () => {
                 >
                   {formStatus.submitting ? 'Enviando...' : 'Enviar Mensaje'}
                 </button>
-                
+
                 {formStatus.success && (
                   <div style={styles.successMessage}>
                     {formStatus.message}
                   </div>
                 )}
-                
+
                 {formStatus.error && (
                   <div style={styles.errorMessage}>
                     {formStatus.message}
@@ -625,10 +653,10 @@ const ContactPage = () => {
               </form>
             </div>
           </div>
-          
+
           {/* FAQ Section */}
           <section id="faq-section" style={styles.faqSection}>
-            <h2 style={{...styles.sectionTitle, '&:after': {...styles.sectionTitle['&:after'], content: '""'}}}>
+            <h2 style={{ ...styles.sectionTitle, '&:after': { ...styles.sectionTitle['&:after'], content: '""' } }}>
               Preguntas Frecuentes
               <span style={{
                 position: "absolute",
@@ -639,11 +667,11 @@ const ContactPage = () => {
                 backgroundColor: colors.secondary
               }}></span>
             </h2>
-            
+
             <div style={styles.faqList}>
               {faqs.map((faq, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   style={styles.faqItem}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.boxShadow = shadows.md;
@@ -652,14 +680,14 @@ const ContactPage = () => {
                     e.currentTarget.style.boxShadow = shadows.sm;
                   }}
                 >
-                  <div 
+                  <div
                     style={styles.faqQuestion}
                     onClick={() => toggleFaq(index)}
                   >
                     {faq.question}
                     <span>{openFaq === index ? '−' : '+'}</span>
                   </div>
-                  
+
                   {openFaq === index && (
                     <div style={styles.faqAnswer}>
                       {faq.answer}
@@ -671,7 +699,7 @@ const ContactPage = () => {
           </section>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );
