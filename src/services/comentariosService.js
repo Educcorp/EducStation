@@ -17,13 +17,17 @@ export const comentariosService = {
   // Crear un nuevo comentario
   createComentario: async (publicacionId, contenido) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('userToken');
+      if (!token) {
+        throw new Error('No hay sesión activa');
+      }
+      
       const response = await axios.post(
         `${API_URL}/comentarios/publicacion/${publicacionId}`,
         { contenido },
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            'x-auth-token': token
           }
         }
       );
@@ -37,12 +41,16 @@ export const comentariosService = {
   // Eliminar un comentario
   deleteComentario: async (comentarioId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('userToken');
+      if (!token) {
+        throw new Error('No hay sesión activa');
+      }
+      
       const response = await axios.delete(
         `${API_URL}/comentarios/${comentarioId}`,
         {
           headers: {
-            Authorization: `Bearer ${token}`
+            'x-auth-token': token
           }
         }
       );

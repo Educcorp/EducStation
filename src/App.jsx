@@ -6,6 +6,9 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, AuthContext } from './context/AuthContext';
 import './styles/darkMode.css'; // Los estilos oscuros solo se aplicarán cuando se active la clase .dark-mode
 import Chatbot from './components/common/Chatbot';
+// Importar react-toastify
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // Importación de páginas
 import HomePage from './pages/HomePage';
@@ -97,6 +100,19 @@ const App = () => {
         <Router>
           <ScrollToTop />
           <div className="app">
+            {/* Configurar el contenedor de toast */}
+            <ToastContainer
+              position="top-right"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={true}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
+            
             <Routes>
               {/* Rutas públicas (accesibles sin autenticación) */}
               <Route 
