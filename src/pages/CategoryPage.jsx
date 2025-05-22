@@ -881,6 +881,8 @@ const CategoryPage = () => {
     const handleCategorySelect = (categoryId) => {
       if (categoryId === 'explore') {
         navigate('/categorias');
+      } else if (categoryId === '') {
+        navigate('/blog');
       } else if (categoryId !== '') {
         navigate(`/categoria/${categoryId}`);
       }
@@ -975,16 +977,16 @@ const CategoryPage = () => {
                 }}
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
-                  e.currentTarget.style.color = categoryColors[category.ID_categoria];
+                  if (parseInt(id) !== category.ID_categoria) {
+                    e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                    e.currentTarget.style.color = categoryColors[category.ID_categoria];
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = parseInt(id) === category.ID_categoria 
-                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
-                    : 'transparent';
-                  e.currentTarget.style.color = parseInt(id) === category.ID_categoria 
-                    ? categoryColors[category.ID_categoria]
-                    : colors.primary;
+                  if (parseInt(id) !== category.ID_categoria) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = colors.primary;
+                  }
                 }}
               >
                 <span style={{
@@ -1116,16 +1118,16 @@ const CategoryPage = () => {
                 }}
                 onClick={() => handleSortSelect(option.value)}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
-                  e.currentTarget.style.color = getCurrentCategoryColor();
+                  if (selectedFilter !== option.value) {
+                    e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                    e.currentTarget.style.color = getCurrentCategoryColor();
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = selectedFilter === option.value 
-                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
-                    : 'transparent';
-                  e.currentTarget.style.color = selectedFilter === option.value 
-                    ? getCurrentCategoryColor()
-                    : colors.primary;
+                  if (selectedFilter !== option.value) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = colors.primary;
+                  }
                 }}
               >
                 <span style={{
@@ -1463,10 +1465,12 @@ const CategoryPage = () => {
                     </button>
                   </div>
                 )}
-              </main>
-              
-              <aside style={styles.sidebar}>
-                <div style={styles.newsletterBox}>
+                
+                <div style={{
+                  ...styles.newsletterBox,
+                  marginTop: spacing.xxl,
+                  marginBottom: spacing.xl,
+                }}>
                   <div style={styles.newsletterPattern}></div>
                   <h3 style={styles.newsletterTitle}>Suscríbete al newsletter</h3>
                   <p style={styles.newsletterText}>
@@ -1504,6 +1508,10 @@ const CategoryPage = () => {
                     )}
                   </form>
                 </div>
+              </main>
+              
+              <aside style={styles.sidebar}>
+                {/* El newsletter fue movido al final de los posts */}
               </aside>
             </div>
           </>

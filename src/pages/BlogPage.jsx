@@ -553,29 +553,28 @@ const BlogPage = () => {
           onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)} 
           style={{
             ...styles.dropdownButton,
-            borderColor: isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.2)',
-            background: isDarkMode 
-              ? 'linear-gradient(to right, rgba(31, 78, 78, 0.3), rgba(26, 147, 111, 0.3))'
-              : 'linear-gradient(to right, rgba(31, 78, 78, 0.1), rgba(26, 147, 111, 0.1))',
-            boxShadow: isDarkMode 
-              ? '0 4px 8px rgba(0, 0, 0, 0.2)' 
-              : '0 4px 8px rgba(0, 0, 0, 0.05)',
+            borderColor: 'rgba(31, 78, 78, 0.2)',
+            background: 'linear-gradient(to right, rgba(31, 78, 78, 0.1), rgba(26, 147, 111, 0.1))',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <FaFilter style={{ 
               marginRight: spacing.md, 
-              color: isDarkMode ? colors.secondary : colors.primary, 
+              color: colors.primary, 
               fontSize: '1rem' 
             }} />
-            <span style={{ color: isDarkMode ? colors.textLight : colors.primary }}>
+            <span style={{ 
+              color: colors.primary,
+              fontWeight: 600
+            }}>
               {selectedCategory 
                 ? categories.find(c => c.ID_categoria === parseInt(selectedCategory))?.Nombre || 'Categoría' 
                 : 'Todas las categorías'}
             </span>
           </div>
           <div style={{ 
-            color: isDarkMode ? colors.secondary : colors.primary,
+            color: colors.primary,
             transition: 'transform 0.3s ease',
             transform: categoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
           }}>
@@ -586,40 +585,43 @@ const BlogPage = () => {
         {categoryDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
-            boxShadow: isDarkMode 
-              ? '0 8px 20px rgba(0,0,0,0.3)' 
-              : '0 8px 20px rgba(0,0,0,0.15)',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
             <div 
               style={{
                 ...styles.dropdownItem,
                 backgroundColor: selectedCategory === '' 
-                  ? (isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.1)') 
+                  ? 'rgba(31, 78, 78, 0.1)'
                   : 'transparent',
-                color: isDarkMode ? colors.textLight : colors.primary,
+                color: colors.primary,
                 fontWeight: selectedCategory === '' ? 600 : 400,
               }}
               onClick={() => handleCategorySelect('')}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 78, 78, 0.4)' : 'rgba(31, 78, 78, 0.15)';
+                if (selectedCategory !== '') {
+                  e.currentTarget.style.backgroundColor = 'rgba(31, 78, 78, 0.15)';
+                  e.currentTarget.style.color = colors.primary;
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = selectedCategory === '' 
-                  ? (isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.1)') 
-                  : 'transparent';
+                if (selectedCategory !== '') {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = colors.primary;
+                }
               }}
             >
               <span style={{
                 ...styles.dropdownIcon,
-                backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.5)' : 'rgba(31, 78, 78, 0.2)',
+                backgroundColor: 'rgba(31, 78, 78, 0.2)',
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: isDarkMode ? colors.secondary : colors.primary,
+                color: colors.primary,
               }}>
                 <FaFilter size={14} />
               </span>
@@ -632,34 +634,38 @@ const BlogPage = () => {
                 style={{
                   ...styles.dropdownItem,
                   backgroundColor: selectedCategory === category.ID_categoria.toString() 
-                    ? (isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.1)') 
+                    ? 'rgba(31, 78, 78, 0.1)'
                     : 'transparent',
-                  color: isDarkMode ? colors.textLight : colors.primary,
+                  color: selectedCategory === category.ID_categoria.toString() 
+                    ? categoryColors[category.ID_categoria] 
+                    : colors.primary,
                   fontWeight: selectedCategory === category.ID_categoria.toString() ? 600 : 400,
                   borderLeft: `3px solid ${categoryColors[category.ID_categoria] || colors.primary}`,
                 }}
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 78, 78, 0.4)' : 'rgba(31, 78, 78, 0.15)';
+                  if (selectedCategory !== category.ID_categoria.toString()) {
+                    e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                    e.currentTarget.style.color = categoryColors[category.ID_categoria];
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = selectedCategory === category.ID_categoria.toString() 
-                    ? (isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.1)') 
-                    : 'transparent';
+                  if (selectedCategory !== category.ID_categoria.toString()) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = colors.primary;
+                  }
                 }}
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: isDarkMode 
-                    ? `${categoryColors[category.ID_categoria]}55` 
-                    : `${categoryColors[category.ID_categoria]}33`,
+                  backgroundColor: `${categoryColors[category.ID_categoria]}33`,
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: categoryColors[category.ID_categoria] || (isDarkMode ? colors.secondary : colors.primary),
+                  color: categoryColors[category.ID_categoria] || colors.primary,
                 }}>
                   {categoryIcons[category.ID_categoria] || <FaTag size={14} />}
                 </span>
@@ -670,31 +676,33 @@ const BlogPage = () => {
             <div 
               style={{
                 ...styles.dropdownItem,
-                backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)',
+                backgroundColor: 'rgba(31, 147, 111, 0.1)',
                 marginTop: spacing.sm,
-                borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
+                borderTop: `1px solid rgba(31, 78, 78, 0.1)`,
                 paddingTop: spacing.md,
-                color: isDarkMode ? colors.secondary : colors.primary,
+                color: colors.primary,
                 fontWeight: 600,
               }}
               onClick={() => handleCategorySelect('explore')}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 147, 111, 0.3)' : 'rgba(31, 147, 111, 0.2)';
+                e.currentTarget.style.backgroundColor = 'rgba(31, 147, 111, 0.2)';
+                e.currentTarget.style.color = colors.primary;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)';
+                e.currentTarget.style.backgroundColor = 'rgba(31, 147, 111, 0.1)';
+                e.currentTarget.style.color = colors.primary;
               }}
             >
               <span style={{
                 ...styles.dropdownIcon,
-                backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.4)' : 'rgba(31, 147, 111, 0.2)',
+                backgroundColor: 'rgba(31, 147, 111, 0.2)',
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: isDarkMode ? colors.secondary : colors.primary,
+                color: colors.primary,
               }}>
                 <FaTags size={14} />
               </span>
@@ -725,27 +733,26 @@ const BlogPage = () => {
           onClick={() => setSortDropdownOpen(!sortDropdownOpen)} 
           style={{
             ...styles.dropdownButton,
-            borderColor: isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.2)',
-            background: isDarkMode 
-              ? 'linear-gradient(to right, rgba(31, 78, 78, 0.3), rgba(26, 147, 111, 0.3))'
-              : 'linear-gradient(to right, rgba(31, 78, 78, 0.1), rgba(26, 147, 111, 0.1))',
-            boxShadow: isDarkMode 
-              ? '0 4px 8px rgba(0, 0, 0, 0.2)' 
-              : '0 4px 8px rgba(0, 0, 0, 0.05)',
+            borderColor: 'rgba(31, 78, 78, 0.2)',
+            background: 'linear-gradient(to right, rgba(31, 78, 78, 0.1), rgba(26, 147, 111, 0.1))',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <FaSort style={{ 
               marginRight: spacing.md, 
-              color: isDarkMode ? colors.secondary : colors.primary, 
+              color: colors.primary, 
               fontSize: '1rem' 
             }} />
-            <span style={{ color: isDarkMode ? colors.textLight : colors.primary }}>
+            <span style={{ 
+              color: colors.primary,
+              fontWeight: 600
+            }}>
               {sortOptions.find(option => option.value === sortOrder)?.label || 'Ordenar por'}
             </span>
           </div>
           <div style={{ 
-            color: isDarkMode ? colors.secondary : colors.primary,
+            color: colors.primary,
             transition: 'transform 0.3s ease',
             transform: sortDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
           }}>
@@ -756,9 +763,8 @@ const BlogPage = () => {
         {sortDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
-            boxShadow: isDarkMode 
-              ? '0 8px 20px rgba(0,0,0,0.3)' 
-              : '0 8px 20px rgba(0,0,0,0.15)',
+            boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
             {sortOptions.map(option => (
@@ -767,34 +773,40 @@ const BlogPage = () => {
                 style={{
                   ...styles.dropdownItem,
                   backgroundColor: sortOrder === option.value 
-                    ? (isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.1)') 
+                    ? 'rgba(31, 78, 78, 0.1)'
                     : 'transparent',
-                  color: isDarkMode ? colors.textLight : colors.primary,
+                  color: sortOrder === option.value 
+                    ? colors.primary
+                    : colors.primary,
                   fontWeight: sortOrder === option.value ? 600 : 400,
-                  borderLeft: sortOrder === option.value 
-                    ? `3px solid ${isDarkMode ? colors.secondary : colors.primary}` 
-                    : '3px solid transparent',
+                  borderLeft: `3px solid ${sortOrder === option.value 
+                    ? colors.primary
+                    : 'transparent'}`,
                 }}
                 onClick={() => handleSortSelect(option.value)}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 78, 78, 0.4)' : 'rgba(31, 78, 78, 0.15)';
+                  if (sortOrder !== option.value) {
+                    e.currentTarget.style.backgroundColor = 'rgba(31, 78, 78, 0.15)';
+                    e.currentTarget.style.color = colors.primary;
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = sortOrder === option.value 
-                    ? (isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.1)') 
-                    : 'transparent';
+                  if (sortOrder !== option.value) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = colors.primary;
+                  }
                 }}
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.4)' : 'rgba(31, 147, 111, 0.2)',
+                  backgroundColor: 'rgba(31, 78, 78, 0.2)',
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: isDarkMode ? colors.secondary : colors.primary,
+                  color: colors.primary,
                 }}>
                   {option.icon}
                 </span>
