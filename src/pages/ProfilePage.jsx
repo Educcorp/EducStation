@@ -454,6 +454,8 @@ const ProfilePage = () => {
     );
   }
 
+  console.log('Publicaciones del usuario (userPosts):', userPosts);
+
   return (
     <div style={styles.container}>
       <Header />
