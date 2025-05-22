@@ -41,34 +41,40 @@ const Footer = () => {
 
   // Manejadores de eventos para el botón con referencias al tema actual
   const handleButtonMouseEnter = (e) => {
-    e.target.style.backgroundColor = isDarkMode ? '#555' : colors.white;
+    e.target.style.background = `linear-gradient(90deg, ${colors.primaryLight} 60%, ${colors.secondary} 100%)`;
+    e.target.style.boxShadow = `0 0 24px 4px ${colors.secondary}`;
+    e.target.style.color = isDarkMode ? '#fff' : colors.primary;
   };
 
   const handleButtonMouseLeave = (e) => {
-    e.target.style.backgroundColor = isDarkMode ? '#444' : colors.secondary;
+    e.target.style.background = `linear-gradient(90deg, ${colors.secondary} 60%, ${colors.primaryLight} 100%)`;
+    e.target.style.boxShadow = `0 0 8px 0 ${colors.secondary}33`;
     e.target.style.color = isDarkMode ? '#fff' : colors.primary;
   };
+
+  // --- ANIMACIONES Y EFECTOS GLOW ---
+  // La animación de glow se aplicará directamente en el estilo inline si se requiere, no como keyframes en JS
 
   const styles = {
     // Quitamos backgroundColor y color del objeto de estilo
     // porque ahora lo aplicamos directamente al elemento con useEffect
     footer: {
-      padding: `${spacing.xxl} 0 ${spacing.xl}`,
+      padding: `${spacing.xxl} 0 ${spacing.xxl}`,
       marginTop: spacing.xxl,
     },
     container: {
-      maxWidth: '1200px',
+      maxWidth: '1700px',
       margin: '0 auto',
-      padding: `0 ${spacing.md}`,
+      padding: `0 ${spacing.lg}`,
     },
     grid: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr", // Tres columnas de igual tamaño
-      gap: spacing.md, // Reducir el espacio entre columnas (de xl a md)
+      gridTemplateColumns: "1fr 1fr 1fr",
+      gap: spacing.xl,
       justifyContent: "center",
       alignItems: "flex-start",
-      maxWidth: "1000px", // Limitar el ancho máximo para mantener las columnas más juntas
-      margin: "0 auto", // Centrar el grid
+      maxWidth: "2100px",
+      margin: "0 auto",
     },
     logo: {
       display: "flex",
@@ -91,31 +97,32 @@ const Footer = () => {
       borderRadius: "8px"
     },
     description: {
-      color: isDarkMode ? '#aaa' : colors.gray200, // Cambia el color de la descripción
-      marginBottom: spacing.xl,
-      lineHeight: "1.6",
-      fontSize: typography.fontSize.sm
+      color: isDarkMode ? '#aaa' : colors.gray200,
+      marginBottom: spacing.xxl,
+      lineHeight: "1.8",
+      fontSize: typography.fontSize.md
     },
     social: {
       display: "flex",
       gap: spacing.md
     },
     socialIcon: {
-      width: "36px",
-      height: "36px",
+      width: "44px",
+      height: "44px",
       borderRadius: "50%",
-      backgroundColor: "rgba(240, 248, 247, 0.1)",
+      background: "rgba(240, 248, 247, 0.18)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       transition: transitions.default,
       cursor: "pointer",
-      fontSize: "18px",
+      fontSize: "22px",
       color: colors.white,
-      '&:hover': {
-        backgroundColor: colors.secondary,
-        color: colors.primary
-      }
+      boxShadow: `0 4px 24px 0 ${colors.secondary}22`,
+      filter: "brightness(1.08)",
+      backdropFilter: "blur(6px)",
+      border: `1.5px solid ${colors.secondary}33`,
+      willChange: "box-shadow, filter, background",
     },
     title: {
       fontSize: typography.fontSize.lg, // Aumentar tamaño del título
@@ -141,13 +148,33 @@ const Footer = () => {
       fontSize: typography.fontSize.md,
       display: "flex",
       alignItems: "center",
-      justifyContent: "flex-start"
+      
+      borderRadius: "12px",
+      padding: `10px 58px 10px 38px`,
+      boxShadow: `0 2px 12px 0 ${colors.secondary}11` ,
+      background: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)',
+      willChange: "box-shadow, background, color, transform",
+      border: `1.5px solid ${colors.secondary}22`,
+      minWidth: '160px',
+    },
+    linkIcon: {
+      marginRight: '20px',
+      marginLeft: '2px',
+      display: 'inline-flex',
+      alignItems: 'center',
+      color: '#ffffff',
+      fontSize: '22px',
+      transition: transitions.default,
     },
     linkAnchor: {
-      color: isDarkMode ? '#aaa' : colors.gray200,
+      color: isDarkMode ? '#fff' : colors.primary,
       textDecoration: "none",
       transition: transitions.default,
-      fontSize: typography.fontSize.md, // Aumentar tamaño del texto
+      fontSize: typography.fontSize.md,
+      fontWeight: 600,
+      letterSpacing: "0.01em",
+      filter: "drop-shadow(0 0 2px #0002)",
+      marginLeft: '6px',
     },
     newsletter: {
       marginTop: spacing.md
@@ -172,20 +199,23 @@ const Footer = () => {
       }
     },
     button: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: isDarkMode ? '#444' : colors.secondary, // Botón más oscuro en modo oscuro
+      padding: `${spacing.md} ${spacing.xl}`,
+      background: `linear-gradient(90deg, ${colors.secondary} 60%, ${colors.primaryLight} 100%)`,
       color: isDarkMode ? '#fff' : colors.primary,
       border: "none",
-      borderRadius: "0 4px 4px 0",
+      borderRadius: "12px",
       cursor: "pointer",
-      transition: transitions.default,
-      '&:hover': {
-        backgroundColor: isDarkMode ? '#555' : colors.white,
-      },
-      '&:disabled': {
-        backgroundColor: colors.gray300,
-        cursor: "not-allowed"
-      }
+      transition: "all 0.3s cubic-bezier(.4,2,.6,1)",
+      boxShadow: `0 2px 16px 0 ${colors.secondary}33`,
+      fontWeight: 700,
+      letterSpacing: "0.02em",
+      willChange: "box-shadow, background, color",
+      fontSize: typography.fontSize.md,
+      marginLeft: '8px',
+    },
+    buttonGlow: {
+      animation: "glow 1.5s alternate infinite",
+      boxShadow: `0 0 20px 2px ${colors.secondary}`,
     },
     message: {
       fontSize: typography.fontSize.sm,
@@ -193,14 +223,14 @@ const Footer = () => {
       color: colors.secondary
     },
     bottom: {
-      marginTop: spacing.xxl,
-      paddingTop: spacing.md,
-      borderTop: `1px solid ${isDarkMode ? '#444' : 'rgba(240, 248, 247, 0.1)'}`, // Línea más oscura en modo oscuro
+      marginTop: spacing.xxl * 2,
+      paddingTop: spacing.xl,
+      borderTop: `1px solid ${isDarkMode ? '#444' : 'rgba(240, 248, 247, 0.1)'}`,
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
       flexWrap: "wrap",
-      gap: spacing.md
+      gap: spacing.xl
     },
     copyright: {
       color: isDarkMode ? '#aaa' : colors.gray200, // Cambia el color del texto de copyright
@@ -218,7 +248,26 @@ const Footer = () => {
       '&:hover': {
         color: colors.secondary
       }
-    }
+    },
+    educationalTip: {
+      margin: `${spacing.xl} 0 0 0`,
+      padding: `${spacing.lg} ${spacing.xl}`,
+      background: isDarkMode ? 'rgba(34,34,34,0.08)' : 'rgba(255,255,255,0.06)',
+      color: isDarkMode ? colors.secondary : colors.primary,
+      borderRadius: '18px',
+      fontSize: typography.fontSize.lg,
+      fontWeight: 600,
+      boxShadow: `0 4px 32px 0 ${colors.secondary}11`,
+      textAlign: 'center',
+      letterSpacing: '0.01em',
+      transition: transitions.default,
+      border: `1px solid ${colors.secondary}11`,
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      maxWidth: '900px',
+      marginLeft: 'auto',
+      marginRight: 'auto',
+    },
   };
 
   const footerLinks = [
@@ -245,6 +294,21 @@ const Footer = () => {
     }
   ];
 
+  // --- HANDLERS MEJORADOS PARA EFECTOS GLOW Y ANIMACIONES ---
+  const glowColor = isDarkMode ? '#7de2fc33' : '#b9ffb755'; // glow mucho más sutil
+  const handleLinkMouseEnter = (e) => {
+    e.currentTarget.style.boxShadow = `0 0 16px 4px ${glowColor}`;
+    e.currentTarget.style.background = isDarkMode ? 'rgba(35,64,79,0.85)' : 'rgba(185,255,183,0.55)'; // fondo pastel translúcido
+    e.currentTarget.style.color = isDarkMode ? '#fff' : '#23404f';
+    e.currentTarget.style.transform = 'scale(1.03)';
+  };
+  const handleLinkMouseLeave = (e) => {
+    e.currentTarget.style.boxShadow = `0 0 0 0 ${colors.secondary}00`;
+    e.currentTarget.style.background = isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)';
+    e.currentTarget.style.color = isDarkMode ? '#fff' : colors.primary;
+    e.currentTarget.style.transform = 'scale(1)';
+  };
+
   return (
     <footer ref={footerRef} style={styles.footer}>
       <div style={styles.container}>
@@ -253,7 +317,7 @@ const Footer = () => {
           <div>
             <div
               style={styles.logo}
-              onClick={() => (window.location.href = "/")} // Redirect to homepage
+              onClick={() => (window.location.href = "/")}
               onMouseEnter={(e) => (e.currentTarget.style.color = colors.secondary)}
               onMouseLeave={(e) => (e.currentTarget.style.color = isDarkMode ? '#fff' : colors.white)}
             >
@@ -275,16 +339,16 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ ...styles.socialIcon }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
+                onMouseEnter={(e) => { e.target.style.backgroundColor = colors.secondary; e.target.style.boxShadow = `0 0 16px 2px ${colors.secondary}`; }}
+                onMouseLeave={(e) => { e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"; e.target.style.boxShadow = `0 0 8px 0 ${colors.secondary}33`; }}
               >T</a>
               <a
                 href="https://www.linkedin.com/in/educcorp-inc-158297356/"
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ ...styles.socialIcon }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = colors.secondary}
-                onMouseLeave={(e) => e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"}
+                onMouseEnter={(e) => { e.target.style.backgroundColor = colors.secondary; e.target.style.boxShadow = `0 0 16px 2px ${colors.secondary}`; }}
+                onMouseLeave={(e) => { e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"; e.target.style.boxShadow = `0 0 8px 0 ${colors.secondary}33`; }}
               >in</a>
             </div>
           </div>
@@ -293,19 +357,10 @@ const Footer = () => {
           <div>
             <h3 style={styles.title}>Enlaces Rápidos</h3>
             <ul style={styles.links}>
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0 // Eliminar el padding izquierdo
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaHome size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaHome size={22} /></span>
                 <Link
                   to="/"
                   style={styles.linkAnchor}
@@ -316,20 +371,10 @@ const Footer = () => {
                   Inicio
                 </Link>
               </li>
-
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaInfo size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaInfo size={22} /></span>
                 <Link
                   to="/about"
                   style={styles.linkAnchor}
@@ -340,20 +385,10 @@ const Footer = () => {
                   Acerca de
                 </Link>
               </li>
-
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaEnvelope size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaEnvelope size={22} /></span>
                 <Link
                   to="/contact"
                   style={styles.linkAnchor}
@@ -364,20 +399,10 @@ const Footer = () => {
                   Contacto
                 </Link>
               </li>
-
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaQuestionCircle size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaQuestionCircle size={22} /></span>
                 <Link
                   to="/contact#faq-section"
                   style={styles.linkAnchor}
@@ -388,20 +413,10 @@ const Footer = () => {
                   FAQ
                 </Link>
               </li>
-
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaTags size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaTags size={22} /></span>
                 <Link
                   to="/categorias"
                   style={styles.linkAnchor}
@@ -419,19 +434,10 @@ const Footer = () => {
           <div>
             <h3 style={styles.title}>Categorías</h3>
             <ul style={styles.links}>
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0 // Usar paddingLeft fijo en lugar de cambiarlo en hover
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)"; // Usar transform en lugar de paddingLeft
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaBook size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaBook size={22} /></span>
                 <Link
                   to="/categoria/1"
                   style={styles.linkAnchor}
@@ -442,20 +448,10 @@ const Footer = () => {
                   Noticias
                 </Link>
               </li>
-
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaChartBar size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaChartBar size={22} /></span>
                 <Link
                   to="/categoria/2"
                   style={styles.linkAnchor}
@@ -466,33 +462,13 @@ const Footer = () => {
                   Técnicas de Estudio
                 </Link>
               </li>
-
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0,
-                maxWidth: '100%',
-                width: '100%',
-                overflow: 'visible',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaAward size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaAward size={22} /></span>
                 <Link
                   to="/categoria/6"
-                  style={{
-                    ...styles.linkAnchor,
-                    whiteSpace: 'nowrap',
-                    overflow: 'visible',
-                    maxWidth: 'none'
-                  }}
+                  style={{ ...styles.linkAnchor, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: 'none' }}
                   onClick={e => { e.preventDefault(); window.location.href = "/categoria/6"; }}
                   onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
@@ -500,33 +476,13 @@ const Footer = () => {
                   Desarrollo Profesional Docente
                 </Link>
               </li>
-
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0,
-                maxWidth: '100%',
-                width: '100%',
-                overflow: 'visible',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaUsers size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaUsers size={22} /></span>
                 <Link
                   to="/categoria/7"
-                  style={{
-                    ...styles.linkAnchor,
-                    whiteSpace: 'nowrap',
-                    overflow: 'visible',
-                    maxWidth: 'none'
-                  }}
+                  style={{ ...styles.linkAnchor, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: 'none' }}
                   onClick={e => { e.preventDefault(); window.location.href = "/categoria/7"; }}
                   onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
@@ -534,33 +490,13 @@ const Footer = () => {
                   Comunidad y Colaboración
                 </Link>
               </li>
-
-              <li style={{
-                ...styles.link,
-                paddingLeft: 0,
-                maxWidth: '100%',
-                width: '100%',
-                overflow: 'visible',
-                display: 'flex',
-                alignItems: 'center'
-              }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateX(5px)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateX(0)";
-                }}>
-                <span style={{ marginRight: spacing.sm, display: 'inline-flex', alignItems: 'center', color: '#ffffff' }}>
-                  <FaCog size={22} />
-                </span>
+              <li style={{ ...styles.link, paddingLeft: 0 }}
+                onMouseEnter={handleLinkMouseEnter}
+                onMouseLeave={handleLinkMouseLeave}>
+                <span style={styles.linkIcon}><FaCog size={22} /></span>
                 <Link
                   to="/categoria/5"
-                  style={{
-                    ...styles.linkAnchor,
-                    whiteSpace: 'nowrap',
-                    overflow: 'visible',
-                    maxWidth: 'none'
-                  }}
+                  style={{ ...styles.linkAnchor, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: 'none' }}
                   onClick={e => { e.preventDefault(); window.location.href = "/categoria/5"; }}
                   onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
                   onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
@@ -570,6 +506,11 @@ const Footer = () => {
               </li>
             </ul>
           </div>
+        </div>
+
+        {/* Educational Tip Section */}
+        <div style={styles.educationalTip}>
+          <span role="img" aria-label="idea">💡</span> "La educación es el arma más poderosa que puedes usar para cambiar el mundo." — Nelson Mandela
         </div>
 
         {/* Bottom Section */}
