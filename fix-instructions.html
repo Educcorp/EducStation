@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Comment System Fix Instructions</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h1 { color: #0b4444; }
+    pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    .note { background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 10px; margin: 20px 0; }
+    .success { background-color: #d4edda; border-left: 4px solid #28a745; padding: 10px; margin: 20px 0; }
+    .steps { background-color: #e9ecef; padding: 15px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>EducStation: Fix Comment System Instructions</h1>
+  
+  <p>The issue with the comment system has been identified and fixed. The frontend was using incorrect API endpoints for getting and submitting comments.</p>
+  
+  <div class="note">
+    <strong>Issue:</strong> The frontend was using <code>/api/comentarios/post/55</code> instead of <code>/api/comentarios/publicacion/55</code>
+  </div>
+  
+  <h2>The Fix</h2>
+  
+  <p>The file <code>comentarioService.js</code> has been updated with the correct API endpoints:</p>
+  
+  <div class="steps">
+    <ol>
+      <li>All instances of <code>/comentarios/post/</code> were changed to <code>/comentarios/publicacion/</code></li>
+      <li>The POST endpoint was updated from <code>${API_URL}/comentarios</code> to <code>${API_URL}/comentarios/publicacion/${idToUse}</code></li>
+      <li>The <code>postId: idToUse</code> field was removed from the payload object since it's now part of the URL</li>
+      <li>The application was rebuilt with <code>npm run build</code></li>
+    </ol>
+  </div>
+  
+  <h2>To Test the Fix</h2>
+  
+  <p>To test if the fix is working properly:</p>
+  
+  <ol>
+    <li>Open the application and navigate to a blog post detail page</li>
+    <li>Open the browser developer console (F12)</li>
+    <li>Look for logs with "FIXED" in them, confirming the correct endpoints are being used</li>
+    <li>Try adding a comment and check if it works</li>
+  </ol>
+  
+  <div class="success">
+    <strong>Note:</strong> If you're still seeing issues, it might be due to caching. Try clearing your browser cache or use incognito mode to test.
+  </div>
+  
+  <h2>Next Steps</h2>
+  
+  <p>To ensure the fix is properly deployed:</p>
+  
+  <ol>
+    <li>Test thoroughly to ensure comments can be both viewed and added</li>
+    <li>Deploy the updated build to your production environment</li>
+    <li>Monitor the logs for any unexpected errors</li>
+  </ol>
+</body>
+</html> 
