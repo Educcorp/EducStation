@@ -51,8 +51,16 @@ const ComentariosList = ({ postId }) => {
 
     const handleCrearComentario = async (e) => {
         e.preventDefault();
-        if (!comentarioText.trim()) return;
+        console.log('Intentando crear comentario con texto:', comentarioText);
+        console.log('ID de la publicación:', postId);
+        console.log('Usuario actual:', user);
+        
+        if (!comentarioText.trim()) {
+            console.log('Texto del comentario vacío, cancelando envío');
+            return;
+        }
         if (!postId) {
+            console.log('ID de publicación no válido:', postId);
             toast.error('ID de publicación no válido');
             return;
         }
@@ -66,14 +74,14 @@ const ComentariosList = ({ postId }) => {
                 nickname: user.username || user.name || 'Usuario'
             };
             
-            console.log('Enviando comentario:', nuevoComentario);
+            console.log('Enviando comentario al servidor:', nuevoComentario);
             
             await comentarioService.createComentario(nuevoComentario);
             setComentarioText('');
             toast.success('Comentario publicado exitosamente');
             cargarComentarios();
         } catch (error) {
-            console.error('Error al crear comentario:', error);
+            console.error('Error detallado al crear comentario:', error);
             toast.error('Error al publicar el comentario: ' + (error.message || 'Error desconocido'));
         } finally {
             setIsSubmitting(false);
