@@ -4,9 +4,10 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-pr
 
 export const comentarioService = {
     // Obtener todos los comentarios de un post
-    getComentariosByPost: async (postId) => {
+    getComentariosByPost: async (publicacionId) => {
         try {
-            const response = await axios.get(`${API_URL}/comentarios/post/${postId}`);
+            console.log('Obteniendo comentarios para la publicación:', publicacionId);
+            const response = await axios.get(`${API_URL}/comentarios/publicacion/${publicacionId}`);
             return response.data;
         } catch (error) {
             console.error('Error al obtener comentarios:', error);
@@ -22,12 +23,25 @@ export const comentarioService = {
                 throw new Error('No hay token de autenticación');
             }
             
-            const response = await axios.post(`${API_URL}/comentarios`, comentarioData, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+            const { publicacionId, contenido, usuarioId, nickname } = comentarioData;
+            
+            console.log('Enviando comentario:', {
+                publicacionId,
+                contenido,
+                usuarioId,
+                nickname
             });
+            
+            const response = await axios.post(
+                `${API_URL}/comentarios/publicacion/${publicacionId}`, 
+                { contenido, nickname },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
             return response.data;
         } catch (error) {
             console.error('Error al crear comentario:', error);

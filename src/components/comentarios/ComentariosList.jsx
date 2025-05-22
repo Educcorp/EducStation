@@ -20,12 +20,20 @@ const ComentariosList = ({ postId }) => {
     const { isDarkMode } = useTheme();
 
     const cargarComentarios = async () => {
+        if (!postId) {
+            setError('ID de publicación no válido');
+            setLoading(false);
+            return;
+        }
+        
         setLoading(true);
         setError(null);
         try {
+            console.log('Cargando comentarios para el post:', postId);
             const data = await comentarioService.getComentariosByPost(postId);
             setComentarios(data);
         } catch (error) {
+            console.error('Error al cargar comentarios:', error);
             setError('No se pudieron cargar los comentarios.');
         } finally {
             setLoading(false);
@@ -33,20 +41,26 @@ const ComentariosList = ({ postId }) => {
     };
 
     useEffect(() => {
-        cargarComentarios();
+        if (postId) {
+            cargarComentarios();
+        }
     }, [postId]);
 
     const handleCrearComentario = async (e) => {
         e.preventDefault();
         if (!comentarioText.trim()) return;
+        if (!postId) {
+            toast.error('ID de publicación no válido');
+            return;
+        }
         
         setIsSubmitting(true);
         try {
             await comentarioService.createComentario({
                 contenido: comentarioText,
-                postId,
-                userId: user.id, // Asegúrate de que el usuario tenga un ID
-                nickname: user.username || user.name || 'Usuario' // Usa el nombre de usuario o nombre real
+                publicacionId: postId,
+                usuarioId: user.id,
+                nickname: user.username || user.name || 'Usuario'
             });
             setComentarioText('');
             toast.success('Comentario publicado exitosamente');
