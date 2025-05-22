@@ -236,6 +236,12 @@ const Header = () => {
     return location.pathname === path;
   };
 
+  // Función para obtener el avatar con prefijo base64 si es necesario
+  const getAvatarSrc = (avatar) => {
+    if (!avatar) return '/assets/images/logoBN.png';
+    return avatar.startsWith('data:image') ? avatar : `data:image/jpeg;base64,${avatar}`;
+  };
+
   // Estilos del header
   const styles = {
     header: {
@@ -676,7 +682,7 @@ const Header = () => {
             onMouseLeave={() => setHoveredItem(null)}
             onClick={toggleMenu}
           >
-            <img src={userAvatar} alt="Profile" style={styles.profileImg} />
+            <img src={getAvatarSrc(userAvatar)} alt="Profile" style={styles.profileImg} />
           </div>
 
           {/* Menú desplegable con perfil del usuario */}
@@ -686,7 +692,7 @@ const Header = () => {
                 {/* Sección de perfil del usuario */}
                 <div style={styles.userProfileSection}>
                   <div style={styles.userAvatar}>
-                    <img src={userAvatar} alt="Avatar" style={styles.profileImg} />
+                    <img src={getAvatarSrc(userAvatar)} alt="Avatar" style={styles.profileImg} />
                   </div>
                   <div style={styles.userName}>{userName}</div>
                   <div style={styles.userRole}>{isSuperUser ? 'Administrador' : 'Usuario'}</div>
