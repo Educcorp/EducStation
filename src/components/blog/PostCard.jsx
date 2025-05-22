@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
-import { FaUser, FaTag, FaEye, FaBookOpen } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaTag, FaEye, FaBookOpen } from 'react-icons/fa';
 
 // Importar utilidades
 import { 
+  formatDate,
   extractSummary, 
   renderImageHTML,
   formatViews,
@@ -18,21 +19,39 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
   const { colors, isDarkMode } = useTheme();
   
   // Función para obtener color de categoría
-  const getCategoryColor = (categoria) => {
+  const getCategoryColor = (post) => {
+    // Mapeo de IDs de categoría a colores
     const categoryColors = {
-      'Tecnología': '#3b82f6',
-      'Educación': '#10b981',
-      'Ciencia': '#8b5cf6',
-      'Salud': '#ef4444',
-      'Deportes': '#f59e0b',
-      'Arte': '#ec4899',
-      'Música': '#06b6d4',
-      'Literatura': '#84cc16',
-      'Historia': '#f97316',
-      'Filosofía': '#6366f1',
+      1: '#FF6B6B', // Noticias
+      2: '#4ECDC4', // Técnicas de Estudio
+      3: '#FFD166', // Problemáticas en el Estudio
+      4: '#6A0572', // Educación de Calidad
+      5: '#1A936F', // Herramientas Tecnológicas
+      6: '#3D5A80', // Desarrollo Profesional Docente
+      7: '#F18F01', // Comunidad y Colaboración
       'default': '#6b7280'
     };
-    return categoryColors[categoria] || categoryColors.default;
+    
+    // Intentar obtener el ID de categoría de diferentes formas
+    let categoryId = null;
+    
+    if (post.categorias && Array.isArray(post.categorias) && post.categorias.length > 0) {
+      categoryId = post.categorias[0].ID_categoria || post.categorias[0];
+    } else if (post.categoria_id) {
+      categoryId = post.categoria_id;
+    } else if (post.ID_categoria) {
+      categoryId = post.ID_categoria;
+    }
+    
+    return categoryColors[categoryId] || categoryColors.default;
+  };
+
+  // Función para obtener el nombre de la categoría
+  const getCategoryName = (post) => {
+    if (post.categorias && Array.isArray(post.categorias) && post.categorias.length > 0) {
+      return post.categorias[0].Nombre_categoria || post.categorias[0].Nombre || post.categoria;
+    }
+    return post.categoria || 'Sin categoría';
   };
   
   // Función para renderizar la imagen de portada
@@ -121,7 +140,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
     categoryLine: {
       height: "4px",
       width: "100%",
-      backgroundColor: getCategoryColor(post.categoria),
+      backgroundColor: getCategoryColor(post),
       transition: "all 0.3s ease",
     },
     imageContainer: {
@@ -222,6 +241,11 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       alignItems: "center",
       gap: spacing.xs,
     },
+    metaLeft: {
+      display: "flex",
+      flexDirection: "column",
+      gap: spacing.xs,
+    },
     authorName: {
       fontWeight: typography.fontWeight.medium,
       color: isDarkMode ? colors.textLight : colors.textDark,
@@ -237,7 +261,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
     >
       <article style={styles.card}>
         {/* Línea de color de categoría */}
-        {showCategory && post.categoria && (
+        {showCategory && (
           <div style={styles.categoryLine}></div>
         )}
         
@@ -246,10 +270,10 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           {renderPortadaImage()}
           
           {/* Badge de categoría */}
-          {showCategory && post.categoria && (
+          {showCategory && (
             <div style={styles.categoryBadge}>
               <FaTag size={10} />
-              <span>{post.categoria}</span>
+              <span>{getCategoryName(post)}</span>
             </div>
           )}
         </div>
@@ -266,13 +290,23 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           
           {/* Metadatos */}
           <div style={styles.postMeta}>
-            <div style={styles.metaItem}>
-              <FaUser size={12} />
-              <span style={styles.authorName}>
-                {post.autor || post.Autor || 'Autor desconocido'}
-              </span>
+            <div style={styles.metaLeft}>
+              {/* Autor */}
+              <div style={styles.metaItem}>
+                <FaUser size={12} />
+                <span style={styles.authorName}>
+                  {post.NombreAdmin || post.autor || post.Autor || 'Autor desconocido'}
+                </span>
+              </div>
+              
+              {/* Fecha */}
+              <div style={styles.metaItem}>
+                <FaCalendarAlt size={12} />
+                <span>{formatDate(post.Fecha_creacion)}</span>
+              </div>
             </div>
             
+            {/* Visualizaciones */}
             {showViews && post.visualizaciones && (
               <div style={styles.metaItem}>
                 <FaEye size={12} />
