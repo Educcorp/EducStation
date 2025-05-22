@@ -130,25 +130,25 @@ const ProfilePage = () => {
         // Comprimir la imagen antes de enviarla
         const compressedImage = await compressImage(file);
         
-        try {
+          try {
           console.log('Imagen comprimida, preparando envío al servidor');
-          
-          // Enviar directamente al servidor
+            
+            // Enviar directamente al servidor
           const result = await updateUserAvatar(compressedImage);
-          
-          // Actualizar el avatar en la interfaz con la respuesta del servidor
-          setUserProfile(prev => ({
-            ...prev,
+            
+            // Actualizar el avatar en la interfaz con la respuesta del servidor
+            setUserProfile(prev => ({
+              ...prev,
             avatar: compressedImage // Usamos la imagen comprimida para mostrarla de inmediato
-          }));
-          
-          console.log('Avatar actualizado correctamente en el servidor');
-          setIsUploading(false);
-        } catch (error) {
-          console.error('Error al actualizar el avatar:', error);
-          setErrorMessage(`Error al actualizar el avatar: ${error.message}`);
-          setIsUploading(false);
-        }
+            }));
+            
+            console.log('Avatar actualizado correctamente en el servidor');
+            setIsUploading(false);
+          } catch (error) {
+            console.error('Error al actualizar el avatar:', error);
+            setErrorMessage(`Error al actualizar el avatar: ${error.message}`);
+            setIsUploading(false);
+          }
       } catch (error) {
         console.error('Error al procesar la imagen:', error);
         setIsUploading(false);
