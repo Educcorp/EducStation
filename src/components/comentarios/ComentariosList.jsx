@@ -7,7 +7,6 @@ import { FaPaperPlane } from 'react-icons/fa';
 import { BiMessageSquareDots } from 'react-icons/bi';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const ComentariosList = ({ postId }) => {
     const [comentarios, setComentarios] = useState([]);
@@ -31,7 +30,8 @@ const ComentariosList = ({ postId }) => {
         try {
             console.log('Cargando comentarios para el post:', postId);
             const data = await comentarioService.getComentariosByPost(postId);
-            setComentarios(data);
+            setComentarios(data || []);
+            console.log('Comentarios cargados:', data);
         } catch (error) {
             console.error('Error al cargar comentarios:', error);
             setError('No se pudieron cargar los comentarios.');
@@ -43,6 +43,9 @@ const ComentariosList = ({ postId }) => {
     useEffect(() => {
         if (postId) {
             cargarComentarios();
+        } else {
+            setComentarios([]);
+            setLoading(false);
         }
     }, [postId]);
 
@@ -56,18 +59,22 @@ const ComentariosList = ({ postId }) => {
         
         setIsSubmitting(true);
         try {
-            await comentarioService.createComentario({
+            const nuevoComentario = {
                 contenido: comentarioText,
                 publicacionId: postId,
                 usuarioId: user.id,
                 nickname: user.username || user.name || 'Usuario'
-            });
+            };
+            
+            console.log('Enviando comentario:', nuevoComentario);
+            
+            await comentarioService.createComentario(nuevoComentario);
             setComentarioText('');
             toast.success('Comentario publicado exitosamente');
             cargarComentarios();
         } catch (error) {
             console.error('Error al crear comentario:', error);
-            toast.error('Error al publicar el comentario');
+            toast.error('Error al publicar el comentario: ' + (error.message || 'Error desconocido'));
         } finally {
             setIsSubmitting(false);
         }
@@ -95,10 +102,13 @@ const ComentariosList = ({ postId }) => {
 
     // Ordenar comentarios según el filtro seleccionado
     const comentariosOrdenados = [...comentarios].sort((a, b) => {
+        const fechaA = new Date(a.fechaCreacion || a.Fecha_publicacion);
+        const fechaB = new Date(b.fechaCreacion || b.Fecha_publicacion);
+        
         if (orden === 'reciente') {
-            return new Date(b.fechaCreacion) - new Date(a.fechaCreacion);
+            return fechaB - fechaA;
         } else {
-            return new Date(a.fechaCreacion) - new Date(b.fechaCreacion);
+            return fechaA - fechaB;
         }
     });
 
@@ -224,19 +234,11 @@ const ComentariosList = ({ postId }) => {
     };
 
     return (
-        <motion.div 
-            style={styles.container}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-        >
+        <div style={styles.container}>
             {user && (
-                <motion.form 
+                <form 
                     style={styles.formContainer}
                     onSubmit={handleCrearComentario}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    transition={{ duration: 0.3 }}
                 >
                     <textarea
                         style={styles.textarea}
@@ -246,28 +248,18 @@ const ComentariosList = ({ postId }) => {
                         onChange={(e) => setComentarioText(e.target.value)}
                         disabled={isSubmitting}
                     />
-                    <motion.button 
+                    <button 
                         type="submit" 
                         style={styles.submitButton}
                         aria-label="Enviar comentario"
                         disabled={isSubmitting || !comentarioText.trim()}
-                        whileHover={{ 
-                            scale: 1.05,
-                            backgroundColor: colors.primaryDark 
-                        }}
-                        whileTap={{ scale: 0.95 }}
                     >
                         <FaPaperPlane />
-                    </motion.button>
-                </motion.form>
+                    </button>
+                </form>
             )}
             
-            <motion.div 
-                style={styles.filterContainer}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-            >
+            <div style={styles.filterContainer}>
                 <label style={styles.filterLabel} htmlFor="ordenComentarios">Ordenar por:</label>
                 <select
                     id="ordenComentarios"
@@ -278,72 +270,42 @@ const ComentariosList = ({ postId }) => {
                     <option value="reciente">Más reciente</option>
                     <option value="antiguo">Más antiguo</option>
                 </select>
-            </motion.div>
+            </div>
 
             {loading ? (
-                <motion.div 
-                    style={styles.loadingMessage}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                >
+                <div style={styles.loadingMessage}>
                     Cargando comentarios...
-                </motion.div>
+                </div>
             ) : error ? (
-                <motion.div 
-                    style={styles.errorMessage}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                >
+                <div style={styles.errorMessage}>
                     {error}
                     <br />
-                    <motion.button 
+                    <button 
                         style={styles.retryButton} 
                         onClick={cargarComentarios}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
                     >
                         Reintentar
-                    </motion.button>
-                </motion.div>
+                    </button>
+                </div>
             ) : comentarios.length === 0 ? (
-                <motion.div 
-                    style={styles.noComments}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                >
-                    <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.5 }}
-                    >
+                <div style={styles.noComments}>
+                    <div>
                         <BiMessageSquareDots size={32} />
-                    </motion.div>
-                    <p>No hay comentarios todavía. ¡Sé el primero en comentar!</p>
-                </motion.div>
+                    </div>
+                    <p>Aún no hay comentarios en esta publicación. ¡Sé el primero en comentar!</p>
+                </div>
             ) : (
-                <AnimatePresence>
-                    {comentariosOrdenados.map((comentario, index) => (
-                        <motion.div
-                            key={comentario.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ delay: index * 0.1, duration: 0.3 }}
-                        >
-                            <ComentarioItem
-                                comentario={comentario}
-                                onDelete={handleEliminarComentario}
-                                onUpdate={handleActualizarComentario}
-                                currentUser={user}
-                            />
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
+                comentariosOrdenados.map((comentario, index) => (
+                    <ComentarioItem
+                        key={comentario.ID_comentario || comentario.id || index}
+                        comentario={comentario}
+                        onDelete={handleEliminarComentario}
+                        onUpdate={handleActualizarComentario}
+                        currentUser={user}
+                    />
+                ))
             )}
-        </motion.div>
+        </div>
     );
 };
 
