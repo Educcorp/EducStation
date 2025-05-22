@@ -43,6 +43,25 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
+    // Obtener información del usuario del token JWT
+    const tokenParts = token.split('.');
+    let userId;
+    
+    if (tokenParts.length >= 2) {
+      try {
+        // Decodificar la parte del payload del token
+        const payload = JSON.parse(atob(tokenParts[1]));
+        userId = payload.id || payload.user_id || payload.userId;
+        console.log('ID de usuario extraída del token:', userId);
+        
+        if (!userId) {
+          console.warn('No se pudo extraer el ID de usuario del token JWT. Payload:', payload);
+        }
+      } catch (tokenError) {
+        console.error('Error al decodificar el token JWT:', tokenError);
+      }
+    }
+    
     // Usamos una URL alternativa para evitar confusiones con las rutas
     // La ruta correcta según userRoutes.js del backend es /api/users/avatar
     const avatarUrl = `${API_URL}/api/users/avatar`;
@@ -77,9 +96,10 @@ export const updateUserAvatar = async (avatarData) => {
         // Añadimos también el x-auth-token para mayor compatibilidad
         'x-auth-token': token
       },
-      // Enviamos el avatarData en formato adecuado
+      // Enviamos el avatarData en formato adecuado y añadimos el userId si está disponible
       body: JSON.stringify({ 
-        avatarData: processedData
+        avatarData: processedData,
+        userId: userId // Incluir el ID extraído del token
       }),
     });
 
