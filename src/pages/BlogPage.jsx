@@ -667,7 +667,7 @@ const BlogPage = () => {
                   style={{
                     ...styles.dropdownItem,
                     backgroundColor: isSelected ? getLighterColor(categoryColor, 0.1) : 'transparent',
-                    color: isSelected ? categoryColor : colors.primary,
+                    color: isSelected ? categoryColor : (isDarkMode ? colors.textLight : colors.textDark),
                     fontWeight: isSelected ? 600 : 400,
                     borderLeft: `3px solid ${isSelected ? categoryColor : 'transparent'}`,
                   }}
@@ -681,7 +681,7 @@ const BlogPage = () => {
                   onMouseLeave={(e) => {
                     if (!isSelected) {
                       e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = colors.primary;
+                      e.currentTarget.style.color = isDarkMode ? colors.textLight : colors.textDark;
                     }
                   }}
                 >
