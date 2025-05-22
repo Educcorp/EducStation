@@ -183,10 +183,8 @@ const PostViewer = () => {
 
   return (
     <div style={styles.pageWrapper}>
-      {/* Header fuera del contenedor principal para que ocupe todo el ancho */}
       <Header />
       
-      {/* Contenedor principal que limita el ancho máximo y centra el contenido */}
       <div style={styles.mainContainer}>
         <main style={styles.contentContainer}>
           {/* Breadcrumb */}
@@ -208,6 +206,7 @@ const PostViewer = () => {
             <span>Post {postId}</span>
           </div>
           
+          {/* Contenedor del Post */}
           <div style={styles.postContainer}>
             {loading ? (
               <div style={styles.loadingMessage}>
@@ -242,42 +241,43 @@ const PostViewer = () => {
                   dangerouslySetInnerHTML={createPostComponent()}
                 />
                 <ReactionSection postId={postId} />
-                {/* Línea divisoria sutil */}
-                <div style={{
-                  borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
-                  margin: '2.5rem 0 1.5rem 0',
-                  width: '100%'
-                }} />
-                {/* Debug: Mostrar el postId que se pasa a los comentarios */}
-                {console.log('Renderizando comentarios para postId:', postId)}
-                {/* Comentarios integrados visualmente */}
-                <div style={{
-                  background: 'transparent',
-                  boxShadow: 'none',
-                  borderRadius: 0,
-                  padding: 0,
-                  margin: 0
-                }}>
-                  <h2 style={{
-                    fontSize: styles.sectionTitle.fontSize,
-                    fontWeight: styles.sectionTitle.fontWeight,
-                    color: styles.sectionTitle.color,
-                    marginBottom: '1.5rem',
-                    paddingBottom: 0,
-                    borderBottom: 'none',
-                  }}>
-                    Comentarios
-                  </h2>
-                  <ComentariosList publicacionId={postId} />
-                </div>
               </>
             )}
+          </div>
+
+          {/* Separador visual */}
+          <div style={{
+            borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
+            margin: '2.5rem 0',
+            width: '100%'
+          }} />
+
+          {/* Sección de Comentarios */}
+          <div style={{
+            backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+            borderRadius: borderRadius.lg,
+            padding: spacing.xl,
+            boxShadow: shadows.md,
+            width: '100%',
+            boxSizing: 'border-box',
+            border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
+            marginBottom: spacing.xl
+          }}>
+            <h2 style={{
+              fontSize: typography.fontSize.xl,
+              fontWeight: typography.fontWeight.bold,
+              color: isDarkMode ? colors.textLight : colors.textPrimary,
+              marginBottom: spacing.lg,
+              paddingBottom: spacing.sm,
+              borderBottom: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+            }}>
+              Comentarios
+            </h2>
+            <ComentariosList publicacionId={postId} />
           </div>
         </main>
       </div>
       
-      {/* Simplemente renderizamos el Footer sin contenedor adicional, ya que
-          el propio componente Footer tiene su estructura interna con container */}
       <Footer />
     </div>
   );
