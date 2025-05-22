@@ -584,7 +584,7 @@ const ProfilePage = () => {
                         </Link>
                       </h3>
                       <div style={styles.postMeta}>
-                        <span style={styles.postDate}>{formatDate(post.Fecha_creacion)}</span>
+                        <span style={styles.postDate}>{post.Fecha_creacion ? new Date(post.Fecha_creacion.replace(' ', 'T')).toLocaleString() : 'Sin fecha'}</span>
                         <span style={styles.postStatus}>
                           <span style={{
                             display: 'inline-block',
