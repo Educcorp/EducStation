@@ -8,6 +8,11 @@ import { useTheme } from '../../context/ThemeContext';
 
 const ComentarioItem = ({ comentario, onDelete, onUpdate, currentUser }) => {
     const [isEditing, setIsEditing] = useState(false);
+    const [isHover, setIsHover] = useState(false);
+    const [isEditHover, setIsEditHover] = useState(false);
+    const [isDeleteHover, setIsDeleteHover] = useState(false);
+    const [isEditClicked, setIsEditClicked] = useState(false);
+    const [isDeleteClicked, setIsDeleteClicked] = useState(false);
     const { isDarkMode } = useTheme();
     const isOwner = currentUser && currentUser.id === comentario.usuarioId;
 
@@ -22,19 +27,21 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate, currentUser }) => {
         setIsEditing(false);
     };
 
+    const bounceTransition = 'transform 0.18s cubic-bezier(.39,.575,.56,1.000), box-shadow 0.18s cubic-bezier(.39,.575,.56,1.000), background 0.18s cubic-bezier(.39,.575,.56,1.000)';
     const styles = {
         container: {
             backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-            borderRadius: borderRadius.lg,
-            padding: spacing.lg,
+            borderRadius: borderRadius.xl,
+            padding: spacing.xl,
             marginBottom: spacing.md,
-            boxShadow: shadows.sm,
-            border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                boxShadow: shadows.md,
-                transform: 'translateY(-2px)',
-            }
+            boxShadow: shadows.lg,
+            border: `2.5px solid ${isDarkMode ? 'rgba(255,255,255,0.13)' : colors.primary}22`,
+            transition: bounceTransition,
+            ...(isHover ? {
+                boxShadow: shadows.xl,
+                transform: 'translateY(-4px) scale(1.03)',
+                backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
+            } : {})
         },
         header: {
             display: 'flex',
@@ -49,12 +56,12 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate, currentUser }) => {
         },
         userIcon: {
             color: colors.primary,
-            fontSize: typography.fontSize.lg,
+            fontSize: typography.fontSize.xl,
         },
         userName: {
             color: isDarkMode ? colors.textLight : colors.textPrimary,
-            fontWeight: typography.fontWeight.medium,
-            fontSize: typography.fontSize.md,
+            fontWeight: typography.fontWeight.bold,
+            fontSize: typography.fontSize.lg,
         },
         date: {
             color: isDarkMode ? colors.textLightSecondary : colors.textSecondary,
@@ -72,36 +79,54 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate, currentUser }) => {
             marginTop: spacing.sm,
         },
         button: {
-            padding: `${spacing.xs} ${spacing.sm}`,
-            borderRadius: borderRadius.md,
+            padding: `${spacing.sm} ${spacing.lg}`,
+            borderRadius: borderRadius.lg,
             border: 'none',
-            fontSize: typography.fontSize.sm,
+            fontSize: typography.fontSize.md,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
-            gap: spacing.xs,
-            transition: 'all 0.3s ease',
+            gap: spacing.sm,
+            boxShadow: shadows.md,
+            transition: bounceTransition,
+            outline: 'none',
         },
         editButton: {
-            backgroundColor: colors.primary + '20',
-            color: colors.primary,
-            '&:hover': {
+            backgroundColor: colors.primary + 'ee',
+            color: colors.white,
+            ...(isEditHover ? {
+                backgroundColor: colors.primaryDark,
+                transform: 'translateY(-3px) scale(1.04)',
+                boxShadow: shadows.xl,
+            } : {}),
+            ...(isEditClicked ? {
+                transform: 'scale(1.13)',
+                boxShadow: `0 0 0 4px ${colors.primary}55, ${shadows.xl}`,
                 backgroundColor: colors.primary,
-                color: colors.white,
-            }
+            } : {})
         },
         deleteButton: {
-            backgroundColor: colors.error + '20',
-            color: colors.error,
-            '&:hover': {
+            backgroundColor: colors.error + 'ee',
+            color: colors.white,
+            ...(isDeleteHover ? {
                 backgroundColor: colors.error,
-                color: colors.white,
-            }
+                transform: 'translateY(-3px) scale(1.04)',
+                boxShadow: shadows.xl,
+            } : {}),
+            ...(isDeleteClicked ? {
+                transform: 'scale(1.13)',
+                boxShadow: `0 0 0 4px ${colors.error}55, ${shadows.xl}`,
+                backgroundColor: colors.error,
+            } : {})
         }
     };
 
     return (
-        <div style={styles.container}>
+        <div
+            style={styles.container}
+            onMouseEnter={() => setIsHover(true)}
+            onMouseLeave={() => setIsHover(false)}
+        >
             <div style={styles.header}>
                 <div style={styles.userInfo}>
                     <FaUser style={styles.userIcon} />
@@ -125,14 +150,26 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate, currentUser }) => {
                     {isOwner && (
                         <div style={styles.actions}>
                             <button
-                                style={{...styles.button, ...styles.editButton}}
-                                onClick={() => setIsEditing(true)}
+                                style={{ ...styles.button, ...styles.editButton }}
+                                onClick={() => {
+                                    setIsEditClicked(true);
+                                    setTimeout(() => setIsEditClicked(false), 180);
+                                    setIsEditing(true);
+                                }}
+                                onMouseEnter={() => setIsEditHover(true)}
+                                onMouseLeave={() => setIsEditHover(false)}
                             >
                                 <FaEdit /> Editar
                             </button>
                             <button
-                                style={{...styles.button, ...styles.deleteButton}}
-                                onClick={handleDelete}
+                                style={{ ...styles.button, ...styles.deleteButton }}
+                                onClick={() => {
+                                    setIsDeleteClicked(true);
+                                    setTimeout(() => setIsDeleteClicked(false), 180);
+                                    handleDelete();
+                                }}
+                                onMouseEnter={() => setIsDeleteHover(true)}
+                                onMouseLeave={() => setIsDeleteHover(false)}
                             >
                                 <FaTrash /> Eliminar
                             </button>

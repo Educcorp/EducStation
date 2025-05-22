@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
+import { FaPaperPlane } from 'react-icons/fa';
 
 const ComentarioForm = ({ onSubmit, comentarioInicial = null, icon }) => {
     const [contenido, setContenido] = useState(comentarioInicial?.contenido || '');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isHover, setIsHover] = useState(false);
+    const [isClicked, setIsClicked] = useState(false);
     const { isDarkMode } = useTheme();
 
     const handleSubmit = async (e) => {
@@ -16,6 +19,8 @@ const ComentarioForm = ({ onSubmit, comentarioInicial = null, icon }) => {
             return;
         }
 
+        setIsClicked(true);
+        setTimeout(() => setIsClicked(false), 180);
         setIsSubmitting(true);
         try {
             await onSubmit({ contenido });
@@ -27,6 +32,7 @@ const ComentarioForm = ({ onSubmit, comentarioInicial = null, icon }) => {
         }
     };
 
+    const bounceTransition = 'transform 0.18s cubic-bezier(.39,.575,.56,1.000), box-shadow 0.18s cubic-bezier(.39,.575,.56,1.000), background 0.18s cubic-bezier(.39,.575,.56,1.000)';
     const styles = {
         form: {
             display: 'flex',
@@ -39,19 +45,15 @@ const ComentarioForm = ({ onSubmit, comentarioInicial = null, icon }) => {
         textarea: {
             width: '100%',
             minHeight: '100px',
-            padding: spacing.md,
-            border: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
-            borderRadius: borderRadius.md,
+            padding: spacing.lg,
+            border: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.13)' : colors.primary}33`,
+            borderRadius: borderRadius.xl,
             backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
             color: isDarkMode ? colors.textLight : colors.textPrimary,
             fontSize: typography.fontSize.md,
             resize: 'vertical',
-            transition: 'all 0.3s ease',
-            '&:focus': {
-                outline: 'none',
-                borderColor: colors.primary,
-                boxShadow: `0 0 0 2px ${colors.primary}20`,
-            }
+            boxShadow: shadows.sm,
+            transition: bounceTransition,
         },
         charCount: {
             position: 'absolute',
@@ -65,24 +67,27 @@ const ComentarioForm = ({ onSubmit, comentarioInicial = null, icon }) => {
             backgroundColor: colors.primary,
             color: colors.white,
             border: 'none',
-            borderRadius: borderRadius.md,
-            padding: `${spacing.sm} ${spacing.md}`,
-            fontSize: typography.fontSize.md,
-            fontWeight: typography.fontWeight.medium,
+            borderRadius: borderRadius.lg,
+            padding: `${spacing.md} ${spacing.xl}`,
+            fontSize: typography.fontSize.lg,
+            fontWeight: typography.fontWeight.bold,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             gap: spacing.sm,
-            transition: 'all 0.3s ease',
-            '&:hover': {
+            boxShadow: shadows.md,
+            transition: bounceTransition,
+            outline: 'none',
+            ...(isHover ? {
                 backgroundColor: colors.primaryDark,
-                transform: 'translateY(-2px)',
-            },
-            '&:disabled': {
-                backgroundColor: colors.gray400,
-                cursor: 'not-allowed',
-                transform: 'none',
-            }
+                transform: 'translateY(-4px) scale(1.04)',
+                boxShadow: shadows.xl,
+            } : {}),
+            ...(isClicked ? {
+                transform: 'scale(1.13)',
+                boxShadow: `0 0 0 4px ${colors.primary}55, ${shadows.xl}`,
+                backgroundColor: colors.primary,
+            } : {})
         }
     };
 
@@ -106,8 +111,10 @@ const ComentarioForm = ({ onSubmit, comentarioInicial = null, icon }) => {
                 style={styles.submitButton}
                 disabled={isSubmitting || !contenido.trim()}
                 aria-label="Enviar comentario"
+                onMouseEnter={() => setIsHover(true)}
+                onMouseLeave={() => setIsHover(false)}
             >
-                {icon}
+                {icon || <FaPaperPlane />}
             </button>
         </form>
     );
