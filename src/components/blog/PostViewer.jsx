@@ -11,6 +11,7 @@ import ReactionSection from './ReactionSection';
 import '../../styles/posts.css';
 import { useTheme } from '../../context/ThemeContext';
 import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicionales
+import ComentariosList from '../comentarios/ComentariosList';
 
 const PostViewer = () => {
   const { postId } = useParams(); // Obtiene el ID del post de la URL
@@ -55,7 +56,7 @@ const PostViewer = () => {
     pageWrapper: {
       width: "100%",
       fontFamily: typography.fontFamily,
-      backgroundColor: colors.background,
+      backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
       display: "flex",
       flexDirection: "column",
       minHeight: "100vh", // Asegura que la página ocupe al menos la altura de la ventana
@@ -74,18 +75,28 @@ const PostViewer = () => {
       width: "100%",
     },
     postContainer: {
-      backgroundColor: colors.white,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
       borderRadius: borderRadius.lg,
       padding: spacing.xl,
       boxShadow: shadows.md,
       marginBottom: spacing.xl,
       width: "100%",
-      boxSizing: "border-box"
+      boxSizing: "border-box",
+      border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
+    },
+    commentsContainer: {
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      boxShadow: shadows.md,
+      width: "100%",
+      boxSizing: "border-box",
+      border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
     },
     loadingMessage: {
       textAlign: "center",
       padding: `${spacing.xxl} 0`,
-      color: colors.primary,
+      color: isDarkMode ? colors.textLight : colors.primary,
       fontSize: typography.fontSize.lg
     },
     errorMessage: {
@@ -93,7 +104,7 @@ const PostViewer = () => {
       padding: `${spacing.xl} 0`,
       color: colors.error,
       fontSize: typography.fontSize.md,
-      backgroundColor: "rgba(181, 61, 0, 0.1)",
+      backgroundColor: isDarkMode ? 'rgba(181, 61, 0, 0.2)' : 'rgba(181, 61, 0, 0.1)',
       borderRadius: borderRadius.md,
       margin: `${spacing.xl} 0`
     },
@@ -113,14 +124,14 @@ const PostViewer = () => {
     },
     breadcrumb: {
       margin: `${spacing.lg} 0`,
-      color: colors.textSecondary,
+      color: isDarkMode ? colors.textLight : colors.textSecondary,
       fontSize: typography.fontSize.sm,
       display: "flex",
       alignItems: "center",
       gap: spacing.sm
     },
     breadcrumbLink: {
-      color: colors.textSecondary,
+      color: isDarkMode ? colors.textLight : colors.textSecondary,
       textDecoration: "none",
       transition: "all 0.3s ease",
       '&:hover': {
@@ -148,6 +159,14 @@ const PostViewer = () => {
       fontSize: typography.fontSize.md,
       lineHeight: '1.7',
       color: isDarkMode ? colors.textLight : colors.textPrimary,
+    },
+    sectionTitle: {
+      fontSize: typography.fontSize.xl,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      marginBottom: spacing.lg,
+      paddingBottom: spacing.sm,
+      borderBottom: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
     }
   };
 
@@ -176,16 +195,16 @@ const PostViewer = () => {
               to="/"
               style={styles.breadcrumbLink}
               onMouseEnter={(e) => e.target.style.color = colors.primary} 
-              onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
+              onMouseLeave={(e) => e.target.style.color = isDarkMode ? colors.textLight : colors.textSecondary}
             >Inicio</Link>
-            <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
+            <span style={{color: isDarkMode ? 'rgba(255,255,255,0.3)' : colors.gray300, fontSize: '10px'}}>►</span>
             <Link 
               to="/blog"
               style={styles.breadcrumbLink}
               onMouseEnter={(e) => e.target.style.color = colors.primary} 
-              onMouseLeave={(e) => e.target.style.color = colors.textSecondary}
+              onMouseLeave={(e) => e.target.style.color = isDarkMode ? colors.textLight : colors.textSecondary}
             >Blog</Link>
-            <span style={{color: colors.gray300, fontSize: '10px'}}>►</span>
+            <span style={{color: isDarkMode ? 'rgba(255,255,255,0.3)' : colors.gray300, fontSize: '10px'}}>►</span>
             <span>Post {postId}</span>
           </div>
           
@@ -223,12 +242,37 @@ const PostViewer = () => {
                   dangerouslySetInnerHTML={createPostComponent()}
                 />
                 <ReactionSection postId={postId} />
+                {/* Línea divisoria sutil */}
+                <div style={{
+                  borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
+                  margin: '2.5rem 0 1.5rem 0',
+                  width: '100%'
+                }} />
+                {/* Debug: Mostrar el postId que se pasa a los comentarios */}
+                {console.log('Renderizando comentarios para postId:', postId)}
+                {/* Comentarios integrados visualmente */}
+                <div style={{
+                  background: 'transparent',
+                  boxShadow: 'none',
+                  borderRadius: 0,
+                  padding: 0,
+                  margin: 0
+                }}>
+                  <h2 style={{
+                    fontSize: styles.sectionTitle.fontSize,
+                    fontWeight: styles.sectionTitle.fontWeight,
+                    color: styles.sectionTitle.color,
+                    marginBottom: '1.5rem',
+                    paddingBottom: 0,
+                    borderBottom: 'none',
+                  }}>
+                    Comentarios
+                  </h2>
+                  <ComentariosList publicacionId={postId} />
+                </div>
               </>
             )}
           </div>
-          
-          {/* La sección de comentarios debe estar dentro del mismo contenedor principal */}
-          <CommentSection />
         </main>
       </div>
       
