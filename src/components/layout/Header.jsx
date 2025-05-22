@@ -245,14 +245,19 @@ const Header = () => {
   // Estilos del header
   const styles = {
     header: {
-      backgroundColor: isDarkMode ? '#333' : '#fff', // Cambia el color de fondo según el modo
-      color: isDarkMode ? '#fff' : '#000', // Cambia el color del texto según el modo
+      backgroundColor: isDarkMode ? 'rgba(25, 34, 34, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+      color: isDarkMode ? '#fff' : '#000',
       padding: '16px',
       position: 'fixed',
       top: 0,
       width: '100%',
       zIndex: 1000,
-      transition: 'background-color 0.3s ease, color 0.3s ease', // Transición suave
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      boxShadow: isScrolled ? (isDarkMode ? '0 4px 30px rgba(0, 0, 0, 0.2)' : '0 4px 20px rgba(0, 0, 0, 0.1)') : 'none',
+      borderBottom: isScrolled ? (isDarkMode ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid rgba(0, 0, 0, 0.05)') : 'none',
+      transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
     },
     headerSpacer: {
       height: "80px",
@@ -274,41 +279,53 @@ const Header = () => {
       textDecoration: "none",
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.bold,
-      transition: transitions.default
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      position: 'relative',
+      overflow: 'hidden',
     },
     logoIcon: {
-      backgroundColor: colors.background,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(31, 78, 78, 0.08)',
       borderRadius: borderRadius.md,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       marginRight: spacing.sm,
-      transition: transitions.default,
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
       width: "42px",
       height: "42px",
-      overflow: "hidden"
+      overflow: "hidden",
+      boxShadow: isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(31, 78, 78, 0.15)',
     },
     navLinks: {
       display: "flex",
       gap: spacing.xl
     },
     navLink: (isActivePath) => ({
-      color: isDarkMode ? (isActivePath ? '#d8d0a9' : '#fff') : (isActivePath ? '#333' : '#000'), // Texto blanco en modo oscuro
+      color: isDarkMode 
+        ? (isActivePath ? '#d8d0a9' : 'rgba(255, 255, 255, 0.85)') 
+        : (isActivePath ? '#1F4E4E' : 'rgba(0, 0, 0, 0.75)'),
       textDecoration: 'none',
-      fontWeight: typography.fontWeight.medium,
+      fontWeight: isActivePath ? typography.fontWeight.bold : typography.fontWeight.medium,
       position: 'relative',
-      padding: `${spacing.xs} 0`,
-      transition: transitions.default,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: '8px',
+      transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
+      display: 'flex',
+      alignItems: 'center',
+      background: isActivePath 
+        ? (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(31, 78, 78, 0.08)')
+        : 'transparent',
+      overflow: 'hidden',
     }),
     profileIcon: {
       width: "40px",
       height: "40px",
       borderRadius: borderRadius.circle,
-      backgroundColor: colors.primaryLight,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(31, 78, 78, 0.08)',
       overflow: "hidden",
-      boxShadow: shadows.sm,
-      border: `2px solid ${colors.white}`,
-      transition: transitions.default,
+      boxShadow: isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(31, 78, 78, 0.15)',
+      border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(31, 78, 78, 0.2)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       cursor: "pointer",
       display: "flex",
       justifyContent: "center",
@@ -324,49 +341,65 @@ const Header = () => {
       position: "absolute",
       top: "50px",
       right: "0",
-      backgroundColor: isDarkMode ? "#444" : colors.white, // Fondo más oscuro en modo oscuro
-      color: isDarkMode ? "#fff" : colors.textPrimary, // Texto más claro en modo oscuro
-      boxShadow: shadows.md,
+      backgroundColor: isDarkMode ? 'rgba(40, 40, 40, 0.85)' : 'rgba(255, 255, 255, 0.85)',
+      color: isDarkMode ? "#fff" : colors.textPrimary,
+      boxShadow: isDarkMode ? '0 10px 30px rgba(0, 0, 0, 0.25)' : '0 10px 30px rgba(0, 0, 0, 0.15)',
       borderRadius: borderRadius.md,
       padding: spacing.md,
       display: isMenuOpen ? "block" : "none",
       zIndex: 200,
       minWidth: "200px",
-      transition: "background-color 0.3s ease, color 0.3s ease", // Transición suave
+      transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
+      animation: isMenuOpen ? 'fadeInDown 0.3s forwards' : 'none',
+      transformOrigin: 'top center',
     },
     menuItem: {
       padding: `${spacing.sm} ${spacing.md}`,
-      color: isDarkMode ? '#fff' : colors.textPrimary,
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.85)' : colors.textPrimary,
       textDecoration: 'none',
-      display: 'block',
+      display: 'flex',
+      alignItems: 'center',
       cursor: 'pointer',
-      transition: transitions.default,
-      "&:hover": {
-        backgroundColor: isDarkMode ? "#555" : colors.background,
-        color: isDarkMode ? "#d8d0a9" : colors.primary, // Cambiado de #ffd700 a #d8d0a9
-      },
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      borderRadius: '8px',
+      margin: '4px 0',
     },
     logoutButton: {
       padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary,
-      color: colors.primary,
+      background: isDarkMode 
+        ? 'linear-gradient(135deg, rgba(255, 82, 82, 0.8) 0%, rgba(255, 105, 105, 0.8) 100%)'
+        : 'linear-gradient(135deg, rgba(255, 82, 82, 0.9) 0%, rgba(255, 105, 105, 0.9) 100%)',
+      color: colors.white,
       border: "none",
-      borderRadius: borderRadius.md,
+      borderRadius: "12px",
       fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
+      fontWeight: typography.fontWeight.semiBold,
       cursor: "pointer",
-      transition: transitions.default,
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       marginLeft: spacing.md,
-      '&:hover': {
-        backgroundColor: colors.primary,
-        color: colors.white
-      }
+      boxShadow: '0 4px 12px rgba(255, 82, 82, 0.25)',
+      backdropFilter: 'blur(5px)',
+      WebkitBackdropFilter: 'blur(5px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     userProfileSection: {
       padding: spacing.md,
-      borderBottom: `1px solid ${colors.gray200}`,
+      borderBottom: isDarkMode 
+        ? '1px solid rgba(255, 255, 255, 0.1)' 
+        : `1px solid rgba(31, 78, 78, 0.1)`,
       marginBottom: spacing.sm,
-      textAlign: 'center'
+      textAlign: 'center',
+      background: isDarkMode 
+        ? 'linear-gradient(135deg, rgba(40, 60, 60, 0.4) 0%, rgba(25, 35, 35, 0.4) 100%)' 
+        : 'linear-gradient(135deg, rgba(240, 248, 255, 0.5) 0%, rgba(220, 237, 240, 0.5) 100%)',
+      borderRadius: '8px',
+      backdropFilter: 'blur(5px)',
+      WebkitBackdropFilter: 'blur(5px)',
     },
     userAvatar: {
       width: '60px',
@@ -374,45 +407,59 @@ const Header = () => {
       borderRadius: '50%',
       margin: '0 auto',
       marginBottom: spacing.sm,
-      border: `2px solid ${colors.primary}`,
+      border: isDarkMode 
+        ? '2px solid rgba(216, 208, 169, 0.4)' 
+        : `2px solid ${colors.primary}`,
       padding: '2px',
-      backgroundColor: colors.white,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.white,
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      overflow: "hidden"
+      overflow: "hidden",
+      boxShadow: '0 4px 15px rgba(31, 78, 78, 0.25)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     },
     userName: {
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.semiBold,
-      color: colors.primary,
-      marginBottom: spacing.xs
+      color: isDarkMode ? '#d8d0a9' : colors.primary,
+      marginBottom: spacing.xs,
+      textShadow: isDarkMode ? '0 2px 4px rgba(0, 0, 0, 0.3)' : 'none',
     },
     userRole: {
       fontSize: typography.fontSize.sm,
-      color: colors.textSecondary,
-      marginBottom: spacing.sm
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
+      marginBottom: spacing.sm,
+      background: isDarkMode 
+        ? 'rgba(216, 208, 169, 0.2)' 
+        : 'rgba(31, 78, 78, 0.1)',
+      padding: '4px 12px',
+      borderRadius: '100px',
+      display: 'inline-block',
     },
     menuSeparator: {
       height: "1px",
-      backgroundColor: isDarkMode ? "#555" : colors.gray200, // Línea más oscura en modo oscuro
-      margin: `${spacing.xs} 0`,
+      background: isDarkMode 
+        ? 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%)' 
+        : 'linear-gradient(90deg, transparent 0%, rgba(31, 78, 78, 0.1) 50%, transparent 100%)',
+      margin: `${spacing.sm} 0`,
       width: "100%",
     },
     menuHeader: {
       fontSize: typography.fontSize.xs,
       fontWeight: typography.fontWeight.semiBold,
-      color: isDarkMode ? "#ccc" : colors.textSecondary, // Cambia el color del encabezado
+      color: isDarkMode ? "rgba(255, 255, 255, 0.5)" : colors.textSecondary,
       textTransform: "uppercase",
       padding: `${spacing.xs} ${spacing.md}`,
       letterSpacing: "1px",
+      marginTop: spacing.xs,
     },
     menuItemIcon: {
       marginRight: spacing.sm,
-      fontSize: typography.fontSize.sm,
-      color: colors.primary
+      fontSize: typography.fontSize.md,
+      color: isDarkMode ? '#d8d0a9' : colors.primary,
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
     },
-    // Estilo para la notificación
     notification: {
       position: 'fixed',
       bottom: '30px',
@@ -420,121 +467,156 @@ const Header = () => {
       transform: 'translateX(-50%)',
       minWidth: '300px',
       maxWidth: '90%',
-      backgroundColor: notification.type === 'success' ? colors.primary : (notification.type === 'error' ? colors.error : colors.primaryLight),
+      backgroundColor: notification.type === 'success' 
+        ? 'rgba(31, 78, 78, 0.9)' 
+        : (notification.type === 'error' ? 'rgba(255, 82, 82, 0.9)' : 'rgba(31, 78, 78, 0.8)'),
       color: colors.white,
       padding: `${spacing.md} ${spacing.xl}`,
-      borderRadius: borderRadius.md,
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+      borderRadius: '12px',
+      boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
       zIndex: 9999,
       textAlign: 'center',
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.medium,
       display: notification.show ? 'flex' : 'none',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      animation: notification.show ? 'fadeInUp 0.3s forwards' : 'none',
     },
     notificationIcon: {
       marginRight: spacing.md,
       fontSize: '20px'
     },
-
-    // Estilos para el modal de confirmación
     modalOverlay: {
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(0, 0, 0, 0.6)',
       display: confirmLogout ? 'flex' : 'none',
       justifyContent: 'center',
       alignItems: 'center',
       zIndex: 9999,
-      backdropFilter: 'blur(4px)'
+      backdropFilter: 'blur(6px)',
+      WebkitBackdropFilter: 'blur(6px)',
+      animation: confirmLogout ? 'fadeIn 0.3s forwards' : 'none',
     },
     modalContent: {
-      backgroundColor: colors.white,
-      borderRadius: borderRadius.lg,
-      boxShadow: shadows.xl,
+      backgroundColor: isDarkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+      borderRadius: '16px',
+      boxShadow: isDarkMode 
+        ? '0 15px 40px rgba(0, 0, 0, 0.4)' 
+        : '0 15px 40px rgba(0, 0, 0, 0.2)',
       width: '90%',
       maxWidth: '450px',
       padding: 0,
       overflow: 'hidden',
-      animation: 'modalFadeIn 0.3s ease-out forwards',
-      transform: 'scale(0.9)',
-      opacity: 0
+      animation: 'modalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+      border: isDarkMode 
+        ? '1px solid rgba(255, 255, 255, 0.1)' 
+        : '1px solid rgba(31, 78, 78, 0.1)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
     },
     modalHeader: {
-      backgroundColor: colors.primary,
+      background: isDarkMode 
+        ? 'linear-gradient(135deg, rgba(31, 78, 78, 0.8) 0%, rgba(25, 60, 60, 0.8) 100%)'
+        : 'linear-gradient(135deg, rgba(31, 78, 78, 0.9) 0%, rgba(31, 78, 78, 0.8) 100%)',
       color: colors.white,
       padding: `${spacing.md} ${spacing.xl}`,
       display: 'flex',
       alignItems: 'center',
-      borderBottom: `1px solid ${colors.primaryDark}`
-    },
-    modalWarningIcon: {
-      fontSize: '24px',
-      marginRight: spacing.md,
-      color: colors.white
-    },
-    modalTitle: {
-      fontSize: typography.fontSize.lg,
-      fontWeight: typography.fontWeight.bold,
-      margin: 0
+      borderBottom: isDarkMode 
+        ? '1px solid rgba(255, 255, 255, 0.1)' 
+        : '1px solid rgba(31, 78, 78, 0.2)',
     },
     modalBody: {
       padding: `${spacing.xl} ${spacing.xl}`,
       fontSize: typography.fontSize.md,
       lineHeight: '1.6',
-      color: colors.textPrimary,
-      textAlign: 'center'
-    },
-    modalFooter: {
-      padding: `${spacing.md} ${spacing.xl}`,
-      borderTop: `1px solid ${colors.gray200}`,
-      display: 'flex',
-      justifyContent: 'flex-end',
-      gap: spacing.md
-    },
-    cancelButton: {
-      padding: `${spacing.sm} ${spacing.xl}`,
-      backgroundColor: colors.white,
-      color: colors.primary,
-      border: `1px solid ${colors.primary}`,
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      outline: 'none'
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.9)' : colors.textPrimary,
+      textAlign: 'center',
     },
     confirmButton: {
       padding: `${spacing.sm} ${spacing.xl}`,
-      backgroundColor: '#ff5252', // Color de advertencia para cerrar sesión
+      background: 'linear-gradient(135deg, rgba(255, 82, 82, 0.9) 0%, rgba(255, 105, 105, 0.9) 100%)',
       color: colors.white,
       border: 'none',
-      borderRadius: borderRadius.md,
+      borderRadius: '12px',
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.semiBold,
+      cursor: 'pointer',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      outline: 'none',
+      boxShadow: '0 4px 15px rgba(255, 82, 82, 0.3)',
+    },
+    cancelButton: {
+      padding: `${spacing.sm} ${spacing.xl}`,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.white,
+      color: isDarkMode ? colors.white : colors.primary,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.2)' : `1px solid ${colors.primary}`,
+      borderRadius: '12px',
       fontSize: typography.fontSize.sm,
       fontWeight: typography.fontWeight.medium,
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      outline: 'none'
-    },
-    userName: {
-      fontWeight: typography.fontWeight.bold,
-      color: colors.primary
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      outline: 'none',
+      backdropFilter: 'blur(5px)',
+      WebkitBackdropFilter: 'blur(5px)',
     },
     waveAnimation: {
       display: 'inline-block',
       animation: 'waveHand 0.5s ease-in-out 2',
       transformOrigin: '70% 70%'
-    }
+    },
+    backgroundParticles: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      overflow: 'hidden',
+      pointerEvents: 'none',
+      zIndex: -1,
+    },
+    particle: {
+      position: 'absolute',
+      borderRadius: '50%',
+      opacity: isDarkMode ? 0.3 : 0.2,
+      animation: 'float 15s infinite linear',
+    },
+    decorativeLine: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      width: '100%',
+      height: '2px',
+      background: `linear-gradient(90deg, 
+        transparent 0%, 
+        ${isDarkMode ? 'rgba(216, 208, 169, 0.3)' : 'rgba(31, 78, 78, 0.3)'} 50%, 
+        transparent 100%)`,
+      opacity: isScrolled ? 1 : 0,
+      transition: 'opacity 0.5s ease',
+      zIndex: 1,
+    },
   };
 
   const getMenuItemStyle = (index) => ({
     ...styles.menuItem,
-    backgroundColor: hoveredItem === `menu-${index}` ? (isDarkMode ? "#555" : colors.background) : "transparent", // Fondo al pasar el mouse
-    color: isDarkMode ? (hoveredItem === `menu-${index}` ? "#79bd9e" : "#fff") : (hoveredItem === `menu-${index}` ? colors.primary : colors.textSecondary), // Cambiado de #ffd700 a #d8d0a9
+    backgroundColor: hoveredItem === `menu-${index}` 
+      ? (isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(31, 78, 78, 0.08)") 
+      : "transparent",
+    color: isDarkMode 
+      ? (hoveredItem === `menu-${index}` ? "#d8d0a9" : "rgba(255, 255, 255, 0.85)") 
+      : (hoveredItem === `menu-${index}` ? colors.primary : colors.textPrimary),
+    transform: hoveredItem === `menu-${index}` ? 'translateX(5px)' : 'translateX(0)',
+    boxShadow: hoveredItem === `menu-${index}` 
+      ? (isDarkMode ? '0 0 15px rgba(216, 208, 169, 0.1)' : '0 0 15px rgba(31, 78, 78, 0.1)') 
+      : 'none',
   });
 
   const menuItems = [
@@ -583,9 +665,38 @@ const Header = () => {
     };
   }, []);
 
+  // Render particles for background decoration
+  const renderParticles = () => {
+    const particles = [];
+    const particleColors = isDarkMode 
+      ? ['rgba(216, 208, 169, 0.3)', 'rgba(31, 78, 78, 0.3)', 'rgba(145, 168, 169, 0.3)', 'rgba(255, 255, 255, 0.2)']
+      : ['rgba(31, 78, 78, 0.2)', 'rgba(145, 168, 169, 0.2)', 'rgba(210, 185, 154, 0.2)', 'rgba(31, 78, 78, 0.1)'];
+
+    for (let i = 0; i < 15; i++) {
+      const size = Math.random() * 5 + 2;
+      const style = {
+        ...styles.particle,
+        width: `${size}px`,
+        height: `${size}px`,
+        backgroundColor: particleColors[Math.floor(Math.random() * particleColors.length)],
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animationDuration: `${Math.random() * 20 + 10}s`,
+        animationDelay: `${Math.random() * 5}s`,
+      };
+      particles.push(<div key={i} style={style} />);
+    }
+
+    return particles;
+  };
+
   return (
     <>
       <header style={styles.header}>
+        <div style={styles.backgroundParticles}>
+          {renderParticles()}
+        </div>
+        <div style={styles.decorativeLine}></div>
         <div style={styles.container}>
           <Link
             to="/"
@@ -599,7 +710,10 @@ const Header = () => {
           >
             <div style={{
               ...styles.logoIcon,
-              transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)'
+              transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)',
+              boxShadow: hoveredItem === 'logo' 
+                ? (isDarkMode ? '0 0 20px rgba(216, 208, 169, 0.3)' : '0 0 20px rgba(31, 78, 78, 0.3)') 
+                : (isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(31, 78, 78, 0.15)'),
             }}>
               <img
                 src="/assets/images/educstation-logo.png"
@@ -607,13 +721,20 @@ const Header = () => {
                 style={{
                   width: "100%",
                   height: "100%",
-                  objectFit: "contain"
+                  objectFit: "contain",
+                  filter: hoveredItem === 'logo' ? 'brightness(1.1)' : 'brightness(1)',
+                  transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
                 }}
               />
             </div>
             <span style={{
-              color: isDarkMode ? '#76a594' : colors.primary, // Color menta más opaco para modo oscuro
-              fontWeight: typography.fontWeight.bold
+              color: isDarkMode ? '#d8d0a9' : colors.primary,
+              fontWeight: typography.fontWeight.bold,
+              textShadow: hoveredItem === 'logo' 
+                ? (isDarkMode ? '0 0 8px rgba(216, 208, 169, 0.5)' : '0 0 8px rgba(31, 78, 78, 0.3)') 
+                : 'none',
+              transform: hoveredItem === 'logo' ? 'translateY(-2px)' : 'translateY(0)',
+              transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
             }}>
               EducStation
             </span>
@@ -633,54 +754,80 @@ const Header = () => {
                     navigate(item.path);
                   }}
                 >
-                  <span style={{ marginRight: 10, display: 'inline-flex', alignItems: 'center', verticalAlign: 'middle' }}>{item.icon}</span>
-                  {item.label}
-                  <span
-                    style={{
-                      position: 'absolute',
-                      width: isActive(item.path) || hoveredItem === `nav-${index}` ? '100%' : '0%',
-                      height: '2px',
-                      bottom: 0,
-                      left: 0,
-                      backgroundColor: colors.primary,
-                      transition: transitions.default
-                    }}
-                  ></span>
+                  <span style={{ 
+                    marginRight: 10, 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    verticalAlign: 'middle',
+                    color: isActive(item.path) 
+                      ? (isDarkMode ? '#d8d0a9' : colors.primary) 
+                      : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(31, 78, 78, 0.7)'),
+                    transform: hoveredItem === `nav-${index}` ? 'scale(1.2) translateY(-1px)' : 'scale(1)',
+                    transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                  }}>
+                    {item.icon}
+                  </span>
+                  <span style={{
+                    transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                    transform: hoveredItem === `nav-${index}` ? 'translateX(3px)' : 'translateX(0)',
+                  }}>
+                    {item.label}
+                  </span>
+                  {/* Animated background */}
+                  {hoveredItem === `nav-${index}` && !isActive(item.path) && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        background: isDarkMode 
+                          ? 'rgba(255, 255, 255, 0.05)' 
+                          : 'rgba(31, 78, 78, 0.05)',
+                        zIndex: -1,
+                        transform: 'translateY(100%)',
+                        animation: 'slideUp 0.4s forwards cubic-bezier(0.25, 0.8, 0.25, 1)',
+                      }}
+                    ></span>
+                  )}
+                  {hoveredItem === `nav-${index}` && !isActive(item.path) && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '2px',
+                        bottom: '0',
+                        left: '0',
+                        background: isDarkMode 
+                          ? 'linear-gradient(90deg, transparent 0%, rgba(216, 208, 169, 0.5) 50%, transparent 100%)' 
+                          : 'linear-gradient(90deg, transparent 0%, rgba(31, 78, 78, 0.5) 50%, transparent 100%)',
+                        animation: 'fadeIn 0.3s forwards',
+                      }}
+                    ></span>
+                  )}
                 </a>
               )
             ))}
           </nav>
 
-          {/* Solo mostrar el botón de Cerrar Sesión cuando esté autenticado */}
-          {isAuth && (
-            <button
-              style={styles.logoutButton}
-              onClick={initiateLogout}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = colors.primary;
-                e.currentTarget.style.color = colors.white;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = colors.secondary;
-                e.currentTarget.style.color = colors.primary;
-              }}
-            >
-              <FaSignOutAlt size={16} style={{ marginRight: 8 }} />
-              Cerrar Sesión
-            </button>
-          )}
-
           <div
             data-profile-button
             style={{
               ...styles.profileIcon,
-              transform: hoveredItem === 'profile' ? 'translateY(-2px)' : 'translateY(0)',
-              boxShadow: hoveredItem === 'profile' ? shadows.md : shadows.sm,
-              marginLeft: spacing.md
+              transform: hoveredItem === 'profile' ? 'translateY(-3px) scale(1.05)' : 'translateY(0) scale(1)',
+              boxShadow: hoveredItem === 'profile' 
+                ? (isDarkMode ? '0 8px 25px rgba(216, 208, 169, 0.3)' : '0 8px 25px rgba(31, 78, 78, 0.3)') 
+                : (isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(31, 78, 78, 0.15)'),
+              marginLeft: spacing.md,
+              border: hoveredItem === 'profile'
+                ? (isDarkMode ? '2px solid rgba(216, 208, 169, 0.4)' : '2px solid rgba(31, 78, 78, 0.4)')
+                : (isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(31, 78, 78, 0.2)'),
             }}
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
             onClick={toggleMenu}
+            className={isMenuOpen ? 'pulse-animation' : ''}
           >
             <img src={getAvatarSrc(userAvatar)} alt="Profile" style={styles.profileImg} />
           </div>
@@ -883,7 +1030,7 @@ const Header = () => {
         </div>
       </div>
 
-      {/* CSS para animaciones */}
+      {/* CSS for animations */}
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes modalFadeIn {
@@ -895,6 +1042,84 @@ const Header = () => {
             0% { transform: rotate(0deg); }
             50% { transform: rotate(15deg); }
             100% { transform: rotate(0deg); }
+          }
+          
+          @keyframes float {
+            0% {
+              transform: translateY(0) translateX(0);
+            }
+            25% {
+              transform: translateY(-10px) translateX(10px);
+            }
+            50% {
+              transform: translateY(0) translateX(15px);
+            }
+            75% {
+              transform: translateY(10px) translateX(5px);
+            }
+            100% {
+              transform: translateY(0) translateX(0);
+            }
+          }
+          
+          @keyframes fadeInDown {
+            from {
+              opacity: 0;
+              transform: translateY(-10px) scale(0.98);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0) scale(1);
+            }
+          }
+          
+          @keyframes fadeInUp {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+          
+          @keyframes slideUp {
+            from {
+              transform: translateY(100%);
+            }
+            to {
+              transform: translateY(0);
+            }
+          }
+          
+          @keyframes pulse {
+            0% {
+              box-shadow: 0 0 0 0 rgba(31, 78, 78, 0.5);
+            }
+            70% {
+              box-shadow: 0 0 0 10px rgba(31, 78, 78, 0);
+            }
+            100% {
+              box-shadow: 0 0 0 0 rgba(31, 78, 78, 0);
+            }
+          }
+          
+          .pulse-animation {
+            animation: pulse 2s infinite;
+          }
+          
+          .hover-glow:hover {
+            box-shadow: 0 0 15px rgba(31, 78, 78, 0.6);
           }
         `
       }} />
