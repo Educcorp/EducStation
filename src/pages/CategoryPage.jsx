@@ -9,7 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { searchByTags } from '../services/searchService';
 import { getAllCategorias } from '../services/categoriasServices';
 import '../styles/animations.css';
-import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers, FaTag, FaTags } from 'react-icons/fa';
+import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers, FaTag, FaTags, FaSort } from 'react-icons/fa';
 
 const CategoryPage = () => {  
   const { colors, isDarkMode } = useTheme();
@@ -453,10 +453,10 @@ const CategoryPage = () => {
       border: `2px solid ${isSearchFocused ? categoryColor : isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
       fontSize: typography.fontSize.sm,
       transition: transitions.default,
-      backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.9)',
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
+      color: isDarkMode ? colors.gray100 : colors.textPrimary,
       outline: 'none',
-      boxShadow: isSearchFocused ? `0 0 0 3px ${categoryColor}40` : 'none'
+      boxShadow: isSearchFocused ? `0 0 0 3px ${categoryColor}33` : 'none'
     },
     searchIcon: {
       position: "absolute",
@@ -847,6 +847,17 @@ const CategoryPage = () => {
       7: <FaUsers size={16} />, // Comunidad y Colaboración
     };
 
+    // Category colors for better visual identification
+    const categoryColors = {
+      1: '#FF6B6B', // Noticias
+      2: '#4ECDC4', // Técnicas de Estudio
+      3: '#FFD166', // Problemáticas en el Estudio
+      4: '#6A0572', // Educación de Calidad
+      5: '#1A936F', // Herramientas Tecnológicas
+      6: '#3D5A80', // Desarrollo Profesional Docente
+      7: '#F18F01'  // Comunidad y Colaboración
+    };
+
     const handleCategorySelect = (categoryId) => {
       if (categoryId === 'explore') {
         navigate('/categorias');
@@ -863,17 +874,28 @@ const CategoryPage = () => {
           style={{
             ...styles.dropdownButton,
             borderColor: isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.2)',
-            backgroundColor: getLighterColor(categoryColor, 0.1),
+            background: isDarkMode 
+              ? `linear-gradient(to right, ${getDarkerColor(categoryColor, 0.2)}, ${getLighterColor(categoryColor, 0.1)})`
+              : `linear-gradient(to right, ${getLighterColor(categoryColor, 0.8)}, ${getLighterColor(categoryColor, 0.9)})`,
+            boxShadow: `0 4px 8px ${categoryColor}33`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaFilter style={{ marginRight: spacing.md, color: isDarkMode ? colors.white : categoryColor, fontSize: '1rem' }} />
+            <FaFilter style={{ 
+              marginRight: spacing.md, 
+              color: isDarkMode ? colors.white : categoryColor, 
+              fontSize: '1rem' 
+            }} />
             <span style={{ color: isDarkMode ? colors.white : categoryColor }}>
               {currentCategory?.Nombre || 'Todas las categorías'}
             </span>
           </div>
-          <div style={{ color: isDarkMode ? colors.white : categoryColor }}>
-            {categoryDropdownOpen ? '▲' : '▼'}
+          <div style={{ 
+            color: isDarkMode ? colors.white : categoryColor,
+            transition: 'transform 0.3s ease',
+            transform: categoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+          }}>
+            ▼
           </div>
         </button>
         
@@ -882,6 +904,7 @@ const CategoryPage = () => {
             ...styles.dropdownMenu,
             boxShadow: `0 8px 20px ${categoryColor}33`,
             backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+            animation: 'fadeIn 0.3s ease forwards',
           }}>
             <div 
               style={{
@@ -925,10 +948,13 @@ const CategoryPage = () => {
                     ? (isDarkMode ? colors.white : categoryColor)
                     : (isDarkMode ? colors.textLight : colors.primary),
                   fontWeight: parseInt(id) === category.ID_categoria ? 600 : 400,
+                  borderLeft: `3px solid ${categoryColors[category.ID_categoria] || colors.primary}`,
                 }}
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 78, 78, 0.4)' : 'rgba(31, 78, 78, 0.15)';
+                  e.currentTarget.style.backgroundColor = isDarkMode 
+                    ? `${categoryColors[category.ID_categoria]}33` 
+                    : `${categoryColors[category.ID_categoria]}15`;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = parseInt(id) === category.ID_categoria 
@@ -938,18 +964,16 @@ const CategoryPage = () => {
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: parseInt(id) === category.ID_categoria 
-                    ? getLighterColor(categoryColor, 0.3)
-                    : (isDarkMode ? 'rgba(31, 78, 78, 0.5)' : 'rgba(31, 78, 78, 0.2)'),
+                  backgroundColor: isDarkMode 
+                    ? `${categoryColors[category.ID_categoria]}55` 
+                    : `${categoryColors[category.ID_categoria]}33`,
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: parseInt(id) === category.ID_categoria 
-                    ? (isDarkMode ? colors.white : categoryColor)
-                    : (isDarkMode ? colors.secondary : colors.primary),
+                  color: categoryColors[category.ID_categoria] || (isDarkMode ? colors.white : categoryColor),
                 }}>
                   {categoryIcons[category.ID_categoria] || <FaTag size={14} />}
                 </span>
@@ -990,6 +1014,110 @@ const CategoryPage = () => {
               </span>
               Explorar todas las categorías
             </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // Sort dropdown component
+  const SortDropdown = () => {
+    const sortOptions = [
+      { value: 'reciente', label: 'Más recientes', icon: <FaSort /> },
+      { value: 'antiguo', label: 'Más antiguos', icon: <FaSort /> },
+      { value: 'alfabetico', label: 'Alfabéticamente', icon: <FaSort /> }
+    ];
+    
+    const handleSortSelect = (value) => {
+      setSelectedFilter(value);
+      setSortDropdownOpen(false);
+    };
+    
+    return (
+      <div ref={sortDropdownRef} style={{ position: 'relative', width: '100%' }}>
+        <button 
+          onClick={() => setSortDropdownOpen(!sortDropdownOpen)} 
+          style={{
+            ...styles.dropdownButton,
+            borderColor: isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.2)',
+            background: isDarkMode 
+              ? `linear-gradient(to right, ${getDarkerColor(categoryColor, 0.2)}, ${getLighterColor(categoryColor, 0.1)})`
+              : `linear-gradient(to right, ${getLighterColor(categoryColor, 0.8)}, ${getLighterColor(categoryColor, 0.9)})`,
+            boxShadow: `0 4px 8px ${categoryColor}33`,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaSort style={{ 
+              marginRight: spacing.md, 
+              color: isDarkMode ? colors.white : categoryColor, 
+              fontSize: '1rem' 
+            }} />
+            <span style={{ color: isDarkMode ? colors.white : categoryColor }}>
+              {sortOptions.find(option => option.value === selectedFilter)?.label || 'Ordenar por'}
+            </span>
+          </div>
+          <div style={{ 
+            color: isDarkMode ? colors.white : categoryColor,
+            transition: 'transform 0.3s ease',
+            transform: sortDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+          }}>
+            ▼
+          </div>
+        </button>
+        
+        {sortDropdownOpen && (
+          <div style={{
+            ...styles.dropdownMenu,
+            boxShadow: `0 8px 20px ${categoryColor}33`,
+            backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+            animation: 'fadeIn 0.3s ease forwards',
+          }}>
+            {sortOptions.map(option => (
+              <div 
+                key={option.value}
+                style={{
+                  ...styles.dropdownItem,
+                  backgroundColor: selectedFilter === option.value 
+                    ? getLighterColor(categoryColor, 0.1)
+                    : 'transparent',
+                  color: selectedFilter === option.value 
+                    ? (isDarkMode ? colors.white : categoryColor)
+                    : (isDarkMode ? colors.textLight : colors.primary),
+                  fontWeight: selectedFilter === option.value ? 600 : 400,
+                  borderLeft: `3px solid ${selectedFilter === option.value 
+                    ? categoryColor 
+                    : 'transparent'}`,
+                }}
+                onClick={() => handleSortSelect(option.value)}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode 
+                    ? `${categoryColor}33` 
+                    : `${categoryColor}15`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = selectedFilter === option.value 
+                    ? getLighterColor(categoryColor, 0.1)
+                    : 'transparent';
+                }}
+              >
+                <span style={{
+                  ...styles.dropdownIcon,
+                  backgroundColor: isDarkMode 
+                    ? `${categoryColor}55` 
+                    : `${categoryColor}33`,
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: isDarkMode ? colors.white : categoryColor,
+                }}>
+                  {option.icon}
+                </span>
+                {option.label}
+              </div>
+            ))}
           </div>
         )}
       </div>
