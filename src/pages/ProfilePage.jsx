@@ -7,7 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { getUserProfile, updateUserAvatar } from '../services/userService';
-import { getUserPublicaciones } from '../services/publicacionesService';
+import { getAllPublicaciones } from '../services/publicacionesService';
 
 const ProfilePage = () => {
   const { user, isAuth } = useContext(AuthContext);
@@ -66,7 +66,7 @@ const ProfilePage = () => {
       
       try {
         setIsLoadingPosts(true);
-        const posts = await getUserPublicaciones();
+        const posts = await getAllPublicaciones(20, 0, 'publicado');
         setUserPosts(posts);
       } catch (error) {
         console.error('Error al cargar publicaciones del usuario:', error);

@@ -11,7 +11,10 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
         console.log("Solicitando todas las publicaciones:", url);
         
         try {
-            const response = await fetch(url);
+            // Obtener el token de autenticación
+            const token = localStorage.getItem('userToken');
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const response = await fetch(url, { headers });
             if (!response.ok) {
                 console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
                 throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
