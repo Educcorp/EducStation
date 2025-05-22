@@ -38,9 +38,18 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
-    // Usamos la ruta correcta según userRoutes.js del backend
+    // Usamos una URL alternativa para evitar confusiones con las rutas
+    // La ruta correcta según userRoutes.js del backend es /api/users/avatar
     const avatarUrl = `${API_URL}/api/users/avatar`;
     console.log('Enviando petición a:', avatarUrl);
+    
+    // Obtener tamaño aproximado
+    const sizeInKB = Math.round((avatarData.length * 0.75) / 1024); // Estimación de tamaño en KB
+    console.log(`Tamaño estimado de la imagen: ${sizeInKB} KB`);
+    
+    if (sizeInKB > 1000) {
+      console.warn('Imagen demasiado grande, considera usar una imagen más pequeña');
+    }
     
     const response = await fetch(avatarUrl, {
       method: 'PUT',
@@ -50,8 +59,10 @@ export const updateUserAvatar = async (avatarData) => {
         // Añadimos también el x-auth-token para mayor compatibilidad
         'x-auth-token': token
       },
-      // Enviamos el avatarData directamente como lo espera el controlador
-      body: JSON.stringify({ avatarData }),
+      // Enviamos el avatarData en un formato más simple para reducir problemas
+      body: JSON.stringify({ 
+        avatarData: avatarData.includes('base64,') ? avatarData : `data:image/jpeg;base64,${avatarData}`
+      }),
     });
 
     // Log detallado de la respuesta
