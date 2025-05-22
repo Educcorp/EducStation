@@ -9,7 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { searchByTags } from '../services/searchService';
 import { getAllCategorias } from '../services/categoriasServices';
 import '../styles/animations.css';
-import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers } from 'react-icons/fa';
+import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers, FaTag, FaTags } from 'react-icons/fa';
 
 const CategoryPage = () => {  
   const { colors, isDarkMode } = useTheme();
@@ -44,6 +44,12 @@ const CategoryPage = () => {
   
   // Referencias para animaciones
   const heroRef = useRef(null);
+  
+  // Estado para los dropdowns
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const categoryDropdownRef = useRef(null);
+  const sortDropdownRef = useRef(null);
   
   // Activar animación al montar el componente
   useEffect(() => {
@@ -239,6 +245,23 @@ const CategoryPage = () => {
     // Convertir de vuelta a hex
     return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
   };
+  
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (categoryDropdownRef.current && !categoryDropdownRef.current.contains(event.target)) {
+        setCategoryDropdownOpen(false);
+      }
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+        setSortDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
   
   // Estilos CSS
   const styles = {
@@ -762,7 +785,215 @@ const CategoryPage = () => {
       transform: 'translateY(-50%)',
       color: 'rgba(255, 255, 255, 0.3)',
       zIndex: 4
+    },
+    dropdownButton: {
+      backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.2)' : 'rgba(255, 255, 255, 0.95)',
+      color: isDarkMode ? colors.textLight : colors.primary,
+      border: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
+      borderRadius: borderRadius.lg,
+      padding: `${spacing.md} ${spacing.xl}`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      cursor: 'pointer',
+      width: '100%',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+      fontSize: typography.fontSize.md,
+      position: 'relative'
+    },
+    dropdownMenu: {
+      position: 'absolute',
+      top: 'calc(100% + 5px)',
+      left: 0,
+      width: '100%',
+      backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+      borderRadius: borderRadius.lg,
+      boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+      zIndex: 100,
+      maxHeight: '300px',
+      overflowY: 'auto',
+      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
+      padding: spacing.xs
+    },
+    dropdownItem: {
+      padding: `${spacing.sm} ${spacing.md}`,
+      cursor: 'pointer',
+      borderRadius: borderRadius.md,
+      margin: spacing.xs,
+      transition: 'all 0.2s ease',
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.sm
+    },
+    dropdownIcon: {
+      marginRight: spacing.sm,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
     }
+  };
+
+  // Category dropdown component
+  const CategoryDropdown = () => {
+    // Map of category icons by ID (or type)
+    const categoryIcons = {
+      1: <FaNewspaper size={16} />, // Noticias
+      2: <FaBook size={16} />, // Técnicas de Estudio
+      3: <FaPenNib size={16} />, // Problemáticas en el Estudio
+      4: <FaAward size={16} />, // Educación de Calidad
+      5: <FaCog size={16} />, // Herramientas Tecnológicas
+      6: <FaChalkboardTeacher size={16} />, // Desarrollo Profesional Docente
+      7: <FaUsers size={16} />, // Comunidad y Colaboración
+    };
+
+    const handleCategorySelect = (categoryId) => {
+      if (categoryId === 'explore') {
+        navigate('/categorias');
+      } else if (categoryId !== '') {
+        navigate(`/categoria/${categoryId}`);
+      }
+      setCategoryDropdownOpen(false);
+    };
+    
+    return (
+      <div ref={categoryDropdownRef} style={{ position: 'relative', width: '100%' }}>
+        <button 
+          onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)} 
+          style={{
+            ...styles.dropdownButton,
+            borderColor: isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.2)',
+            backgroundColor: getLighterColor(categoryColor, 0.1),
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <FaFilter style={{ marginRight: spacing.md, color: isDarkMode ? colors.white : categoryColor, fontSize: '1rem' }} />
+            <span style={{ color: isDarkMode ? colors.white : categoryColor }}>
+              {currentCategory?.Nombre || 'Todas las categorías'}
+            </span>
+          </div>
+          <div style={{ color: isDarkMode ? colors.white : categoryColor }}>
+            {categoryDropdownOpen ? '▲' : '▼'}
+          </div>
+        </button>
+        
+        {categoryDropdownOpen && (
+          <div style={{
+            ...styles.dropdownMenu,
+            boxShadow: `0 8px 20px ${categoryColor}33`,
+            backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+          }}>
+            <div 
+              style={{
+                ...styles.dropdownItem,
+                backgroundColor: 'transparent',
+                color: isDarkMode ? colors.textLight : colors.primary,
+              }}
+              onClick={() => handleCategorySelect('')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 78, 78, 0.4)' : 'rgba(31, 78, 78, 0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              <span style={{
+                ...styles.dropdownIcon,
+                backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.5)' : 'rgba(31, 78, 78, 0.2)',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isDarkMode ? colors.secondary : colors.primary,
+              }}>
+                <FaFilter size={14} />
+              </span>
+              Todas las categorías
+            </div>
+            
+            {categories.map(category => (
+              <div 
+                key={category.ID_categoria}
+                style={{
+                  ...styles.dropdownItem,
+                  backgroundColor: parseInt(id) === category.ID_categoria 
+                    ? getLighterColor(categoryColor, 0.1)
+                    : 'transparent',
+                  color: parseInt(id) === category.ID_categoria 
+                    ? (isDarkMode ? colors.white : categoryColor)
+                    : (isDarkMode ? colors.textLight : colors.primary),
+                  fontWeight: parseInt(id) === category.ID_categoria ? 600 : 400,
+                }}
+                onClick={() => handleCategorySelect(category.ID_categoria.toString())}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 78, 78, 0.4)' : 'rgba(31, 78, 78, 0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = parseInt(id) === category.ID_categoria 
+                    ? getLighterColor(categoryColor, 0.1)
+                    : 'transparent';
+                }}
+              >
+                <span style={{
+                  ...styles.dropdownIcon,
+                  backgroundColor: parseInt(id) === category.ID_categoria 
+                    ? getLighterColor(categoryColor, 0.3)
+                    : (isDarkMode ? 'rgba(31, 78, 78, 0.5)' : 'rgba(31, 78, 78, 0.2)'),
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: parseInt(id) === category.ID_categoria 
+                    ? (isDarkMode ? colors.white : categoryColor)
+                    : (isDarkMode ? colors.secondary : colors.primary),
+                }}>
+                  {categoryIcons[category.ID_categoria] || <FaTag size={14} />}
+                </span>
+                {category.Nombre}
+              </div>
+            ))}
+            
+            <div 
+              style={{
+                ...styles.dropdownItem,
+                backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)',
+                marginTop: spacing.sm,
+                borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
+                paddingTop: spacing.md,
+                color: isDarkMode ? colors.secondary : colors.primary,
+                fontWeight: 600,
+              }}
+              onClick={() => handleCategorySelect('explore')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 147, 111, 0.3)' : 'rgba(31, 147, 111, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)';
+              }}
+            >
+              <span style={{
+                ...styles.dropdownIcon,
+                backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.4)' : 'rgba(31, 147, 111, 0.2)',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isDarkMode ? colors.secondary : colors.primary,
+              }}>
+                <FaTags size={14} />
+              </span>
+              Explorar todas las categorías
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -908,153 +1139,100 @@ const CategoryPage = () => {
             
             <div style={styles.contentWrapper}>
               <main style={styles.mainContent}>
-                <div style={{
-                  ...styles.filterBar,
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: spacing.lg,
-                  flexWrap: "wrap",
-                  gap: spacing.md,
-                  padding: `${spacing.md} ${spacing.lg}`,
-                  backgroundColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.9)',
-                  borderRadius: borderRadius.lg,
-                  boxShadow: isDarkMode ? 'none' : '0 4px 15px rgba(0,0,0,0.08)',
-                  border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
-                  backdropFilter: 'blur(10px)',
-                  position: 'sticky',
-                  top: '20px',
-                  zIndex: 100
-                }}>
-                  <div style={{
-                    ...styles.searchBox,
-                    flex: "1",
-                    maxWidth: "400px",
-                    position: "relative"
-                  }}>
-                    <span style={{
-                      ...styles.searchIcon,
-                      position: "absolute",
-                      left: spacing.md,
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      color: isSearchFocused ? categoryColor : isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                      transition: transitions.default,
-                      fontSize: "18px"
+                <div 
+                  style={{
+                    backgroundColor: isDarkMode ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.8)',
+                    borderRadius: '12px',
+                    padding: spacing.lg,
+                    marginBottom: spacing.xl,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: spacing.md,
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    position: 'relative',
+                    border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                  }}
+                >
+                  <div style={{ flex: '1 1 300px', position: 'relative' }}>
+                    <div style={{ 
+                      position: 'absolute', 
+                      left: spacing.md, 
+                      top: '50%', 
+                      transform: 'translateY(-50%)',
+                      color: isDarkMode ? colors.gray300 : colors.gray600,
+                      pointerEvents: 'none',
+                      transition: 'all 0.3s'
                     }}>
-                      <FaSearch size={18} />
-                    </span>
+                      <FaSearch size={16} />
+                    </div>
                     <input
                       type="text"
                       placeholder="Buscar en esta categoría..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      style={{
-                        ...styles.searchInput,
-                        width: "100%",
-                        padding: `${spacing.md} ${spacing.md} ${spacing.md} ${spacing.xxl}`,
-                        borderRadius: borderRadius.lg,
-                        border: `2px solid ${isSearchFocused ? categoryColor : isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                        fontSize: typography.fontSize.md,
-                        transition: transitions.default,
-                        backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.95)',
-                        color: isDarkMode ? colors.textLight : colors.textPrimary,
-                        outline: 'none',
-                        boxShadow: isSearchFocused ? `0 0 0 3px ${categoryColor}40` : 'none'
-                      }}
                       onFocus={() => setIsSearchFocused(true)}
                       onBlur={() => setIsSearchFocused(false)}
+                      style={{
+                        width: '100%',
+                        padding: `${spacing.md} ${spacing.md} ${spacing.md} ${spacing.xxl}`,
+                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
+                        border: `2px solid ${isSearchFocused 
+                          ? categoryColor 
+                          : (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')}`,
+                        borderRadius: '10px',
+                        outline: 'none',
+                        fontSize: typography.fontSize.md,
+                        color: isDarkMode ? colors.gray100 : colors.textPrimary,
+                        transition: 'all 0.3s',
+                        boxShadow: isSearchFocused ? `0 0 0 3px ${categoryColor}33` : 'none',
+                      }}
                     />
                   </div>
                   
-                  <div style={{
-                    ...styles.filterWrapper,
-                    position: 'relative'
-                  }}>
-                    <button 
-                      style={{
-                        ...styles.filterButton,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: spacing.sm,
-                        padding: `${spacing.md} ${spacing.lg}`,
-                        borderRadius: borderRadius.lg,
-                        border: 'none',
-                        fontSize: typography.fontSize.md,
-                        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.95)',
-                        color: isDarkMode ? colors.textLight : colors.textPrimary,
-                        cursor: 'pointer',
-                        transition: transitions.default,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
-                        '&:hover': {
-                          backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : categoryColor,
-                          color: isDarkMode ? colors.textLight : '#ffffff'
-                        }
-                      }}
-                      onClick={() => setShowFilterOptions(!showFilterOptions)}
-                    >
+                  <div style={{ flex: '0 1 300px' }}>
+                    <CategoryDropdown />
+                  </div>
+                  
+                  <div style={{ flex: '0 1 250px', position: 'relative' }}>
+                    <div style={{ 
+                      position: 'absolute', 
+                      left: spacing.md, 
+                      top: '50%', 
+                      transform: 'translateY(-50%)',
+                      color: isDarkMode ? colors.gray300 : colors.gray600,
+                      pointerEvents: 'none',
+                      transition: 'all 0.3s'
+                    }}>
                       <FaFilter size={16} />
-                      Ordenar por: {selectedFilter === 'reciente' ? 'Más recientes' : 
-                        selectedFilter === 'antiguo' ? 'Más antiguos' : 'Alfabéticamente'}
-                    </button>
-                    
-                    {showFilterOptions && (
-                      <div style={{
-                        ...styles.filterDropdown,
-                        position: 'absolute',
-                        top: '100%',
-                        right: 0,
-                        marginTop: spacing.xs,
-                        width: '220px',
-                        backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : '#ffffff',
-                        borderRadius: borderRadius.md,
-                        boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
-                        padding: spacing.sm,
-                        zIndex: 100,
-                        border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
-                        animation: 'fadeIn 0.2s ease-out'
-                      }}>
-                        <div 
-                          style={{
-                            ...styles.filterOption,
-                            ...(selectedFilter === 'reciente' ? styles.activeFilterOption : {})
-                          }}
-                          onClick={() => {
-                            setSelectedFilter('reciente');
-                            setShowFilterOptions(false);
-                          }}
-                        >
-                          Más recientes
-                          {selectedFilter === 'reciente' && <span>✓</span>}
-                        </div>
-                        <div 
-                          style={{
-                            ...styles.filterOption,
-                            ...(selectedFilter === 'antiguo' ? styles.activeFilterOption : {})
-                          }}
-                          onClick={() => {
-                            setSelectedFilter('antiguo');
-                            setShowFilterOptions(false);
-                          }}
-                        >
-                          Más antiguos
-                          {selectedFilter === 'antiguo' && <span>✓</span>}
-                        </div>
-                        <div 
-                          style={{
-                            ...styles.filterOption,
-                            ...(selectedFilter === 'alfabetico' ? styles.activeFilterOption : {})
-                          }}
-                          onClick={() => {
-                            setSelectedFilter('alfabetico');
-                            setShowFilterOptions(false);
-                          }}
-                        >
-                          Alfabéticamente
-                          {selectedFilter === 'alfabetico' && <span>✓</span>}
-                        </div>
-                      </div>
-                    )}
+                    </div>
+                    <select
+                      value={selectedFilter}
+                      onChange={(e) => setSelectedFilter(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: `${spacing.md} ${spacing.md} ${spacing.md} ${spacing.xxl}`,
+                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
+                        border: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+                        borderRadius: '10px',
+                        outline: 'none',
+                        fontSize: typography.fontSize.md,
+                        color: isDarkMode ? colors.gray100 : colors.textPrimary,
+                        transition: 'all 0.3s',
+                        appearance: 'none',
+                        cursor: 'pointer',
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M1 4l5 5 5-5' fill='none' stroke='${isDarkMode ? '%23fff' : '%230b4444'}' stroke-width='2'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 15px center',
+                      }}
+                    >
+                      <option value="reciente">Más recientes</option>
+                      <option value="antiguo">Más antiguos</option>
+                      <option value="alfabetico">Alfabéticamente</option>
+                    </select>
                   </div>
                 </div>
                 
