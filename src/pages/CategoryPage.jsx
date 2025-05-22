@@ -51,6 +51,25 @@ const CategoryPage = () => {
   const categoryDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
   
+  // Category colors for better visual identification
+  const categoryColors = {
+    1: '#FF6B6B', // Noticias
+    2: '#4ECDC4', // Técnicas de Estudio
+    3: '#FFD166', // Problemáticas en el Estudio
+    4: '#6A0572', // Educación de Calidad
+    5: '#1A936F', // Herramientas Tecnológicas
+    6: '#3D5A80', // Desarrollo Profesional Docente
+    7: '#F18F01'  // Comunidad y Colaboración
+  };
+  
+  // Get current category color
+  const getCurrentCategoryColor = () => {
+    if (currentCategory && currentCategory.ID_categoria) {
+      return categoryColors[currentCategory.ID_categoria] || categoryColor;
+    }
+    return categoryColor;
+  };
+  
   // Activar animación al montar el componente
   useEffect(() => {
     const timeoutHeader = setTimeout(() => setHeaderVisible(true), 300);
@@ -96,16 +115,19 @@ const CategoryPage = () => {
         
         // Cargar posts de esta categoría
         const postsData = await searchByTags(id, 12, 0);
-        setPosts(postsData);
+        setPosts(Array.isArray(postsData) ? postsData : []);
         
         // Calcular total de páginas
-        const totalPosts = postsData.length;
+        const totalPosts = Array.isArray(postsData) ? postsData.length : 0;
         setTotalPages(Math.ceil(totalPosts / 9));
         
         setError(null);
       } catch (err) {
         console.error('Error al cargar datos:', err);
         setError('No se pudieron cargar los datos. Por favor, intenta de nuevo más tarde.');
+        // Set default values even on error to prevent rendering issues
+        setPosts([]);
+        setTotalPages(1);
       } finally {
         setLoading(false);
       }
@@ -113,6 +135,12 @@ const CategoryPage = () => {
     
     if (id) {
       fetchData();
+    } else {
+      // Handle case when ID is not available
+      setLoading(false);
+      setError('Categoría no encontrada.');
+      setPosts([]);
+      setTotalPages(1);
     }
   }, [id]);
   
@@ -421,7 +449,10 @@ const CategoryPage = () => {
       position: 'relative',
       zIndex: 10
     },
-    mainContent: {},
+    mainContent: {
+      position: 'relative',
+      zIndex: 10
+    },
     sidebar: {
       '@media (max-width: 768px)': {
         order: -1
@@ -847,17 +878,6 @@ const CategoryPage = () => {
       7: <FaUsers size={16} />, // Comunidad y Colaboración
     };
 
-    // Category colors for better visual identification
-    const categoryColors = {
-      1: '#FF6B6B', // Noticias
-      2: '#4ECDC4', // Técnicas de Estudio
-      3: '#FFD166', // Problemáticas en el Estudio
-      4: '#6A0572', // Educación de Calidad
-      5: '#1A936F', // Herramientas Tecnológicas
-      6: '#3D5A80', // Desarrollo Profesional Docente
-      7: '#F18F01'  // Comunidad y Colaboración
-    };
-
     const handleCategorySelect = (categoryId) => {
       if (categoryId === 'explore') {
         navigate('/categorias');
@@ -873,25 +893,26 @@ const CategoryPage = () => {
           onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)} 
           style={{
             ...styles.dropdownButton,
-            borderColor: isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.2)',
-            background: isDarkMode 
-              ? `linear-gradient(to right, ${getDarkerColor(categoryColor, 0.2)}, ${getLighterColor(categoryColor, 0.1)})`
-              : `linear-gradient(to right, ${getLighterColor(categoryColor, 0.8)}, ${getLighterColor(categoryColor, 0.9)})`,
-            boxShadow: `0 4px 8px ${categoryColor}33`,
+            borderColor: 'rgba(31, 78, 78, 0.2)',
+            background: `linear-gradient(to right, ${getLighterColor(getCurrentCategoryColor(), 0.8)}, ${getLighterColor(getCurrentCategoryColor(), 0.9)})`,
+            boxShadow: `0 4px 8px ${getCurrentCategoryColor()}33`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <FaFilter style={{ 
               marginRight: spacing.md, 
-              color: isDarkMode ? colors.white : categoryColor, 
+              color: getCurrentCategoryColor(), 
               fontSize: '1rem' 
             }} />
-            <span style={{ color: isDarkMode ? colors.white : categoryColor }}>
-              {currentCategory?.Nombre || 'Todas las categorías'}
+            <span style={{ 
+              color: getCurrentCategoryColor(),
+              fontWeight: 600
+            }}>
+              {currentCategory?.Nombre_categoria || currentCategory?.Nombre || 'Todas las categorías'}
             </span>
           </div>
           <div style={{ 
-            color: isDarkMode ? colors.white : categoryColor,
+            color: getCurrentCategoryColor(),
             transition: 'transform 0.3s ease',
             transform: categoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
           }}>
@@ -902,34 +923,36 @@ const CategoryPage = () => {
         {categoryDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
-            boxShadow: `0 8px 20px ${categoryColor}33`,
-            backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+            boxShadow: `0 8px 20px ${getCurrentCategoryColor()}33`,
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
             <div 
               style={{
                 ...styles.dropdownItem,
                 backgroundColor: 'transparent',
-                color: isDarkMode ? colors.textLight : colors.primary,
+                color: colors.primary,
               }}
               onClick={() => handleCategorySelect('')}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 78, 78, 0.4)' : 'rgba(31, 78, 78, 0.15)';
+                e.currentTarget.style.backgroundColor = 'rgba(31, 78, 78, 0.15)';
+                e.currentTarget.style.color = colors.primary;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = colors.primary;
               }}
             >
               <span style={{
                 ...styles.dropdownIcon,
-                backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.5)' : 'rgba(31, 78, 78, 0.2)',
+                backgroundColor: 'rgba(31, 78, 78, 0.2)',
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: isDarkMode ? colors.secondary : colors.primary,
+                color: colors.primary,
               }}>
                 <FaFilter size={14} />
               </span>
@@ -942,73 +965,75 @@ const CategoryPage = () => {
                 style={{
                   ...styles.dropdownItem,
                   backgroundColor: parseInt(id) === category.ID_categoria 
-                    ? getLighterColor(categoryColor, 0.1)
+                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
                     : 'transparent',
                   color: parseInt(id) === category.ID_categoria 
-                    ? (isDarkMode ? colors.white : categoryColor)
-                    : (isDarkMode ? colors.textLight : colors.primary),
+                    ? categoryColors[category.ID_categoria]
+                    : colors.primary,
                   fontWeight: parseInt(id) === category.ID_categoria ? 600 : 400,
-                  borderLeft: `3px solid ${categoryColors[category.ID_categoria] || colors.primary}`,
+                  borderLeft: `3px solid ${parseInt(id) === category.ID_categoria ? getCurrentCategoryColor() : 'transparent'}`,
                 }}
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode 
-                    ? `${categoryColors[category.ID_categoria]}33` 
-                    : `${categoryColors[category.ID_categoria]}15`;
+                  e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                  e.currentTarget.style.color = categoryColors[category.ID_categoria];
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = parseInt(id) === category.ID_categoria 
-                    ? getLighterColor(categoryColor, 0.1)
+                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
                     : 'transparent';
+                  e.currentTarget.style.color = parseInt(id) === category.ID_categoria 
+                    ? categoryColors[category.ID_categoria]
+                    : colors.primary;
                 }}
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: isDarkMode 
-                    ? `${categoryColors[category.ID_categoria]}55` 
-                    : `${categoryColors[category.ID_categoria]}33`,
+                  backgroundColor: `${categoryColors[category.ID_categoria]}33`,
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: categoryColors[category.ID_categoria] || (isDarkMode ? colors.white : categoryColor),
+                  color: categoryColors[category.ID_categoria],
                 }}>
                   {categoryIcons[category.ID_categoria] || <FaTag size={14} />}
                 </span>
-                {category.Nombre}
+                {category.Nombre_categoria || category.Nombre}
               </div>
             ))}
             
             <div 
               style={{
                 ...styles.dropdownItem,
-                backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)',
+                backgroundColor: 'rgba(31, 147, 111, 0.1)',
                 marginTop: spacing.sm,
-                borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
+                borderTop: `1px solid rgba(31, 78, 78, 0.1)`,
                 paddingTop: spacing.md,
-                color: isDarkMode ? colors.secondary : colors.primary,
+                color: colors.primary,
                 fontWeight: 600,
               }}
               onClick={() => handleCategorySelect('explore')}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 147, 111, 0.3)' : 'rgba(31, 147, 111, 0.2)';
+                e.currentTarget.style.backgroundColor = 'rgba(31, 147, 111, 0.2)';
+                e.currentTarget.style.color = colors.primary;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)';
+                e.currentTarget.style.backgroundColor = 'rgba(31, 147, 111, 0.1)';
+                e.currentTarget.style.color = colors.primary;
               }}
             >
               <span style={{
                 ...styles.dropdownIcon,
-                backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.4)' : 'rgba(31, 147, 111, 0.2)',
+                backgroundColor: 'rgba(31, 147, 111, 0.2)',
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: isDarkMode ? colors.secondary : colors.primary,
+                color: colors.primary,
               }}>
                 <FaTags size={14} />
               </span>
@@ -1039,25 +1064,26 @@ const CategoryPage = () => {
           onClick={() => setSortDropdownOpen(!sortDropdownOpen)} 
           style={{
             ...styles.dropdownButton,
-            borderColor: isDarkMode ? 'rgba(31, 78, 78, 0.3)' : 'rgba(31, 78, 78, 0.2)',
-            background: isDarkMode 
-              ? `linear-gradient(to right, ${getDarkerColor(categoryColor, 0.2)}, ${getLighterColor(categoryColor, 0.1)})`
-              : `linear-gradient(to right, ${getLighterColor(categoryColor, 0.8)}, ${getLighterColor(categoryColor, 0.9)})`,
-            boxShadow: `0 4px 8px ${categoryColor}33`,
+            borderColor: 'rgba(31, 78, 78, 0.2)',
+            background: `linear-gradient(to right, ${getLighterColor(getCurrentCategoryColor(), 0.8)}, ${getLighterColor(getCurrentCategoryColor(), 0.9)})`,
+            boxShadow: `0 4px 8px ${getCurrentCategoryColor()}33`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <FaSort style={{ 
               marginRight: spacing.md, 
-              color: isDarkMode ? colors.white : categoryColor, 
+              color: getCurrentCategoryColor(), 
               fontSize: '1rem' 
             }} />
-            <span style={{ color: isDarkMode ? colors.white : categoryColor }}>
+            <span style={{ 
+              color: getCurrentCategoryColor(),
+              fontWeight: 600
+            }}>
               {sortOptions.find(option => option.value === selectedFilter)?.label || 'Ordenar por'}
             </span>
           </div>
           <div style={{ 
-            color: isDarkMode ? colors.white : categoryColor,
+            color: getCurrentCategoryColor(),
             transition: 'transform 0.3s ease',
             transform: sortDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
           }}>
@@ -1068,8 +1094,8 @@ const CategoryPage = () => {
         {sortDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
-            boxShadow: `0 8px 20px ${categoryColor}33`,
-            backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+            boxShadow: `0 8px 20px ${getCurrentCategoryColor()}33`,
+            backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
             {sortOptions.map(option => (
@@ -1078,40 +1104,40 @@ const CategoryPage = () => {
                 style={{
                   ...styles.dropdownItem,
                   backgroundColor: selectedFilter === option.value 
-                    ? getLighterColor(categoryColor, 0.1)
+                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
                     : 'transparent',
                   color: selectedFilter === option.value 
-                    ? (isDarkMode ? colors.white : categoryColor)
-                    : (isDarkMode ? colors.textLight : colors.primary),
+                    ? getCurrentCategoryColor()
+                    : colors.primary,
                   fontWeight: selectedFilter === option.value ? 600 : 400,
                   borderLeft: `3px solid ${selectedFilter === option.value 
-                    ? categoryColor 
+                    ? getCurrentCategoryColor() 
                     : 'transparent'}`,
                 }}
                 onClick={() => handleSortSelect(option.value)}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDarkMode 
-                    ? `${categoryColor}33` 
-                    : `${categoryColor}15`;
+                  e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                  e.currentTarget.style.color = getCurrentCategoryColor();
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.backgroundColor = selectedFilter === option.value 
-                    ? getLighterColor(categoryColor, 0.1)
+                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
                     : 'transparent';
+                  e.currentTarget.style.color = selectedFilter === option.value 
+                    ? getCurrentCategoryColor()
+                    : colors.primary;
                 }}
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: isDarkMode 
-                    ? `${categoryColor}55` 
-                    : `${categoryColor}33`,
+                  backgroundColor: `${getCurrentCategoryColor()}33`,
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: isDarkMode ? colors.white : categoryColor,
+                  color: getCurrentCategoryColor(),
                 }}>
                   {option.icon}
                 </span>
@@ -1126,16 +1152,11 @@ const CategoryPage = () => {
 
   return (
     <div style={{ 
-      backgroundColor: isDarkMode 
-        ? getDarkerColor(categoryColor, 0.8) // Fondo muy oscuro basado en el color de la categoría
-        : getLighterColor(categoryColor, 0.8), // Fondo muy claro basado en el color de la categoría
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      backgroundColor: getLighterColor(categoryColor, 0.8),
+      color: colors.textPrimary,
       minHeight: "100vh",
-      backgroundImage: isDarkMode
-        ? `radial-gradient(circle at 15% 50%, ${getDarkerColor(categoryColor, 0.7)}90 0%, transparent 25%),
-           radial-gradient(circle at 85% 30%, ${getDarkerColor(categoryColor, 0.7)}80 0%, transparent 25%)`
-        : `radial-gradient(circle at 15% 50%, ${getLighterColor(categoryColor, 0.9)}90 0%, transparent 25%),
-           radial-gradient(circle at 85% 30%, ${getLighterColor(categoryColor, 0.9)}80 0%, transparent 25%)`,
+      backgroundImage: `radial-gradient(circle at 15% 50%, ${getLighterColor(categoryColor, 0.9)}90 0%, transparent 25%),
+         radial-gradient(circle at 85% 30%, ${getLighterColor(categoryColor, 0.9)}80 0%, transparent 25%)`,
       transition: 'background-color 0.5s ease'
     }}>
       <Header />
@@ -1168,7 +1189,23 @@ const CategoryPage = () => {
           </div>
         ) : error ? (
           <div style={styles.errorContainer}>
+            <h3>Error al cargar la categoría</h3>
             <p>{error}</p>
+            <button 
+              onClick={() => navigate('/categorias')}
+              style={{
+                padding: `${spacing.md} ${spacing.xl}`,
+                backgroundColor: colors.primary,
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: borderRadius.md,
+                cursor: 'pointer',
+                marginTop: spacing.lg,
+                fontWeight: typography.fontWeight.medium
+              }}
+            >
+              Volver a categorías
+            </button>
           </div>
         ) : (
           <>
@@ -1208,7 +1245,7 @@ const CategoryPage = () => {
                     Volver a categorías
                   </button>
                   
-                  <h1 style={styles.title}>{currentCategory?.Nombre_categoria || 'Categoría'}</h1>
+                  <h1 style={styles.title}>{currentCategory?.Nombre_categoria || currentCategory?.Nombre || 'Categoría'}</h1>
                   
                   <p style={styles.subtitle}>
                     {currentCategory?.Descripcion || 'Artículos relacionados con esta categoría'}
@@ -1233,7 +1270,7 @@ const CategoryPage = () => {
                       alignItems: "center",
                       justifyContent: "center",
                       backgroundColor: "#ffffff",
-                      color: categoryColor,
+                      color: getCurrentCategoryColor(),
                       borderRadius: "50%",
                       width: "28px",
                       height: "28px",
@@ -1266,10 +1303,14 @@ const CategoryPage = () => {
             </section>
             
             <div style={styles.contentWrapper}>
-              <main style={styles.mainContent}>
+              <main style={{
+                ...styles.mainContent,
+                position: 'relative',
+                zIndex: 10
+              }}>
                 <div 
                   style={{
-                    backgroundColor: isDarkMode ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.8)',
+                    backgroundColor: 'rgba(255,255,255,0.8)',
                     borderRadius: '12px',
                     padding: spacing.lg,
                     marginBottom: spacing.xl,
@@ -1280,9 +1321,10 @@ const CategoryPage = () => {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     position: 'relative',
-                    border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}`,
+                    border: `1px solid rgba(0,0,0,0.05)`,
                     backdropFilter: 'blur(10px)',
                     WebkitBackdropFilter: 'blur(10px)',
+                    zIndex: 50,
                   }}
                 >
                   <div style={{ flex: '1 1 300px', position: 'relative' }}>
@@ -1291,7 +1333,7 @@ const CategoryPage = () => {
                       left: spacing.md, 
                       top: '50%', 
                       transform: 'translateY(-50%)',
-                      color: isDarkMode ? colors.gray300 : colors.gray600,
+                      color: colors.gray600,
                       pointerEvents: 'none',
                       transition: 'all 0.3s'
                     }}>
@@ -1307,16 +1349,16 @@ const CategoryPage = () => {
                       style={{
                         width: '100%',
                         padding: `${spacing.md} ${spacing.md} ${spacing.md} ${spacing.xxl}`,
-                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
                         border: `2px solid ${isSearchFocused 
-                          ? categoryColor 
-                          : (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')}`,
+                          ? getCurrentCategoryColor() 
+                          : 'rgba(0, 0, 0, 0.1)'}`,
                         borderRadius: '10px',
                         outline: 'none',
                         fontSize: typography.fontSize.md,
-                        color: isDarkMode ? colors.gray100 : colors.textPrimary,
+                        color: colors.textPrimary,
                         transition: 'all 0.3s',
-                        boxShadow: isSearchFocused ? `0 0 0 3px ${categoryColor}33` : 'none',
+                        boxShadow: isSearchFocused ? `0 0 0 3px ${getCurrentCategoryColor()}33` : 'none',
                       }}
                     />
                   </div>
@@ -1325,47 +1367,18 @@ const CategoryPage = () => {
                     <CategoryDropdown />
                   </div>
                   
-                  <div style={{ flex: '0 1 250px', position: 'relative' }}>
-                    <div style={{ 
-                      position: 'absolute', 
-                      left: spacing.md, 
-                      top: '50%', 
-                      transform: 'translateY(-50%)',
-                      color: isDarkMode ? colors.gray300 : colors.gray600,
-                      pointerEvents: 'none',
-                      transition: 'all 0.3s'
-                    }}>
-                      <FaFilter size={16} />
-                    </div>
-                    <select
-                      value={selectedFilter}
-                      onChange={(e) => setSelectedFilter(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: `${spacing.md} ${spacing.md} ${spacing.md} ${spacing.xxl}`,
-                        backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
-                        border: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-                        borderRadius: '10px',
-                        outline: 'none',
-                        fontSize: typography.fontSize.md,
-                        color: isDarkMode ? colors.gray100 : colors.textPrimary,
-                        transition: 'all 0.3s',
-                        appearance: 'none',
-                        cursor: 'pointer',
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M1 4l5 5 5-5' fill='none' stroke='${isDarkMode ? '%23fff' : '%230b4444'}' stroke-width='2'/%3E%3C/svg%3E")`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'right 15px center',
-                      }}
-                    >
-                      <option value="reciente">Más recientes</option>
-                      <option value="antiguo">Más antiguos</option>
-                      <option value="alfabetico">Alfabéticamente</option>
-                    </select>
+                  <div style={{ flex: '0 1 250px' }}>
+                    <SortDropdown />
                   </div>
                 </div>
                 
                 {currentPosts.length > 0 ? (
-                  <div style={styles.postsGrid}>
+                  <div style={{
+                    ...styles.postsGrid,
+                    marginTop: spacing.xl,
+                    position: 'relative',
+                    zIndex: 20
+                  }}>
                     {currentPosts.map((post, index) => (
                       <div 
                         className="post-card-animation" 
@@ -1380,9 +1393,37 @@ const CategoryPage = () => {
                     ))}
                   </div>
                 ) : (
-                  <div style={styles.noPostsMessage}>
-                    <h3>No hay publicaciones disponibles</h3>
-                    <p>No se encontraron artículos en esta categoría{searchQuery ? ` que coincidan con "${searchQuery}"` : ''}.</p>
+                  <div style={{
+                    ...styles.noPostsMessage,
+                    marginTop: spacing.xl,
+                    padding: spacing.xl,
+                    backgroundColor: 'rgba(255,255,255,0.8)',
+                    borderRadius: borderRadius.lg,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                    textAlign: 'center'
+                  }}>
+                    <h3 style={{ 
+                      fontSize: typography.fontSize.xl, 
+                      marginBottom: spacing.md,
+                      color: colors.primary
+                    }}>No hay publicaciones disponibles</h3>
+                    <p style={{ marginBottom: spacing.lg }}>
+                      No se encontraron artículos en esta categoría{searchQuery ? ` que coincidan con "${searchQuery}"` : ''}.
+                    </p>
+                    <button 
+                      onClick={() => navigate('/categorias')}
+                      style={{
+                        padding: `${spacing.sm} ${spacing.lg}`,
+                        backgroundColor: colors.primary,
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: borderRadius.md,
+                        cursor: 'pointer',
+                        fontWeight: typography.fontWeight.medium
+                      }}
+                    >
+                      Explorar otras categorías
+                    </button>
                   </div>
                 )}
                 
@@ -1425,23 +1466,6 @@ const CategoryPage = () => {
               </main>
               
               <aside style={styles.sidebar}>
-                <div style={styles.relatedCategories}>
-                  <div style={styles.categoriesPattern}></div>
-                  <h3 style={styles.relatedCategoriesTitle}>Categorías relacionadas</h3>
-                  <div style={styles.categoryList}>
-                    {categories.filter(cat => cat.ID_categoria !== parseInt(id)).map(category => (
-                      <Link 
-                        key={category.ID_categoria} 
-                        to={`/categoria/${category.ID_categoria}`}
-                        style={styles.categoryLink}
-                        className="hover-scale"
-                      >
-                        {category.Nombre_categoria}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-                
                 <div style={styles.newsletterBox}>
                   <div style={styles.newsletterPattern}></div>
                   <h3 style={styles.newsletterTitle}>Suscríbete al newsletter</h3>
@@ -1510,16 +1534,11 @@ const CategoryPage = () => {
           }
           
           .post-card-animation:hover {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
           }
           
           .post-card-animation > a > div {
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          }
-          
-          .post-card-animation:hover > a > div {
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
           }
           
           .float-animation {
@@ -1536,6 +1555,11 @@ const CategoryPage = () => {
             100% {
               transform: translateY(-50%) translateX(0);
             }
+          }
+          
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
           }
         `}
       </style>

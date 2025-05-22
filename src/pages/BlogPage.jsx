@@ -891,7 +891,7 @@ const BlogPage = () => {
           }
           
           .blog-post-card:hover {
-            transform: translateY(-10px) !important;
+            transform: translateY(-5px) !important;
           }
         `}
       </style>

@@ -44,14 +44,29 @@ const PostCard = ({ post }) => {
       );
     }
     
-    console.log("PostCard - Tipo de imagen:", 
-      post.Imagen_portada.startsWith('data:image') ? 'Base64' : 
-      post.Imagen_portada.includes('<img') ? 'HTML' : 'Otro');
-    
     // Verificar si la imagen está en formato Base64
     const isBase64 = post.Imagen_portada.startsWith('data:image');
     
-    if (isBase64) {
+    // Verificar si es una ruta relativa que necesita ser corregida
+    if (post.Imagen_portada.startsWith('/assets/')) {
+      return (
+        <img 
+          src={`${process.env.PUBLIC_URL}${post.Imagen_portada}`}
+          alt={post.Titulo}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            transition: 'transform 0.5s ease',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+          }}
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://via.placeholder.com/350x200?text=Error+al+cargar+imagen';
+          }}
+        />
+      );
+    } else if (isBase64) {
       // Si es Base64, mostrar como una imagen normal
       return (
         <img 
@@ -60,7 +75,9 @@ const PostCard = ({ post }) => {
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'cover'
+            objectFit: 'cover',
+            transition: 'transform 0.5s ease',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
           }}
         />
       );
@@ -88,7 +105,9 @@ const PostCard = ({ post }) => {
           style={{
             width: '100%',
             height: '100%',
-            objectFit: 'cover'
+            objectFit: 'cover',
+            transition: 'transform 0.5s ease',
+            transform: isHovered ? 'scale(1.05)' : 'scale(1)',
           }}
           onError={(e) => {
             e.target.onerror = null;
@@ -105,20 +124,41 @@ const PostCard = ({ post }) => {
       flexDirection: "column",
       borderRadius: borderRadius.lg,
       overflow: "hidden",
-      transition: `${transitions.default}, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)`,
+      transition: `${transitions.default}, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease`,
       backgroundColor: isDarkMode ? "#1a1e23" : colors.white,
-      boxShadow: isDarkMode ? `0 8px 20px rgba(0, 0, 0, 0.3)` : shadows.md,
-      transform: isHovered ? "translateY(-5px)" : "translateY(0)",
+      boxShadow: isDarkMode 
+        ? `0 8px 20px rgba(0, 0, 0, 0.3)` 
+        : isHovered 
+          ? '0 15px 30px rgba(0, 0, 0, 0.15)' 
+          : shadows.md,
+      transform: isHovered ? "translateY(-10px)" : "translateY(0)",
       marginBottom: spacing.lg,
       width: "100%",
       maxWidth: "400px",
-      height: "100%"
+      height: "100%",
+      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}`,
     },
     imageContainer: {
       position: "relative",
       width: "100%",
       height: "200px",
       overflow: "hidden",
+    },
+    categoryBadge: {
+      position: 'absolute',
+      top: spacing.sm,
+      right: spacing.sm,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      color: '#fff',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.round,
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.medium,
+      zIndex: 2,
+      backdropFilter: 'blur(4px)',
+      transition: 'transform 0.3s ease, opacity 0.3s ease',
+      transform: isHovered ? 'translateY(-3px)' : 'translateY(0)',
+      opacity: isHovered ? 1 : 0.8,
     },
     cardImage: {
       width: "100%",
@@ -166,6 +206,9 @@ const PostCard = ({ post }) => {
       borderRadius: borderRadius.round,
       textTransform: "capitalize",
       marginBottom: spacing.sm,
+      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+      transform: isHovered ? 'translateY(-2px)' : 'translateY(0)',
+      boxShadow: isHovered ? '0 4px 8px rgba(0,0,0,0.1)' : 'none',
     },
     postTitle: {
       fontSize: typography.fontSize.lg,
@@ -186,6 +229,8 @@ const PostCard = ({ post }) => {
       alignItems: "center",
       justifyContent: "space-between",
       marginTop: spacing.md,
+      transition: 'opacity 0.3s ease',
+      opacity: isHovered ? 1 : 0.8,
     },
     postTime: {
       color: isDarkMode ? "rgba(255,255,255,0.6)" : colors.textSecondary,
@@ -200,6 +245,29 @@ const PostCard = ({ post }) => {
       display: "flex",
       alignItems: "center",
       gap: spacing.xs,
+    },
+    readMore: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: spacing.sm,
+      color: isDarkMode ? colors.secondary : colors.primary,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.medium,
+      opacity: isHovered ? 1 : 0,
+      transform: isHovered ? 'translateX(0)' : 'translateX(-10px)',
+      transition: 'opacity 0.3s ease, transform 0.3s ease',
+    },
+    overlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: `linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%)`,
+      opacity: isHovered ? 1 : 0.7,
+      transition: 'opacity 0.3s ease',
+      zIndex: 1,
     },
   };
 
@@ -216,17 +284,33 @@ const PostCard = ({ post }) => {
       >
         <div style={styles.imageContainer}>
           {post.Imagen_portada ? (
-            renderImageHTML()
+            <>
+              <div style={styles.overlay}></div>
+              {renderImageHTML()}
+              {post.categorias && post.categorias.length > 0 && (
+                <div style={styles.categoryBadge}>
+                  {post.categorias[0].Nombre_categoria}
+                </div>
+              )}
+            </>
           ) : post.Imagen_destacada_ID ? (
-            <img
-              src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`}
-              alt={post.Titulo}
-              style={styles.cardImage}
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = 'https://via.placeholder.com/350x200?text=Sin+imagen';
-              }}
-            />
+            <>
+              <div style={styles.overlay}></div>
+              <img
+                src={`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/imagenes/${post.Imagen_destacada_ID}`}
+                alt={post.Titulo}
+                style={styles.cardImage}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/350x200?text=Sin+imagen';
+                }}
+              />
+              {post.categorias && post.categorias.length > 0 && (
+                <div style={styles.categoryBadge}>
+                  {post.categorias[0].Nombre_categoria}
+                </div>
+              )}
+            </>
           ) : (
             <div style={{
               ...styles.noImage,
@@ -250,22 +334,18 @@ const PostCard = ({ post }) => {
           
           <h3 style={styles.postTitle}>{post.Titulo}</h3>
           
-          <div style={styles.postSummary}>
-            {post.Resumen || extractSummary(post.Contenido)}
-          </div>
+          <p style={styles.postSummary}>
+            {extractSummary(post.Contenido)}
+          </p>
           
           <div style={styles.postMeta}>
             <div style={styles.postTime}>
-              <span style={{fontSize: '14px', marginRight: '2px', opacity: 0.8}}>⏱</span> 
               {formatDate(post.Fecha_creacion)}
             </div>
             
-            {post.NombreAdmin && (
-              <div style={styles.postAuthor}>
-                <span style={{fontSize: '14px', marginRight: '2px', opacity: 0.8}}>👤</span>
-                {post.NombreAdmin}
-              </div>
-            )}
+            <div style={styles.readMore}>
+              Leer más →
+            </div>
           </div>
         </div>
       </div>
