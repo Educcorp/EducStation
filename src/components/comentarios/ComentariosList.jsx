@@ -76,57 +76,60 @@ const ComentariosList = ({ postId }) => {
         }
     });
 
+    const bounceTransition = 'transform 0.18s cubic-bezier(.39,.575,.56,1.000), box-shadow 0.18s cubic-bezier(.39,.575,.56,1.000), background 0.18s cubic-bezier(.39,.575,.56,1.000)';
     const styles = {
         container: {
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
             gap: spacing.md,
+            marginTop: '2.5rem',
         },
         formContainer: {
             display: 'flex',
             alignItems: 'flex-end',
             gap: spacing.sm,
             backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-            borderRadius: borderRadius.lg,
-            padding: spacing.md,
-            boxShadow: shadows.sm,
+            borderRadius: borderRadius.xl,
+            padding: spacing.lg,
+            boxShadow: shadows.lg,
             marginBottom: spacing.md,
+            border: `2.5px solid ${isDarkMode ? 'rgba(255,255,255,0.13)' : colors.primary}22`,
+            transition: bounceTransition,
         },
         textarea: {
             flex: 1,
             minHeight: '60px',
             maxHeight: '120px',
-            border: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
-            borderRadius: borderRadius.md,
-            padding: spacing.sm,
+            border: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.13)' : colors.primary}33`,
+            borderRadius: borderRadius.lg,
+            padding: spacing.md,
             fontSize: typography.fontSize.md,
             backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
             color: isDarkMode ? colors.textLight : colors.textPrimary,
             resize: 'vertical',
-            transition: 'all 0.3s ease',
-            '&:focus': {
-                outline: 'none',
-                borderColor: colors.primary,
-                boxShadow: `0 0 0 2px ${colors.primary}20`,
-            }
+            boxShadow: shadows.sm,
+            transition: bounceTransition,
         },
         submitButton: {
             backgroundColor: colors.primary,
             color: colors.white,
             border: 'none',
-            borderRadius: borderRadius.md,
-            padding: `${spacing.sm} ${spacing.md}`,
-            fontSize: typography.fontSize.lg,
+            borderRadius: borderRadius.lg,
+            padding: `${spacing.md} ${spacing.xl}`,
+            fontSize: typography.fontSize.xl,
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: colors.primaryDark,
-                transform: 'translateY(-2px)',
-            }
+            boxShadow: shadows.md,
+            transition: bounceTransition,
+            outline: 'none',
+        },
+        submitButtonHover: {
+            backgroundColor: colors.primaryDark,
+            transform: 'translateY(-4px) scale(1.04)',
+            boxShadow: shadows.xl,
         },
         filterContainer: {
             display: 'flex',
@@ -141,10 +144,12 @@ const ComentariosList = ({ postId }) => {
         filterSelect: {
             padding: `${spacing.xs} ${spacing.sm}`,
             borderRadius: borderRadius.md,
-            border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
+            border: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.13)' : colors.primary}33`,
             backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
             color: isDarkMode ? colors.textLight : colors.textPrimary,
             fontSize: typography.fontSize.sm,
+            boxShadow: shadows.xs,
+            transition: bounceTransition,
         },
         loadingMessage: {
             textAlign: 'center',
@@ -162,16 +167,19 @@ const ComentariosList = ({ postId }) => {
             backgroundColor: colors.primary,
             color: colors.white,
             border: 'none',
-            borderRadius: borderRadius.md,
+            borderRadius: borderRadius.lg,
             padding: `${spacing.sm} ${spacing.md}`,
             fontSize: typography.fontSize.sm,
             cursor: 'pointer',
             marginTop: spacing.sm,
-            transition: 'all 0.3s ease',
-            '&:hover': {
-                backgroundColor: colors.primaryDark,
-                transform: 'translateY(-2px)',
-            }
+            boxShadow: shadows.md,
+            transition: bounceTransition,
+            outline: 'none',
+        },
+        retryButtonHover: {
+            backgroundColor: colors.primaryDark,
+            transform: 'translateY(-3px) scale(1.04)',
+            boxShadow: shadows.xl,
         },
         noComments: {
             textAlign: 'center',
