@@ -9,7 +9,7 @@ import axios from 'axios';
 import { getUserProfile, updateUserAvatar } from '../services/userService';
 
 const ProfilePage = () => {
-  const { user, isAuth } = useContext(AuthContext);
+  const { user, isAuth, updateAuthState } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
@@ -80,6 +80,14 @@ const ProfilePage = () => {
               ...prev,
               avatar: reader.result // Usamos la imagen local para mostrarla de inmediato
             }));
+
+            // Actualizar el avatar en el contexto del usuario si está disponible
+            if (user && updateAuthState) {
+              updateAuthState({
+                ...user,
+                avatar: reader.result
+              });
+            }
             
             console.log('Avatar actualizado correctamente en el servidor');
             setIsUploading(false);

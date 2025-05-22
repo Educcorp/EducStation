@@ -5,16 +5,19 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-pr
 
 // Obtener perfil del usuario actual
 export const getUserProfile = async () => {
+  // Obtener el token JWT almacenado
   const token = localStorage.getItem('userToken');
   
   if (!token) {
+    console.error('No se encontró token de autenticación');
     throw new Error('No hay sesión activa');
   }
   
   try {
-    const response = await fetch(`${API_URL}/api/auth/user/`, {
+    console.log('Obteniendo perfil de usuario con token:', !!token);
+    const response = await fetch(`${API_URL}/api/users/current`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'x-auth-token': token,
       },
     });
 
@@ -31,9 +34,11 @@ export const getUserProfile = async () => {
 
 // Actualizar avatar del usuario
 export const updateUserAvatar = async (avatarData) => {
+  // Obtener el token JWT almacenado
   const token = localStorage.getItem('userToken');
   
   if (!token) {
+    console.error('No se encontró token de autenticación');
     throw new Error('No hay sesión activa');
   }
   
@@ -41,11 +46,12 @@ export const updateUserAvatar = async (avatarData) => {
     // Ahora que la ruta está habilitada en el backend
     const avatarUrl = `${API_URL}/api/users/avatar`;
     console.log('Enviando petición a:', avatarUrl);
+    console.log('Token disponible:', !!token, 'primeros caracteres:', token.substring(0, 10) + '...');
     
     const response = await fetch(avatarUrl, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'x-auth-token': token,
         'Content-Type': 'application/json',
       },
       // Enviamos el avatarData directamente como lo espera el controlador
@@ -83,10 +89,10 @@ export const updateUserProfile = async (profileData) => {
   }
   
   try {
-    const response = await fetch(`${API_URL}/api/auth/user/profile`, {
+    const response = await fetch(`${API_URL}/api/users/profile`, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'x-auth-token': token,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(profileData),

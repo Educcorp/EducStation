@@ -270,7 +270,7 @@ export const login = async (credentials) => {
 
     console.log('Iniciando sesión con:', isEmail ? 'email' : 'username', credentials.username);
 
-    const response = await fetch(`${API_URL}/api/auth/token/`, {
+    const response = await fetch(`${API_URL}/api/users/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -314,17 +314,22 @@ export const login = async (credentials) => {
     }
 
     // Limpiar el localStorage antes de guardar nuevos valores
-    // para evitar contaminación con datos anteriores
     localStorage.removeItem('userToken');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userName');
     localStorage.removeItem('isSuperUser');
+    localStorage.removeItem('userAvatar');
 
-    // Guardar tokens en localStorage
-    localStorage.setItem('userToken', data.access);
-    localStorage.setItem('accessToken', data.access);
-    localStorage.setItem('refreshToken', data.refresh);
+    // El backend devuelve el token como 'token', asegurarse de que se guarde correctamente
+    if (!data.token) {
+      console.error('No se recibió token en la respuesta:', data);
+      throw new Error('No se recibió un token válido del servidor');
+    }
+
+    // Guardar el token con el nombre que esperan los servicios
+    localStorage.setItem('userToken', data.token);
+    console.log('Token almacenado correctamente:', !!data.token);
 
     // Guardar nombre de usuario si está disponible
     if (data.username) {
@@ -351,9 +356,9 @@ export const login = async (credentials) => {
     // Si falta información del usuario, obtenerla del servidor
     if (!data.username) {
       try {
-        const userResponse = await fetch(`${API_URL}/api/auth/user/`, {
+        const userResponse = await fetch(`${API_URL}/api/users/current`, {
           headers: {
-            'Authorization': `Bearer ${data.access}`,
+            'x-auth-token': data.token,
             'Accept': 'application/json'
           },
           mode: 'cors',
@@ -383,8 +388,7 @@ export const login = async (credentials) => {
 
     return {
       user: userData,
-      token: data.access,
-      refresh: data.refresh,
+      token: data.token,
     };
   } catch (error) {
     console.error('Error en el login:', error);
@@ -405,13 +409,15 @@ export const logout = () => {
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userName');
   localStorage.removeItem('isSuperUser');
+  localStorage.removeItem('userAvatar');
 
   console.log('Sesión cerrada, localStorage limpiado:', {
     userToken: localStorage.getItem('userToken'),
     accessToken: localStorage.getItem('accessToken'),
     refreshToken: localStorage.getItem('refreshToken'),
     userName: localStorage.getItem('userName'),
-    isSuperUser: localStorage.getItem('isSuperUser')
+    isSuperUser: localStorage.getItem('isSuperUser'),
+    userAvatar: localStorage.getItem('userAvatar')
   });
 };
 
@@ -426,9 +432,9 @@ export const updateSuperUserStatus = async () => {
 
   try {
     console.log('Actualizando estado de superusuario desde el servidor...');
-    const response = await fetch(`${API_URL}/api/auth/user/`, {
+    const response = await fetch(`${API_URL}/api/users/current`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'x-auth-token': token,
       },
     });
 

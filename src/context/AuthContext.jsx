@@ -16,20 +16,29 @@ export const AuthProvider = ({ children }) => {
     // Verificar si hay un token en localStorage cuando la aplicación se carga
     const checkAuth = async () => {
       const token = localStorage.getItem('userToken');
+      const savedAvatar = localStorage.getItem('userAvatar');
       console.log('AuthContext - Verificando autenticación, token existe:', !!token);
       
       if (token) {
         try {
+          console.log('Token disponible, intentando verificar autenticación');
           // Intentar obtener información del usuario usando el token
           const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
-          const response = await fetch(`${API_URL}/api/auth/user/`, {
+          const response = await fetch(`${API_URL}/api/users/current`, {
             headers: {
-              'Authorization': `Bearer ${token}`,
+              'x-auth-token': token,
             },
           });
           
           if (response.ok) {
             const userData = await response.json();
+            
+            // Si tenemos un avatar guardado localmente y no hay uno en la respuesta,
+            // usamos el local para mantener la experiencia del usuario
+            if (savedAvatar && !userData.avatar) {
+              userData.avatar = savedAvatar;
+            }
+            
             setUser(userData);
             setIsAuth(true);
             
@@ -51,9 +60,9 @@ export const AuthProvider = ({ children }) => {
             try {
               await refreshToken();
               // Si el refresco es exitoso, intentar obtener datos del usuario nuevamente
-              const newResponse = await fetch(`${API_URL}/api/auth/user/`, {
+              const newResponse = await fetch(`${API_URL}/api/users/current`, {
                 headers: {
-                  'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
+                  'x-auth-token': localStorage.getItem('userToken'),
                 },
               });
               
@@ -134,6 +143,16 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       const result = await loginService(credentials);
+      
+      // Asegurar que el token esté disponible antes de establecer el usuario
+      if (!result.token) {
+        throw new Error('No se recibió un token válido del servidor');
+      }
+      
+      // Guardar token en localStorage para mayor seguridad
+      localStorage.setItem('userToken', result.token);
+      console.log('Token guardado en AuthContext:', !!result.token);
+      
       setUser(result.user);
       setIsAuth(true);
       
@@ -158,13 +177,23 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateAuthState = (userData) => {
-    setUser(userData);
+    // Si recibimos un userData parcial (como al actualizar solo el avatar)
+    // lo mezclamos con los datos de usuario existentes
+    const updatedUser = user ? { ...user, ...userData } : userData;
+    
+    setUser(updatedUser);
     setIsAuth(true);
     
     // Actualizar estado de superusuario
-    const userIsSuperUser = userData.is_superuser === true;
+    const userIsSuperUser = updatedUser.is_superuser === true;
     setIsSuperUser(userIsSuperUser);
     localStorage.setItem('isSuperUser', userIsSuperUser ? 'true' : 'false');
+    
+    // Si se actualizó el avatar, guardamos la referencia en localStorage para persistencia
+    if (userData.avatar) {
+      localStorage.setItem('userAvatar', userData.avatar);
+      console.log('Avatar actualizado en el contexto de autenticación');
+    }
   };
 
   return (
