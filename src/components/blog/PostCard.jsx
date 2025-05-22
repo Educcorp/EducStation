@@ -2,22 +2,38 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
-import { FaCalendarAlt, FaTag, FaEye, FaClock, FaBookOpen } from 'react-icons/fa';
+import { FaUser, FaTag, FaEye, FaBookOpen } from 'react-icons/fa';
 
 // Importar utilidades
 import { 
-  formatDate, 
   extractSummary, 
   renderImageHTML,
-  calculateReadingTime,
   formatViews,
   isBase64Image,
   isHTMLImage
 } from './utils/postHelpers';
 
-const PostCard = ({ post, showCategory = true, showReadingTime = true, showViews = true }) => {
+const PostCard = ({ post, showCategory = true, showViews = true }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { colors, isDarkMode } = useTheme();
+  
+  // Función para obtener color de categoría
+  const getCategoryColor = (categoria) => {
+    const categoryColors = {
+      'Tecnología': '#3b82f6',
+      'Educación': '#10b981',
+      'Ciencia': '#8b5cf6',
+      'Salud': '#ef4444',
+      'Deportes': '#f59e0b',
+      'Arte': '#ec4899',
+      'Música': '#06b6d4',
+      'Literatura': '#84cc16',
+      'Historia': '#f97316',
+      'Filosofía': '#6366f1',
+      'default': '#6b7280'
+    };
+    return categoryColors[categoria] || categoryColors.default;
+  };
   
   // Función para renderizar la imagen de portada
   const renderPortadaImage = () => {
@@ -101,6 +117,12 @@ const PostCard = ({ post, showCategory = true, showReadingTime = true, showViews
       maxWidth: "400px",
       height: "100%",
       border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}`,
+    },
+    categoryLine: {
+      height: "4px",
+      width: "100%",
+      backgroundColor: getCategoryColor(post.categoria),
+      transition: "all 0.3s ease",
     },
     imageContainer: {
       position: "relative",
@@ -200,17 +222,9 @@ const PostCard = ({ post, showCategory = true, showReadingTime = true, showViews
       alignItems: "center",
       gap: spacing.xs,
     },
-    metaGroup: {
-      display: "flex",
-      gap: spacing.md,
-      alignItems: "center",
-    },
-    readingTime: {
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-      padding: `${spacing.xs} ${spacing.sm}`,
-      borderRadius: borderRadius.sm,
-      fontSize: typography.fontSize.xs,
+    authorName: {
       fontWeight: typography.fontWeight.medium,
+      color: isDarkMode ? colors.textLight : colors.textDark,
     }
   };
 
@@ -222,6 +236,11 @@ const PostCard = ({ post, showCategory = true, showReadingTime = true, showViews
       onMouseLeave={() => setIsHovered(false)}
     >
       <article style={styles.card}>
+        {/* Línea de color de categoría */}
+        {showCategory && post.categoria && (
+          <div style={styles.categoryLine}></div>
+        )}
+        
         {/* Contenedor de imagen */}
         <div style={styles.imageContainer}>
           {renderPortadaImage()}
@@ -248,25 +267,18 @@ const PostCard = ({ post, showCategory = true, showReadingTime = true, showViews
           {/* Metadatos */}
           <div style={styles.postMeta}>
             <div style={styles.metaItem}>
-              <FaCalendarAlt size={12} />
-              <span>{formatDate(post.Fecha_creacion)}</span>
+              <FaUser size={12} />
+              <span style={styles.authorName}>
+                {post.autor || post.Autor || 'Autor desconocido'}
+              </span>
             </div>
             
-            <div style={styles.metaGroup}>
-              {showReadingTime && (
-                <div style={styles.readingTime}>
-                  <FaClock size={10} style={{ marginRight: spacing.xs }} />
-                  {calculateReadingTime(post.contenido || post.Contenido)}
-                </div>
-              )}
-              
-              {showViews && post.visualizaciones && (
-                <div style={styles.metaItem}>
-                  <FaEye size={12} />
-                  <span>{formatViews(post.visualizaciones)}</span>
-                </div>
-              )}
-            </div>
+            {showViews && post.visualizaciones && (
+              <div style={styles.metaItem}>
+                <FaEye size={12} />
+                <span>{formatViews(post.visualizaciones)}</span>
+              </div>
+            )}
           </div>
         </div>
       </article>
