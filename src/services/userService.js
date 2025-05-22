@@ -38,7 +38,7 @@ export const updateUserAvatar = async (avatarData) => {
   }
   
   try {
-    // Ahora que la ruta está habilitada en el backend
+    // Usamos la ruta correcta según userRoutes.js del backend
     const avatarUrl = `${API_URL}/api/users/avatar`;
     console.log('Enviando petición a:', avatarUrl);
     
@@ -47,6 +47,8 @@ export const updateUserAvatar = async (avatarData) => {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
+        // Añadimos también el x-auth-token para mayor compatibilidad
+        'x-auth-token': token
       },
       // Enviamos el avatarData directamente como lo espera el controlador
       body: JSON.stringify({ avatarData }),
@@ -88,6 +90,8 @@ export const updateUserProfile = async (profileData) => {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
+        // Añadimos también el x-auth-token para mayor compatibilidad
+        'x-auth-token': token
       },
       body: JSON.stringify(profileData),
     });
