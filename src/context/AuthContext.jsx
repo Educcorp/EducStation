@@ -1,17 +1,8 @@
 // src/context/AuthContext.jsx - Actualizado
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { login as loginService, logout as logoutService, refreshToken, register as registerService } from '../services/authService';
 
 export const AuthContext = createContext();
-
-// Hook personalizado para usar el contexto de autenticación
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
-  }
-  return context;
-};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

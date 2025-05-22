@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { comentarioService } from '../../services/comentarioService';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import ComentarioForm from './ComentarioForm';
 import ComentarioItem from './ComentarioItem';
 import { toast } from 'react-toastify';
