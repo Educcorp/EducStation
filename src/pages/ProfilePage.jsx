@@ -58,6 +58,67 @@ const ProfilePage = () => {
     fileInputRef.current.click();
   };
 
+  // Función para comprimir la imagen
+  const compressImage = (file, maxSizeKB = 500) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Calcular nuevas dimensiones manteniendo la relación de aspecto
+          const MAX_WIDTH = 800;
+          const MAX_HEIGHT = 800;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round(height * (MAX_WIDTH / width));
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = Math.round(width * (MAX_HEIGHT / height));
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Ajustar calidad basada en el tamaño del archivo
+          let quality = 0.7;
+          if (file.size > 1024 * 1024) {
+            quality = 0.5; // Para archivos mayores a 1MB
+          }
+          
+          // Convertir a JPEG para reducir tamaño
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          console.log(`Imagen comprimida: Original ${Math.round(file.size/1024)}KB, Comprimida ${Math.round(dataUrl.length/1024)}KB`);
+          resolve(dataUrl);
+        };
+        
+        img.onerror = (error) => {
+          reject(error);
+        };
+      };
+      
+      reader.onerror = (error) => {
+        reject(error);
+      };
+    });
+  };
+
   const handleFileChange = async (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -66,41 +127,32 @@ const ProfilePage = () => {
         setIsUploading(true);
         setErrorMessage('');
         
-        const reader = new FileReader();
+        // Comprimir la imagen antes de enviarla
+        const compressedImage = await compressImage(file);
         
-        reader.onloadend = async () => {
-          try {
-            console.log('Imagen convertida a base64, preparando envío al servidor');
-            
-            // Enviar directamente al servidor
-            const result = await updateUserAvatar(reader.result);
-            
-            // Actualizar el avatar en la interfaz con la respuesta del servidor
-            setUserProfile(prev => ({
-              ...prev,
-              avatar: reader.result // Usamos la imagen local para mostrarla de inmediato
-            }));
-            
-            console.log('Avatar actualizado correctamente en el servidor');
-            setIsUploading(false);
-          } catch (error) {
-            console.error('Error al actualizar el avatar:', error);
-            setErrorMessage(`Error al actualizar el avatar: ${error.message}`);
-            setIsUploading(false);
-          }
-        };
-
-        reader.onerror = (error) => {
-          console.error('Error en FileReader:', error);
-          setErrorMessage('Error al procesar la imagen. Por favor, intenta con otra imagen.');
+        try {
+          console.log('Imagen comprimida, preparando envío al servidor');
+          
+          // Enviar directamente al servidor
+          const result = await updateUserAvatar(compressedImage);
+          
+          // Actualizar el avatar en la interfaz con la respuesta del servidor
+          setUserProfile(prev => ({
+            ...prev,
+            avatar: compressedImage // Usamos la imagen comprimida para mostrarla de inmediato
+          }));
+          
+          console.log('Avatar actualizado correctamente en el servidor');
           setIsUploading(false);
-        };
-
-        reader.readAsDataURL(file);
+        } catch (error) {
+          console.error('Error al actualizar el avatar:', error);
+          setErrorMessage(`Error al actualizar el avatar: ${error.message}`);
+          setIsUploading(false);
+        }
       } catch (error) {
         console.error('Error al procesar la imagen:', error);
         setIsUploading(false);
-        setErrorMessage('Error al procesar la imagen. Por favor, intenta de nuevo.');
+        setErrorMessage('Error al procesar la imagen. Por favor, intenta con otra imagen.');
       }
     }
   };
