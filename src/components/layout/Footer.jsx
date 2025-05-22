@@ -150,7 +150,7 @@ const Footer = () => {
       alignItems: "center",
       
       borderRadius: "12px",
-      padding: `10px 58px 10px 38px`,
+      padding: `10px 58px 10px 48px`,
       boxShadow: `0 2px 12px 0 ${colors.secondary}11` ,
       background: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)',
       willChange: "box-shadow, background, color, transform",
@@ -159,7 +159,7 @@ const Footer = () => {
     },
     linkIcon: {
       marginRight: '20px',
-      marginLeft: '2px',
+      marginLeft: '10px',
       display: 'inline-flex',
       alignItems: 'center',
       color: '#ffffff',
