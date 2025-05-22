@@ -4,10 +4,10 @@ import { useAuth } from '../../context/AuthContext';
 import ComentarioForm from './ComentarioForm';
 import ComentarioItem from './ComentarioItem';
 import { toast } from 'react-toastify';
-import './Comentarios.css';
-import { FaRegComments } from 'react-icons/fa';
 import { FaPaperPlane } from 'react-icons/fa';
 import { BiMessageSquareDots } from 'react-icons/bi';
+import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 const ComentariosList = ({ postId }) => {
     const [comentarios, setComentarios] = useState([]);
@@ -15,6 +15,7 @@ const ComentariosList = ({ postId }) => {
     const [error, setError] = useState(null);
     const [orden, setOrden] = useState('reciente');
     const { user } = useAuth();
+    const { isDarkMode } = useTheme();
 
     const cargarComentarios = async () => {
         setLoading(true);
@@ -75,59 +76,176 @@ const ComentariosList = ({ postId }) => {
         }
     });
 
+    const styles = {
+        container: {
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.md,
+        },
+        formContainer: {
+            display: 'flex',
+            alignItems: 'flex-end',
+            gap: spacing.sm,
+            backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+            borderRadius: borderRadius.lg,
+            padding: spacing.md,
+            boxShadow: shadows.sm,
+            marginBottom: spacing.md,
+        },
+        textarea: {
+            flex: 1,
+            minHeight: '60px',
+            maxHeight: '120px',
+            border: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
+            borderRadius: borderRadius.md,
+            padding: spacing.sm,
+            fontSize: typography.fontSize.md,
+            backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+            color: isDarkMode ? colors.textLight : colors.textPrimary,
+            resize: 'vertical',
+            transition: 'all 0.3s ease',
+            '&:focus': {
+                outline: 'none',
+                borderColor: colors.primary,
+                boxShadow: `0 0 0 2px ${colors.primary}20`,
+            }
+        },
+        submitButton: {
+            backgroundColor: colors.primary,
+            color: colors.white,
+            border: 'none',
+            borderRadius: borderRadius.md,
+            padding: `${spacing.sm} ${spacing.md}`,
+            fontSize: typography.fontSize.lg,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+                backgroundColor: colors.primaryDark,
+                transform: 'translateY(-2px)',
+            }
+        },
+        filterContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: spacing.sm,
+            marginBottom: spacing.md,
+        },
+        filterLabel: {
+            color: isDarkMode ? colors.textLight : colors.textSecondary,
+            fontSize: typography.fontSize.sm,
+        },
+        filterSelect: {
+            padding: `${spacing.xs} ${spacing.sm}`,
+            borderRadius: borderRadius.md,
+            border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
+            backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+            color: isDarkMode ? colors.textLight : colors.textPrimary,
+            fontSize: typography.fontSize.sm,
+        },
+        loadingMessage: {
+            textAlign: 'center',
+            color: isDarkMode ? colors.textLight : colors.textSecondary,
+            padding: spacing.lg,
+            fontSize: typography.fontSize.md,
+        },
+        errorMessage: {
+            textAlign: 'center',
+            color: colors.error,
+            padding: spacing.lg,
+            fontSize: typography.fontSize.md,
+        },
+        retryButton: {
+            backgroundColor: colors.primary,
+            color: colors.white,
+            border: 'none',
+            borderRadius: borderRadius.md,
+            padding: `${spacing.sm} ${spacing.md}`,
+            fontSize: typography.fontSize.sm,
+            cursor: 'pointer',
+            marginTop: spacing.sm,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+                backgroundColor: colors.primaryDark,
+                transform: 'translateY(-2px)',
+            }
+        },
+        noComments: {
+            textAlign: 'center',
+            color: isDarkMode ? colors.textLight : colors.textSecondary,
+            padding: spacing.xl,
+            fontSize: typography.fontSize.md,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: spacing.sm,
+        }
+    };
+
     return (
-        <div className="comentarios-area-externa">
-            <div className="comentarios-header">
-                <span className="comentarios-header-title">Comentarios {comentarios.length}</span>
-            </div>
-            <div className="comentarios-area-interna">
-                {user && (
-                    <ComentarioForm 
-                        onSubmit={handleCrearComentario}
-                        postId={postId}
-                        icon={<FaPaperPlane />}
+        <div style={styles.container}>
+            {user && (
+                <div style={styles.formContainer}>
+                    <textarea
+                        style={styles.textarea}
+                        placeholder="Escribe tu comentario..."
+                        maxLength={500}
                     />
-                )}
-                <div className="comentarios-filtro">
-                    <label htmlFor="ordenComentarios">Ordenar por:</label>
-                    <select
-                        id="ordenComentarios"
-                        value={orden}
-                        onChange={e => setOrden(e.target.value)}
+                    <button 
+                        type="submit" 
+                        style={styles.submitButton}
+                        aria-label="Enviar comentario"
                     >
-                        <option value="reciente">Más reciente</option>
-                        <option value="antiguo">Más antiguo</option>
-                    </select>
+                        <FaPaperPlane />
+                    </button>
                 </div>
-                {loading ? (
-                    <div className="comentarios-loading">Cargando comentarios...</div>
-                ) : error ? (
-                    <div className="comentarios-error">
-                        {error}
-                        <br />
-                        <button className="btn-reintentar" onClick={cargarComentarios}>Reintentar</button>
-                    </div>
-                ) : (
-                    <div className="comentarios-list">
-                        {comentariosOrdenados.length === 0 ? (
-                            <div className="no-comentarios">
-                                <span className="no-comentarios-icon"><BiMessageSquareDots /></span>
-                                No hay comentarios todavía. ¡Sé el primero en comentar!
-                            </div>
-                        ) : (
-                            comentariosOrdenados.map(comentario => (
-                                <ComentarioItem
-                                    key={comentario.id}
-                                    comentario={comentario}
-                                    onDelete={handleEliminarComentario}
-                                    onUpdate={handleActualizarComentario}
-                                    currentUser={user}
-                                />
-                            ))
-                        )}
-                    </div>
-                )}
+            )}
+            
+            <div style={styles.filterContainer}>
+                <label style={styles.filterLabel} htmlFor="ordenComentarios">Ordenar por:</label>
+                <select
+                    id="ordenComentarios"
+                    value={orden}
+                    onChange={e => setOrden(e.target.value)}
+                    style={styles.filterSelect}
+                >
+                    <option value="reciente">Más reciente</option>
+                    <option value="antiguo">Más antiguo</option>
+                </select>
             </div>
+
+            {loading ? (
+                <div style={styles.loadingMessage}>Cargando comentarios...</div>
+            ) : error ? (
+                <div style={styles.errorMessage}>
+                    {error}
+                    <br />
+                    <button 
+                        style={styles.retryButton} 
+                        onClick={cargarComentarios}
+                    >
+                        Reintentar
+                    </button>
+                </div>
+            ) : comentarios.length === 0 ? (
+                <div style={styles.noComments}>
+                    <BiMessageSquareDots size={32} />
+                    <p>No hay comentarios todavía. ¡Sé el primero en comentar!</p>
+                </div>
+            ) : (
+                comentarios.map(comentario => (
+                    <ComentarioItem
+                        key={comentario.id}
+                        comentario={comentario}
+                        onDelete={handleEliminarComentario}
+                        onUpdate={handleActualizarComentario}
+                        currentUser={user}
+                    />
+                ))
+            )}
         </div>
     );
 };
