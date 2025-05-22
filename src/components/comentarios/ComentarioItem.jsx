@@ -31,7 +31,7 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate, currentUser }) => {
     const styles = {
         container: {
             backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-            borderRadius: borderRadius.xl,
+            borderRadius: '2.5rem',
             padding: spacing.xl,
             marginBottom: spacing.md,
             boxShadow: shadows.lg,
