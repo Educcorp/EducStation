@@ -244,11 +244,38 @@ export const deletePublicacion = async (id) => {
     }
 };
 
+// Obtener publicaciones del usuario autenticado
+export const getUserPublicaciones = async (limite = 5, offset = 0) => {
+  try {
+    const token = localStorage.getItem('userToken');
+    
+    if (!token) {
+      throw new Error('Usuario no autenticado');
+    }
+    
+    const response = await fetch(`${API_URL}/api/publicaciones/user/me?limite=${limite}&offset=${offset}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Error al obtener las publicaciones del usuario');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error en getUserPublicaciones:', error);
+    return []; // Devolver array vacío en caso de error
+  }
+};
+
 export default {
     getAllPublicaciones,
     getPublicacionById,
     createPublicacion,
     createPublicacionFromHTML,
     updatePublicacion,
-    deletePublicacion
+    deletePublicacion,
+    getUserPublicaciones
 }; 
