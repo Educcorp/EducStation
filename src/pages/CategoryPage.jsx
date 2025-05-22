@@ -437,7 +437,7 @@ const CategoryPage = () => {
     },
     contentWrapper: {
       display: "grid",
-      gridTemplateColumns: "1fr 300px",
+      gridTemplateColumns: "1fr",
       gap: spacing.xl,
       marginBottom: spacing.xxl,
       '@media (max-width: 768px)': {
@@ -450,13 +450,7 @@ const CategoryPage = () => {
       zIndex: 10
     },
     mainContent: {
-      position: 'relative',
-      zIndex: 10
-    },
-    sidebar: {
-      '@media (max-width: 768px)': {
-        order: -1
-      }
+      width: '100%'
     },
     filterBar: {
       display: "flex",
@@ -466,10 +460,10 @@ const CategoryPage = () => {
       flexWrap: "wrap",
       gap: spacing.md,
       padding: spacing.md,
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)',
+      backgroundColor: 'rgba(255,255,255,0.8)',
       borderRadius: borderRadius.md,
-      boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.05)',
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+      boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+      border: `1px solid rgba(0,0,0,0.05)`,
       backdropFilter: 'blur(8px)'
     },
     searchBox: {
@@ -481,11 +475,11 @@ const CategoryPage = () => {
       width: "100%",
       padding: `${spacing.sm} ${spacing.md} ${spacing.sm} ${spacing.xxl}`,
       borderRadius: borderRadius.md,
-      border: `2px solid ${isSearchFocused ? categoryColor : isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+      border: `2px solid ${isSearchFocused ? categoryColor : 'rgba(0,0,0,0.1)'}`,
       fontSize: typography.fontSize.sm,
       transition: transitions.default,
-      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(255, 255, 255, 0.8)',
-      color: isDarkMode ? colors.gray100 : colors.textPrimary,
+      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      color: colors.textPrimary,
       outline: 'none',
       boxShadow: isSearchFocused ? `0 0 0 3px ${categoryColor}33` : 'none'
     },
@@ -494,7 +488,7 @@ const CategoryPage = () => {
       left: spacing.md,
       top: "50%",
       transform: "translateY(-50%)",
-      color: isSearchFocused ? categoryColor : isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+      color: isSearchFocused ? categoryColor : 'rgba(0,0,0,0.5)',
       transition: transitions.default,
       fontSize: "16px"
     },
@@ -509,14 +503,14 @@ const CategoryPage = () => {
       borderRadius: borderRadius.lg,
       border: 'none',
       fontSize: typography.fontSize.md,
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.95)',
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      backgroundColor: 'rgba(255,255,255,0.95)',
+      color: colors.textPrimary,
       cursor: 'pointer',
       transition: transitions.default,
       boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
       '&:hover': {
-        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.15)' : categoryColor,
-        color: isDarkMode ? colors.textLight : '#ffffff'
+        backgroundColor: categoryColor,
+        color: '#ffffff'
       }
     },
     filterDropdown: {
@@ -525,12 +519,12 @@ const CategoryPage = () => {
       right: 0,
       marginTop: spacing.xs,
       width: '220px',
-      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : '#ffffff',
+      backgroundColor: 'rgba(255, 255, 255, 0.98)',
       borderRadius: borderRadius.md,
       boxShadow: '0 5px 15px rgba(0,0,0,0.2)',
       padding: spacing.sm,
       zIndex: 100,
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+      border: `1px solid rgba(0,0,0,0.05)`,
       animation: 'fadeIn 0.2s ease-out'
     },
     filterOption: {
@@ -543,12 +537,12 @@ const CategoryPage = () => {
       alignItems: 'center',
       justifyContent: 'space-between',
       '&:hover': {
-        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'
+        backgroundColor: 'rgba(0,0,0,0.05)'
       }
     },
     activeFilterOption: {
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : `${categoryColor}20`,
-      color: isDarkMode ? '#ffffff' : categoryColor,
+      backgroundColor: `${categoryColor}20`,
+      color: categoryColor,
       fontWeight: typography.fontWeight.medium
     },
     postsGrid: {
@@ -572,15 +566,15 @@ const CategoryPage = () => {
       width: "40px",
       height: "40px",
       borderRadius: borderRadius.md,
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#ffffff',
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      border: `1px solid rgba(0,0,0,0.1)`,
+      backgroundColor: '#ffffff',
+      color: colors.textPrimary,
       transition: transitions.default,
       cursor: "pointer",
       fontSize: typography.fontSize.sm,
       '&:hover': {
-        backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : `${categoryColor}20`,
-        borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : categoryColor,
+        backgroundColor: `${categoryColor}20`,
+        borderColor: categoryColor,
         transform: 'translateY(-2px)',
         boxShadow: `0 3px 8px ${categoryColor}30`
       },
@@ -600,84 +594,17 @@ const CategoryPage = () => {
         backgroundColor: getDarkerColor(categoryColor, 0.1)
       }
     },
-    relatedCategories: {
-      marginBottom: spacing.xl,
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)',
-      borderRadius: borderRadius.md,
-      padding: spacing.lg,
-      boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.05)',
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
-      position: 'relative',
-      overflow: 'hidden'
-    },
-    categoriesPattern: {
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      width: '150px',
-      height: '150px',
-      backgroundImage: `
-        radial-gradient(circle, ${categoryColor}20 10%, transparent 10%),
-        radial-gradient(circle, ${categoryColor}15 15%, transparent 15%)
-      `,
-      backgroundSize: '30px 30px',
-      backgroundPosition: '0 0, 15px 15px',
-      opacity: 0.5,
-      zIndex: 0,
-      transform: 'rotate(15deg)'
-    },
-    relatedCategoriesTitle: {
-      fontSize: typography.fontSize.lg,
-      fontWeight: typography.fontWeight.semiBold,
-      marginBottom: spacing.md,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      position: 'relative',
-      zIndex: 1,
-      display: 'inline-block',
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        bottom: '-5px',
-        left: '0',
-        width: '40px',
-        height: '3px',
-        backgroundColor: categoryColor,
-        borderRadius: '2px'
-      }
-    },
-    categoryList: {
-      display: "flex",
-      flexWrap: "wrap",
-      gap: spacing.sm,
-      position: 'relative',
-      zIndex: 1
-    },
-    categoryLink: {
-      display: "inline-block",
-      padding: `${spacing.xs} ${spacing.md}`,
-      borderRadius: borderRadius.round,
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.9)',
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      fontSize: typography.fontSize.sm,
-      textDecoration: "none",
-      transition: transitions.default,
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
-      '&:hover': {
-        backgroundColor: categoryColor,
-        color: '#ffffff',
-        boxShadow: `0 3px 8px ${categoryColor}40`,
-        transform: 'translateY(-2px)'
-      }
-    },
     newsletterBox: {
-      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)',
+      backgroundColor: 'rgba(255,255,255,0.8)',
       padding: spacing.lg,
       borderRadius: borderRadius.md,
       marginBottom: spacing.xl,
-      boxShadow: isDarkMode ? 'none' : '0 2px 10px rgba(0,0,0,0.05)',
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'}`,
+      boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+      border: `1px solid rgba(0,0,0,0.05)`,
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      maxWidth: '800px',
+      margin: '0 auto'
     },
     newsletterPattern: {
       position: 'absolute',
@@ -699,7 +626,7 @@ const CategoryPage = () => {
       fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.semiBold,
       marginBottom: spacing.sm,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      color: colors.textPrimary,
       position: 'relative',
       zIndex: 1,
       display: 'inline-block',
@@ -717,7 +644,7 @@ const CategoryPage = () => {
     newsletterText: {
       fontSize: typography.fontSize.sm,
       marginBottom: spacing.md,
-      color: isDarkMode ? colors.textLight : colors.textSecondary,
+      color: colors.textSecondary,
       position: 'relative',
       zIndex: 1
     },
@@ -731,10 +658,10 @@ const CategoryPage = () => {
     newsletterInput: {
       padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: borderRadius.md,
-      border: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+      border: `2px solid rgba(0,0,0,0.1)`,
       fontSize: typography.fontSize.sm,
-      backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.9)',
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      backgroundColor: 'rgba(255,255,255,0.9)',
+      color: colors.textPrimary,
       outline: 'none',
       transition: transitions.default,
       '&:focus': {
@@ -807,7 +734,7 @@ const CategoryPage = () => {
     noPostsMessage: {
       textAlign: "center",
       padding: spacing.xl,
-      color: isDarkMode ? colors.textLight : colors.textSecondary
+      color: colors.textSecondary
     },
     heroIcon: {
       position: 'absolute',
@@ -818,9 +745,9 @@ const CategoryPage = () => {
       zIndex: 4
     },
     dropdownButton: {
-      backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.2)' : 'rgba(255, 255, 255, 0.95)',
-      color: isDarkMode ? colors.textLight : colors.primary,
-      border: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      color: colors.primary,
+      border: `2px solid rgba(31, 78, 78, 0.1)`,
       borderRadius: borderRadius.lg,
       padding: `${spacing.md} ${spacing.xl}`,
       display: 'flex',
@@ -838,13 +765,13 @@ const CategoryPage = () => {
       top: 'calc(100% + 5px)',
       left: 0,
       width: '100%',
-      backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+      backgroundColor: 'rgba(255, 255, 255, 0.98)',
       borderRadius: borderRadius.lg,
       boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
       zIndex: 100,
       maxHeight: '300px',
       overflowY: 'auto',
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
+      border: `1px solid rgba(31, 78, 78, 0.1)`,
       padding: spacing.xs
     },
     dropdownItem: {
@@ -932,17 +859,23 @@ const CategoryPage = () => {
             <div 
               style={{
                 ...styles.dropdownItem,
-                backgroundColor: 'transparent',
-                color: colors.primary,
+                backgroundColor: !id ? getLighterColor(getCurrentCategoryColor(), 0.1) : 'transparent',
+                color: !id ? getCurrentCategoryColor() : colors.primary,
+                fontWeight: !id ? 600 : 400,
+                borderLeft: `3px solid ${!id ? getCurrentCategoryColor() : 'transparent'}`,
               }}
               onClick={() => handleCategorySelect('')}
               onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(31, 78, 78, 0.15)';
-                e.currentTarget.style.color = colors.primary;
+                if (id) {
+                  e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                  e.currentTarget.style.color = getCurrentCategoryColor();
+                }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent';
-                e.currentTarget.style.color = colors.primary;
+                if (id) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = colors.primary;
+                }
               }}
             >
               <span style={{
@@ -976,18 +909,18 @@ const CategoryPage = () => {
                   borderLeft: `3px solid ${parseInt(id) === category.ID_categoria ? getCurrentCategoryColor() : 'transparent'}`,
                 }}
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
-                onMouseEnter={(e) => {
-                  if (parseInt(id) !== category.ID_categoria) {
-                    e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
-                    e.currentTarget.style.color = categoryColors[category.ID_categoria];
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (parseInt(id) !== category.ID_categoria) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = colors.primary;
-                  }
-                }}
+                                onMouseEnter={(e) => {
+                if (parseInt(id) !== category.ID_categoria) {
+                  e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                  e.currentTarget.style.color = categoryColors[category.ID_categoria];
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (parseInt(id) !== category.ID_categoria) {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = colors.primary;
+                }
+              }}
               >
                 <span style={{
                   ...styles.dropdownIcon,
@@ -1308,7 +1241,10 @@ const CategoryPage = () => {
               <main style={{
                 ...styles.mainContent,
                 position: 'relative',
-                zIndex: 10
+                zIndex: 10,
+                width: '100%',
+                maxWidth: '1200px',
+                margin: '0 auto'
               }}>
                 <div 
                   style={{
@@ -1509,10 +1445,6 @@ const CategoryPage = () => {
                   </form>
                 </div>
               </main>
-              
-              <aside style={styles.sidebar}>
-                {/* El newsletter fue movido al final de los posts */}
-              </aside>
             </div>
           </>
         )}
