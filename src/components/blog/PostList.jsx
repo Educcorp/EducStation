@@ -4,7 +4,7 @@ import { getAllPublicaciones } from '../../services/publicacionesService';
 import { searchPublicaciones, searchByTags } from '../../services/searchService';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows } from '../../styles/theme';
-import { FaCalendarAlt, FaTag, FaEye, FaPlus } from 'react-icons/fa';
+import { FaCalendarAlt, FaTag, FaEye, FaPlus, FaUser } from 'react-icons/fa';
 import { getAllCategorias } from '../../services/categoriasServices';
 
 const POSTS_PER_PAGE = 6; // Número de posts por página
@@ -655,6 +655,7 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
                       color: isDarkMode ? 'rgba(255,255,255,0.6)' : colors.textSecondary,
                     }}>
                       <span style={{ marginRight: spacing.xs }}>
+                        <FaCalendarAlt style={{ marginRight: '5px', fontSize: '12px', opacity: 0.8 }} />
                         {new Date(post.Fecha_creacion).toLocaleDateString('es-ES', { 
                           day: '2-digit', 
                           month: 'short', 
@@ -669,7 +670,8 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
                       display: "flex",
                       alignItems: "center"
                     }}>
-                      {post.Autor || post.Nombre_usuario || "Autor"}
+                      <FaUser style={{ marginRight: '5px', fontSize: '12px', opacity: 0.8 }} />
+                      {post.NombreAdmin || "Admin"}
                     </div>
                   </div>
                 </div>
