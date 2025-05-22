@@ -7,12 +7,15 @@ import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { getUserProfile, updateUserAvatar } from '../services/userService';
+import { getUserPublicaciones } from '../services/publicacionesService';
 
 const ProfilePage = () => {
   const { user, isAuth } = useContext(AuthContext);
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
+  const [userPosts, setUserPosts] = useState([]);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -54,6 +57,25 @@ const ProfilePage = () => {
     };
 
     fetchUserProfile();
+  }, [isAuth]);
+
+  // Efecto para cargar las publicaciones del usuario
+  useEffect(() => {
+    const fetchUserPosts = async () => {
+      if (!isAuth) return;
+      
+      try {
+        setIsLoadingPosts(true);
+        const posts = await getUserPublicaciones();
+        setUserPosts(posts);
+      } catch (error) {
+        console.error('Error al cargar publicaciones del usuario:', error);
+      } finally {
+        setIsLoadingPosts(false);
+      }
+    };
+
+    fetchUserPosts();
   }, [isAuth]);
 
   const handleImageClick = () => {
@@ -157,6 +179,12 @@ const ProfilePage = () => {
         setErrorMessage('Error al procesar la imagen. Por favor, intenta con otra imagen.');
       }
     }
+  };
+
+  // Función para formatear fecha
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
   // Estilos
@@ -301,6 +329,97 @@ const ProfilePage = () => {
       fontSize: typography.fontSize.md,
       color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
       marginTop: spacing.xl
+    },
+    postsContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: spacing.md,
+      marginTop: spacing.md
+    },
+    postCard: {
+      display: 'flex',
+      flexDirection: 'row',
+      borderRadius: borderRadius.md,
+      overflow: 'hidden',
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      boxShadow: shadows.sm,
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+      border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.gray200}`,
+      '&:hover': {
+        transform: 'translateY(-2px)',
+        boxShadow: shadows.md
+      }
+    },
+    postImageContainer: {
+      width: '120px',
+      minWidth: '120px',
+      height: '120px',
+      overflow: 'hidden',
+      backgroundColor: isDarkMode ? '#121212' : colors.gray100,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    postImage: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover'
+    },
+    postContent: {
+      padding: spacing.md,
+      flex: 1
+    },
+    postTitle: {
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.bold,
+      marginBottom: spacing.xs,
+      color: isDarkMode ? colors.white : colors.textPrimary
+    },
+    postLink: {
+      color: 'inherit',
+      textDecoration: 'none',
+      '&:hover': {
+        textDecoration: 'underline',
+        color: colors.primary
+      }
+    },
+    postMeta: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      fontSize: typography.fontSize.sm,
+      color: isDarkMode ? colors.gray300 : colors.textSecondary,
+      marginBottom: spacing.xs
+    },
+    postDate: {
+      fontSize: typography.fontSize.xs
+    },
+    postStatus: {
+      display: 'flex',
+      alignItems: 'center',
+      fontSize: typography.fontSize.xs
+    },
+    postExcerpt: {
+      fontSize: typography.fontSize.sm,
+      marginBottom: spacing.xs,
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
+    },
+    postCategories: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: spacing.xs
+    },
+    categoryTag: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.secondary,
+      color: isDarkMode ? colors.white : colors.primary,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      fontSize: typography.fontSize.xs,
+      fontWeight: typography.fontWeight.medium
     }
   };
 
@@ -428,9 +547,75 @@ const ProfilePage = () => {
         <div style={styles.card}>
           <div style={styles.profileContent}>
             <h2 style={styles.sectionTitle}>Actividad reciente</h2>
-            <div style={styles.placeholder}>
-              Aquí se mostrará la actividad reciente del usuario cuando esta funcionalidad esté disponible.
-            </div>
+            {isLoadingPosts ? (
+              <div style={styles.loading}>
+                Cargando publicaciones...
+                <div 
+                  style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '50%',
+                    border: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : colors.gray200}`,
+                    borderTop: `2px solid ${isDarkMode ? colors.white : colors.primary}`,
+                    marginLeft: spacing.sm,
+                    animation: 'spin 1s linear infinite'
+                  }}
+                ></div>
+              </div>
+            ) : userPosts.length > 0 ? (
+              <div style={styles.postsContainer}>
+                {userPosts.map(post => (
+                  <div key={post.ID_publicaciones} style={styles.postCard}>
+                    {post.Imagen_portada && (
+                      <div style={styles.postImageContainer}>
+                        <img 
+                          src={post.Imagen_portada.startsWith('data:image') ? post.Imagen_portada : `data:image/jpeg;base64,${post.Imagen_portada}`} 
+                          alt={post.Titulo}
+                          style={styles.postImage}
+                        />
+                      </div>
+                    )}
+                    <div style={styles.postContent}>
+                      <h3 style={styles.postTitle}>
+                        <Link to={`/blog/post/${post.ID_publicaciones}`} style={styles.postLink}>
+                          {post.Titulo}
+                        </Link>
+                      </h3>
+                      <div style={styles.postMeta}>
+                        <span style={styles.postDate}>{formatDate(post.Fecha_creacion)}</span>
+                        <span style={styles.postStatus}>
+                          <span style={{
+                            display: 'inline-block',
+                            width: '8px',
+                            height: '8px',
+                            borderRadius: '50%',
+                            backgroundColor: post.Estado === 'publicado' ? '#4CAF50' : 
+                                            post.Estado === 'borrador' ? '#FF9800' : '#9E9E9E',
+                            marginRight: '5px'
+                          }}></span>
+                          {post.Estado === 'publicado' ? 'Publicado' : 
+                           post.Estado === 'borrador' ? 'Borrador' : 'Archivado'}
+                        </span>
+                      </div>
+                      {post.Resumen && (
+                        <p style={styles.postExcerpt}>{post.Resumen}</p>
+                      )}
+                      <div style={styles.postCategories}>
+                        {post.categorias && post.categorias.map(cat => (
+                          <span key={cat.ID_categoria} style={styles.categoryTag}>
+                            {cat.Nombre}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={styles.placeholder}>
+                No has creado publicaciones aún. Cuando crees contenido, aparecerá aquí.
+              </div>
+            )}
           </div>
         </div>
       </div>
