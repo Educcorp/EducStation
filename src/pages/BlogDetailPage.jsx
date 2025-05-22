@@ -16,6 +16,8 @@ const BlogDetailPage = () => {
   const [error, setError] = useState(null);
   const { colors, isDarkMode } = useTheme();
 
+  console.log('BlogDetailPage - ID del post en parámetros:', id);
+
   useEffect(() => {
     const fetchPost = async () => {
       try {
@@ -23,6 +25,11 @@ const BlogDetailPage = () => {
         const data = await getPublicacionById(id);
         setPost(data);
         setError(null);
+        
+        console.log('BlogDetailPage - Datos del post recibidos:', {
+          id: id,
+          postData: data
+        });
         
         // Actualizar título de la página
         document.title = `${data.Titulo} | EducStation`;
@@ -36,6 +43,10 @@ const BlogDetailPage = () => {
 
     if (id) {
       fetchPost();
+    } else {
+      console.error('BlogDetailPage - No se proporcionó ID en los parámetros de la URL');
+      setError('No se proporcionó un ID de publicación válido.');
+      setLoading(false);
     }
   }, [id]);
 

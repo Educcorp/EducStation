@@ -1,11 +1,22 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
 import ComentariosList from '../comentarios/ComentariosList';
 
 const PostDetail = ({ post }) => {
   const { colors, isDarkMode } = useTheme();
+  // Extraer el ID del post directamente de los parámetros de la URL
+  const { id: urlId } = useParams();
+  
+  // Asegurarse de que tenemos un ID válido, sea del objeto post o de la URL
+  const postId = post?.ID_post || urlId;
+  
+  console.log('ID del post para comentarios:', {
+    fromPost: post?.ID_post,
+    fromURL: urlId,
+    finalId: postId
+  });
 
   // Función para formatear la fecha
   const formatDate = (dateString) => {
@@ -193,7 +204,7 @@ const PostDetail = ({ post }) => {
       
       {/* Separador visual antes de los comentarios */}
       <div className="comentarios-separador"></div>
-      <ComentariosList postId={post.ID_post} />
+      <ComentariosList postId={postId} />
       
       <Link to="/blog" style={styles.backLink}>
         ← Volver al blog

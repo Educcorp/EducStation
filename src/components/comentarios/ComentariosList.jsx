@@ -7,8 +7,20 @@ import { FaPaperPlane } from 'react-icons/fa';
 import { BiMessageSquareDots } from 'react-icons/bi';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
+import { useParams } from 'react-router-dom';
 
-const ComentariosList = ({ postId }) => {
+const ComentariosList = ({ postId: propPostId }) => {
+    // Obtener el ID del post directamente de la URL si no se proporciona como prop
+    const { id: urlId } = useParams();
+    // Usar el ID proporcionado como prop o el ID de la URL
+    const postId = propPostId || urlId;
+    
+    console.log('ComentariosList - ID del post usado:', {
+        fromProps: propPostId,
+        fromURL: urlId,
+        finalId: postId
+    });
+
     const [comentarios, setComentarios] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -19,6 +31,7 @@ const ComentariosList = ({ postId }) => {
     const { isDarkMode } = useTheme();
 
     const cargarComentarios = async () => {
+        // Verificar que postId no sea undefined
         if (!postId) {
             setError('ID de publicación no válido');
             setLoading(false);
@@ -69,7 +82,7 @@ const ComentariosList = ({ postId }) => {
         try {
             const nuevoComentario = {
                 contenido: comentarioText,
-                publicacionId: postId,
+                postId: postId, // Usar el nombre correcto de campo
                 usuarioId: user.id,
                 nickname: user.username || user.name || 'Usuario'
             };

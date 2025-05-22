@@ -9,6 +9,11 @@ export const comentarioService = {
     // Obtener todos los comentarios de un post
     getComentariosByPost: async (publicacionId) => {
         try {
+            if (!publicacionId) {
+                console.error('Error: ID de publicación no proporcionado para obtener comentarios');
+                return [];
+            }
+            
             console.log('Obteniendo comentarios para la publicación:', publicacionId);
             const endpoint = `${API_URL}/comentarios/post/${publicacionId}`;
             console.log('Endpoint de comentarios:', endpoint);
@@ -37,7 +42,17 @@ export const comentarioService = {
             }
             
             const { publicacionId, postId, contenido, usuarioId, nickname } = comentarioData;
+            
             const idToUse = publicacionId || postId;
+            if (!idToUse) {
+                console.error('Error: No se proporcionó ID de publicación para crear comentario');
+                throw new Error('ID de publicación no válido');
+            }
+            
+            if (!contenido || !contenido.trim()) {
+                console.error('Error: Contenido de comentario vacío');
+                throw new Error('El contenido del comentario no puede estar vacío');
+            }
             
             console.log('Datos del comentario a enviar:', {
                 id: idToUse,
