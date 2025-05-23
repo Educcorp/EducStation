@@ -42,14 +42,14 @@ const Footer = () => {
 
   // Manejadores de eventos para el botón con referencias al tema actual
   const handleButtonMouseEnter = (e) => {
-    e.target.style.background = linear-gradient(90deg, ${colors.primaryLight} 60%, ${colors.secondary} 100%);
-    e.target.style.boxShadow = 0 0 24px 4px ${colors.secondary};
+    e.target.style.background = `linear-gradient(90deg, ${colors.primaryLight} 60%, ${colors.secondary} 100%)`;
+    e.target.style.boxShadow = `0 0 24px 4px ${colors.secondary}`;
     e.target.style.color = isDarkMode ? '#fff' : colors.primary;
   };
 
   const handleButtonMouseLeave = (e) => {
-    e.target.style.background = linear-gradient(90deg, ${colors.secondary} 60%, ${colors.primaryLight} 100%);
-    e.target.style.boxShadow = 0 0 8px 0 ${colors.secondary}33;
+    e.target.style.background = `linear-gradient(90deg, ${colors.secondary} 60%, ${colors.primaryLight} 100%)`;
+    e.target.style.boxShadow = `0 0 8px 0 ${colors.secondary}33`;
     e.target.style.color = isDarkMode ? '#fff' : colors.primary;
   };
 
@@ -60,13 +60,13 @@ const Footer = () => {
     // Quitamos backgroundColor y color del objeto de estilo
     // porque ahora lo aplicamos directamente al elemento con useEffect
     footer: {
-      padding: ${spacing.lg} 0 ${spacing.lg},
+      padding: `${spacing.lg} 0 ${spacing.lg}`,
       marginTop: spacing.lg,
     },
     container: {
       maxWidth: '1700px',
       margin: '0 auto',
-      padding: 0 ${spacing.lg},
+      padding: `0 ${spacing.lg}`,
     },
     grid: {
       display: "grid",
@@ -94,7 +94,7 @@ const Footer = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      backgroundImage: linear-gradient(135deg, ${colors.primaryLight} 60%, ${colors.secondary} 40%),
+      backgroundImage: `linear-gradient(135deg, ${colors.primaryLight} 60%, ${colors.secondary} 40%)`,
       borderRadius: "8px"
     },
     description: {
@@ -119,10 +119,10 @@ const Footer = () => {
       cursor: "pointer",
       fontSize: "22px",
       color: colors.white,
-      boxShadow: 0 4px 24px 0 ${colors.secondary}22,
+      boxShadow: `0 4px 24px 0 ${colors.secondary}22`,
       filter: "brightness(1.08)",
       backdropFilter: "blur(6px)",
-      border: 1.5px solid ${colors.secondary}33,
+      border: `1.5px solid ${colors.secondary}33`,
       willChange: "box-shadow, filter, background",
     },
     title: {
@@ -150,11 +150,11 @@ const Footer = () => {
       display: "flex",
       alignItems: "center",
       borderRadius: "8px",
-      padding: 8px 40px 8px 32px,
-      boxShadow: 0 2px 8px 0 ${colors.secondary}11,
+      padding: "8px 40px 8px 32px",
+      boxShadow: `0 2px 8px 0 ${colors.secondary}11`,
       background: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)',
       willChange: "box-shadow, background, color, transform",
-      border: 1px solid ${colors.secondary}22,
+      border: `1px solid ${colors.secondary}22`,
       minWidth: '140px',
     },
     linkIcon: {
@@ -185,7 +185,7 @@ const Footer = () => {
     },
     input: {
       flex: 1,
-      padding: ${spacing.sm} ${spacing.md},
+      padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: "4px 0 0 4px",
       border: "none",
       backgroundColor: "rgba(240, 248, 247, 0.1)",
@@ -199,14 +199,14 @@ const Footer = () => {
       }
     },
     button: {
-      padding: ${spacing.md} ${spacing.xl},
-      background: linear-gradient(90deg, ${colors.secondary} 60%, ${colors.primaryLight} 100%),
+      padding: `${spacing.md} ${spacing.xl}`,
+      background: `linear-gradient(90deg, ${colors.secondary} 60%, ${colors.primaryLight} 100%)`,
       color: isDarkMode ? '#fff' : colors.primary,
       border: "none",
       borderRadius: "12px",
       cursor: "pointer",
       transition: "all 0.3s cubic-bezier(.4,2,.6,1)",
-      boxShadow: 0 2px 16px 0 ${colors.secondary}33,
+      boxShadow: `0 2px 16px 0 ${colors.secondary}33`,
       fontWeight: 700,
       letterSpacing: "0.02em",
       willChange: "box-shadow, background, color",
@@ -215,7 +215,7 @@ const Footer = () => {
     },
     buttonGlow: {
       animation: "glow 1.5s alternate infinite",
-      boxShadow: 0 0 20px 2px ${colors.secondary},
+      boxShadow: `0 0 20px 2px ${colors.secondary}`,
     },
     message: {
       fontSize: typography.fontSize.sm,
@@ -225,7 +225,7 @@ const Footer = () => {
     bottom: {
       marginTop: spacing.xxl * 2,
       paddingTop: spacing.xl,
-      borderTop: 1px solid ${isDarkMode ? '#444' : 'rgba(240, 248, 247, 0.1)'},
+      borderTop: `1px solid ${isDarkMode ? '#444' : 'rgba(240, 248, 247, 0.1)'}`,
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -250,18 +250,18 @@ const Footer = () => {
       }
     },
     educationalTip: {
-      margin: ${spacing.lg} 0 ${spacing.lg} 0,
-      padding: ${spacing.sm} ${spacing.md},
+      margin: `${spacing.lg} 0 ${spacing.lg} 0`,
+      padding: `${spacing.sm} ${spacing.md}`,
       background: isDarkMode ? 'rgba(34,34,34,0.08)' : 'rgba(255,255,255,0.06)',
       color: isDarkMode ? colors.secondary : colors.primary,
       borderRadius: '12px',
       fontSize: typography.fontSize.sm,
       fontWeight: 500,
-      boxShadow: 0 2px 12px 0 ${colors.secondary}11,
+      boxShadow: `0 2px 12px 0 ${colors.secondary}11`,
       textAlign: 'center',
       letterSpacing: '0.01em',
       transition: transitions.default,
-      border: 1px solid ${colors.secondary}11,
+      border: `1px solid ${colors.secondary}11`,
       backdropFilter: 'blur(8px)',
       WebkitBackdropFilter: 'blur(8px)',
       maxWidth: '500px',
@@ -299,13 +299,13 @@ const Footer = () => {
   // --- HANDLERS MEJORADOS PARA EFECTOS GLOW Y ANIMACIONES ---
   const glowColor = isDarkMode ? '#7de2fc33' : '#b9ffb755'; // glow mucho más sutil
   const handleLinkMouseEnter = (e) => {
-    e.currentTarget.style.boxShadow = 0 0 16px 4px ${glowColor};
+    e.currentTarget.style.boxShadow = `0 0 16px 4px ${glowColor}`;
     e.currentTarget.style.background = isDarkMode ? 'rgba(35,64,79,0.85)' : 'rgba(185,255,183,0.55)'; // fondo pastel translúcido
     e.currentTarget.style.color = isDarkMode ? '#fff' : '#23404f';
     e.currentTarget.style.transform = 'scale(1.03)';
   };
   const handleLinkMouseLeave = (e) => {
-    e.currentTarget.style.boxShadow = 0 0 0 0 ${colors.secondary}00;
+    e.currentTarget.style.boxShadow = `0 0 0 0 ${colors.secondary}00`;
     e.currentTarget.style.background = isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)';
     e.currentTarget.style.color = isDarkMode ? '#fff' : colors.primary;
     e.currentTarget.style.transform = 'scale(1)';
@@ -381,19 +381,19 @@ const Footer = () => {
                   rel="noopener noreferrer"
                   style={{
                     ...styles.socialIcon,
-                    background: linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%),
-                    boxShadow: 0 4px 24px 0 ${social.colors.glow},
+                    background: `linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%)`,
+                    boxShadow: `0 4px 24px 0 ${social.colors.glow}`,
                     color: social.colors.primary === '#000000' ? '#fff' : '#fff'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = 0 8px 32px 0 ${social.colors.glow};
-                    e.currentTarget.style.background = linear-gradient(135deg, ${social.colors.secondary} 0%, ${social.colors.hover} 100%);
+                    e.currentTarget.style.boxShadow = `0 8px 32px 0 ${social.colors.glow}`;
+                    e.currentTarget.style.background = `linear-gradient(135deg, ${social.colors.secondary} 0%, ${social.colors.hover} 100%)`;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 0 4px 24px 0 ${social.colors.glow};
-                    e.currentTarget.style.background = linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%);
+                    e.currentTarget.style.boxShadow = `0 4px 24px 0 ${social.colors.glow}`;
+                    e.currentTarget.style.background = `linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%)`;
                   }}
                   aria-label={social.label}
                 >
