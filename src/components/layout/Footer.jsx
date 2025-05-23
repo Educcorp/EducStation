@@ -250,23 +250,25 @@ const Footer = () => {
       }
     },
     educationalTip: {
-      margin: `${spacing.xl} 0 0 0`,
-      padding: `${spacing.lg} ${spacing.xl}`,
+      margin: `${spacing.lg} 0 ${spacing.lg} 0`,
+      padding: `${spacing.sm} ${spacing.md}`,
       background: isDarkMode ? 'rgba(34,34,34,0.08)' : 'rgba(255,255,255,0.06)',
       color: isDarkMode ? colors.secondary : colors.primary,
-      borderRadius: '18px',
-      fontSize: typography.fontSize.lg,
-      fontWeight: 600,
-      boxShadow: `0 4px 32px 0 ${colors.secondary}11`,
+      borderRadius: '12px',
+      fontSize: typography.fontSize.sm,
+      fontWeight: 500,
+      boxShadow: `0 2px 12px 0 ${colors.secondary}11`,
       textAlign: 'center',
       letterSpacing: '0.01em',
       transition: transitions.default,
       border: `1px solid ${colors.secondary}11`,
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      maxWidth: '900px',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      maxWidth: '500px',
       marginLeft: 'auto',
       marginRight: 'auto',
+      marginTop: spacing.lg,
+      marginBottom: spacing.lg
     },
   };
 
@@ -346,8 +348,14 @@ const Footer = () => {
   ];
 
   return (
-    <footer ref={footerRef} style={styles.footer}>
-      <div style={styles.container}>
+    <footer ref={footerRef} style={{ ...styles.footer, position: 'relative', overflow: 'hidden' }}>
+      {/* SVG para la curva superior, perfectamente integrada y visible */}
+      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '48px', zIndex: 1, pointerEvents: 'none' }}>
+        <svg viewBox="0 0 1440 48" width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block' }}>
+          <path fill={isDarkMode ? '#222' : colors.primary} d="M0,36 Q720,0 1440,36 L1440,0 L0,0 Z" />
+        </svg>
+      </div>
+      <div style={{ ...styles.container, paddingTop: '48px', position: 'relative', zIndex: 2 }}>
         <div style={styles.grid}>
           {/* About Section */}
           <div>
