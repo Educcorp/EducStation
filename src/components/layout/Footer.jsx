@@ -349,30 +349,32 @@ const Footer = () => {
 
   return (
     <footer ref={footerRef} style={{ ...styles.footer, position: 'relative', overflow: 'hidden' }}>
-      {/* SVG para la curva superior, perfectamente integrada y visible */}
+      {/* SVG para la curva superior */}
       <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '48px', zIndex: 1, pointerEvents: 'none' }}>
         <svg viewBox="0 0 1440 48" width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block' }}>
           <path fill={isDarkMode ? '#222' : colors.primary} d="M0,36 Q720,0 1440,36 L1440,0 L0,0 Z" />
         </svg>
       </div>
       <div style={{ ...styles.container, paddingTop: '48px', position: 'relative', zIndex: 2 }}>
-        <div style={styles.grid}>
-          {/* About Section */}
-          <div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1.5fr',
+          gap: spacing.xl,
+          alignItems: 'flex-start',
+          justifyContent: 'center',
+          maxWidth: '1200px',
+          margin: '0 auto',
+        }}>
+          {/* Columna Izquierda: Logo, descripción y redes sociales */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: spacing.sm }}>
             <div style={styles.logo}>
               <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
-              <span style={{
-                color: isDarkMode ? '#fff' : colors.white,
-                marginLeft: spacing.sm,
-                fontWeight: typography.fontWeight.bold
-              }}>EducStation</span>
+              <span style={{ color: isDarkMode ? '#fff' : colors.white, marginLeft: spacing.sm, fontWeight: typography.fontWeight.bold }}>EducStation</span>
             </div>
             <p style={styles.description}>
-              Plataforma educativa dedicada al desarrollo profesional y personal
-              de educadores y estudiantes. Fomentamos la innovación, colaboración y
-              excelencia en el ámbito educativo.
+              Plataforma educativa dedicada al desarrollo profesional y personal de educadores y estudiantes. Fomentamos la innovación, colaboración y excelencia en el ámbito educativo.
             </p>
-            <div style={styles.social}>
+            <div style={{ ...styles.social, marginTop: 0 }}>
               {socialLinks.map((social, index) => (
                 <a
                   key={index}
@@ -403,10 +405,11 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links and Categories Combined */}
-          <div>
-            <h3 style={styles.title}>Descubre Más</h3>
-            <div style={{ display: 'flex', gap: spacing.lg }}>
+          {/* Columna Derecha: Enlaces y Categorías */}
+          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: spacing.xl, width: '100%' }}>
+            {/* Descubre Más */}
+            <div>
+              <h3 style={styles.title}>Descubre Más</h3>
               <ul style={styles.links}>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaHome size={18} /></span>
@@ -425,7 +428,10 @@ const Footer = () => {
                   <Link to="/contact#faq-section" style={styles.linkAnchor}>FAQ</Link>
                 </li>
               </ul>
-
+            </div>
+            {/* Categorías */}
+            <div>
+              <h3 style={styles.title}>Categorías</h3>
               <ul style={styles.links}>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaBook size={18} /></span>
@@ -447,12 +453,6 @@ const Footer = () => {
             </div>
           </div>
         </div>
-
-        {/* Educational Tip Section */}
-        <div style={styles.educationalTip}>
-          <span role="img" aria-label="idea">💡</span> "La educación es el arma más poderosa que puedes usar para cambiar el mundo." — Nelson Mandela
-        </div>
-
         {/* Bottom Section */}
         <div style={styles.bottom}>
           <div style={styles.copyright}>
