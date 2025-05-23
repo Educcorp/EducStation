@@ -1,9 +1,6 @@
 import axios from 'axios';
 
-// Obtener la URL base de la API
 const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app/api';
-
-console.log('URL de la API configurada:', API_URL);
 
 export const comentarioService = {
     // Obtener todos los comentarios de un post
@@ -16,7 +13,7 @@ export const comentarioService = {
             
             console.log('Obteniendo comentarios para la publicación:', publicacionId);
             const endpoint = `${API_URL}/comentarios/publicacion/${publicacionId}`;
-            console.log('Endpoint de comentarios (FIXED):', endpoint);
+            console.log('Endpoint de comentarios:', endpoint);
             
             const response = await axios.get(endpoint);
             console.log('Respuesta de comentarios recibida:', response.data);
@@ -31,51 +28,39 @@ export const comentarioService = {
             throw error.response?.data || error.message;
         }
     },
-
+    
     // Crear un nuevo comentario
     createComentario: async (comentarioData) => {
         try {
             const token = localStorage.getItem('userToken');
             if (!token) {
-                console.error('No se encontró token de autenticación');
                 throw new Error('No hay token de autenticación');
             }
             
-            const { publicacionId, postId, contenido, usuarioId, nickname } = comentarioData;
+            const { publicacionId, postId, contenido } = comentarioData;
             
+            // Usar publicacionId o postId, dependiendo de cuál esté disponible
             const idToUse = publicacionId || postId;
             if (!idToUse) {
-                console.error('Error: No se proporcionó ID de publicación para crear comentario');
                 throw new Error('ID de publicación no válido');
             }
             
             if (!contenido || !contenido.trim()) {
-                console.error('Error: Contenido de comentario vacío');
                 throw new Error('El contenido del comentario no puede estar vacío');
             }
             
             console.log('Datos del comentario a enviar:', {
                 id: idToUse,
                 contenido,
-                usuarioId,
-                nickname,
                 token: token ? `${token.substring(0, 10)}...` : null
             });
             
             const endpoint = `${API_URL}/comentarios/publicacion/${idToUse}`;
-            console.log('Endpoint para crear comentario (FIXED):', endpoint);
-            
-            const payload = {
-                contenido,
-                usuarioId,
-                nickname
-            };
-            
-            console.log('Payload enviado:', payload);
+            console.log('Endpoint para crear comentario:', endpoint);
             
             const response = await axios.post(
                 endpoint, 
-                payload,
+                { contenido },
                 {
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -88,17 +73,11 @@ export const comentarioService = {
             return response.data;
         } catch (error) {
             console.error('Error al crear comentario:', error);
-            console.error('Detalles del error:', {
-                mensaje: error.message,
-                respuesta: error.response?.data,
-                estatus: error.response?.status,
-                headers: error.response?.headers
-            });
             throw error.response?.data || error.message;
         }
     },
-
-    // Actualizar un comentario
+    
+    // Actualizar un comentario existente
     updateComentario: async (id, comentarioData) => {
         try {
             const token = localStorage.getItem('userToken');
@@ -112,19 +91,14 @@ export const comentarioService = {
                     'Content-Type': 'application/json'
                 }
             });
+            
             return response.data;
         } catch (error) {
             console.error('Error al actualizar comentario:', error);
-            console.error('Detalles del error:', {
-                mensaje: error.message,
-                respuesta: error.response?.data,
-                estatus: error.response?.status,
-                headers: error.response?.headers
-            });
             throw error.response?.data || error.message;
         }
     },
-
+    
     // Eliminar un comentario
     deleteComentario: async (id) => {
         try {
@@ -138,14 +112,10 @@ export const comentarioService = {
                     'Authorization': `Bearer ${token}`
                 }
             });
+            
             return response.data;
         } catch (error) {
             console.error('Error al eliminar comentario:', error);
-            console.error('Detalles del error:', {
-                mensaje: error.message,
-                respuesta: error.response?.data,
-                estatus: error.response?.status
-            });
             throw error.response?.data || error.message;
         }
     }

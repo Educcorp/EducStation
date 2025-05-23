@@ -5,7 +5,6 @@ import { useParams, Link } from 'react-router-dom';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
-import CommentSection from './CommentSection';
 import ReactionSection from './ReactionSection';
 // Importamos el archivo CSS específico para posts
 import '../../styles/posts.css';
@@ -263,18 +262,9 @@ const PostViewer = () => {
             border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
             marginBottom: spacing.xl
           }}>
-            <h2 style={{
-              fontSize: typography.fontSize.xl,
-              fontWeight: typography.fontWeight.bold,
-              color: isDarkMode ? colors.textLight : colors.textPrimary,
-              marginBottom: spacing.lg,
-              paddingBottom: spacing.sm,
-              borderBottom: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-            }}>
-              Comentarios
-            </h2>
-            <ComentariosList publicacionId={postId} />
+            <ComentariosList postId={postId} />
           </div>
+
         </main>
       </div>
       
