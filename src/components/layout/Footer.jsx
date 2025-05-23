@@ -60,8 +60,8 @@ const Footer = () => {
     // Quitamos backgroundColor y color del objeto de estilo
     // porque ahora lo aplicamos directamente al elemento con useEffect
     footer: {
-      padding: `${spacing.xxl} 0 ${spacing.xxl}`,
-      marginTop: spacing.xxl,
+      padding: `${spacing.lg} 0 ${spacing.lg}`,
+      marginTop: spacing.lg,
     },
     container: {
       maxWidth: '1700px',
@@ -70,8 +70,8 @@ const Footer = () => {
     },
     grid: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr 1fr",
-      gap: spacing.xl,
+      gridTemplateColumns: "1fr 1fr",
+      gap: spacing.lg,
       justifyContent: "center",
       alignItems: "flex-start",
       maxWidth: "2100px",
@@ -126,12 +126,12 @@ const Footer = () => {
       willChange: "box-shadow, filter, background",
     },
     title: {
-      fontSize: typography.fontSize.lg, // Aumentar tamaño del título
+      fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.bold,
-      marginBottom: spacing.md,
+      marginBottom: spacing.sm,
       color: isDarkMode ? '#fff' : colors.white,
-      textAlign: "center", // Centrar título
-      width: "100%" // Asegurar que ocupe todo el ancho
+      textAlign: "left",
+      width: "100%"
     },
     links: {
       listStyle: "none",
@@ -144,27 +144,26 @@ const Footer = () => {
       alignItems: "flex-start" // Alinear los elementos a la izquierda dentro del contenedor centrado
     },
     link: {
-      marginBottom: spacing.sm,
+      marginBottom: spacing.xs,
       transition: transitions.default,
-      fontSize: typography.fontSize.md,
+      fontSize: typography.fontSize.sm,
       display: "flex",
       alignItems: "center",
-      
-      borderRadius: "12px",
-      padding: `10px 58px 10px 48px`,
-      boxShadow: `0 2px 12px 0 ${colors.secondary}11` ,
+      borderRadius: "8px",
+      padding: `8px 40px 8px 32px`,
+      boxShadow: `0 2px 8px 0 ${colors.secondary}11`,
       background: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)',
       willChange: "box-shadow, background, color, transform",
-      border: `1.5px solid ${colors.secondary}22`,
-      minWidth: '160px',
+      border: `1px solid ${colors.secondary}22`,
+      minWidth: '140px',
     },
     linkIcon: {
-      marginRight: '20px',
-      marginLeft: '10px',
+      marginRight: '12px',
+      marginLeft: '8px',
       display: 'inline-flex',
       alignItems: 'center',
       color: '#ffffff',
-      fontSize: '22px',
+      fontSize: '18px',
       transition: transitions.default,
     },
     linkAnchor: {
@@ -352,12 +351,7 @@ const Footer = () => {
         <div style={styles.grid}>
           {/* About Section */}
           <div>
-            <div
-              style={styles.logo}
-              onClick={() => (window.location.href = "/")}
-              onMouseEnter={(e) => (e.currentTarget.style.color = colors.secondary)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = isDarkMode ? '#fff' : colors.white)}
-            >
+            <div style={styles.logo}>
               <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
               <span style={{
                 color: isDarkMode ? '#fff' : colors.white,
@@ -401,172 +395,48 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Quick Links and Categories Combined */}
           <div>
-            <h3 style={styles.title}>Enlaces Rápidos</h3>
-            <ul style={styles.links}>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaHome size={22} /></span>
-                <Link
-                  to="/"
-                  style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Inicio
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaInfo size={22} /></span>
-                <Link
-                  to="/about"
-                  style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/about"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Acerca de
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaEnvelope size={22} /></span>
-                <Link
-                  to="/contact"
-                  style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/contact"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Contacto
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaQuestionCircle size={22} /></span>
-                <Link
-                  to="/contact#faq-section"
-                  style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/contact#faq-section"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  FAQ
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaTags size={22} /></span>
-                <Link
-                  to="/categorias"
-                  style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/categorias"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Categorías
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaGlobe size={22} /></span>
-                <Link
-                  to="/blog"
-                  style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/blog"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Blog
-                </Link>
-              </li>
-            </ul>
-          </div>
+            <h3 style={styles.title}>Descubre Más</h3>
+            <div style={{ display: 'flex', gap: spacing.lg }}>
+              <ul style={styles.links}>
+                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                  <span style={styles.linkIcon}><FaHome size={18} /></span>
+                  <Link to="/" style={styles.linkAnchor}>Inicio</Link>
+                </li>
+                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                  <span style={styles.linkIcon}><FaInfo size={18} /></span>
+                  <Link to="/about" style={styles.linkAnchor}>Acerca de</Link>
+                </li>
+                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                  <span style={styles.linkIcon}><FaEnvelope size={18} /></span>
+                  <Link to="/contact" style={styles.linkAnchor}>Contacto</Link>
+                </li>
+                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                  <span style={styles.linkIcon}><FaQuestionCircle size={18} /></span>
+                  <Link to="/contact#faq-section" style={styles.linkAnchor}>FAQ</Link>
+                </li>
+              </ul>
 
-          {/* Categories */}
-          <div>
-            <h3 style={styles.title}>Categorías</h3>
-            <ul style={styles.links}>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaBook size={22} /></span>
-                <Link
-                  to="/categoria/1"
-                  style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/1"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Noticias
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaChartBar size={22} /></span>
-                <Link
-                  to="/categoria/2"
-                  style={styles.linkAnchor}
-                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/2"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Técnicas de Estudio
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaAward size={22} /></span>
-                <Link
-                  to="/categoria/6"
-                  style={{ ...styles.linkAnchor, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: 'none' }}
-                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/6"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Desarrollo Profesional Docente
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaUsers size={22} /></span>
-                <Link
-                  to="/categoria/7"
-                  style={{ ...styles.linkAnchor, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: 'none' }}
-                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/7"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Comunidad y Colaboración
-                </Link>
-              </li>
-              <li style={{ ...styles.link, paddingLeft: 0 }}
-                onMouseEnter={handleLinkMouseEnter}
-                onMouseLeave={handleLinkMouseLeave}>
-                <span style={styles.linkIcon}><FaCog size={22} /></span>
-                <Link
-                  to="/categoria/5"
-                  style={{ ...styles.linkAnchor, whiteSpace: 'nowrap', overflow: 'visible', maxWidth: 'none' }}
-                  onClick={e => { e.preventDefault(); window.location.href = "/categoria/5"; }}
-                  onMouseEnter={e => e.currentTarget.style.color = colors.secondary}
-                  onMouseLeave={e => e.currentTarget.style.color = colors.gray200}
-                >
-                  Herramientas Tecnológicas
-                </Link>
-              </li>
-            </ul>
+              <ul style={styles.links}>
+                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                  <span style={styles.linkIcon}><FaBook size={18} /></span>
+                  <Link to="/categoria/1" style={styles.linkAnchor}>Noticias</Link>
+                </li>
+                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                  <span style={styles.linkIcon}><FaChartBar size={18} /></span>
+                  <Link to="/categoria/2" style={styles.linkAnchor}>Técnicas de Estudio</Link>
+                </li>
+                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                  <span style={styles.linkIcon}><FaAward size={18} /></span>
+                  <Link to="/categoria/6" style={styles.linkAnchor}>Desarrollo Profesional</Link>
+                </li>
+                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                  <span style={styles.linkIcon}><FaUsers size={18} /></span>
+                  <Link to="/categoria/7" style={styles.linkAnchor}>Comunidad</Link>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -581,42 +451,9 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
           <div style={styles.bottomLinks}>
-            <Link
-              to="/terms"
-              style={{ ...styles.bottomLink }}
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = "/terms";
-              }}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
-            >
-              Términos
-            </Link>
-            <Link
-              to="/privacy"
-              style={{ ...styles.bottomLink }}
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = "/privacy";
-              }}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
-            >
-              Privacidad
-            </Link>
-            <Link
-              to="/cookies"
-              style={{ ...styles.bottomLink }}
-              onClick={(e) => {
-                e.preventDefault();
-                window.location.href = "/cookies";
-              }}
-              onMouseEnter={(e) => e.target.style.color = colors.secondary}
-              onMouseLeave={(e) => e.target.style.color = colors.gray200}
-            >
-              Cookies
-            </Link>
+            <Link to="/terms" style={styles.bottomLink}>Términos</Link>
+            <Link to="/privacy" style={styles.bottomLink}>Privacidad</Link>
+            <Link to="/cookies" style={styles.bottomLink}>Cookies</Link>
           </div>
         </div>
       </div>
