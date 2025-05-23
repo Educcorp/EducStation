@@ -1,8 +1,17 @@
 // src/context/AuthContext.jsx - Actualizado
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { login as loginService, logout as logoutService, refreshToken, register as registerService } from '../services/authService';
 
 export const AuthContext = createContext();
+
+// Hook personalizado para acceder al contexto de autenticación
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+  }
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -11,6 +20,9 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
   // Nuevo estado para el superusuario
   const [isSuperUser, setIsSuperUser] = useState(false);
+
+  // Para compatibilidad con los componentes existentes
+  const isAuthenticated = isAuth;
 
   useEffect(() => {
     // Verificar si hay un token en localStorage cuando la aplicación se carga
@@ -170,7 +182,8 @@ export const AuthProvider = ({ children }) => {
   return (
     <AuthContext.Provider value={{ 
       user, 
-      isAuth, 
+      isAuth,
+      isAuthenticated, // Agregar alias para compatibilidad
       loading, 
       error,
       isSuperUser,
