@@ -886,94 +886,65 @@ const BlogPage = () => {
     );
   };
 
-    return (      <div style={styles.container}>        <style>{`          @keyframes fadeIn {            from { opacity: 0; transform: translateY(10px); }            to { opacity: 1; transform: translateY(0); }          }        `}</style>        <Header />
-      <main style={styles.main}>
-        <section style={styles.hero}>
-          <div style={styles.heroBackground}></div>
-          <div style={styles.heroDecoration}></div>
-          <div style={styles.decorativeDot1}></div>
-          <div style={styles.decorativeDot2}></div>
-          <div style={styles.decorativeDot3}></div>
-          <div style={styles.heroContent}>
-            <h1 style={styles.heroTitle}>
-              Blog EducStation
-              <div style={styles.titleUnderline}></div>
-            </h1>
-            <p style={styles.heroSubtitle}>
-              Descubre artículos, tutoriales y recursos sobre educación y tecnología
-            </p>
-          </div>
-        </section>
+    return (
+      <div style={{ ...styles.container, backgroundColor: '#e6f0ea', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header />
+        <main style={styles.main}>
+          <section style={styles.hero}>
+            <div style={styles.heroBackground}></div>
+            <div style={styles.heroDecoration}></div>
+            <div style={styles.decorativeDot1}></div>
+            <div style={styles.decorativeDot2}></div>
+            <div style={styles.decorativeDot3}></div>
+            <div style={styles.heroContent}>
+              <h1 style={styles.heroTitle}>
+                Blog EducStation
+                <div style={styles.titleUnderline}></div>
+              </h1>
+              <p style={styles.heroSubtitle}>
+                Descubre artículos, tutoriales y recursos sobre educación y tecnología
+              </p>
+            </div>
+          </section>
 
-        <div style={styles.contentContainer}>
-          <div style={styles.filtersContainer}>
-            <div style={styles.searchInputContainer}>
-              <FaSearch style={styles.searchIcon} size={18} />
-              <input
-                type="text"
-                placeholder="Buscar publicaciones..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                style={styles.searchInput}
+          <div style={styles.contentContainer}>
+            <div style={styles.filtersContainer}>
+              <div style={styles.searchInputContainer}>
+                <FaSearch style={styles.searchIcon} size={18} />
+                <input
+                  type="text"
+                  placeholder="Buscar publicaciones..."
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  style={styles.searchInput}
+                />
+              </div>
+              
+              <div style={styles.categorySelectContainer}>
+                <CategoryDropdown />
+              </div>
+              
+              <div style={styles.categorySelectContainer}>
+                <SortDropdown />
+              </div>
+            </div>
+
+            <div ref={postListRef}>
+              <PostList 
+                limit={12} 
+                categoryFilter={selectedCategory}
+                searchTerm={searchTerm}
+                className="blog-post-cards"
+                sortOrder={sortOrder}
               />
             </div>
-            
-            <div style={styles.categorySelectContainer}>
-              <CategoryDropdown />
-            </div>
-            
-            <div style={styles.categorySelectContainer}>
-              <SortDropdown />
-            </div>
-          </div>
 
-          <div ref={postListRef}>
-            <PostList 
-              limit={12} 
-              categoryFilter={selectedCategory}
-              searchTerm={searchTerm}
-              className="blog-post-cards"
-              sortOrder={sortOrder}
-            />
+            <CategoryPromo />
           </div>
-
-          <CategoryPromo />
-        </div>
-      </main>
-      <Footer />
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-          }
-          
-          @keyframes fadeUpIn {
-            from {
-              opacity: 0;
-              transform: translateY(20px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-          
-          .blog-post-card {
-            animation: fadeUpIn 0.6s ease forwards;
-            animation-delay: calc(0.1s * var(--animation-order, 0));
-            opacity: 0;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background-color: transparent;
-          }
-          
-          .blog-post-card:hover {
-            transform: translateY(-5px) !important;
-          }
-        `}
-      </style>
-    </div>
-  );
+        </main>
+        <Footer />
+      </div>
+    );
 };
 
 export default BlogPage;

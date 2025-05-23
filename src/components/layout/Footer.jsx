@@ -3,7 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, transitions } from '../../styles/theme';
-import { FaHome, FaInfo, FaEnvelope, FaQuestionCircle, FaPenSquare, FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaList, FaTags, FaGlobe } from 'react-icons/fa';
+import { FaHome, FaInfo, FaEnvelope, FaQuestionCircle, FaPenSquare, FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaList, FaTags, FaGlobe, FaGithub, FaLinkedin } from 'react-icons/fa';
+import { SiX } from 'react-icons/si';
 
 const Footer = () => {
   const { isDarkMode, colors } = useTheme(); // Obtener colores actualizados del contexto
@@ -309,15 +310,27 @@ const Footer = () => {
     e.currentTarget.style.transform = 'scale(1)';
   };
 
+  const socialLinks = [
+    {
+      icon: <FaGithub />,
+      url: 'https://github.com/Educcorp/EducStation',
+      label: 'GitHub'
+    },
+    {
+      icon: <SiX />,
+      url: 'https://twitter.com/EducStation',
+      label: 'X (Twitter)'
+    },
+    {
+      icon: <FaLinkedin />,
+      url: 'https://www.linkedin.com/in/educcorp-inc-158297356/',
+      label: 'LinkedIn'
+    }
+  ];
+
   return (
-    <footer ref={footerRef} style={{ ...styles.footer, marginTop: 0, paddingTop: 0 }}>
-      {/* SVG para la curva superior, más pronunciada y sin margen verde arriba */}
-      <div style={{ position: 'relative', width: '100%', height: '120px', overflow: 'hidden', marginBottom: '-1px' }}>
-        <svg viewBox="0 0 1440 120" width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block' }}>
-          <path fill={isDarkMode ? '#222' : colors.primary} d="M0,80 C400,160 1040,0 1440,80 L1440,0 L0,0 Z"></path>
-        </svg>
-      </div>
-      <div style={{ ...styles.container, paddingTop: '0' }}>
+    <footer ref={footerRef} style={styles.footer}>
+      <div style={styles.container}>
         <div style={styles.grid}>
           {/* About Section */}
           <div>
@@ -340,22 +353,28 @@ const Footer = () => {
               excelencia en el ámbito educativo.
             </p>
             <div style={styles.social}>
-              <a
-                href="https://x.com/EducCorp"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ ...styles.socialIcon }}
-                onMouseEnter={(e) => { e.target.style.backgroundColor = colors.secondary; e.target.style.boxShadow = `0 0 16px 2px ${colors.secondary}`; }}
-                onMouseLeave={(e) => { e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"; e.target.style.boxShadow = `0 0 8px 0 ${colors.secondary}33`; }}
-              >T</a>
-              <a
-                href="https://www.linkedin.com/in/educcorp-inc-158297356/"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ ...styles.socialIcon }}
-                onMouseEnter={(e) => { e.target.style.backgroundColor = colors.secondary; e.target.style.boxShadow = `0 0 16px 2px ${colors.secondary}`; }}
-                onMouseLeave={(e) => { e.target.style.backgroundColor = "rgba(240, 248, 247, 0.1)"; e.target.style.boxShadow = `0 0 8px 0 ${colors.secondary}33`; }}
-              >in</a>
+              {socialLinks.map((social, index) => (
+                <a
+                  key={index}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={styles.socialIcon}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.boxShadow = `0 8px 32px 0 ${colors.secondary}44`;
+                    e.currentTarget.style.background = `linear-gradient(135deg, ${colors.primaryLight} 0%, ${colors.secondary} 100%)`;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = `0 4px 24px 0 ${colors.secondary}22`;
+                    e.currentTarget.style.background = 'rgba(240, 248, 247, 0.18)';
+                  }}
+                  aria-label={social.label}
+                >
+                  {social.icon}
+                </a>
+              ))}
             </div>
           </div>
 
