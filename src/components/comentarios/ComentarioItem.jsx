@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrash, FaSave, FaTimes } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaSave, FaTimes, FaUser, FaReply, FaThumbsUp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useTheme } from '../../context/ThemeContext';
-import { spacing, typography, borderRadius } from '../../styles/theme';
+import './Comentarios.css';
 
 const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(comentario.contenido || comentario.Contenido || '');
   const [isCurrentUser, setIsCurrentUser] = useState(false);
   const { user } = useAuth();
-  const { colors, isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
     // Verificar si el comentario pertenece al usuario actual
@@ -56,138 +56,101 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
     }
   };
 
-  const styles = {
-    comentarioItem: {
-      padding: spacing.md,
-      marginBottom: spacing.md,
-      borderRadius: borderRadius.md,
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
-      border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'}`,
-    },
-    header: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: spacing.sm,
-    },
-    usuario: {
-      fontWeight: typography.fontWeight.bold,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-    },
-    fecha: {
-      fontSize: typography.fontSize.xs,
-      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : colors.textSecondary,
-    },
-    contenido: {
-      fontSize: typography.fontSize.md,
-      lineHeight: 1.5,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      whiteSpace: 'pre-wrap',
-      wordBreak: 'break-word',
-    },
-    textarea: {
-      width: '100%',
-      minHeight: '80px',
-      padding: spacing.sm,
-      borderRadius: borderRadius.sm,
-      border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : colors.gray300}`,
-      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : colors.white,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      fontSize: typography.fontSize.md,
-      resize: 'vertical',
-      marginBottom: spacing.sm,
-    },
-    actions: {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      gap: spacing.sm,
-      marginTop: spacing.sm,
-    },
-    actionButton: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.xs,
-      padding: `${spacing.xs} ${spacing.sm}`,
-      borderRadius: borderRadius.sm,
-      border: 'none',
-      cursor: 'pointer',
-      fontSize: typography.fontSize.sm,
-      transition: 'all 0.2s ease',
-    },
-    editButton: {
-      backgroundColor: colors.info,
-      color: colors.white,
-    },
-    deleteButton: {
-      backgroundColor: colors.error,
-      color: colors.white,
-    },
-    saveButton: {
-      backgroundColor: colors.success,
-      color: colors.white,
-    },
-    cancelButton: {
-      backgroundColor: colors.gray500,
-      color: colors.white,
-    },
+  // Obtener iniciales para avatar de fallback
+  const getInitials = (name) => {
+    if (!name) return '?';
+    const parts = name.split(' ');
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
   };
 
+  // Determinar si hay una imagen de avatar disponible
+  const userNickname = comentario.usuarioNombre || comentario.Nickname || 'Usuario';
+  const avatarUrl = user && isCurrentUser ? user.avatar : null;
+  const hasAvatar = !!avatarUrl;
+  const userInitials = getInitials(userNickname);
+
   return (
-    <div style={styles.comentarioItem}>
-      <div style={styles.header}>
-        <div style={styles.usuario}>
-          {comentario.usuarioNombre || comentario.Nickname || 'Usuario'}
+    <div className="comentario-item">
+      <div className="comentario-header">
+        <div className="comentario-avatar">
+          {hasAvatar ? (
+            <img src={avatarUrl} alt={`Avatar de ${userNickname}`} />
+          ) : (
+            userInitials
+          )}
         </div>
-        <div style={styles.fecha}>
-          {formatDate(comentario.Fecha_publicacion || comentario.fechaCreacion || new Date())}
+        <div className="comentario-info">
+          <div className="comentario-author">
+            {userNickname}
+          </div>
+          <div className="comentario-date">
+            {formatDate(comentario.Fecha_publicacion || comentario.fechaCreacion || new Date())}
+          </div>
         </div>
       </div>
 
       {isEditing ? (
-        <>
+        <div className="comentario-edit-form">
           <textarea
-            style={styles.textarea}
+            className="comentario-edit-textarea"
             value={editedContent}
             onChange={(e) => setEditedContent(e.target.value)}
+            placeholder="Editar comentario..."
             autoFocus
           />
-          <div style={styles.actions}>
+          <div className="comentario-edit-btns">
             <button
-              style={{ ...styles.actionButton, ...styles.saveButton }}
+              className="comentario-save-btn"
               onClick={handleSave}
               disabled={!editedContent.trim()}
             >
               <FaSave /> Guardar
             </button>
             <button
-              style={{ ...styles.actionButton, ...styles.cancelButton }}
+              className="comentario-cancel-btn"
               onClick={handleCancel}
             >
               <FaTimes /> Cancelar
             </button>
           </div>
-        </>
+        </div>
       ) : (
         <>
-          <div style={styles.contenido}>
+          <div className="comentario-content">
             {comentario.contenido || comentario.Contenido}
           </div>
-          {isCurrentUser && (
-            <div style={styles.actions}>
-              <button
-                style={{ ...styles.actionButton, ...styles.editButton }}
-                onClick={handleEdit}
-              >
-                <FaEdit /> Editar
-              </button>
-              <button
-                style={{ ...styles.actionButton, ...styles.deleteButton }}
-                onClick={handleDelete}
-              >
-                <FaTrash /> Eliminar
-              </button>
-            </div>
-          )}
+          <div className="comentario-actions">
+            {isCurrentUser ? (
+              <>
+                <button
+                  className="comentario-action-btn"
+                  onClick={handleEdit}
+                  title="Editar comentario"
+                >
+                  <FaEdit /> Editar
+                </button>
+                <button
+                  className="comentario-action-btn"
+                  onClick={handleDelete}
+                  title="Eliminar comentario"
+                >
+                  <FaTrash /> Eliminar
+                </button>
+              </>
+            ) : (
+              <>
+                <button className="comentario-action-btn" title="Me gusta">
+                  <FaThumbsUp /> Me gusta
+                </button>
+                <button className="comentario-action-btn" title="Responder">
+                  <FaReply /> Responder
+                </button>
+              </>
+            )}
+          </div>
         </>
       )}
     </div>
