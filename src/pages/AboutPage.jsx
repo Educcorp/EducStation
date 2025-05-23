@@ -311,7 +311,7 @@ const AboutPage = () => {
   return (
     <div 
     //className={animate?"page-animation" : ""}
-      style={{ fontFamily: typography.fontFamily, backgroundColor: '#e6f0ea' }}>
+      style={{ fontFamily: typography.fontFamily, backgroundColor: colors.background }}>
       <Header />
       
       <main>
