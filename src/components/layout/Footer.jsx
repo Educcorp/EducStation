@@ -310,8 +310,14 @@ const Footer = () => {
   };
 
   return (
-    <footer ref={footerRef} style={styles.footer}>
-      <div style={styles.container}>
+    <footer ref={footerRef} style={{ ...styles.footer, marginTop: 0, paddingTop: 0 }}>
+      {/* SVG para la curva superior, más pronunciada y sin margen verde arriba */}
+      <div style={{ position: 'relative', width: '100%', height: '120px', overflow: 'hidden', marginBottom: '-1px' }}>
+        <svg viewBox="0 0 1440 120" width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block' }}>
+          <path fill={isDarkMode ? '#222' : colors.primary} d="M0,80 C400,160 1040,0 1440,80 L1440,0 L0,0 Z"></path>
+        </svg>
+      </div>
+      <div style={{ ...styles.container, paddingTop: '0' }}>
         <div style={styles.grid}>
           {/* About Section */}
           <div>
