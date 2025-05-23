@@ -137,12 +137,6 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       height: "100%",
       border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}`,
     },
-    categoryLine: {
-      height: "4px",
-      width: "100%",
-      backgroundColor: getCategoryColor(post),
-      transition: "all 0.3s ease",
-    },
     imageContainer: {
       position: "relative",
       width: "100%",
@@ -260,11 +254,6 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <article style={styles.card}>
-        {/* Línea de color de categoría */}
-        {showCategory && (
-          <div style={styles.categoryLine}></div>
-        )}
-        
         {/* Contenedor de imagen */}
         <div style={styles.imageContainer}>
           {renderPortadaImage()}
