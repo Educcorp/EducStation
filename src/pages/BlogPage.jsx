@@ -46,11 +46,11 @@ const BlogPage = () => {
         }
       });
     }, { threshold: 0.1 });
-    
+
     if (postListRef.current) {
       observer.observe(postListRef.current);
     }
-    
+
     return () => observer.disconnect();
   }, []);
 
@@ -81,7 +81,7 @@ const BlogPage = () => {
         setSortDropdownOpen(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
@@ -242,6 +242,12 @@ const BlogPage = () => {
       }
     },
     categorySelectContainer: {
+      flex: '0 1 300px',
+      position: 'relative',
+      display: 'flex',
+      alignItems: 'center'
+    },
+    sortSelectContainer: {
       flex: '0 1 250px',
       position: 'relative',
       display: 'flex',
@@ -292,14 +298,14 @@ const BlogPage = () => {
       top: 'calc(100% + 5px)',
       left: 0,
       width: '100%',
-      backgroundColor: isDarkMode ? 'rgba(31, 78, 78, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+      backgroundColor: 'rgba(255, 255, 255, 0.98)',
       borderRadius: borderRadius.lg,
       boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
       zIndex: 100,
       maxHeight: '300px',
       overflowY: 'auto',
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
-      padding: spacing.xs
+      border: `1px solid rgba(31, 78, 78, 0.1)`,
+      padding: spacing.md
     },
     dropdownItem: {
       padding: `${spacing.sm} ${spacing.md}`,
@@ -449,7 +455,7 @@ const BlogPage = () => {
 
   const CategoryPromo = () => {
     return (
-      <div 
+      <div
         style={{
           backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.1)' : 'rgba(31, 147, 111, 0.05)',
           borderRadius: borderRadius.xl,
@@ -470,7 +476,7 @@ const BlogPage = () => {
         onClick={() => navigate('/categorias')}
       >
         <div>
-          <h3 
+          <h3
             style={{
               color: isDarkMode ? colors.secondary : colors.primary,
               fontSize: typography.fontSize.xl,
@@ -482,7 +488,7 @@ const BlogPage = () => {
           >
             <FaTags /> Explora Nuestras Categorías
           </h3>
-          <p 
+          <p
             style={{
               color: isDarkMode ? colors.gray300 : colors.textSecondary,
               fontSize: typography.fontSize.md,
@@ -492,7 +498,7 @@ const BlogPage = () => {
             Descubre contenido educativo diverso y de calidad. Navega por nuestras categorías especializadas y encuentra recursos que impulsen tu desarrollo profesional.
           </p>
         </div>
-        <div 
+        <div
           style={{
             backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)',
             borderRadius: borderRadius.circle,
@@ -505,9 +511,9 @@ const BlogPage = () => {
             transform: hoveredPromo ? 'rotate(15deg)' : 'rotate(0deg)'
           }}
         >
-          <FaArrowRight 
-            size={32} 
-            color={isDarkMode ? colors.secondary : colors.primary} 
+          <FaArrowRight
+            size={32}
+            color={isDarkMode ? colors.secondary : colors.primary}
           />
         </div>
       </div>
@@ -537,7 +543,7 @@ const BlogPage = () => {
       6: '#3D5A80', // Desarrollo Profesional Docente
       7: '#F18F01'  // Comunidad y Colaboración
     };
-    
+
     // Function to get lighter color variation
     const getLighterColor = (color, factor = 0.2) => {
       // Convert hex to rgb
@@ -545,12 +551,12 @@ const BlogPage = () => {
       let r = parseInt(hex.substring(0, 2), 16);
       let g = parseInt(hex.substring(2, 4), 16);
       let b = parseInt(hex.substring(4, 6), 16);
-      
+
       // Lighten
       r = Math.min(255, r + (255 - r) * factor);
       g = Math.min(255, g + (255 - g) * factor);
       b = Math.min(255, b + (255 - b) * factor);
-      
+
       // Convert back to hex
       return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
     };
@@ -574,11 +580,11 @@ const BlogPage = () => {
       }
       setCategoryDropdownOpen(false);
     };
-    
+
     return (
       <div ref={categoryDropdownRef} style={{ position: 'relative', width: '100%' }}>
-        <button 
-          onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)} 
+        <button
+          onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
@@ -587,21 +593,32 @@ const BlogPage = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaFilter style={{ 
-              marginRight: spacing.md, 
-              color: getCurrentCategoryColor(), 
-              fontSize: '1rem' 
+            <FaFilter style={{
+              marginRight: spacing.md,
+              color: getCurrentCategoryColor(),
+              fontSize: '1rem'
             }} />
-            <span style={{ 
+            <span style={{
               color: getCurrentCategoryColor(),
               fontWeight: 600
             }}>
-              {selectedCategory 
-                ? categories.find(c => c.ID_categoria === parseInt(selectedCategory))?.Nombre || 'Categoría' 
+              {selectedCategory
+                ? (() => {
+                  const categoryNames = {
+                    1: 'Noticias',
+                    2: 'Técnicas de Estudio',
+                    3: 'Problemáticas en el Estudio',
+                    4: 'Educación de Calidad',
+                    5: 'Herramientas Tecnológicas',
+                    6: 'Desarrollo Profesional Docente',
+                    7: 'Comunidad y Colaboración'
+                  };
+                  return categoryNames[parseInt(selectedCategory)] || 'Categoría';
+                })()
                 : 'Todas las categorías'}
             </span>
           </div>
-          <div style={{ 
+          <div style={{
             color: getCurrentCategoryColor(),
             transition: 'transform 0.3s ease',
             transform: categoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
@@ -609,7 +626,7 @@ const BlogPage = () => {
             ▼
           </div>
         </button>
-        
+
         {categoryDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
@@ -617,25 +634,23 @@ const BlogPage = () => {
             backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
-            <div 
+            <div
               style={{
                 ...styles.dropdownItem,
-                backgroundColor: selectedCategory === '' 
-                  ? getLighterColor(getCurrentCategoryColor(), 0.1)
-                  : 'transparent',
-                color: selectedCategory === '' ? getCurrentCategoryColor() : colors.primary,
-                fontWeight: selectedCategory === '' ? 600 : 400,
-                borderLeft: `3px solid ${selectedCategory === '' ? getCurrentCategoryColor() : 'transparent'}`,
+                backgroundColor: !selectedCategory ? getLighterColor(getCurrentCategoryColor(), 0.1) : 'transparent',
+                color: !selectedCategory ? getCurrentCategoryColor() : colors.primary,
+                fontWeight: !selectedCategory ? 600 : 400,
+                borderLeft: `3px solid ${!selectedCategory ? getCurrentCategoryColor() : 'transparent'}`,
               }}
               onClick={() => handleCategorySelect('')}
               onMouseEnter={(e) => {
-                if (selectedCategory !== '') {
+                if (selectedCategory) {
                   e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
                   e.currentTarget.style.color = getCurrentCategoryColor();
                 }
               }}
               onMouseLeave={(e) => {
-                if (selectedCategory !== '') {
+                if (selectedCategory) {
                   e.currentTarget.style.backgroundColor = 'transparent';
                   e.currentTarget.style.color = colors.primary;
                 }
@@ -643,67 +658,77 @@ const BlogPage = () => {
             >
               <span style={{
                 ...styles.dropdownIcon,
-                backgroundColor: `${getCurrentCategoryColor()}33`,
+                backgroundColor: 'rgba(31, 78, 78, 0.2)',
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: getCurrentCategoryColor(),
+                color: colors.primary,
               }}>
                 <FaFilter size={14} />
               </span>
               Todas las categorías
             </div>
-            
-            {categories.map(category => {
-              const isSelected = selectedCategory === category.ID_categoria.toString();
-              const categoryColor = categoryColors[category.ID_categoria] || colors.primary;
-              
-              return (
-                <div 
-                  key={category.ID_categoria}
-                  style={{
-                    ...styles.dropdownItem,
-                    backgroundColor: isSelected ? getLighterColor(categoryColor, 0.1) : 'transparent',
-                    color: isSelected ? categoryColor : (isDarkMode ? colors.textLight : colors.textDark),
-                    fontWeight: isSelected ? 600 : 400,
-                    borderLeft: `3px solid ${isSelected ? categoryColor : 'transparent'}`,
-                  }}
-                  onClick={() => handleCategorySelect(category.ID_categoria.toString())}
-                  onMouseEnter={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = `${categoryColor}15`;
-                      e.currentTarget.style.color = categoryColor;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                      e.currentTarget.style.color = isDarkMode ? colors.textLight : colors.textDark;
-                    }
-                  }}
-                >
-                  <span style={{
-                    ...styles.dropdownIcon,
-                    backgroundColor: `${categoryColor}33`,
-                    width: '28px',
-                    height: '28px',
-                    borderRadius: '50%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: categoryColor,
-                  }}>
-                    {categoryIcons[category.ID_categoria] || <FaTag size={14} />}
-                  </span>
-                  {category.Nombre}
-                </div>
-              );
-            })}
-            
-            <div 
+
+            {categories.map(category => (
+              <div
+                key={category.ID_categoria}
+                style={{
+                  ...styles.dropdownItem,
+                  backgroundColor: parseInt(selectedCategory) === category.ID_categoria
+                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
+                    : 'transparent',
+                  color: parseInt(selectedCategory) === category.ID_categoria
+                    ? categoryColors[category.ID_categoria]
+                    : colors.primary,
+                  fontWeight: parseInt(selectedCategory) === category.ID_categoria ? 600 : 400,
+                  borderLeft: `3px solid ${parseInt(selectedCategory) === category.ID_categoria ? getCurrentCategoryColor() : 'transparent'}`,
+                }}
+                onClick={() => handleCategorySelect(category.ID_categoria.toString())}
+                onMouseEnter={(e) => {
+                  if (parseInt(selectedCategory) !== category.ID_categoria) {
+                    e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                    e.currentTarget.style.color = categoryColors[category.ID_categoria];
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (parseInt(selectedCategory) !== category.ID_categoria) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = colors.primary;
+                  }
+                }}
+              >
+                <span style={{
+                  ...styles.dropdownIcon,
+                  backgroundColor: `${categoryColors[category.ID_categoria]}33`,
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: categoryColors[category.ID_categoria],
+                }}>
+                  {categoryIcons[category.ID_categoria] || <FaTag size={14} />}
+                </span>
+                {(() => {
+                  const categoryNames = {
+                    1: 'Noticias',
+                    2: 'Técnicas de Estudio',
+                    3: 'Problemáticas en el Estudio',
+                    4: 'Educación de Calidad',
+                    5: 'Herramientas Tecnológicas',
+                    6: 'Desarrollo Profesional Docente',
+                    7: 'Comunidad y Colaboración'
+                  };
+                  return categoryNames[category.ID_categoria] || category.Nombre || category.nombre || `Categoría ${category.ID_categoria}`;
+                })()}
+              </div>
+            ))}
+
+            <div
               style={{
                 ...styles.dropdownItem,
                 backgroundColor: 'rgba(31, 147, 111, 0.1)',
@@ -743,7 +768,7 @@ const BlogPage = () => {
       </div>
     );
   };
-  
+
   // Sort dropdown component
   const SortDropdown = () => {
     const sortOptions = [
@@ -751,7 +776,7 @@ const BlogPage = () => {
       { value: 'antiguos', label: 'Más antiguos', icon: <FaSort /> },
       { value: 'alfabetico', label: 'Alfabéticamente', icon: <FaSort /> }
     ];
-    
+
     // Function to get current category color
     const getCurrentCategoryColor = () => {
       if (selectedCategory) {
@@ -769,7 +794,7 @@ const BlogPage = () => {
       }
       return '#1A936F'; // Default color
     };
-    
+
     // Function to get lighter color variation
     const getLighterColor = (color, factor = 0.2) => {
       // Convert hex to rgb
@@ -777,25 +802,25 @@ const BlogPage = () => {
       let r = parseInt(hex.substring(0, 2), 16);
       let g = parseInt(hex.substring(2, 4), 16);
       let b = parseInt(hex.substring(4, 6), 16);
-      
+
       // Lighten
       r = Math.min(255, r + (255 - r) * factor);
       g = Math.min(255, g + (255 - g) * factor);
       b = Math.min(255, b + (255 - b) * factor);
-      
+
       // Convert back to hex
       return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
     };
-    
+
     const handleSortSelect = (value) => {
       setSortOrder(value);
       setSortDropdownOpen(false);
     };
-    
+
     return (
       <div ref={sortDropdownRef} style={{ position: 'relative', width: '100%' }}>
-        <button 
-          onClick={() => setSortDropdownOpen(!sortDropdownOpen)} 
+        <button
+          onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
@@ -804,19 +829,19 @@ const BlogPage = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaSort style={{ 
-              marginRight: spacing.md, 
-              color: getCurrentCategoryColor(), 
-              fontSize: '1rem' 
+            <FaSort style={{
+              marginRight: spacing.md,
+              color: getCurrentCategoryColor(),
+              fontSize: '1rem'
             }} />
-            <span style={{ 
+            <span style={{
               color: getCurrentCategoryColor(),
               fontWeight: 600
             }}>
               {sortOptions.find(option => option.value === sortOrder)?.label || 'Ordenar por'}
             </span>
           </div>
-          <div style={{ 
+          <div style={{
             color: getCurrentCategoryColor(),
             transition: 'transform 0.3s ease',
             transform: sortDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
@@ -824,7 +849,7 @@ const BlogPage = () => {
             ▼
           </div>
         </button>
-        
+
         {sortDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
@@ -834,16 +859,16 @@ const BlogPage = () => {
           }}>
             {sortOptions.map(option => {
               const isSelected = sortOrder === option.value;
-              
+
               return (
-                <div 
+                <div
                   key={option.value}
                   style={{
                     ...styles.dropdownItem,
-                    backgroundColor: isSelected 
+                    backgroundColor: isSelected
                       ? getLighterColor(getCurrentCategoryColor(), 0.1)
                       : 'transparent',
-                    color: isSelected 
+                    color: isSelected
                       ? getCurrentCategoryColor()
                       : colors.primary,
                     fontWeight: isSelected ? 600 : 400,
@@ -886,63 +911,63 @@ const BlogPage = () => {
     );
   };
 
-    return (      <div style={styles.container}>        <style>{`          @keyframes fadeIn {            from { opacity: 0; transform: translateY(10px); }            to { opacity: 1; transform: translateY(0); }          }        `}</style>        <Header />
-      <main style={styles.main}>
-        <section style={styles.hero}>
-          <div style={styles.heroBackground}></div>
-          <div style={styles.heroDecoration}></div>
-          <div style={styles.decorativeDot1}></div>
-          <div style={styles.decorativeDot2}></div>
-          <div style={styles.decorativeDot3}></div>
-          <div style={styles.heroContent}>
-            <h1 style={styles.heroTitle}>
-              Blog EducStation
-              <div style={styles.titleUnderline}></div>
-            </h1>
-            <p style={styles.heroSubtitle}>
-              Descubre artículos, tutoriales y recursos sobre educación y tecnología
-            </p>
-          </div>
-        </section>
+  return (<div style={styles.container}>        <style>{`          @keyframes fadeIn {            from { opacity: 0; transform: translateY(10px); }            to { opacity: 1; transform: translateY(0); }          }        `}</style>        <Header />
+    <main style={styles.main}>
+      <section style={styles.hero}>
+        <div style={styles.heroBackground}></div>
+        <div style={styles.heroDecoration}></div>
+        <div style={styles.decorativeDot1}></div>
+        <div style={styles.decorativeDot2}></div>
+        <div style={styles.decorativeDot3}></div>
+        <div style={styles.heroContent}>
+          <h1 style={styles.heroTitle}>
+            Blog EducStation
+            <div style={styles.titleUnderline}></div>
+          </h1>
+          <p style={styles.heroSubtitle}>
+            Descubre artículos, tutoriales y recursos sobre educación y tecnología
+          </p>
+        </div>
+      </section>
 
-        <div style={styles.contentContainer}>
-          <div style={styles.filtersContainer}>
-            <div style={styles.searchInputContainer}>
-              <FaSearch style={styles.searchIcon} size={18} />
-              <input
-                type="text"
-                placeholder="Buscar publicaciones..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                style={styles.searchInput}
-              />
-            </div>
-            
-            <div style={styles.categorySelectContainer}>
-              <CategoryDropdown />
-            </div>
-            
-            <div style={styles.categorySelectContainer}>
-              <SortDropdown />
-            </div>
-          </div>
-
-          <div ref={postListRef}>
-            <PostList 
-              limit={12} 
-              categoryFilter={selectedCategory}
-              searchTerm={searchTerm}
-              className="blog-post-cards"
-              sortOrder={sortOrder}
+      <div style={styles.contentContainer}>
+        <div style={styles.filtersContainer}>
+          <div style={styles.searchInputContainer}>
+            <FaSearch style={styles.searchIcon} size={18} />
+            <input
+              type="text"
+              placeholder="Buscar publicaciones..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              style={styles.searchInput}
             />
           </div>
 
-          <CategoryPromo />
+          <div style={styles.categorySelectContainer}>
+            <CategoryDropdown />
+          </div>
+
+          <div style={styles.sortSelectContainer}>
+            <SortDropdown />
+          </div>
         </div>
-      </main>
-      <Footer />
-      <style>
-        {`
+
+        <div ref={postListRef}>
+          <PostList
+            limit={12}
+            categoryFilter={selectedCategory}
+            searchTerm={searchTerm}
+            className="blog-post-cards"
+            sortOrder={sortOrder}
+          />
+        </div>
+
+        <CategoryPromo />
+      </div>
+    </main>
+    <Footer />
+    <style>
+      {`
           @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -971,8 +996,8 @@ const BlogPage = () => {
             transform: translateY(-5px) !important;
           }
         `}
-      </style>
-    </div>
+    </style>
+  </div>
   );
 };
 
