@@ -4,8 +4,9 @@ import { toast } from 'react-toastify';
 import ComentarioItem from './ComentarioItem';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useTheme } from '../../context/ThemeContext';
-import { FaSync } from 'react-icons/fa';
-import { spacing, typography, borderRadius } from '../../styles/theme';
+import { FaSync, FaSpinner, FaPaperPlane, FaExclamationTriangle, FaSignInAlt, FaSort } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
+import './Comentarios.css';
 
 const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId }) => {
   // Usar el ID proporcionado, ya sea postId o publicacionId
@@ -25,7 +26,6 @@ const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId 
   const [orden, setOrden] = useState('reciente'); // 'reciente' o 'antiguo'
   
   const { isAuthenticated, user } = useAuth();
-  const { colors, isDarkMode } = useTheme();
   
   const cargarComentarios = async () => {
     try {
@@ -134,112 +134,14 @@ const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId 
     }
   });
 
-  const styles = {
-    container: {
-      marginTop: spacing.lg,
-    },
-    title: {
-      fontSize: typography.fontSize.xl,
-      fontWeight: typography.fontWeight.bold,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      marginBottom: spacing.md,
-    },
-    form: {
-      marginBottom: spacing.xl,
-    },
-    textarea: {
-      width: '100%',
-      minHeight: '100px',
-      padding: spacing.md,
-      borderRadius: borderRadius.md,
-      border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : colors.gray300}`,
-      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : colors.white,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      fontSize: typography.fontSize.md,
-      resize: 'vertical',
-      marginBottom: spacing.sm,
-    },
-    submitButton: {
-      backgroundColor: colors.primary,
-      color: colors.white,
-      border: 'none',
-      borderRadius: borderRadius.md,
-      padding: `${spacing.sm} ${spacing.lg}`,
-      fontSize: typography.fontSize.md,
-      fontWeight: typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-    },
-    disabledButton: {
-      opacity: 0.7,
-      cursor: 'not-allowed',
-    },
-    filterContainer: {
-      display: 'flex',
-      alignItems: 'center',
-      marginBottom: spacing.md,
-    },
-    filterLabel: {
-      marginRight: spacing.sm,
-      fontSize: typography.fontSize.sm,
-      color: isDarkMode ? colors.textLight : colors.textSecondary,
-    },
-    select: {
-      padding: `${spacing.xs} ${spacing.sm}`,
-      borderRadius: borderRadius.sm,
-      border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : colors.gray300}`,
-      backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : colors.white,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      fontSize: typography.fontSize.sm,
-    },
-    loadingContainer: {
-      textAlign: 'center',
-      padding: spacing.lg,
-      color: isDarkMode ? colors.textLight : colors.textSecondary,
-    },
-    errorContainer: {
-      padding: spacing.md,
-      backgroundColor: isDarkMode ? 'rgba(220, 53, 69, 0.2)' : 'rgba(220, 53, 69, 0.1)',
-      borderRadius: borderRadius.md,
-      color: colors.error,
-      marginBottom: spacing.lg,
-    },
-    refreshButton: {
-      backgroundColor: 'transparent',
-      border: 'none',
-      color: isDarkMode ? colors.textLight : colors.primary,
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.xs,
-      fontSize: typography.fontSize.sm,
-      marginLeft: 'auto',
-    },
-    emptyMessage: {
-      textAlign: 'center',
-      padding: spacing.lg,
-      color: isDarkMode ? colors.textLight : colors.textSecondary,
-      fontSize: typography.fontSize.md,
-      fontStyle: 'italic',
-    },
-    loginMessage: {
-      textAlign: 'center',
-      padding: spacing.md,
-      backgroundColor: isDarkMode ? 'rgba(0, 123, 255, 0.2)' : 'rgba(0, 123, 255, 0.1)',
-      borderRadius: borderRadius.md,
-      color: isDarkMode ? colors.textLight : colors.primary,
-      marginBottom: spacing.lg,
-    },
-  };
-
   return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>Comentarios</h2>
+    <div className="comentarios-container">
+      <h2 className="comentarios-title">Comentarios</h2>
       
       {isAuthenticated ? (
-        <form style={styles.form} onSubmit={handleCrearComentario}>
+        <form className="comentarios-form" onSubmit={handleCrearComentario}>
           <textarea
-            style={styles.textarea}
+            className="comentarios-textarea"
             placeholder="Escribe tu comentario..."
             required
             value={comentarioText}
@@ -248,72 +150,71 @@ const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId 
           />
           <button
             type="submit"
-            style={{
-              ...styles.submitButton,
-              ...(isSubmitting || !comentarioText.trim() ? styles.disabledButton : {})
-            }}
+            className={`comentarios-submit ${isSubmitting ? 'comentarios-submit-disabled' : ''}`}
             disabled={isSubmitting || !comentarioText.trim()}
-            aria-label="Enviar comentario"
           >
-            {isSubmitting ? 'Enviando...' : 'Enviar comentario'}
+            {isSubmitting ? <FaSpinner /> : <FaPaperPlane />}
+            {isSubmitting ? 'Publicando...' : 'Publicar comentario'}
           </button>
         </form>
       ) : (
-        <div style={styles.loginMessage}>
-          Inicia sesión para dejar un comentario
+        <div className="comentarios-login-message">
+          <p>Inicia sesión para dejar un comentario</p>
+          <Link to="/login">
+            <FaSignInAlt /> Iniciar sesión
+          </Link>
         </div>
       )}
       
-      <div style={styles.filterContainer}>
-        <label style={styles.filterLabel} htmlFor="ordenComentarios">Ordenar por:</label>
-        <select
-          id="ordenComentarios"
-          style={styles.select}
-          value={orden}
-          onChange={(e) => setOrden(e.target.value)}
-        >
-          <option value="reciente">Más recientes primero</option>
-          <option value="antiguo">Más antiguos primero</option>
-        </select>
-        
-        <button
-          style={styles.refreshButton}
-          onClick={cargarComentarios}
-          disabled={isLoading}
-        >
-          <FaSync style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} />
-          Actualizar
-        </button>
-      </div>
-      
-      {isLoading ? (
-        <div style={styles.loadingContainer}>
-          Cargando comentarios...
-        </div>
-      ) : error ? (
-        <div style={styles.errorContainer}>
+      {error && (
+        <div className="comentarios-error">
+          <FaExclamationTriangle />
           <p>{error}</p>
-          <button
-            style={styles.refreshButton}
-            onClick={cargarComentarios}
+        </div>
+      )}
+      
+      {comentarios.length > 0 && (
+        <div className="comentarios-filter">
+          <span className="comentarios-filter-label">Ordenar por:</span>
+          <select
+            className="comentarios-filter-select"
+            value={orden}
+            onChange={(e) => setOrden(e.target.value)}
           >
-            <FaSync /> Reintentar
+            <option value="reciente">Más recientes</option>
+            <option value="antiguo">Más antiguos</option>
+          </select>
+          
+          <button
+            className="comentarios-refresh"
+            onClick={cargarComentarios}
+            title="Actualizar comentarios"
+          >
+            <FaSync /> Actualizar
           </button>
         </div>
-      ) : comentarios.length === 0 ? (
-        <div style={styles.emptyMessage}>
-          <p>Aún no hay comentarios en esta publicación. ¡Sé el primero en comentar!</p>
+      )}
+      
+      {isLoading ? (
+        <div className="comentarios-loading">
+          <FaSpinner />
+          <p>Cargando comentarios...</p>
         </div>
+      ) : comentariosOrdenados.length > 0 ? (
+        <ul className="comentarios-list">
+          {comentariosOrdenados.map((comentario) => (
+            <ComentarioItem
+              key={comentario.ID_comentario || comentario.id}
+              comentario={comentario}
+              onDelete={handleEliminarComentario}
+              onUpdate={handleActualizarComentario}
+            />
+          ))}
+        </ul>
       ) : (
-        comentariosOrdenados.map((comentario, index) => (
-          <ComentarioItem
-            key={comentario.ID_comentario || comentario.id || index}
-            comentario={comentario}
-            onDelete={handleEliminarComentario}
-            onUpdate={handleActualizarComentario}
-            currentUser={user}
-          />
-        ))
+        <div className="comentarios-empty">
+          <p>Aún no hay comentarios. ¡Sé el primero en comentar!</p>
+        </div>
       )}
     </div>
   );

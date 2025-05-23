@@ -184,7 +184,8 @@ const AboutPage = () => {
     {
       name: 'Damian Valencia',
       role: 'Desarrollador Web',
-      image: '/assets/images/faces/Damian.png', // Ruta relativa correcta
+      image: '/assets/images/faces/Damian.png',
+      github: 'https://github.com/Dami-Val',
       bio: (
         <button
           onClick={() => window.open('https://github.com/Dami-Val', '_blank')}
@@ -196,13 +197,14 @@ const AboutPage = () => {
             fontSize: typography.fontSize.sm,
             background: 'none',
           }}>  'Se ocupa de de metodologías y estrategias para manejar el aprendizaje y los hábitos de estudio.'
-          </button>
+        </button>
       ),
     },
     {
       name: 'Fernanda Zepeda',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/fer.png',
+      github: 'https://github.com/Fer463-web',
       bio:(
         <button
           onClick={() => window.open('https://github.com/Fer463-web', '_blank')}
@@ -214,13 +216,14 @@ const AboutPage = () => {
             fontSize: typography.fontSize.sm,
             background: 'none',
           }}>  'Encargado de recopilar, redactar o presentar noticias relevantes del ODS 4.'
-          </button>
-          ),
+        </button>
+      ),
     },
     {
       name: 'Emmanuel Palacios',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Emma.png',
+      github: 'https://github.com/Emma-Pal',
       bio:(
         <button
           onClick={() => window.open('https://github.com/Emma-Pal', '_blank')}
@@ -232,13 +235,14 @@ const AboutPage = () => {
             fontSize: typography.fontSize.sm,
             background: 'none',
           }}>  'Aborda problemáticas en el estudio: analiza dificultades, obstáculos o desafíos que enfrentan los estudiantes durante su proceso de aprendizaje.'
-          </button>
-          ),
+        </button>
+      ),
     },
     {
       name: 'Priscila Lopez',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Priscila.png',
+      github: 'https://github.com/pjusto930',
       bio:(
         <button
           onClick={() => window.open('https://github.com/pjusto930', '_blank')}
@@ -250,13 +254,14 @@ const AboutPage = () => {
             fontSize: typography.fontSize.sm,
             background: 'none',
           }}> 'Se enfoca en educación de calidad.'
-          </button>
+        </button>
       ),
     },
     {
       name: 'Yoselin Reynaga',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/yose.png',
+      github: 'https://github.com/yoselinRS',
       bio:(
         <button
           onClick={() => window.open('https://github.com/yoselinRS', '_blank')}
@@ -268,13 +273,14 @@ const AboutPage = () => {
             fontSize: typography.fontSize.sm,
             background: 'none',
           }}>'Encargada del desarrollo profesional docente.'
-          </button>
+        </button>
       ) 
     },
     {
       name: 'Gregorio Sánchez',
       role: 'Desarrollador Web',
       image: '/assets/images/faces/Grego.png',
+      github: 'https://github.com/Gregorio-Yahir',
       bio:(
         <button
           onClick={() => window.open('https://github.com/Gregorio-Yahir', '_blank')}
@@ -386,7 +392,13 @@ const AboutPage = () => {
                     e.currentTarget.style.boxShadow = shadows.sm;
                   }}
                 >
-                  <img src={member.image} alt={member.name} style={styles.teamImage} />
+                  <img 
+                    src={member.image} 
+                    alt={member.name} 
+                    onClick={() => window.open(member.github, '_blank')}
+                    title={`Ir al GitHub de ${member.name}`}
+                    style={{...styles.teamImage, cursor: 'pointer'}}
+                  />
                   <div style={styles.teamInfo}>
                     <h3 style={styles.teamName}>{member.name}</h3>
                     <div style={styles.teamRole}>{member.role}</div>

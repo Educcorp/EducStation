@@ -11,7 +11,7 @@ import { getAllCategorias } from '../services/categoriasServices';
 import '../styles/animations.css';
 import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers, FaTag, FaTags, FaSort } from 'react-icons/fa';
 
-const CategoryPage = () => {  
+const CategoryPage = () => {
   const { colors, isDarkMode } = useTheme();
   const [animate, setAnimate] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
@@ -19,10 +19,10 @@ const CategoryPage = () => {
   const [categoryColor, setCategoryColor] = useState('#0b4444');
   const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
-  
+
   // Obtenemos el parámetro de categoría de la URL
   const { id } = useParams();
-  
+
   // Estados para los datos
   const [posts, setPosts] = useState([]);
   const [allCategoryPosts, setAllCategoryPosts] = useState([]); // Posts originales de la categoría
@@ -30,7 +30,7 @@ const CategoryPage = () => {
   const [currentCategory, setCurrentCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Estado para la búsqueda
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -39,20 +39,20 @@ const CategoryPage = () => {
   // Estado para los filtros
   const [selectedFilter, setSelectedFilter] = useState('reciente');
   const [showFilterOptions, setShowFilterOptions] = useState(false);
-  
+
   // Estado para el número de página
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
+
   // Referencias para animaciones
   const heroRef = useRef(null);
-  
+
   // Estado para los dropdowns
   const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const categoryDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
-  
+
   // Category colors for better visual identification
   const categoryColors = {
     1: '#FF6B6B', // Noticias
@@ -63,7 +63,7 @@ const CategoryPage = () => {
     6: '#3D5A80', // Desarrollo Profesional Docente
     7: '#F18F01'  // Comunidad y Colaboración
   };
-  
+
   // Get current category color
   const getCurrentCategoryColor = () => {
     if (currentCategory && currentCategory.ID_categoria) {
@@ -71,34 +71,34 @@ const CategoryPage = () => {
     }
     return categoryColor;
   };
-  
+
   // Activar animación al montar el componente
   useEffect(() => {
     const timeoutHeader = setTimeout(() => setHeaderVisible(true), 300);
     const timeoutContent = setTimeout(() => setContentVisible(true), 600);
     const timeout = setTimeout(() => setAnimate(true), 0);
-    
+
     return () => {
       clearTimeout(timeout);
       clearTimeout(timeoutHeader);
       clearTimeout(timeoutContent);
     };
   }, []);
-  
+
   // Cargar categorías y posts
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
+
         // Cargar todas las categorías
         const categoriesData = await getAllCategorias();
         setCategories(categoriesData);
-        
+
         // Encontrar la categoría actual
         const category = categoriesData.find(cat => cat.ID_categoria === parseInt(id));
         setCurrentCategory(category);
-        
+
         // Establecer el color de la categoría
         if (category) {
           // Obtener color de la categoría basado en el ID
@@ -111,10 +111,10 @@ const CategoryPage = () => {
             6: '#3D5A80', // Desarrollo Profesional Docente
             7: '#F18F01'  // Comunidad y Colaboración
           };
-          
+
           setCategoryColor(categoryColors[category.ID_categoria] || '#0b4444');
         }
-        
+
         // Cargar posts de esta categoría
         const postsData = await searchByTags(id, 12, 0);
         setAllCategoryPosts(Array.isArray(postsData) ? postsData : []);
@@ -122,7 +122,7 @@ const CategoryPage = () => {
         // Calcular total de páginas
         const totalPosts = Array.isArray(postsData) ? postsData.length : 0;
         setTotalPages(Math.ceil(totalPosts / 9));
-        
+
         setError(null);
       } catch (err) {
         console.error('Error al cargar datos:', err);
@@ -134,7 +134,7 @@ const CategoryPage = () => {
         setLoading(false);
       }
     };
-    
+
     if (id) {
       fetchData();
     } else {
@@ -244,7 +244,7 @@ const CategoryPage = () => {
   const indexOfLastPost = currentPage * postsPerPage;
   const indexOfFirstPost = indexOfLastPost - postsPerPage;
   const currentPosts = sortedPosts.slice(indexOfFirstPost, indexOfLastPost);
-  
+
   // Cambiar página
   const paginate = (pageNumber) => {
     setCurrentPage(pageNumber);
@@ -254,7 +254,7 @@ const CategoryPage = () => {
       behavior: 'smooth'
     });
   };
-  
+
   // Ir a la página anterior
   const prevPage = () => {
     if (currentPage > 1) {
@@ -266,7 +266,7 @@ const CategoryPage = () => {
       });
     }
   };
-  
+
   // Ir a la página siguiente
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -295,7 +295,7 @@ const CategoryPage = () => {
     if (!email) return;
 
     setIsSubscribing(true);
-    
+
     // Simulación de suscripción exitosa
     setTimeout(() => {
       setIsSubscribing(false);
@@ -304,19 +304,19 @@ const CategoryPage = () => {
         text: '¡Gracias por suscribirte! Recibirás nuestros artículos en tu correo.'
       });
       setEmail('');
-      
+
       // Limpiar el mensaje después de unos segundos
       setTimeout(() => {
         setSubscribeMessage(null);
       }, 4000);
     }, 1500);
   };
-  
+
   // Función para crear sombra con el color de la categoría
   const getCategoryShadow = (opacity = 0.3) => {
     return `0 10px 25px ${categoryColor}${Math.floor(opacity * 255).toString(16).padStart(2, '0')}`;
   };
-  
+
   // Función para generar variaciones de color
   const getLighterColor = (color, factor = 0.2) => {
     // Convertir hex a rgb
@@ -324,32 +324,32 @@ const CategoryPage = () => {
     let r = parseInt(hex.substring(0, 2), 16);
     let g = parseInt(hex.substring(2, 4), 16);
     let b = parseInt(hex.substring(4, 6), 16);
-    
+
     // Aclarar
     r = Math.min(255, r + (255 - r) * factor);
     g = Math.min(255, g + (255 - g) * factor);
     b = Math.min(255, b + (255 - b) * factor);
-    
+
     // Convertir de vuelta a hex
     return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
   };
-  
+
   const getDarkerColor = (color, factor = 0.2) => {
     // Convertir hex a rgb
     let hex = color.replace('#', '');
     let r = parseInt(hex.substring(0, 2), 16);
     let g = parseInt(hex.substring(2, 4), 16);
     let b = parseInt(hex.substring(4, 6), 16);
-    
+
     // Oscurecer
     r = Math.max(0, r * (1 - factor));
     g = Math.max(0, g * (1 - factor));
     b = Math.max(0, b * (1 - factor));
-    
+
     // Convertir de vuelta a hex
     return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
   };
-  
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -360,13 +360,13 @@ const CategoryPage = () => {
         setSortDropdownOpen(false);
       }
     };
-    
+
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-  
+
   // Estilos CSS
   const styles = {
     container: {
@@ -848,7 +848,7 @@ const CategoryPage = () => {
       maxHeight: '300px',
       overflowY: 'auto',
       border: `1px solid rgba(31, 78, 78, 0.1)`,
-      padding: spacing.xs
+      padding: spacing.md
     },
     dropdownItem: {
       padding: `${spacing.sm} ${spacing.md}`,
@@ -891,11 +891,11 @@ const CategoryPage = () => {
       }
       setCategoryDropdownOpen(false);
     };
-    
+
     return (
       <div ref={categoryDropdownRef} style={{ position: 'relative', width: '100%' }}>
-        <button 
-          onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)} 
+        <button
+          onClick={() => setCategoryDropdownOpen(!categoryDropdownOpen)}
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
@@ -904,19 +904,19 @@ const CategoryPage = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaFilter style={{ 
-              marginRight: spacing.md, 
-              color: getCurrentCategoryColor(), 
-              fontSize: '1rem' 
+            <FaFilter style={{
+              marginRight: spacing.md,
+              color: getCurrentCategoryColor(),
+              fontSize: '1rem'
             }} />
-            <span style={{ 
+            <span style={{
               color: getCurrentCategoryColor(),
               fontWeight: 600
             }}>
               {currentCategory?.Nombre_categoria || currentCategory?.Nombre || 'Todas las categorías'}
             </span>
           </div>
-          <div style={{ 
+          <div style={{
             color: getCurrentCategoryColor(),
             transition: 'transform 0.3s ease',
             transform: categoryDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
@@ -924,7 +924,7 @@ const CategoryPage = () => {
             ▼
           </div>
         </button>
-        
+
         {categoryDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
@@ -932,7 +932,7 @@ const CategoryPage = () => {
             backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
-            <div 
+            <div
               style={{
                 ...styles.dropdownItem,
                 backgroundColor: !id ? getLighterColor(getCurrentCategoryColor(), 0.1) : 'transparent',
@@ -969,34 +969,34 @@ const CategoryPage = () => {
               </span>
               Todas las categorías
             </div>
-            
+
             {categories.map(category => (
-              <div 
+              <div
                 key={category.ID_categoria}
                 style={{
                   ...styles.dropdownItem,
-                  backgroundColor: parseInt(id) === category.ID_categoria 
+                  backgroundColor: parseInt(id) === category.ID_categoria
                     ? getLighterColor(getCurrentCategoryColor(), 0.1)
                     : 'transparent',
-                  color: parseInt(id) === category.ID_categoria 
+                  color: parseInt(id) === category.ID_categoria
                     ? categoryColors[category.ID_categoria]
                     : colors.primary,
                   fontWeight: parseInt(id) === category.ID_categoria ? 600 : 400,
                   borderLeft: `3px solid ${parseInt(id) === category.ID_categoria ? getCurrentCategoryColor() : 'transparent'}`,
                 }}
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
-                                onMouseEnter={(e) => {
-                if (parseInt(id) !== category.ID_categoria) {
-                  e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
-                  e.currentTarget.style.color = categoryColors[category.ID_categoria];
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (parseInt(id) !== category.ID_categoria) {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = colors.primary;
-                }
-              }}
+                onMouseEnter={(e) => {
+                  if (parseInt(id) !== category.ID_categoria) {
+                    e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                    e.currentTarget.style.color = categoryColors[category.ID_categoria];
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (parseInt(id) !== category.ID_categoria) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = colors.primary;
+                  }
+                }}
               >
                 <span style={{
                   ...styles.dropdownIcon,
@@ -1014,8 +1014,8 @@ const CategoryPage = () => {
                 {category.Nombre_categoria || category.Nombre}
               </div>
             ))}
-            
-            <div 
+
+            <div
               style={{
                 ...styles.dropdownItem,
                 backgroundColor: 'rgba(31, 147, 111, 0.1)',
@@ -1063,16 +1063,16 @@ const CategoryPage = () => {
       { value: 'antiguo', label: 'Más antiguos', icon: <FaSort /> },
       { value: 'alfabetico', label: 'Alfabéticamente', icon: <FaSort /> }
     ];
-    
+
     const handleSortSelect = (value) => {
       setSelectedFilter(value);
       setSortDropdownOpen(false);
     };
-    
+
     return (
       <div ref={sortDropdownRef} style={{ position: 'relative', width: '100%' }}>
-        <button 
-          onClick={() => setSortDropdownOpen(!sortDropdownOpen)} 
+        <button
+          onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
@@ -1081,19 +1081,19 @@ const CategoryPage = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <FaSort style={{ 
-              marginRight: spacing.md, 
-              color: getCurrentCategoryColor(), 
-              fontSize: '1rem' 
+            <FaSort style={{
+              marginRight: spacing.md,
+              color: getCurrentCategoryColor(),
+              fontSize: '1rem'
             }} />
-            <span style={{ 
+            <span style={{
               color: getCurrentCategoryColor(),
               fontWeight: 600
             }}>
               {sortOptions.find(option => option.value === selectedFilter)?.label || 'Ordenar por'}
             </span>
           </div>
-          <div style={{ 
+          <div style={{
             color: getCurrentCategoryColor(),
             transition: 'transform 0.3s ease',
             transform: sortDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
@@ -1101,7 +1101,7 @@ const CategoryPage = () => {
             ▼
           </div>
         </button>
-        
+
         {sortDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
@@ -1110,19 +1110,19 @@ const CategoryPage = () => {
             animation: 'fadeIn 0.3s ease forwards',
           }}>
             {sortOptions.map(option => (
-              <div 
+              <div
                 key={option.value}
                 style={{
                   ...styles.dropdownItem,
-                  backgroundColor: selectedFilter === option.value 
+                  backgroundColor: selectedFilter === option.value
                     ? getLighterColor(getCurrentCategoryColor(), 0.1)
                     : 'transparent',
-                  color: selectedFilter === option.value 
+                  color: selectedFilter === option.value
                     ? getCurrentCategoryColor()
                     : colors.primary,
                   fontWeight: selectedFilter === option.value ? 600 : 400,
-                  borderLeft: `3px solid ${selectedFilter === option.value 
-                    ? getCurrentCategoryColor() 
+                  borderLeft: `3px solid ${selectedFilter === option.value
+                    ? getCurrentCategoryColor()
                     : 'transparent'}`,
                 }}
                 onClick={() => handleSortSelect(option.value)}
@@ -1162,7 +1162,7 @@ const CategoryPage = () => {
   };
 
   return (
-    <div style={{ 
+    <div style={{
       backgroundColor: getLighterColor(categoryColor, 0.8),
       color: colors.textPrimary,
       minHeight: "100vh",
@@ -1171,7 +1171,7 @@ const CategoryPage = () => {
       transition: 'background-color 0.5s ease'
     }}>
       <Header />
-      
+
       <div style={styles.container}>
         {loading ? (
           <div style={styles.loadingContainer}>
@@ -1202,7 +1202,7 @@ const CategoryPage = () => {
           <div style={styles.errorContainer}>
             <h3>Error al cargar la categoría</h3>
             <p>{error}</p>
-            <button 
+            <button
               onClick={() => navigate('/categorias')}
               style={{
                 padding: `${spacing.md} ${spacing.xl}`,
@@ -1223,10 +1223,10 @@ const CategoryPage = () => {
             <section ref={heroRef} style={styles.hero} className={animate ? "fade-in" : ""}>
               <div style={styles.heroBackground}></div>
               <div style={styles.heroPattern}></div>
-              
+
               <div style={styles.container}>
                 <div style={styles.heroContent}>
-                  <button 
+                  <button
                     style={{
                       ...styles.backButton,
                       display: 'flex',
@@ -1255,13 +1255,13 @@ const CategoryPage = () => {
                     <FaArrowLeft size={18} />
                     Volver a categorías
                   </button>
-                  
+
                   <h1 style={styles.title}>{currentCategory?.Nombre_categoria || currentCategory?.Nombre || 'Categoría'}</h1>
-                  
+
                   <p style={styles.subtitle}>
                     {currentCategory?.Descripcion || 'Artículos relacionados con esta categoría'}
                   </p>
-                  
+
                   <div style={{
                     ...styles.categoryTag,
                     backgroundColor: 'rgba(255,255,255,0.3)',
@@ -1291,7 +1291,7 @@ const CategoryPage = () => {
                     }}>{allCategoryPosts.length}</span>
                   </div>
                 </div>
-                
+
                 <div style={{
                   ...styles.heroIcon,
                   position: 'absolute',
@@ -1302,17 +1302,17 @@ const CategoryPage = () => {
                   zIndex: 4
                 }} className="float-animation">
                   {currentCategory?.ID_categoria === 1 ? <FaNewspaper size={150} /> :
-                   currentCategory?.ID_categoria === 2 ? <FaBook size={150} /> :
-                   currentCategory?.ID_categoria === 3 ? <FaPenNib size={150} /> :
-                   currentCategory?.ID_categoria === 4 ? <FaAward size={150} /> :
-                   currentCategory?.ID_categoria === 5 ? <FaCog size={150} /> :
-                   currentCategory?.ID_categoria === 6 ? <FaChalkboardTeacher size={150} /> :
-                   currentCategory?.ID_categoria === 7 ? <FaUsers size={150} /> :
-                   <FaNewspaper size={150} />}
+                    currentCategory?.ID_categoria === 2 ? <FaBook size={150} /> :
+                      currentCategory?.ID_categoria === 3 ? <FaPenNib size={150} /> :
+                        currentCategory?.ID_categoria === 4 ? <FaAward size={150} /> :
+                          currentCategory?.ID_categoria === 5 ? <FaCog size={150} /> :
+                            currentCategory?.ID_categoria === 6 ? <FaChalkboardTeacher size={150} /> :
+                              currentCategory?.ID_categoria === 7 ? <FaUsers size={150} /> :
+                                <FaNewspaper size={150} />}
                 </div>
               </div>
             </section>
-            
+
             <div style={styles.contentWrapper}>
               <main style={{
                 ...styles.mainContent,
@@ -1322,7 +1322,7 @@ const CategoryPage = () => {
                 maxWidth: '1200px',
                 margin: '0 auto'
               }}>
-                <div 
+                <div
                   style={{
                     backgroundColor: 'rgba(255,255,255,0.8)',
                     borderRadius: '12px',
@@ -1375,8 +1375,8 @@ const CategoryPage = () => {
                         width: '100%',
                         padding: `${spacing.md} ${spacing.md} ${spacing.md} ${spacing.xxl}`,
                         backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                        border: `2px solid ${isSearchFocused 
-                          ? getCurrentCategoryColor() 
+                        border: `2px solid ${isSearchFocused
+                          ? getCurrentCategoryColor()
                           : 'rgba(0, 0, 0, 0.1)'}`,
                         borderRadius: '10px',
                         outline: 'none',
@@ -1388,16 +1388,16 @@ const CategoryPage = () => {
                       }}
                     />
                   </div>
-                  
+
                   <div style={{ flex: '0 1 300px' }}>
                     <CategoryDropdown />
                   </div>
-                  
+
                   <div style={{ flex: '0 1 250px' }}>
                     <SortDropdown />
                   </div>
                 </div>
-                
+
                 {currentPosts.length > 0 ? (
                   <div style={{
                     ...styles.postsGrid,
@@ -1406,8 +1406,8 @@ const CategoryPage = () => {
                     zIndex: 20
                   }}>
                     {currentPosts.map((post, index) => (
-                      <div 
-                        className="post-card-animation" 
+                      <div
+                        className="post-card-animation"
                         key={post.ID_publicaciones}
                         style={{
                           "--animation-order": index,
@@ -1428,15 +1428,15 @@ const CategoryPage = () => {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                     textAlign: 'center'
                   }}>
-                    <h3 style={{ 
-                      fontSize: typography.fontSize.xl, 
+                    <h3 style={{
+                      fontSize: typography.fontSize.xl,
                       marginBottom: spacing.md,
                       color: colors.primary
                     }}>No hay publicaciones disponibles</h3>
                     <p style={{ marginBottom: spacing.lg }}>
                       No se encontraron artículos en esta categoría{searchQuery ? ` que coincidan con "${searchQuery}"` : ''}.
                     </p>
-                    <button 
+                    <button
                       onClick={() => navigate('/categorias')}
                       style={{
                         padding: `${spacing.sm} ${spacing.lg}`,
@@ -1452,18 +1452,18 @@ const CategoryPage = () => {
                     </button>
                   </div>
                 )}
-                
+
                 {totalPages > 1 && (
                   <div style={styles.pagination}>
-                    <button 
-                      onClick={prevPage} 
+                    <button
+                      onClick={prevPage}
                       disabled={currentPage === 1}
                       style={styles.pageButton}
                       aria-label="Página anterior"
                     >
                       &lt;
                     </button>
-                    
+
                     {[...Array(totalPages).keys()].map(number => (
                       <button
                         key={number + 1}
@@ -1478,9 +1478,9 @@ const CategoryPage = () => {
                         {number + 1}
                       </button>
                     ))}
-                    
-                    <button 
-                      onClick={nextPage} 
+
+                    <button
+                      onClick={nextPage}
                       disabled={currentPage === totalPages}
                       style={styles.pageButton}
                       aria-label="Página siguiente"
@@ -1489,7 +1489,7 @@ const CategoryPage = () => {
                     </button>
                   </div>
                 )}
-                
+
                 <div style={{
                   ...styles.newsletterBox,
                   marginTop: spacing.xxl,
@@ -1500,7 +1500,7 @@ const CategoryPage = () => {
                   <p style={styles.newsletterText}>
                     Recibe las últimas publicaciones y novedades directamente en tu correo.
                   </p>
-                  
+
                   <form style={styles.newsletterForm} onSubmit={handleSubscribe}>
                     <input
                       type="email"
@@ -1510,18 +1510,18 @@ const CategoryPage = () => {
                       style={styles.newsletterInput}
                       required
                     />
-                    
-                    <button 
-                      type="submit" 
+
+                    <button
+                      type="submit"
                       style={styles.newsletterButton}
                       disabled={isSubscribing}
                       className={isSubscribing ? "" : "hover-scale"}
                     >
                       {isSubscribing ? 'Suscribiendo...' : 'Suscribirse'}
                     </button>
-                    
+
                     {subscribeMessage && (
-                      <div 
+                      <div
                         style={{
                           ...styles.messageBox,
                           ...(subscribeMessage.type === 'success' ? styles.successMessage : styles.errorMessage)
@@ -1537,9 +1537,9 @@ const CategoryPage = () => {
           </>
         )}
       </div>
-      
+
       <Footer />
-      
+
       <style>
         {`
           @keyframes fadeUpIn {
