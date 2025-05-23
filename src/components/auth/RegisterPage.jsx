@@ -6,13 +6,14 @@ import { colors, spacing, typography } from '../../styles/theme';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { AuthContext } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
+import { useAuth } from '../../context/AuthContext.jsx';
 
 // Constante para habilitar el modo desarrollo (registro sin backend)
 const DEV_MODE = process.env.NODE_ENV === 'development';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
-    const { register, isAuth, loading } = useContext(AuthContext);
+    const { register, isAuth, loading } = useAuth();
     const { setForceLightMode } = useContext(ThemeContext);
 
     // Estado para modo desarrollo

@@ -2,14 +2,14 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { colors, spacing, typography } from '../../styles/theme';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { ThemeContext } from '../../context/ThemeContext';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 const LoginPage = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login, isAuth, loading, error: authError } = useContext(AuthContext);
+    const { login, isAuth, loading, error: authError } = useAuth();
     const { setForceLightMode } = useContext(ThemeContext);
 
     // Refs para las animaciones

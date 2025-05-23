@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { comentarioService } from '../../services/comentarioService';
 import { toast } from 'react-toastify';
 import ComentarioItem from './ComentarioItem';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { useTheme } from '../../context/ThemeContext';
 import { FaSync } from 'react-icons/fa';
 import { spacing, typography, borderRadius } from '../../styles/theme';

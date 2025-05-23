@@ -3,14 +3,14 @@ import { Link } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
 import axios from 'axios';
 import { getUserProfile, updateUserAvatar } from '../services/userService';
 import { getAllPublicaciones } from '../services/publicacionesService';
 
 const ProfilePage = () => {
-  const { user, isAuth } = useContext(AuthContext);
+  const { user, isAuth } = useAuth();
   const { isDarkMode } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
