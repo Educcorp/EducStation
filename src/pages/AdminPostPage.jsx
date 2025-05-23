@@ -9,9 +9,9 @@ const AdminPostPage = () => {
   const { colors } = useTheme(); // Obtenemos los colores del tema actual
   
   return (
-    <div style={{ fontFamily: 'Poppins, sans-serif', backgroundColor: '#e6f0ea', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ fontFamily: 'Poppins, sans-serif', backgroundColor: colors.background }}>
       <Header />
-      <main style={{ flex: 1 }}>
+      <main>
         <PostEditor />
       </main>
       <Footer />

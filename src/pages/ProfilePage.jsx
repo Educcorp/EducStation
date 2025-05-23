@@ -457,9 +457,9 @@ const ProfilePage = () => {
   console.log('Publicaciones del usuario (userPosts):', userPosts);
 
   return (
-    <div style={{ ...styles.container, backgroundColor: '#e6f0ea', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={styles.container}>
       <Header />
-      <main style={{ flex: 1 }}>
+      <div style={styles.content}>
         {errorMessage && (
           <div style={{
             backgroundColor: colors.error,
@@ -620,7 +620,7 @@ const ProfilePage = () => {
             )}
           </div>
         </div>
-      </main>
+      </div>
       <Footer />
     </div>
   );

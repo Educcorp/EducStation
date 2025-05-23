@@ -1086,9 +1086,17 @@ const CategoryPage = () => {
   };
 
   return (
-    <div style={{ ...styles.container, backgroundColor: '#e6f0ea', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ 
+      backgroundColor: getLighterColor(categoryColor, 0.8),
+      color: colors.textPrimary,
+      minHeight: "100vh",
+      backgroundImage: `radial-gradient(circle at 15% 50%, ${getLighterColor(categoryColor, 0.9)}90 0%, transparent 25%),
+         radial-gradient(circle at 85% 30%, ${getLighterColor(categoryColor, 0.9)}80 0%, transparent 25%)`,
+      transition: 'background-color 0.5s ease'
+    }}>
       <Header />
-      <main style={{ flex: 1 }}>
+      
+      <div style={styles.container}>
         {loading ? (
           <div style={styles.loadingContainer}>
             <div style={styles.loadingSpinner}></div>
@@ -1440,8 +1448,61 @@ const CategoryPage = () => {
             </div>
           </>
         )}
-      </main>
+      </div>
+      
       <Footer />
+      
+      <style>
+        {`
+          @keyframes fadeUpIn {
+            from {
+              opacity: 0;
+              transform: translateY(20px);
+            }
+            to {
+              opacity: 1;
+              transform: translateY(0);
+            }
+          }
+          
+          .post-card-animation {
+            animation: fadeUpIn 0.6s ease forwards;
+            animation-delay: calc(0.1s * var(--animation-order, 0));
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background-color: transparent;
+          }
+          
+          .post-card-animation:hover {
+            transform: translateY(-5px);
+          }
+          
+          .post-card-animation > a > div {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          }
+          
+          .float-animation {
+            animation: float 6s ease-in-out infinite;
+          }
+          
+          @keyframes float {
+            0% {
+              transform: translateY(-50%) translateX(0);
+            }
+            50% {
+              transform: translateY(-50%) translateX(-10px);
+            }
+            100% {
+              transform: translateY(-50%) translateX(0);
+            }
+          }
+          
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+        `}
+      </style>
     </div>
   );
 };

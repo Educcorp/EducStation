@@ -568,9 +568,15 @@ const HomePage = () => {
   };
 
   return (
-    <div style={{ backgroundColor: '#e6f0ea', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={styles.app}>
+      {/* Añadir estilos de animación */}
+      <style dangerouslySetInnerHTML={{ __html: styles.animationStyles }} />
+
+      {/* Header */}
       <Header />
-      <main style={{ flex: 1 }}>
+
+      {/* Main Content */}
+      <main style={{ ...styles.container, ...styles.noOverflow }}>
         {/* Breadcrumb */}
         <div style={styles.breadcrumb}>
           <a
@@ -662,6 +668,8 @@ const HomePage = () => {
           </div>
         </div>
       </main>
+
+      {/* Footer */}
       <Footer />
     </div>
   );
