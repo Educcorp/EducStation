@@ -200,6 +200,12 @@ const CategoryPage = () => {
     }
   }, [allCategoryPosts, searchQuery]);
   
+  // Efecto para limpiar la búsqueda cuando cambie de categoría
+  useEffect(() => {
+    setSearchQuery('');
+    setCurrentPage(1);
+  }, [id]);
+  
   // Ordenar posts según el filtro seleccionado
   const sortedPosts = [...posts].sort((a, b) => {
     switch (selectedFilter) {
