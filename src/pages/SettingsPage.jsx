@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext.jsx';
 import { deleteAccount } from '../services/authService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
-  const { logout } = useContext(AuthContext); // Obtener logout del contexto
+  const { logout } = useAuth(); // Obtener logout del contexto
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showSuccessButton, setShowSuccessButton] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false); // Para manejar estado de carga

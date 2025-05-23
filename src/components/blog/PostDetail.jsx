@@ -203,7 +203,13 @@ const PostDetail = ({ post }) => {
       )}
       
       {/* Separador visual antes de los comentarios */}
-      <div className="comentarios-separador"></div>
+      <div className="comentarios-separador" style={{
+        borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+        margin: '2rem 0',
+        width: '100%'
+      }}></div>
+      
+      {/* Sección de comentarios */}
       <ComentariosList postId={postId} />
       
       <Link to="/blog" style={styles.backLink}>

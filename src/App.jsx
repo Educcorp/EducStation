@@ -1,9 +1,9 @@
 // src/App.jsx (updated)
-import React, { useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ScrollToTop from './components/utils/ScrollToTop';
 import { ThemeProvider } from './context/ThemeContext';
-import { AuthProvider, AuthContext } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import './styles/darkMode.css'; // Los estilos oscuros solo se aplicarán cuando se active la clase .dark-mode
 import Chatbot from './components/common/Chatbot';
 
@@ -53,7 +53,7 @@ const LoadingSpinner = () => (
 
 // Componente para rutas protegidas
 const PrivateRoute = ({ children }) => {
-  const { isAuth, loading } = useContext(AuthContext);
+  const { isAuth, loading } = useAuth();
   
   // Mostrar loader mientras se verifica la autenticación
   if (loading) {
@@ -70,7 +70,7 @@ const PrivateRoute = ({ children }) => {
 
 // Componente para rutas públicas (solo accesibles cuando NO está autenticado)
 const PublicRoute = ({ children }) => {
-  const { isAuth, loading } = useContext(AuthContext);
+  const { isAuth, loading } = useAuth();
   
   if (loading) {
     return <LoadingSpinner />;

@@ -4,14 +4,14 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { colors, spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
-import { AuthContext } from '../../context/AuthContext'; // Importa el contexto de autenticación
+import { useAuth } from '../../context/AuthContext.jsx'; // Importa el contexto de autenticación
 import { FaHome, FaInfo, FaGlobe,  FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope } from 'react-icons/fa';
 import { updateSuperUserStatus } from '../../services/authService'; // Importar función para actualizar estado de superusuario
 
 const Header = () => {
   const navigate = useNavigate();
   const { isDarkMode } = useTheme(); // Obtén el estado del modo oscuro
-  const { user, isAuth, isSuperUser, logout } = useContext(AuthContext); // Obtener datos del contexto de autenticación
+  const { user, isAuth, isSuperUser, logout } = useAuth(); // Obtener datos del contexto de autenticación
   const menuRef = useRef(null);
 
   // Estados existentes
