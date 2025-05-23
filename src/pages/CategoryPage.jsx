@@ -6,7 +6,7 @@ import Footer from '../components/layout/Footer';
 import PostCard from '../components/blog/PostCard';
 import { spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
 import { useTheme } from '../context/ThemeContext';
-import { searchByTags } from '../services/searchService';
+import { searchByTags, searchPublicaciones } from '../services/searchService';
 import { getAllCategorias } from '../services/categoriasServices';
 import '../styles/animations.css';
 import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers, FaTag, FaTags, FaSort } from 'react-icons/fa';
@@ -25,6 +25,7 @@ const CategoryPage = () => {
 
   // Estados para los datos
   const [posts, setPosts] = useState([]);
+  const [allCategoryPosts, setAllCategoryPosts] = useState([]); // Posts originales de la categoría
   const [categories, setCategories] = useState([]);
   const [currentCategory, setCurrentCategory] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,7 +34,8 @@ const CategoryPage = () => {
   // Estado para la búsqueda
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-
+  const [searchLoading, setSearchLoading] = useState(false);
+  
   // Estado para los filtros
   const [selectedFilter, setSelectedFilter] = useState('reciente');
   const [showFilterOptions, setShowFilterOptions] = useState(false);
@@ -115,8 +117,8 @@ const CategoryPage = () => {
 
         // Cargar posts de esta categoría
         const postsData = await searchByTags(id, 12, 0);
-        setPosts(Array.isArray(postsData) ? postsData : []);
-
+        setAllCategoryPosts(Array.isArray(postsData) ? postsData : []);
+        
         // Calcular total de páginas
         const totalPosts = Array.isArray(postsData) ? postsData.length : 0;
         setTotalPages(Math.ceil(totalPosts / 9));
@@ -126,7 +128,7 @@ const CategoryPage = () => {
         console.error('Error al cargar datos:', err);
         setError('No se pudieron cargar los datos. Por favor, intenta de nuevo más tarde.');
         // Set default values even on error to prevent rendering issues
-        setPosts([]);
+        setAllCategoryPosts([]);
         setTotalPages(1);
       } finally {
         setLoading(false);
@@ -139,18 +141,73 @@ const CategoryPage = () => {
       // Handle case when ID is not available
       setLoading(false);
       setError('Categoría no encontrada.');
-      setPosts([]);
+      setAllCategoryPosts([]);
       setTotalPages(1);
     }
   }, [id]);
+  
+  // Efecto para manejar la búsqueda con debounce
+  useEffect(() => {
+    const searchPosts = async () => {
+      if (searchQuery.trim() === '') {
+        // Si no hay término de búsqueda, mostrar todos los posts de la categoría
+        setPosts(allCategoryPosts);
+        setSearchLoading(false);
+        return;
+      }
 
-  // Filtrar posts por búsqueda
-  const filteredPosts = posts.filter(post =>
-    post.Titulo.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      try {
+        setSearchLoading(true);
+        console.log(`Buscando en categoría ${id} con término: "${searchQuery}"`);
+        
+        // Buscar en todas las publicaciones usando el servicio general
+        const searchResults = await searchPublicaciones(searchQuery, 50, 0);
+        
+        // Filtrar los resultados para que solo incluyan posts de la categoría actual
+        const categorySearchResults = searchResults.filter(post => {
+          return post.categorias && post.categorias.some(cat => 
+            cat.ID_categoria === parseInt(id)
+          );
+        });
+        
+        console.log(`Encontrados ${categorySearchResults.length} posts en la categoría ${id} para "${searchQuery}"`);
+        setPosts(categorySearchResults);
+        
+      } catch (error) {
+        console.error('Error al buscar posts:', error);
+        // En caso de error, usar filtrado local como fallback
+        const localFilteredPosts = allCategoryPosts.filter(post => 
+          post.Titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (post.Contenido && post.Contenido.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (post.Resumen && post.Resumen.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+        setPosts(localFilteredPosts);
+      } finally {
+        setSearchLoading(false);
+      }
+    };
 
+    // Debounce la búsqueda para evitar demasiadas llamadas al API
+    const timeoutId = setTimeout(searchPosts, 300);
+    
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, allCategoryPosts, id]);
+
+  // Efecto para establecer los posts iniciales cuando se cargan los posts de la categoría
+  useEffect(() => {
+    if (allCategoryPosts.length > 0 && searchQuery.trim() === '') {
+      setPosts(allCategoryPosts);
+    }
+  }, [allCategoryPosts, searchQuery]);
+  
+  // Efecto para limpiar la búsqueda cuando cambie de categoría
+  useEffect(() => {
+    setSearchQuery('');
+    setCurrentPage(1);
+  }, [id]);
+  
   // Ordenar posts según el filtro seleccionado
-  const sortedPosts = [...filteredPosts].sort((a, b) => {
+  const sortedPosts = [...posts].sort((a, b) => {
     switch (selectedFilter) {
       case 'reciente':
         return new Date(b.Fecha_creacion) - new Date(a.Fecha_creacion);
@@ -162,7 +219,26 @@ const CategoryPage = () => {
         return 0;
     }
   });
+  
+  // Efecto para recalcular paginación cuando cambien los posts filtrados
+  useEffect(() => {
+    const postsPerPage = 9;
+    const newTotalPages = Math.ceil(sortedPosts.length / postsPerPage);
+    setTotalPages(newTotalPages);
+    
+    // Si la página actual es mayor que el total de páginas, resetear a la primera página
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+      setCurrentPage(1);
+    }
+  }, [sortedPosts.length, currentPage]);
 
+  // Efecto para resetear la página cuando se haga una nueva búsqueda
+  useEffect(() => {
+    if (searchQuery.trim() !== '') {
+      setCurrentPage(1);
+    }
+  }, [searchQuery]);
+  
   // Paginación
   const postsPerPage = 9;
   const indexOfLastPost = currentPage * postsPerPage;
@@ -1212,7 +1288,7 @@ const CategoryPage = () => {
                       fontSize: "14px",
                       fontWeight: typography.fontWeight.bold,
                       marginLeft: spacing.sm
-                    }}>{posts.length}</span>
+                    }}>{allCategoryPosts.length}</span>
                   </div>
                 </div>
 
@@ -1267,19 +1343,30 @@ const CategoryPage = () => {
                 >
                   <div style={{ flex: '1 1 300px', position: 'relative' }}>
                     <div style={{
-                      position: 'absolute',
-                      left: spacing.md,
-                      top: '50%',
+                      position: 'absolute', 
+                      left: spacing.md, 
+                      top: '50%', 
                       transform: 'translateY(-50%)',
                       color: colors.gray600,
                       pointerEvents: 'none',
                       transition: 'all 0.3s'
                     }}>
-                      <FaSearch size={16} />
+                      {searchLoading ? (
+                        <div style={{
+                          width: '16px',
+                          height: '16px',
+                          border: '2px solid transparent',
+                          borderTop: '2px solid currentColor',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite'
+                        }} />
+                      ) : (
+                        <FaSearch size={16} />
+                      )}
                     </div>
                     <input
                       type="text"
-                      placeholder="Buscar en esta categoría..."
+                      placeholder={searchLoading ? "Buscando..." : "Buscar en esta categoría..."}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onFocus={() => setIsSearchFocused(true)}
@@ -1297,6 +1384,7 @@ const CategoryPage = () => {
                         color: colors.textPrimary,
                         transition: 'all 0.3s',
                         boxShadow: isSearchFocused ? `0 0 0 3px ${getCurrentCategoryColor()}33` : 'none',
+                        opacity: searchLoading ? 0.7 : 1
                       }}
                     />
                   </div>
@@ -1463,6 +1551,11 @@ const CategoryPage = () => {
               opacity: 1;
               transform: translateY(0);
             }
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
           }
           
           .post-card-animation {
