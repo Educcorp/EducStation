@@ -2,6 +2,14 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app/api';
 
+// Check if API_URL already ends with '/api', if not, add it
+const getApiUrl = () => {
+  if (API_URL.endsWith('/api')) {
+    return API_URL;
+  }
+  return `${API_URL}/api`;
+};
+
 export const comentarioService = {
     // Obtener todos los comentarios de un post
     getComentariosByPost: async (publicacionId) => {
@@ -12,7 +20,7 @@ export const comentarioService = {
             }
             
             console.log('Obteniendo comentarios para la publicación:', publicacionId);
-            const endpoint = `${API_URL}/comentarios/publicacion/${publicacionId}`;
+            const endpoint = `${getApiUrl()}/comentarios/publicacion/${publicacionId}`;
             console.log('Endpoint de comentarios:', endpoint);
             
             const response = await axios.get(endpoint);
@@ -55,7 +63,7 @@ export const comentarioService = {
                 token: token ? `${token.substring(0, 10)}...` : null
             });
             
-            const endpoint = `${API_URL}/comentarios/publicacion/${idToUse}`;
+            const endpoint = `${getApiUrl()}/comentarios/publicacion/${idToUse}`;
             console.log('Endpoint para crear comentario:', endpoint);
             
             const response = await axios.post(
@@ -85,7 +93,7 @@ export const comentarioService = {
                 throw new Error('No hay token de autenticación');
             }
             
-            const response = await axios.put(`${API_URL}/comentarios/${id}`, comentarioData, {
+            const response = await axios.put(`${getApiUrl()}/comentarios/${id}`, comentarioData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -107,7 +115,7 @@ export const comentarioService = {
                 throw new Error('No hay token de autenticación');
             }
             
-            const response = await axios.delete(`${API_URL}/comentarios/${id}`, {
+            const response = await axios.delete(`${getApiUrl()}/comentarios/${id}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
