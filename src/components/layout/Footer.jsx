@@ -314,17 +314,35 @@ const Footer = () => {
     {
       icon: <FaGithub />,
       url: 'https://github.com/Educcorp/EducStation',
-      label: 'GitHub'
+      label: 'GitHub',
+      colors: {
+        primary: '#24292e',
+        secondary: '#333',
+        hover: '#171515',
+        glow: '#24292e66'
+      }
     },
     {
       icon: <SiX />,
       url: 'https://twitter.com/EducStation',
-      label: 'X (Twitter)'
+      label: 'X (Twitter)',
+      colors: {
+        primary: '#000000',
+        secondary: '#14171A',
+        hover: '#000000',
+        glow: '#00000066'
+      }
     },
     {
       icon: <FaLinkedin />,
       url: 'https://www.linkedin.com/in/educcorp-inc-158297356/',
-      label: 'LinkedIn'
+      label: 'LinkedIn',
+      colors: {
+        primary: '#0077B5',
+        secondary: '#0A66C2',
+        hover: '#004182',
+        glow: '#0077B566'
+      }
     }
   ];
 
@@ -359,16 +377,21 @@ const Footer = () => {
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={styles.socialIcon}
+                  style={{
+                    ...styles.socialIcon,
+                    background: `linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%)`,
+                    boxShadow: `0 4px 24px 0 ${social.colors.glow}`,
+                    color: social.colors.primary === '#000000' ? '#fff' : '#fff'
+                  }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = `0 8px 32px 0 ${colors.secondary}44`;
-                    e.currentTarget.style.background = `linear-gradient(135deg, ${colors.primaryLight} 0%, ${colors.secondary} 100%)`;
+                    e.currentTarget.style.boxShadow = `0 8px 32px 0 ${social.colors.glow}`;
+                    e.currentTarget.style.background = `linear-gradient(135deg, ${social.colors.secondary} 0%, ${social.colors.hover} 100%)`;
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = `0 4px 24px 0 ${colors.secondary}22`;
-                    e.currentTarget.style.background = 'rgba(240, 248, 247, 0.18)';
+                    e.currentTarget.style.boxShadow = `0 4px 24px 0 ${social.colors.glow}`;
+                    e.currentTarget.style.background = `linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%)`;
                   }}
                   aria-label={social.label}
                 >
