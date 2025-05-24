@@ -112,6 +112,302 @@ const ContentLabel = () => {
   );
 };
 
+// Componente mejorado para indicadores de progreso
+const ProgressIndicator = ({ currentStep, totalSteps, steps }) => {
+  const { colors, isDarkMode } = useTheme();
+  
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: `${spacing.md} 0`,
+      marginBottom: spacing.lg,
+      borderBottom: `1px solid ${colors.gray200}`,
+      animation: 'slideInUp 0.6s ease-out'
+    }}>
+      {steps.map((step, index) => (
+        <div key={index} style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          flex: 1,
+          position: 'relative'
+        }}>
+          {/* Línea conectora */}
+          {index < steps.length - 1 && (
+            <div style={{
+              position: 'absolute',
+              top: '15px',
+              left: '50%',
+              width: '100%',
+              height: '2px',
+              backgroundColor: index < currentStep ? colors.secondary : colors.gray200,
+              zIndex: 0,
+              transition: 'all 0.5s ease'
+            }} />
+          )}
+          
+          {/* Círculo del paso */}
+          <div style={{
+            width: '30px',
+            height: '30px',
+            borderRadius: '50%',
+            backgroundColor: index <= currentStep ? colors.secondary : colors.gray200,
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: 'bold',
+            fontSize: '14px',
+            position: 'relative',
+            zIndex: 1,
+            transition: 'all 0.3s ease',
+            transform: index === currentStep ? 'scale(1.1)' : 'scale(1)',
+            boxShadow: index === currentStep ? `0 0 0 3px ${colors.secondary}30` : 'none'
+          }}>
+            {index < currentStep ? '✓' : index + 1}
+          </div>
+          
+          {/* Etiqueta del paso */}
+          <span style={{
+            marginTop: spacing.xs,
+            fontSize: typography.fontSize.sm,
+            color: index <= currentStep ? colors.primary : colors.gray400,
+            fontWeight: index === currentStep ? typography.fontWeight.semiBold : typography.fontWeight.normal,
+            transition: 'all 0.3s ease'
+          }}>
+            {step}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Componente mejorado para estadísticas del post en tiempo real
+const PostStats = ({ content, title, category, tags }) => {
+  const { colors, isDarkMode } = useTheme();
+  
+  const [stats, setStats] = useState({
+    words: 0,
+    characters: 0,
+    readingTime: 0,
+    completeness: 0
+  });
+
+  useEffect(() => {
+    // Extraer texto plano del HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content || '';
+    const plainText = tempDiv.textContent || tempDiv.innerText || '';
+    
+    const words = plainText.trim() ? plainText.trim().split(/\s+/).length : 0;
+    const characters = plainText.length;
+    const readingTime = Math.ceil(words / 200); // 200 palabras por minuto
+    
+    // Calcular completitud
+    let completeness = 0;
+    if (title) completeness += 25;
+    if (category) completeness += 25;
+    if (words > 50) completeness += 25;
+    if (tags) completeness += 25;
+    
+    setStats({ words, characters, readingTime, completeness });
+  }, [content, title, category, tags]);
+
+  const statItems = [
+    { label: 'Palabras', value: stats.words, icon: '📝', color: colors.primary },
+    { label: 'Caracteres', value: stats.characters, icon: '🔤', color: colors.secondary },
+    { label: 'Lectura', value: `${stats.readingTime} min`, icon: '⏱️', color: '#e67e22' },
+    { label: 'Completitud', value: `${stats.completeness}%`, icon: '📊', color: '#27ae60' }
+  ];
+
+  return (
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+      gap: spacing.md,
+      padding: spacing.md,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : '#f8f9fa',
+      borderRadius: borderRadius.md,
+      marginBottom: spacing.lg,
+      animation: 'fadeIn 0.8s ease-out'
+    }}>
+      {statItems.map((stat, index) => (
+        <div key={index} style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          padding: spacing.sm,
+          backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+          borderRadius: borderRadius.sm,
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+          cursor: 'pointer'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+        }}>
+          <span style={{ fontSize: '20px', marginBottom: spacing.xs }}>{stat.icon}</span>
+          <span style={{
+            fontSize: typography.fontSize.lg,
+            fontWeight: typography.fontWeight.bold,
+            color: stat.color,
+            marginBottom: spacing.xxs
+          }}>
+            {stat.value}
+          </span>
+          <span style={{
+            fontSize: typography.fontSize.sm,
+            color: colors.gray500,
+            textAlign: 'center'
+          }}>
+            {stat.label}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Componente mejorado para consejos interactivos
+const WritingTips = ({ content, category }) => {
+  const { colors, isDarkMode } = useTheme();
+  const [currentTip, setCurrentTip] = useState(0);
+  const [isVisible, setIsVisible] = useState(true);
+
+  const tips = [
+    {
+      icon: '💡',
+      title: 'Usa encabezados',
+      description: 'Organiza tu contenido con H1, H2 y H3 para mejor legibilidad',
+      category: 'estructura'
+    },
+    {
+      icon: '📸',
+      title: 'Añade imágenes',
+      description: 'Las imágenes hacen tu contenido más atractivo y fácil de entender',
+      category: 'visual'
+    },
+    {
+      icon: '🎯',
+      title: 'Sé específico',
+      description: 'Usa ejemplos concretos y datos para respaldar tus ideas',
+      category: 'contenido'
+    },
+    {
+      icon: '✨',
+      title: 'Revisa la ortografía',
+      description: 'Un texto sin errores transmite profesionalismo y credibilidad',
+      category: 'calidad'
+    }
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTip((prev) => (prev + 1) % tips.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!isVisible) return null;
+
+  return (
+    <div style={{
+      position: 'relative',
+      padding: spacing.md,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : '#e8f4fd',
+      borderRadius: borderRadius.md,
+      border: `1px solid ${colors.secondary}40`,
+      marginBottom: spacing.lg,
+      animation: 'slideInUp 0.6s ease-out'
+    }}>
+      <button
+        onClick={() => setIsVisible(false)}
+        style={{
+          position: 'absolute',
+          top: spacing.xs,
+          right: spacing.xs,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          color: colors.gray400,
+          fontSize: '18px',
+          padding: spacing.xs,
+          borderRadius: '50%',
+          transition: 'all 0.3s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = colors.gray200;
+          e.target.style.color = colors.gray600;
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = 'transparent';
+          e.target.style.color = colors.gray400;
+        }}
+      >
+        ×
+      </button>
+      
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: spacing.sm
+      }}>
+        <span style={{ fontSize: '24px', marginRight: spacing.sm }}>
+          {tips[currentTip].icon}
+        </span>
+        <h4 style={{
+          margin: 0,
+          color: colors.primary,
+          fontSize: typography.fontSize.md,
+          fontWeight: typography.fontWeight.semiBold
+        }}>
+          Consejo: {tips[currentTip].title}
+        </h4>
+      </div>
+      
+      <p style={{
+        margin: 0,
+        color: colors.textPrimary,
+        fontSize: typography.fontSize.sm,
+        lineHeight: '1.5'
+      }}>
+        {tips[currentTip].description}
+      </p>
+      
+      {/* Indicadores de progreso */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        marginTop: spacing.sm,
+        gap: spacing.xs
+      }}>
+        {tips.map((_, index) => (
+          <div
+            key={index}
+            style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              backgroundColor: index === currentTip ? colors.secondary : colors.gray300,
+              transition: 'all 0.3s ease',
+              cursor: 'pointer'
+            }}
+            onClick={() => setCurrentTip(index)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const PostEditor = () => {
   // Obtener los colores del tema actual
   const { colors, isDarkMode } = useTheme();
@@ -141,6 +437,28 @@ const PostEditor = () => {
   // Estado para controlar qué categoría tiene el cursor encima
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Estados adicionales para la interfaz mejorada
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [focusedSection, setFocusedSection] = useState(null);
+
+  // Pasos del proceso de creación
+  const creationSteps = ['Configurar', 'Escribir', 'Revisar', 'Publicar'];
+
+  // Función para calcular el paso actual basado en el progreso
+  const calculateCurrentStep = () => {
+    if (!post.title) return 0;
+    if (!post.content || post.content.length < 100) return 1;
+    if (!post.category) return 2;
+    return 3;
+  };
+
+  // Actualizar el paso actual cuando cambie el contenido
+  useEffect(() => {
+    const step = calculateCurrentStep();
+    setCurrentStep(step);
+  }, [post.title, post.content, post.category]);
 
   // Definir descripciones de categorías para los tooltips
   const categoryDescriptions = {
@@ -984,7 +1302,37 @@ const PostEditor = () => {
 
   // Solo renderizar una vez inicializado para evitar problemas de redimensión
   if (loadingCategories) {
-    return <div style={styles.container}>Cargando categorías...</div>;
+    return (
+      <div style={{
+        ...styles.container,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '400px'
+      }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: spacing.md
+        }}>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            border: `3px solid ${colors.gray200}`,
+            borderTop: `3px solid ${colors.secondary}`,
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          <span style={{
+            color: colors.textPrimary,
+            fontSize: typography.fontSize.md
+          }}>
+            Cargando categorías...
+          </span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -993,12 +1341,16 @@ const PostEditor = () => {
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
           }
           @keyframes slideInUp {
             from { transform: translateY(20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes slideInLeft {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
           }
           @keyframes pulseIcon {
             0% { transform: scale(1); }
@@ -1009,173 +1361,441 @@ const PostEditor = () => {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
-          @keyframes shine {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+          @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
           }
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
+          .section-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateZ(0);
+          }
+          .section-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+          }
+          .input-field {
+            transition: all 0.3s ease;
+          }
+          .input-field:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px ${colors.secondary}20;
           }
           ${keyframes}
         `
       }} />
 
-      <div style={styles.editorContainer}>
-        {/* Sidebar - Ahora a la izquierda */}
-        <div style={styles.sidebar}>
-          <CoverImageUploader
-            coverImagePreview={post.coverImagePreview}
-            onChange={handleImageChange}
-          />
-
-          {renderPostMetadata()}
-
-          <ImportExportActions
-            onExport={exportToFile}
-            onImport={importFile}
-          />
-        </div>
-
-        {/* Main Editor - Ahora a la derecha */}
-        <div style={styles.mainEditor}>
-          <div style={styles.formGroup}>
-            <label style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: spacing.xs,
-              marginBottom: spacing.xs,
-              fontWeight: typography.fontWeight.medium,
-              color: isDarkMode ? colors.textLight : colors.primary
-            }} htmlFor="title">
-              <span style={{ color: isDarkMode ? colors.textLight : colors.primary, fontSize: '1.4em' }}>📝</span> Título del post
-            </label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={post.title}
-              onChange={handleChange}
-              style={{
-                width: "100%",
-                padding: spacing.md,
-                borderRadius: borderRadius.md,
-                border: `1px solid ${colors.gray200}`,
-                fontSize: typography.fontSize.lg,
-                transition: "all 0.3s ease",
-                marginBottom: spacing.md,
-                fontWeight: typography.fontWeight.semiBold,
-                borderLeft: `4px solid ${colors.primary}`,
-                backgroundColor: colors.white,
-                color: isDarkMode ? colors.textPrimary : "#000000",
-              }}
-              placeholder="Escribe un título atractivo"
-              onFocus={(e) => {
-                e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`;
-                e.target.style.borderLeft = `4px solid ${colors.secondary}`;
-              }}
-              onBlur={(e) => {
-                e.target.style.boxShadow = 'none';
-                e.target.style.borderLeft = `4px solid ${colors.primary}`;
-              }}
-            />
+      {/* Header con indicador de progreso */}
+      <div style={{
+        backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+        padding: `${spacing.lg} ${spacing.xl}`,
+        borderRadius: `${borderRadius.lg} ${borderRadius.lg} 0 0`,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        marginBottom: spacing.md,
+        animation: 'slideInUp 0.5s ease-out'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: spacing.lg
+        }}>
+          <div>
+            <h1 style={{
+              fontSize: typography.fontSize.xxl,
+              fontWeight: typography.fontWeight.bold,
+              color: colors.primary,
+              margin: 0,
+              marginBottom: spacing.xs
+            }}>
+              {isEditing ? 'Editar Publicación' : 'Nueva Publicación'}
+            </h1>
+            <p style={{
+              fontSize: typography.fontSize.md,
+              color: colors.gray500,
+              margin: 0
+            }}>
+              {isEditing ? 'Modifica tu contenido existente' : 'Crea contenido educativo impactante'}
+            </p>
           </div>
-
-          <div style={styles.formGroup}>
-            {/* Etiqueta "Contenido" animada */}
-            <ContentLabel />
-
-            <DualModeEditor
-              content={post.content}
-              onChange={handleChange}
-              initialMode={post.editorMode}
-            />
-          </div>
-
-          {/* Campo para resumen */}
+          
           <div style={{
-            marginBottom: spacing.xl,
-            marginTop: spacing.xl,
-            border: `1px solid ${colors.gray200}`,
-            borderRadius: borderRadius.md,
-            padding: spacing.md,
-            backgroundColor: colors.white,
-            boxShadow: shadows.sm,
+            display: 'flex',
+            alignItems: 'center',
+            gap: spacing.md
           }}>
-            <label 
-              htmlFor="resumen" 
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
               style={{
-                display: 'block',
-                marginBottom: spacing.sm,
-                fontSize: typography.fontSize.md,
-                fontWeight: typography.fontWeight.medium,
-                color: colors.textPrimary,
+                background: 'none',
+                border: `1px solid ${colors.gray300}`,
+                borderRadius: borderRadius.md,
+                padding: spacing.sm,
+                cursor: 'pointer',
+                color: colors.gray600,
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = colors.gray100;
+                e.target.style.borderColor = colors.gray400;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = 'transparent';
+                e.target.style.borderColor = colors.gray300;
               }}
             >
-              Resumen de la publicación
-            </label>
-            <textarea
-              id="resumen"
-              name="resumen"
-              value={post.resumen}
-              onChange={handleChange}
-              placeholder="Ingresa un resumen para tu publicación (máximo 500 caracteres)"
-              style={{
-                width: '100%',
-                padding: spacing.md,
-                border: `1px solid ${colors.gray200}`,
-                borderRadius: borderRadius.md,
-                minHeight: '120px',
-                fontSize: typography.fontSize.md,
-                color: colors.textPrimary,
-                resize: 'vertical',
-              }}
-              maxLength={500}
-            />
+              {isExpanded ? '📐 Vista Compacta' : '📏 Vista Expandida'}
+            </button>
+          </div>
+        </div>
+
+        {/* Indicador de progreso */}
+        <ProgressIndicator 
+          currentStep={currentStep}
+          totalSteps={creationSteps.length}
+          steps={creationSteps}
+        />
+      </div>
+
+      {/* Layout principal mejorado */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: isExpanded ? '1fr' : '1fr 320px',
+        gap: spacing.lg,
+        padding: `0 ${spacing.xl} ${spacing.xl}`,
+        animation: 'fadeIn 0.6s ease-out'
+      }}>
+        
+        {/* Columna principal */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: spacing.lg
+        }}>
+          {/* Estadísticas del post */}
+          <PostStats 
+            content={post.content}
+            title={post.title}
+            category={post.category}
+            tags={post.tags}
+          />
+
+          {/* Información básica del post */}
+          <div 
+            className="section-card"
+            style={{
+              backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+              padding: spacing.xl,
+              borderRadius: borderRadius.lg,
+              boxShadow: shadows.md,
+              border: focusedSection === 'basic' ? `2px solid ${colors.secondary}` : 'none'
+            }}
+            onFocus={() => setFocusedSection('basic')}
+            onBlur={() => setFocusedSection(null)}
+          >
             <div style={{
-              textAlign: 'right',
-              marginTop: spacing.xs,
-              fontSize: typography.fontSize.sm,
-              color: colors.textSecondary,
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: spacing.lg
             }}>
-              {post.resumen.length}/500 caracteres
+              <span style={{
+                fontSize: '28px',
+                marginRight: spacing.md,
+                animation: 'bounce 2s infinite'
+              }}>
+                📋
+              </span>
+              <h2 style={{
+                fontSize: typography.fontSize.xl,
+                fontWeight: typography.fontWeight.bold,
+                color: colors.primary,
+                margin: 0
+              }}>
+                Información Básica
+              </h2>
+            </div>
+
+            {/* Título */}
+            <div style={{ marginBottom: spacing.lg }}>
+              <label style={{
+                display: 'block',
+                marginBottom: spacing.sm,
+                fontWeight: typography.fontWeight.semiBold,
+                color: colors.textPrimary,
+                fontSize: typography.fontSize.md
+              }}>
+                📝 Título *
+              </label>
+              <input
+                type="text"
+                name="title"
+                value={post.title}
+                onChange={handleChange}
+                placeholder="Escribe un título atractivo..."
+                className="input-field"
+                style={{
+                  width: '100%',
+                  padding: spacing.md,
+                  borderRadius: borderRadius.md,
+                  border: `2px solid ${colors.gray200}`,
+                  fontSize: typography.fontSize.lg,
+                  backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+                  color: colors.textPrimary,
+                  fontWeight: typography.fontWeight.medium,
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.secondary;
+                  e.target.style.backgroundColor = isDarkMode ? colors.backgroundDarkSecondary : '#f8f9fa';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray200;
+                  e.target.style.backgroundColor = isDarkMode ? colors.backgroundDark : colors.white;
+                }}
+              />
+            </div>
+
+            {/* Resumen */}
+            <div style={{ marginBottom: spacing.lg }}>
+              <label style={{
+                display: 'block',
+                marginBottom: spacing.sm,
+                fontWeight: typography.fontWeight.semiBold,
+                color: colors.textPrimary,
+                fontSize: typography.fontSize.md
+              }}>
+                📄 Resumen
+              </label>
+              <textarea
+                name="resumen"
+                value={post.resumen}
+                onChange={handleChange}
+                placeholder="Breve descripción de tu publicación..."
+                className="input-field"
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: spacing.md,
+                  borderRadius: borderRadius.md,
+                  border: `2px solid ${colors.gray200}`,
+                  fontSize: typography.fontSize.md,
+                  backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+                  color: colors.textPrimary,
+                  outline: 'none',
+                  resize: 'vertical',
+                  minHeight: '80px'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.secondary;
+                  e.target.style.backgroundColor = isDarkMode ? colors.backgroundDarkSecondary : '#f8f9fa';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray200;
+                  e.target.style.backgroundColor = isDarkMode ? colors.backgroundDark : colors.white;
+                }}
+              />
+            </div>
+
+            {/* Etiquetas */}
+            <div>
+              <label style={{
+                display: 'block',
+                marginBottom: spacing.sm,
+                fontWeight: typography.fontWeight.semiBold,
+                color: colors.textPrimary,
+                fontSize: typography.fontSize.md
+              }}>
+                🏷️ Etiquetas
+              </label>
+              <input
+                type="text"
+                name="tags"
+                value={post.tags}
+                onChange={handleChange}
+                placeholder="Separadas por comas: educación, tecnología, innovación..."
+                className="input-field"
+                style={{
+                  width: '100%',
+                  padding: spacing.md,
+                  borderRadius: borderRadius.md,
+                  border: `2px solid ${colors.gray200}`,
+                  fontSize: typography.fontSize.md,
+                  backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
+                  color: colors.textPrimary,
+                  outline: 'none'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = colors.secondary;
+                  e.target.style.backgroundColor = isDarkMode ? colors.backgroundDarkSecondary : '#f8f9fa';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = colors.gray200;
+                  e.target.style.backgroundColor = isDarkMode ? colors.backgroundDark : colors.white;
+                }}
+              />
             </div>
           </div>
 
-          {saveMessage && (
-            <StatusMessage
-              type={saveMessage.type}
-              text={saveMessage.text}
-              icon={saveMessage.icon}
-            />
-          )}
+          {/* Editor de contenido mejorado */}
+          <div 
+            className="section-card"
+            style={{
+              backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+              borderRadius: borderRadius.lg,
+              boxShadow: shadows.md,
+              overflow: 'hidden',
+              border: focusedSection === 'content' ? `2px solid ${colors.secondary}` : 'none'
+            }}
+            onFocus={() => setFocusedSection('content')}
+            onBlur={() => setFocusedSection(null)}
+          >
+            <div style={{
+              padding: spacing.xl,
+              borderBottom: `1px solid ${colors.gray200}`
+            }}>
+              <ContentLabel />
+            </div>
+            
+            <div style={{ 
+              minHeight: '500px',
+              position: 'relative'
+            }}>
+              <DualModeEditor
+                content={post.content}
+                onChange={(newContent) => {
+                  setPost(prev => ({ ...prev, content: newContent }));
+                }}
+                initialMode={post.editorMode}
+                onExport={exportToFile}
+                onImport={importFile}
+              />
+            </div>
+          </div>
 
-          <div style={styles.actionsContainer}>
+          {/* Acciones principales */}
+          <div style={{
+            display: 'flex',
+            gap: spacing.md,
+            justifyContent: 'flex-end',
+            padding: spacing.md,
+            animation: 'slideInUp 0.7s ease-out'
+          }}>
             <button
               onClick={saveDraft}
               disabled={isSaving}
               style={{
                 ...styles.actionButton,
-                ...styles.saveButton
+                ...styles.saveButton,
+                backgroundColor: colors.gray100,
+                color: colors.textPrimary,
+                border: `1px solid ${colors.gray300}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs
               }}
             >
-              {isSaving ? 'Guardando...' : 'Guardar borrador'}
+              {isSaving ? '💾 Guardando...' : '💾 Guardar Borrador'}
             </button>
 
             <button
               onClick={publishPost}
-              disabled={isPublishing}
+              disabled={isPublishing || !post.title || !post.content || !post.category}
               style={{
                 ...styles.actionButton,
-                ...styles.publishButton
+                ...styles.publishButton,
+                backgroundColor: colors.primary,
+                color: colors.white,
+                opacity: (!post.title || !post.content || !post.category) ? 0.6 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs
               }}
             >
-              {isPublishing ? 'Publicando...' : 'Publicar post'}
+              {isPublishing ? '🚀 Publicando...' : '🚀 Publicar'}
             </button>
           </div>
         </div>
+
+        {/* Barra lateral derecha */}
+        {!isExpanded && (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: spacing.lg,
+            animation: 'slideInLeft 0.6s ease-out'
+          }}>
+            {/* Consejos de escritura */}
+            <WritingTips content={post.content} category={post.category} />
+            
+            {/* Metadatos del post */}
+            {renderPostMetadata()}
+            
+            {/* Imagen de portada */}
+            <div 
+              className="section-card"
+              style={{
+                backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+                padding: spacing.lg,
+                borderRadius: borderRadius.lg,
+                boxShadow: shadows.md
+              }}
+            >
+              <h3 style={{
+                fontSize: typography.fontSize.lg,
+                fontWeight: typography.fontWeight.semiBold,
+                marginBottom: spacing.md,
+                color: colors.primary,
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.sm
+              }}>
+                🖼️ Imagen de Portada
+              </h3>
+              <CoverImageUploader
+                coverImage={post.coverImage}
+                coverImagePreview={post.coverImagePreview}
+                onImageChange={handleImageChange}
+              />
+            </div>
+
+            {/* Acciones de importar/exportar */}
+            <div 
+              className="section-card"
+              style={{
+                backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+                padding: spacing.lg,
+                borderRadius: borderRadius.lg,
+                boxShadow: shadows.md
+              }}
+            >
+              <h3 style={{
+                fontSize: typography.fontSize.lg,
+                fontWeight: typography.fontWeight.semiBold,
+                marginBottom: spacing.md,
+                color: colors.primary,
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.sm
+              }}>
+                📁 Gestión de Archivos
+              </h3>
+              <ImportExportActions
+                onExport={exportToFile}
+                onImport={importFile}
+              />
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Mensaje de estado */}
+      {saveMessage && (
+        <StatusMessage
+          message={saveMessage}
+          type={saveMessage.includes('Error') ? 'error' : 'success'}
+          onClose={() => setSaveMessage(null)}
+        />
+      )}
     </div>
   );
 };
