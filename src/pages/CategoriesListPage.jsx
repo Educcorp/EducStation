@@ -33,10 +33,7 @@ const CategoriesListPage = () => {
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    if (!window.sessionStorage.getItem('reloaded-categories')) {
-      window.sessionStorage.setItem('reloaded-categories', 'true');
-      window.location.reload();
-    }
+    window.location.reload();
   }, []);
 
   // Animación de entrada para el título y subtítulo

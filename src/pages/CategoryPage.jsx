@@ -74,10 +74,7 @@ const CategoryPage = () => {
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    if (!window.sessionStorage.getItem('reloaded-category')) {
-      window.sessionStorage.setItem('reloaded-category', 'true');
-      window.location.reload();
-    }
+    window.location.reload();
   }, []);
 
   // Activar animación al montar el componente

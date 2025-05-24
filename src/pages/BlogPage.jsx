@@ -26,10 +26,7 @@ const BlogPage = () => {
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    if (!window.sessionStorage.getItem('reloaded-blog')) {
-      window.sessionStorage.setItem('reloaded-blog', 'true');
-      window.location.reload();
-    }
+    window.location.reload();
   }, []);
 
   // Animación de entrada

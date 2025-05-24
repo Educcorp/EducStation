@@ -18,12 +18,8 @@ const BlogDetailPage = () => {
 
   console.log('BlogDetailPage - ID del post en parámetros:', id);
 
-  // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    if (!window.sessionStorage.getItem('reloaded-blogdetail')) {
-      window.sessionStorage.setItem('reloaded-blogdetail', 'true');
-      window.location.reload();
-    }
+    window.location.reload();
   }, []);
 
   useEffect(() => {

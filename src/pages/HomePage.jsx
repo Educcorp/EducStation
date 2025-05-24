@@ -569,10 +569,7 @@ const HomePage = () => {
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    if (!window.sessionStorage.getItem('reloaded-home')) {
-      window.sessionStorage.setItem('reloaded-home', 'true');
-      window.location.reload();
-    }
+    window.location.reload();
   }, []);
 
   return (
