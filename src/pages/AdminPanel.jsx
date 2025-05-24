@@ -6,22 +6,32 @@ import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
-import { getAllPublicaciones, deletePublicacion, getAdminPublicaciones, getAdminDebugInfo } from '../services/publicacionesService';
+import { deletePublicacion } from '../services/publicacionesService';
 import { toast } from 'react-toastify';
+import { useAdminPosts } from '../components/admin/utils/useAdminPosts';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuth, isSuperUser } = useAuth();
   const { isDarkMode } = useTheme();
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all'); // 'all', 'published', 'draft'
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-  const [debugInfo, setDebugInfo] = useState(null);
-  const [showDebugInfo, setShowDebugInfo] = useState(false);
+
+  // Usar el hook personalizado para cargar los posts del administrador
+  const { 
+    posts, 
+    loading: isLoading, 
+    error,
+    refreshPosts,
+    removePost
+  } = useAdminPosts({ 
+    adminId: user?.id, 
+    searchTerm, 
+    filter 
+  });
 
   // Verificar si el usuario es administrador
   useEffect(() => {
@@ -53,105 +63,11 @@ const AdminPanel = () => {
     }
   }, [notification.show]);
 
-  // Función para obtener información de depuración
-  const fetchDebugInfo = async () => {
-    try {
-      const info = await getAdminDebugInfo();
-      setDebugInfo(info);
-      setShowDebugInfo(true);
-      console.log('Información de depuración:', info);
-    } catch (error) {
-      console.error('Error al obtener información de depuración:', error);
-      toast.error('Error al obtener información de depuración');
-    }
-  };
-
-  // Cargar publicaciones
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        setIsLoading(true);
-        console.log('Iniciando carga de publicaciones...');
-        
-        // Intentar cargar todas las publicaciones y filtrar por usuario actual
-        console.log('Cargando todas las publicaciones y filtrando por ID de administrador...');
-        let allPosts = [];
-        
-        try {
-          // Intentar con el endpoint principal
-          allPosts = await getAllPublicaciones(100, 0, null);
-        } catch (error) {
-          console.error('Error al cargar todas las publicaciones:', error);
-          
-          // Si falla, intentar con el endpoint alternativo
-          try {
-            console.log('Intentando con endpoint alternativo...');
-            const response = await fetch('https://educstation-backend-production.up.railway.app/api/publicaciones/latest?limite=100');
-            if (response.ok) {
-              allPosts = await response.json();
-            }
-          } catch (fallbackError) {
-            console.error('Error en endpoint alternativo:', fallbackError);
-          }
-        }
-        
-        console.log(`Total de publicaciones cargadas: ${allPosts.length}`);
-        
-        // Filtrar publicaciones por ID de administrador del usuario actual
-        if (user && user.id) {
-          console.log(`Filtrando publicaciones para el usuario ID: ${user.id}`);
-          
-          // Filtrar por ID_administrador que coincida con el ID del usuario actual
-          const userPosts = allPosts.filter(post => {
-            const adminIdMatch = post.ID_administrador === user.id;
-            if (adminIdMatch) {
-              console.log(`Coincidencia encontrada para publicación ID: ${post.ID_publicaciones}`);
-            }
-            return adminIdMatch;
-          });
-          
-          console.log(`Publicaciones filtradas para el usuario: ${userPosts.length}`);
-          setPosts(userPosts);
-          
-          if (userPosts.length > 0) {
-            showNotification(`Se encontraron ${userPosts.length} publicaciones para tu cuenta`, 'success');
-          } else {
-            showNotification('No se encontraron publicaciones asociadas a tu cuenta', 'info');
-          }
-        } else {
-          console.log('No hay información de usuario disponible para filtrar publicaciones');
-          setPosts([]);
-          showNotification('No se puede identificar tu cuenta de administrador', 'error');
-        }
-      } catch (error) {
-        console.error('Error al cargar publicaciones:', error);
-        toast.error('Error al cargar las publicaciones');
-        setPosts([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPosts();
-  }, [user]);
-
-  // Filtrar publicaciones según búsqueda y filtro
-  const filteredPosts = posts.filter(post => {
-    const matchesSearch = post.Titulo.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                        (post.Resumen && post.Resumen.toLowerCase().includes(searchTerm.toLowerCase()));
-    
-    if (filter === 'all') return matchesSearch;
-    if (filter === 'published') return matchesSearch && post.Estado === 'publicado';
-    if (filter === 'draft') return matchesSearch && post.Estado === 'borrador';
-    
-    return matchesSearch;
-  });
-
   // Manejar eliminación de publicación
   const handleDeletePost = async (postId) => {
     try {
       await deletePublicacion(postId);
-      setPosts(posts.filter(post => post.ID_publicaciones !== postId));
+      removePost(postId); // Eliminar del estado local
       toast.success('Publicación eliminada correctamente');
       setConfirmDelete(null);
       showNotification('Publicación eliminada correctamente');
@@ -185,6 +101,28 @@ const AdminPanel = () => {
       case 'borrador': return { bg: isDarkMode ? '#3b3054' : '#f3e8ff', text: isDarkMode ? '#c084fc' : '#7e22ce' };
       default: return { bg: isDarkMode ? '#374151' : '#f3f4f6', text: isDarkMode ? '#9ca3af' : '#4b5563' };
     }
+  };
+
+  // Procesar imagen de portada
+  const getImageUrl = (imageData) => {
+    if (!imageData) return '/assets/images/placeholder.jpg';
+    
+    // Si ya es una URL o un string de base64, devolverlo tal cual
+    if (typeof imageData === 'string') {
+      return imageData.startsWith('data:') ? imageData : `data:image/jpeg;base64,${imageData}`;
+    }
+    
+    // Si es un objeto, intentar convertirlo a string
+    try {
+      if (typeof imageData === 'object') {
+        const imgString = JSON.stringify(imageData);
+        console.warn('Imagen en formato objeto:', imgString);
+      }
+    } catch (e) {
+      console.error('Error al procesar imagen:', e);
+    }
+    
+    return '/assets/images/placeholder.jpg';
   };
 
   // Estilos
@@ -526,12 +464,6 @@ const AdminPanel = () => {
     }
   };
 
-  // Procesar imagen de portada
-  const getImageUrl = (imageData) => {
-    if (!imageData) return '/assets/images/placeholder.jpg';
-    return imageData.startsWith('data:') ? imageData : `data:image/jpeg;base64,${imageData}`;
-  };
-
   return (
     <div style={styles.container}>
       <Header />
@@ -592,9 +524,9 @@ const AdminPanel = () => {
           <div style={styles.loadingState}>
             <div style={styles.loadingSpinner}></div>
           </div>
-        ) : filteredPosts.length > 0 ? (
+        ) : posts.length > 0 ? (
           <div style={styles.postsContainer}>
-            {filteredPosts.map(post => (
+            {posts.map(post => (
               <div key={post.ID_publicaciones} style={styles.postCard} className="postCard">
                 <div style={styles.postHeader} className="postHeader">
                   <div style={styles.postImageContainer} className="postImageContainer">
@@ -612,7 +544,7 @@ const AdminPanel = () => {
                     <div style={styles.postTitle}>{post.Titulo}</div>
                     <div style={styles.postMeta}>
                       <div style={styles.postDate}>
-                        {formatDate(post.Fecha_creacion || post.Fecha_publicacion)}
+                        {formatDate(post.Fecha_modificacion || post.Fecha_creacion)}
                       </div>
                       <div style={styles.postStatus(post.Estado)}>
                         {post.Estado === 'publicado' ? 'Publicado' : 'Borrador'}
@@ -672,11 +604,16 @@ const AdminPanel = () => {
               <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
                 Es superusuario: {isSuperUser ? 'Sí' : 'No'}
               </p>
+              {error && (
+                <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px', color: 'red' }}>
+                  Error: {error}
+                </p>
+              )}
             </div>
             <p style={{ marginTop: '20px' }}>Puedes intentar:</p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
               <button 
-                onClick={() => window.location.reload()} 
+                onClick={() => refreshPosts()} 
                 style={{
                   padding: '8px 16px',
                   backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0',
@@ -685,7 +622,7 @@ const AdminPanel = () => {
                   cursor: 'pointer'
                 }}
               >
-                Recargar la página
+                Recargar publicaciones
               </button>
               <button 
                 onClick={() => {
@@ -733,59 +670,6 @@ const AdminPanel = () => {
                 onClick={() => handleDeletePost(confirmDelete)}
               >
                 Eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal de depuración */}
-      {showDebugInfo && (
-        <div style={styles.modalOverlay} onClick={() => setShowDebugInfo(false)}>
-          <div 
-            style={{
-              ...styles.modalContent,
-              width: '80%',
-              maxWidth: '800px',
-              maxHeight: '80vh',
-              overflow: 'auto'
-            }} 
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 style={styles.modalTitle}>Información de Depuración</h3>
-            <div style={{ 
-              backgroundColor: isDarkMode ? '#1e1e1e' : '#f5f5f5',
-              padding: '15px',
-              borderRadius: '5px',
-              marginBottom: '15px',
-              fontFamily: 'monospace',
-              whiteSpace: 'pre-wrap',
-              overflowX: 'auto'
-            }}>
-              {debugInfo ? (
-                <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
-              ) : (
-                'No hay información disponible'
-              )}
-            </div>
-            <div style={styles.modalActions}>
-              <button
-                style={styles.cancelButton}
-                onClick={() => setShowDebugInfo(false)}
-              >
-                Cerrar
-              </button>
-              <button
-                style={{
-                  ...styles.deleteButton,
-                  backgroundColor: isDarkMode ? '#2c5282' : '#3182ce'
-                }}
-                onClick={() => {
-                  fetchDebugInfo();
-                  toast.info('Actualizando información de depuración');
-                }}
-              >
-                Actualizar
               </button>
             </div>
           </div>
