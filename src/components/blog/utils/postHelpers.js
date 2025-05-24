@@ -44,11 +44,24 @@ export const formatDateTime = (dateString) => {
 export const extractSummary = (content, maxLength = 150) => {
   if (!content) return '';
   
-  // Eliminar etiquetas HTML
-  const plainText = content.replace(/<[^>]+>/g, '');
+  // Crear un elemento temporal para decodificar HTML
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = content;
   
-  // Eliminar espacios extra y saltos de línea
-  const cleanText = plainText.replace(/\s+/g, ' ').trim();
+  // Obtener el texto plano
+  const plainText = tempDiv.textContent || tempDiv.innerText || '';
+  
+  // Eliminar espacios extra, saltos de línea y caracteres especiales
+  const cleanText = plainText
+    .replace(/\s+/g, ' ') // Reemplazar múltiples espacios con uno solo
+    .replace(/[\r\n\t]/g, ' ') // Reemplazar saltos de línea y tabs
+    .replace(/&nbsp;/g, ' ') // Reemplazar entidades HTML de espacio
+    .replace(/&amp;/g, '&') // Reemplazar entidades HTML de ampersand
+    .replace(/&lt;/g, '<') // Reemplazar entidades HTML de menor que
+    .replace(/&gt;/g, '>') // Reemplazar entidades HTML de mayor que
+    .replace(/&quot;/g, '"') // Reemplazar entidades HTML de comillas
+    .replace(/&#39;/g, "'") // Reemplazar entidades HTML de apostrofe
+    .trim();
   
   return cleanText.length > maxLength
     ? cleanText.substring(0, maxLength) + '...'
