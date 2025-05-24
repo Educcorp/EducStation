@@ -705,7 +705,7 @@ const Header = () => {
             onMouseLeave={() => setHoveredItem(null)}
             onClick={e => {
               e.preventDefault();
-              navigate('/');
+              navigate('/', { state: { forceReload: true } });
             }}
           >
             <div style={{
@@ -751,7 +751,11 @@ const Header = () => {
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
-                    navigate(item.path);
+                    if(item.path === '/') {
+                      navigate('/', { state: { forceReload: true } });
+                    } else {
+                      navigate(item.path);
+                    }
                   }}
                 >
                   <span style={{ 
