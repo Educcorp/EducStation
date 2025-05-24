@@ -1,6 +1,6 @@
 // src/components/layout/Footer.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, transitions } from '../../styles/theme';
 import { FaHome, FaInfo, FaEnvelope, FaQuestionCircle, FaPenSquare, FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaList, FaTags, FaGlobe, FaGithub, FaLinkedin } from 'react-icons/fa';
@@ -8,6 +8,7 @@ import { SiX } from 'react-icons/si';
 
 const Footer = () => {
   const { isDarkMode, colors } = useTheme(); // Obtener colores actualizados del contexto
+  const location = useLocation(); // Para detectar la página actual
   const [emailValue, setEmailValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -51,6 +52,29 @@ const Footer = () => {
     e.target.style.background = `linear-gradient(90deg, ${colors.secondary} 60%, ${colors.primaryLight} 100%)`;
     e.target.style.boxShadow = `0 0 8px 0 ${colors.secondary}33`;
     e.target.style.color = isDarkMode ? '#fff' : colors.primary;
+  };
+
+  // Función para manejar navegación con recarga instantánea
+  const handleInstantNavigation = (path, e) => {
+    e.preventDefault();
+    
+    // Para páginas con recarga forzada instantánea
+    if(path === '/' || path === '/blog' || path === '/categorias' || 
+       path === '/about' || path === '/contact' || path.startsWith('/categoria/')) {
+      // Si ya estamos en la página, recargar inmediatamente
+      if(location.pathname === path || 
+         (path === '/blog' && (location.pathname.startsWith('/blog') || 
+          location.pathname.includes('/post/') || 
+          location.pathname.includes('/category/')))) {
+        window.location.reload();
+      } else {
+        // Si estamos en otra página, navegar directamente con recarga instantánea
+        window.location.href = path;
+      }
+    } else {
+      // Para otras páginas, navegación normal
+      window.location.href = path;
+    }
   };
 
   // --- ANIMACIONES Y EFECTOS GLOW ---
@@ -367,7 +391,10 @@ const Footer = () => {
         }}>
           {/* Columna Izquierda: Logo, descripción y redes sociales */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: spacing.sm }}>
-            <div style={styles.logo}>
+            <div 
+              style={styles.logo}
+              onClick={(e) => handleInstantNavigation('/', e)}
+            >
               <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
               <span style={{ color: isDarkMode ? '#fff' : colors.white, marginLeft: spacing.sm, fontWeight: typography.fontWeight.bold }}>EducStation</span>
             </div>
@@ -413,19 +440,19 @@ const Footer = () => {
               <ul style={styles.links}>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaHome size={18} /></span>
-                  <Link to="/" style={styles.linkAnchor}>Inicio</Link>
+                  <a href="/" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/', e)}>Inicio</a>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaInfo size={18} /></span>
-                  <Link to="/about" style={styles.linkAnchor}>Acerca de</Link>
+                  <a href="/about" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/about', e)}>Acerca de</a>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaEnvelope size={18} /></span>
-                  <Link to="/contact" style={styles.linkAnchor}>Contacto</Link>
+                  <a href="/contact" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/contact', e)}>Contacto</a>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaQuestionCircle size={18} /></span>
-                  <Link to="/contact#faq-section" style={styles.linkAnchor}>FAQ</Link>
+                  <a href="/contact#faq-section" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/contact', e)}>FAQ</a>
                 </li>
               </ul>
             </div>
@@ -435,19 +462,19 @@ const Footer = () => {
               <ul style={styles.links}>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaBook size={18} /></span>
-                  <Link to="/categoria/1" style={styles.linkAnchor}>Noticias</Link>
+                  <a href="/categoria/1" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/categoria/1', e)}>Noticias</a>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaChartBar size={18} /></span>
-                  <Link to="/categoria/2" style={styles.linkAnchor}>Técnicas de Estudio</Link>
+                  <a href="/categoria/2" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/categoria/2', e)}>Técnicas de Estudio</a>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaAward size={18} /></span>
-                  <Link to="/categoria/6" style={styles.linkAnchor}>Desarrollo Profesional</Link>
+                  <a href="/categoria/6" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/categoria/6', e)}>Desarrollo Profesional</a>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaTags size={18} /></span>
-                  <Link to="/https://www.educstation.com/blog" style={styles.linkAnchor}>Descubre más categorías</Link>
+                  <a href="/categorias" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/categorias', e)}>Descubre más categorías</a>
                 </li>
               </ul>
             </div>
@@ -459,9 +486,9 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
           <div style={styles.bottomLinks}>
-            <Link to="/terms" style={styles.bottomLink}>Términos</Link>
-            <Link to="/privacy" style={styles.bottomLink}>Privacidad</Link>
-            <Link to="/cookies" style={styles.bottomLink}>Cookies</Link>
+            <a href="/terms" style={styles.bottomLink} onClick={(e) => handleInstantNavigation('/terms', e)}>Términos</a>
+            <a href="/privacy" style={styles.bottomLink} onClick={(e) => handleInstantNavigation('/privacy', e)}>Privacidad</a>
+            <a href="/cookies" style={styles.bottomLink} onClick={(e) => handleInstantNavigation('/cookies', e)}>Cookies</a>
           </div>
         </div>
       </div>
