@@ -11,7 +11,6 @@ import '../../styles/postHtmlMinimal.css';
 import { useTheme } from '../../context/ThemeContext';
 import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicionales
 import ComentariosList from '../comentarios/ComentariosList';
-import { processPostHTML } from './utils/postHelpers';
 
 const PostViewer = () => {
   const location = useLocation();
@@ -193,8 +192,27 @@ const PostViewer = () => {
 
   // Función para crear un componente con el contenido HTML
   const createPostComponent = () => {
-    // Usar la función processPostHTML para procesar el contenido
-    const processedContent = processPostHTML(postContent);
+    // Usar el contenido HTML directamente sin procesamiento excesivo
+    // Solo hacer una corrección mínima para las imágenes
+    let processedContent = postContent;
+    
+    // Solo asegurar que las imágenes no se desborden
+    processedContent = processedContent.replace(
+      /<img([^>]*?)>/g,
+      (match, attributes) => {
+        if (!attributes.includes('max-width')) {
+          const styleMatch = attributes.match(/style="([^"]*)"/);
+          if (styleMatch) {
+            const existingStyle = styleMatch[1];
+            const newStyle = existingStyle + '; max-width: 100%; height: auto;';
+            return match.replace(styleMatch[0], `style="${newStyle}"`);
+          } else {
+            return `<img${attributes} style="max-width: 100%; height: auto;">`;
+          }
+        }
+        return match;
+      }
+    );
     
     return {
       __html: processedContent
