@@ -36,7 +36,7 @@ const CategoryPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  
+
   // Estado para los filtros
   const [selectedFilter, setSelectedFilter] = useState('reciente');
   const [showFilterOptions, setShowFilterOptions] = useState(false);
@@ -137,7 +137,7 @@ const CategoryPage = () => {
         // Cargar posts de esta categoría
         const postsData = await searchByTags(id, 12, 0);
         setAllCategoryPosts(Array.isArray(postsData) ? postsData : []);
-        
+
         // Calcular total de páginas
         const totalPosts = Array.isArray(postsData) ? postsData.length : 0;
         setTotalPages(Math.ceil(totalPosts / 9));
@@ -164,7 +164,7 @@ const CategoryPage = () => {
       setTotalPages(1);
     }
   }, [id]);
-  
+
   // Efecto para manejar la búsqueda con debounce
   useEffect(() => {
     const searchPosts = async () => {
@@ -178,24 +178,24 @@ const CategoryPage = () => {
       try {
         setSearchLoading(true);
         console.log(`Buscando en categoría ${id} con término: "${searchQuery}"`);
-        
+
         // Buscar en todas las publicaciones usando el servicio general
         const searchResults = await searchPublicaciones(searchQuery, 50, 0);
-        
+
         // Filtrar los resultados para que solo incluyan posts de la categoría actual
         const categorySearchResults = searchResults.filter(post => {
-          return post.categorias && post.categorias.some(cat => 
+          return post.categorias && post.categorias.some(cat =>
             cat.ID_categoria === parseInt(id)
           );
         });
-        
+
         console.log(`Encontrados ${categorySearchResults.length} posts en la categoría ${id} para "${searchQuery}"`);
         setPosts(categorySearchResults);
-        
+
       } catch (error) {
         console.error('Error al buscar posts:', error);
         // En caso de error, usar filtrado local como fallback
-        const localFilteredPosts = allCategoryPosts.filter(post => 
+        const localFilteredPosts = allCategoryPosts.filter(post =>
           post.Titulo.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (post.Contenido && post.Contenido.toLowerCase().includes(searchQuery.toLowerCase())) ||
           (post.Resumen && post.Resumen.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -208,7 +208,7 @@ const CategoryPage = () => {
 
     // Debounce la búsqueda para evitar demasiadas llamadas al API
     const timeoutId = setTimeout(searchPosts, 300);
-    
+
     return () => clearTimeout(timeoutId);
   }, [searchQuery, allCategoryPosts, id]);
 
@@ -218,13 +218,13 @@ const CategoryPage = () => {
       setPosts(allCategoryPosts);
     }
   }, [allCategoryPosts, searchQuery]);
-  
+
   // Efecto para limpiar la búsqueda cuando cambie de categoría
   useEffect(() => {
     setSearchQuery('');
     setCurrentPage(1);
   }, [id]);
-  
+
   // Ordenar posts según el filtro seleccionado
   const sortedPosts = [...posts].sort((a, b) => {
     switch (selectedFilter) {
@@ -238,13 +238,13 @@ const CategoryPage = () => {
         return 0;
     }
   });
-  
+
   // Efecto para recalcular paginación cuando cambien los posts filtrados
   useEffect(() => {
     const postsPerPage = 9;
     const newTotalPages = Math.ceil(sortedPosts.length / postsPerPage);
     setTotalPages(newTotalPages);
-    
+
     // Si la página actual es mayor que el total de páginas, resetear a la primera página
     if (currentPage > newTotalPages && newTotalPages > 0) {
       setCurrentPage(1);
@@ -257,7 +257,7 @@ const CategoryPage = () => {
       setCurrentPage(1);
     }
   }, [searchQuery]);
-  
+
   // Paginación
   const postsPerPage = 9;
   const indexOfLastPost = currentPage * postsPerPage;
@@ -300,7 +300,7 @@ const CategoryPage = () => {
 
   // Volver a la lista de categorías con recarga instantánea
   const goBackToCategories = () => {
-    if(location.pathname === '/categorias') {
+    if (location.pathname === '/categorias') {
       window.location.reload();
     } else {
       window.location.href = '/categorias';
@@ -371,6 +371,17 @@ const CategoryPage = () => {
 
     // Convertir de vuelta a hex
     return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
+  };
+
+  // Function to get very light transparent background for selections
+  const getSoftBackground = (color, opacity = 0.08) => {
+    // Convert hex to rgb
+    let hex = color.replace('#', '');
+    let r = parseInt(hex.substring(0, 2), 16);
+    let g = parseInt(hex.substring(2, 4), 16);
+    let b = parseInt(hex.substring(4, 6), 16);
+
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   };
 
   // Close dropdowns when clicking outside
@@ -920,14 +931,14 @@ const CategoryPage = () => {
     const handleCategorySelect = (categoryId) => {
       if (categoryId === 'explore') {
         // Navigate to categories page with instant reload
-        if(location.pathname === '/categorias') {
+        if (location.pathname === '/categorias') {
           window.location.reload();
         } else {
           window.location.href = '/categorias';
         }
       } else if (categoryId === '') {
         // Navigate to blog page with instant reload
-        if(location.pathname === '/blog') {
+        if (location.pathname === '/blog') {
           window.location.reload();
         } else {
           window.location.href = '/blog';
@@ -935,7 +946,7 @@ const CategoryPage = () => {
       } else if (categoryId !== '') {
         // Navigate to specific category page with instant reload
         const targetPath = `/categoria/${categoryId}`;
-        if(location.pathname === targetPath) {
+        if (location.pathname === targetPath) {
           window.location.reload();
         } else {
           window.location.href = targetPath;
@@ -951,8 +962,8 @@ const CategoryPage = () => {
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
-            background: `linear-gradient(to right, ${getLighterColor(getCurrentCategoryColor(), 0.8)}, ${getLighterColor(getCurrentCategoryColor(), 0.9)})`,
-            boxShadow: `0 4px 8px ${getCurrentCategoryColor()}33`,
+            background: `linear-gradient(to right, ${getSoftBackground(getCurrentCategoryColor(), 0.03)}, ${getSoftBackground(getCurrentCategoryColor(), 0.06)})`,
+            boxShadow: `0 4px 8px ${getSoftBackground(getCurrentCategoryColor(), 0.12)}`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -980,14 +991,14 @@ const CategoryPage = () => {
         {categoryDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
-            boxShadow: `0 8px 20px ${getCurrentCategoryColor()}33`,
+            boxShadow: `0 8px 20px ${getSoftBackground(getCurrentCategoryColor(), 0.15)}`,
             backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
             <div
               style={{
                 ...styles.dropdownItem,
-                backgroundColor: !id ? getLighterColor(getCurrentCategoryColor(), 0.1) : 'transparent',
+                backgroundColor: !id ? getSoftBackground(getCurrentCategoryColor(), 0.1) : 'transparent',
                 color: !id ? getCurrentCategoryColor() : colors.primary,
                 fontWeight: !id ? 600 : 400,
                 borderLeft: `3px solid ${!id ? getCurrentCategoryColor() : 'transparent'}`,
@@ -995,7 +1006,7 @@ const CategoryPage = () => {
               onClick={() => handleCategorySelect('')}
               onMouseEnter={(e) => {
                 if (id) {
-                  e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                  e.currentTarget.style.backgroundColor = getSoftBackground(getCurrentCategoryColor(), 0.05);
                   e.currentTarget.style.color = getCurrentCategoryColor();
                 }
               }}
@@ -1008,14 +1019,14 @@ const CategoryPage = () => {
             >
               <span style={{
                 ...styles.dropdownIcon,
-                backgroundColor: 'rgba(31, 78, 78, 0.2)',
+                backgroundColor: getSoftBackground(getCurrentCategoryColor(), 0.15),
                 width: '28px',
                 height: '28px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: colors.primary,
+                color: getCurrentCategoryColor(),
               }}>
                 <FaFilter size={14} />
               </span>
@@ -1028,7 +1039,7 @@ const CategoryPage = () => {
                 style={{
                   ...styles.dropdownItem,
                   backgroundColor: parseInt(id) === category.ID_categoria
-                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
+                    ? getSoftBackground(getCurrentCategoryColor(), 0.1)
                     : 'transparent',
                   color: parseInt(id) === category.ID_categoria
                     ? categoryColors[category.ID_categoria]
@@ -1039,7 +1050,7 @@ const CategoryPage = () => {
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
                 onMouseEnter={(e) => {
                   if (parseInt(id) !== category.ID_categoria) {
-                    e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                    e.currentTarget.style.backgroundColor = getSoftBackground(getCurrentCategoryColor(), 0.05);
                     e.currentTarget.style.color = categoryColors[category.ID_categoria];
                   }
                 }}
@@ -1052,7 +1063,7 @@ const CategoryPage = () => {
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: `${categoryColors[category.ID_categoria]}33`,
+                  backgroundColor: getSoftBackground(categoryColors[category.ID_categoria], 0.15),
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
@@ -1066,42 +1077,6 @@ const CategoryPage = () => {
                 {category.Nombre_categoria || category.Nombre}
               </div>
             ))}
-
-            <div
-              style={{
-                ...styles.dropdownItem,
-                backgroundColor: 'rgba(31, 147, 111, 0.1)',
-                marginTop: spacing.sm,
-                borderTop: `1px solid rgba(31, 78, 78, 0.1)`,
-                paddingTop: spacing.md,
-                color: colors.primary,
-                fontWeight: 600,
-              }}
-              onClick={() => handleCategorySelect('explore')}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(31, 147, 111, 0.2)';
-                e.currentTarget.style.color = colors.primary;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(31, 147, 111, 0.1)';
-                e.currentTarget.style.color = colors.primary;
-              }}
-            >
-              <span style={{
-                ...styles.dropdownIcon,
-                backgroundColor: 'rgba(31, 147, 111, 0.2)',
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: colors.primary,
-              }}>
-                <FaTags size={14} />
-              </span>
-              Explorar todas las categorías
-            </div>
           </div>
         )}
       </div>
@@ -1128,8 +1103,8 @@ const CategoryPage = () => {
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
-            background: `linear-gradient(to right, ${getLighterColor(getCurrentCategoryColor(), 0.8)}, ${getLighterColor(getCurrentCategoryColor(), 0.9)})`,
-            boxShadow: `0 4px 8px ${getCurrentCategoryColor()}33`,
+            background: `linear-gradient(to right, ${getSoftBackground(getCurrentCategoryColor(), 0.03)}, ${getSoftBackground(getCurrentCategoryColor(), 0.06)})`,
+            boxShadow: `0 4px 8px ${getSoftBackground(getCurrentCategoryColor(), 0.12)}`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -1157,7 +1132,7 @@ const CategoryPage = () => {
         {sortDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
-            boxShadow: `0 8px 20px ${getCurrentCategoryColor()}33`,
+            boxShadow: `0 8px 20px ${getSoftBackground(getCurrentCategoryColor(), 0.15)}`,
             backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
@@ -1167,7 +1142,7 @@ const CategoryPage = () => {
                 style={{
                   ...styles.dropdownItem,
                   backgroundColor: selectedFilter === option.value
-                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
+                    ? getSoftBackground(getCurrentCategoryColor(), 0.1)
                     : 'transparent',
                   color: selectedFilter === option.value
                     ? getCurrentCategoryColor()
@@ -1180,7 +1155,7 @@ const CategoryPage = () => {
                 onClick={() => handleSortSelect(option.value)}
                 onMouseEnter={(e) => {
                   if (selectedFilter !== option.value) {
-                    e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                    e.currentTarget.style.backgroundColor = getSoftBackground(getCurrentCategoryColor(), 0.05);
                     e.currentTarget.style.color = getCurrentCategoryColor();
                   }
                 }}
@@ -1193,7 +1168,7 @@ const CategoryPage = () => {
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: `${getCurrentCategoryColor()}33`,
+                  backgroundColor: getSoftBackground(getCurrentCategoryColor(), 0.15),
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
@@ -1219,7 +1194,7 @@ const CategoryPage = () => {
       color: colors.textPrimary,
       minHeight: "100vh",
       backgroundImage: `radial-gradient(circle at 15% 50%, ${getLighterColor(categoryColor, 0.9)}90 0%, transparent 25%),
-         radial-gradient(circle at 85% 30%, ${getLighterColor(categoryColor, 0.9)}80 0%, transparent 25%)`,
+           radial-gradient(circle at 85% 30%, ${getLighterColor(categoryColor, 0.9)}80 0%, transparent 25%)`,
       transition: 'background-color 0.5s ease'
     }}>
       <Header />
@@ -1229,26 +1204,26 @@ const CategoryPage = () => {
           <div style={styles.loadingContainer}>
             <div style={styles.loadingSpinner}></div>
             <style>{`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-              @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-              }
-              @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-              }
-              .hover-scale {
-                transition: transform 0.3s ease;
-              }
-              .hover-scale:hover {
-                transform: scale(1.03);
-              }
-            `}</style>
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
+                }
+                @keyframes fadeIn {
+                  from { opacity: 0; transform: translateY(10px); }
+                  to { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes pulse {
+                  0% { transform: scale(1); }
+                  50% { transform: scale(1.05); }
+                  100% { transform: scale(1); }
+                }
+                .hover-scale {
+                  transition: transform 0.3s ease;
+                }
+                .hover-scale:hover {
+                  transform: scale(1.03);
+                }
+              `}</style>
           </div>
         ) : error ? (
           <div style={styles.errorContainer}>
@@ -1257,7 +1232,7 @@ const CategoryPage = () => {
             <button
               onClick={() => {
                 // Navigate to categories page with instant reload
-                if(location.pathname === '/categorias') {
+                if (location.pathname === '/categorias') {
                   window.location.reload();
                 } else {
                   window.location.href = '/categorias';
@@ -1331,7 +1306,6 @@ const CategoryPage = () => {
                     fontSize: typography.fontSize.md,
                     fontWeight: typography.fontWeight.medium,
                     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    border: '1px solid rgba(255,255,255,0.3)'
                   }}>
                     Número de posts
                     <span style={{
@@ -1402,9 +1376,9 @@ const CategoryPage = () => {
                 >
                   <div style={{ flex: '1 1 300px', position: 'relative' }}>
                     <div style={{
-                      position: 'absolute', 
-                      left: spacing.md, 
-                      top: '50%', 
+                      position: 'absolute',
+                      left: spacing.md,
+                      top: '50%',
                       transform: 'translateY(-50%)',
                       color: colors.gray600,
                       pointerEvents: 'none',
@@ -1498,7 +1472,7 @@ const CategoryPage = () => {
                     <button
                       onClick={() => {
                         // Navigate to categories page with instant reload
-                        if(location.pathname === '/categorias') {
+                        if (location.pathname === '/categorias') {
                           window.location.reload();
                         } else {
                           window.location.href = '/categorias';
