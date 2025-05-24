@@ -664,9 +664,8 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         let current = element;
         while (current) {
           if (current.classList && 
-              (current.classList.contains('image-container') || 
-               current.classList.contains('resize-handle'))) {
-            // Si estamos dentro de una imagen o sus controles, no mostrar la barra
+              current.classList.contains('image-container')) {
+            // Si estamos dentro de una imagen, no mostrar la barra
             setVisible(false);
             return;
           }
@@ -855,8 +854,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       // Comprobar si el clic fue en una imagen o sus controles
       while (targetElement && targetElement !== editorRef.current) {
         if (targetElement.classList && 
-            (targetElement.classList.contains('image-container') || 
-             targetElement.classList.contains('resize-handle'))) {
+            (targetElement.classList.contains('image-container'))) {
           // Si se hizo clic en una imagen, no mostrar la barra
           setVisible(false);
           return;
@@ -980,8 +978,7 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
         let current = element;
         while (current) {
           if (current.classList && 
-              (current.classList.contains('image-container') || 
-               current.classList.contains('resize-handle'))) {
+              current.classList.contains('image-container')) {
             isImageSelection = true;
             break;
           }

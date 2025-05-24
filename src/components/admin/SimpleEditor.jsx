@@ -410,8 +410,7 @@ const SimpleEditor = ({ content, onChange }) => {
         
         // Creamos HTML personalizado para la imagen con atributos para resize y estilos
         const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-          <img src="${processedImgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
-          <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
+          <img src="${processedImgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
         </div>`;
         
         // Insertamos el HTML personalizado
@@ -496,7 +495,6 @@ const SimpleEditor = ({ content, onChange }) => {
       if (container.getAttribute('data-handlers-added')) return;
       
       const img = container.querySelector('img');
-      const resizeHandle = container.querySelector('.resize-handle');
       
       // Detectar y establecer el tamaño real de la imagen
       if (img) {
@@ -668,10 +666,6 @@ const SimpleEditor = ({ content, onChange }) => {
       let isDragging = false;
       let startX, startY, startLeft, startTop;
       
-      // Variables para el resize
-      let isResizing = false;
-      let startWidth, startHeight;
-      
       // Indica si la imagen está seleccionada
       let isSelected = false;
       
@@ -700,7 +694,7 @@ const SimpleEditor = ({ content, onChange }) => {
         checkForSelectedImage();
         
         // Si no estamos arrastrando ni redimensionando, mantener el foco en el editor
-        if (!isDragging && !isResizing) {
+        if (!isDragging) {
           editorRef.current.focus();
         }
       });
@@ -730,7 +724,7 @@ const SimpleEditor = ({ content, onChange }) => {
         const wrapControls = container.querySelector('.text-wrap-controls');
         const wrapControlButton = container.querySelector('.wrap-control-button');
         
-        if (e.target !== resizeHandle && 
+        if (e.target !== wrapControlButton && 
             !(wrapControls && wrapControls.contains(e.target)) && 
             e.target !== wrapControlButton) {
           isDragging = true;
@@ -750,19 +744,6 @@ const SimpleEditor = ({ content, onChange }) => {
           e.stopPropagation(); // Evitar que el evento llegue al editor
         }
       });
-      
-      // Evento para comenzar resize
-      if (resizeHandle) {
-        resizeHandle.addEventListener('mousedown', (e) => {
-          isResizing = true;
-          startX = e.clientX;
-          startY = e.clientY;
-          startWidth = parseInt(window.getComputedStyle(img).width);
-          startHeight = parseInt(window.getComputedStyle(img).height);
-          e.preventDefault();
-          e.stopPropagation();
-        });
-      }
       
       // Eventos para el documento (para capturar fuera del editor)
       document.addEventListener('mousemove', (e) => {
@@ -784,24 +765,12 @@ const SimpleEditor = ({ content, onChange }) => {
           }
           
           e.preventDefault();
-        } else if (isResizing && img) {
-          const deltaX = e.clientX - startX;
-          const aspectRatio = parseFloat(img.getAttribute('data-aspect-ratio')) || 1;
-          
-          // Calcular nuevo ancho manteniendo el aspect ratio
-          const newWidth = Math.max(50, startWidth + deltaX);
-          const newHeight = newWidth / aspectRatio;
-          
-          img.style.width = `${newWidth}px`;
-          img.style.height = `${newHeight}px`;
-          e.preventDefault();
         }
       });
       
       document.addEventListener('mouseup', (e) => {
-        if (isDragging || isResizing) {
+        if (isDragging) {
           isDragging = false;
-          isResizing = false;
           handleContentChange();
           
           // Restaurar el foco al editor después de manipular una imagen
@@ -833,7 +802,7 @@ const SimpleEditor = ({ content, onChange }) => {
         const wrapControls = container.querySelector('.text-wrap-controls');
         const wrapControlButton = container.querySelector('.wrap-control-button');
         
-        if (e.target !== resizeHandle && 
+        if (e.target !== wrapControlButton && 
             !(wrapControls && wrapControls.contains(e.target)) && 
             e.target !== wrapControlButton) {
           // Posicionar el cursor después de la imagen
@@ -954,8 +923,7 @@ const SimpleEditor = ({ content, onChange }) => {
               
               // Creamos HTML personalizado para la imagen
               const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-                <img src="${processedImgSrc}" alt="Imagen pegada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
-                <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
+                <img src="${processedImgSrc}" alt="Imagen pegada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
               </div>`;
               
               document.execCommand('insertHTML', false, imgHtml);
@@ -1102,8 +1070,7 @@ const SimpleEditor = ({ content, onChange }) => {
             
             // Creamos HTML personalizado para la imagen
             const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-              <img src="${processedImgSrc}" alt="Imagen arrastrada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
-              <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
+              <img src="${processedImgSrc}" alt="Imagen arrastrada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
             </div>`;
             
             document.execCommand('insertHTML', false, imgHtml);
