@@ -1,14 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaEdit, FaTrash, FaEye, FaPlus } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows } from '../../styles/theme';
-
-// Importar el hook personalizado
-import { useAdminPosts } from './utils/useAdminPosts';
+import { getAllPublicaciones } from '../../services/publicacionesService';
 
 const AdminPostList = ({ 
-  adminId, 
   searchTerm, 
   filter = 'all', 
   sortOrder = 'recientes',
@@ -17,15 +14,88 @@ const AdminPostList = ({
 }) => {
   const { colors, isDarkMode } = useTheme();
   
-  // Usar el hook personalizado para manejar los posts
-  const {
-    posts: displayPosts,
-    loading,
-    loadingMore,
-    error,
-    hasMore,
-    loadMorePosts
-  } = useAdminPosts({ adminId, searchTerm, filter, sortOrder });
+  // Estados locales
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Cargar publicaciones
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log('AdminPostList: Cargando publicaciones...');
+        
+        const data = await getAllPublicaciones(100, 0, null);
+        console.log('AdminPostList: Datos recibidos:', data);
+        
+        if (data && Array.isArray(data)) {
+          setPosts(data);
+          console.log(`AdminPostList: ${data.length} publicaciones cargadas`);
+        } else {
+          console.error('AdminPostList: Datos no válidos recibidos:', data);
+          setPosts([]);
+        }
+      } catch (error) {
+        console.error('AdminPostList: Error al cargar publicaciones:', error);
+        setError('Error al cargar las publicaciones');
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  // Filtrar y ordenar posts
+  const getFilteredAndSortedPosts = () => {
+    let result = [...posts];
+    
+    // Filtrar por término de búsqueda
+    if (searchTerm && searchTerm.trim() !== '') {
+      const searchTermLower = searchTerm.toLowerCase();
+      result = result.filter(post => 
+        post.Titulo?.toLowerCase().includes(searchTermLower) || 
+        post.Resumen?.toLowerCase().includes(searchTermLower) ||
+        post.Contenido?.toLowerCase().includes(searchTermLower)
+      );
+    }
+    
+    // Filtrar por estado
+    if (filter !== 'all') {
+      const estado = filter === 'published' ? 'publicado' : 'borrador';
+      result = result.filter(post => post.Estado === estado);
+    }
+    
+    // Ordenar
+    switch (sortOrder) {
+      case 'recientes':
+        result.sort((a, b) => {
+          const dateA = a.Fecha_modificacion ? new Date(a.Fecha_modificacion) : new Date(a.Fecha_creacion);
+          const dateB = b.Fecha_modificacion ? new Date(b.Fecha_modificacion) : new Date(b.Fecha_creacion);
+          return dateB - dateA;
+        });
+        break;
+      case 'antiguos':
+        result.sort((a, b) => {
+          const dateA = a.Fecha_modificacion ? new Date(a.Fecha_modificacion) : new Date(a.Fecha_creacion);
+          const dateB = b.Fecha_modificacion ? new Date(b.Fecha_modificacion) : new Date(b.Fecha_creacion);
+          return dateA - dateB;
+        });
+        break;
+      case 'alfabetico':
+        result.sort((a, b) => a.Titulo.localeCompare(b.Titulo));
+        break;
+      default:
+        break;
+    }
+    
+    return result;
+  };
+
+  const displayPosts = getFilteredAndSortedPosts();
 
   // Estilos para el componente
   const styles = {
@@ -39,26 +109,6 @@ const AdminPostList = ({
       gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
       gap: spacing.lg,
       marginBottom: spacing.xl
-    },
-    loadMoreContainer: {
-      display: 'flex',
-      justifyContent: 'center',
-      marginTop: spacing.xl
-    },
-    loadMoreButton: {
-      backgroundColor: colors.primary,
-      color: colors.white,
-      border: 'none',
-      padding: `${spacing.md} ${spacing.xl}`,
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.md,
-      fontWeight: typography.fontWeight.medium,
-      cursor: 'pointer',
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.sm,
-      transition: 'all 0.3s ease',
-      boxShadow: shadows.sm,
     },
     errorMessage: {
       backgroundColor: colors.error,
@@ -192,23 +242,41 @@ const AdminPostList = ({
 
   // Procesar imagen de portada
   const getImageUrl = (imageData) => {
-    if (!imageData) return '/assets/images/placeholder.jpg';
+    if (!imageData) return '/assets/images/logoBN.png';
     
-    // Si ya es una URL o un string de base64, devolverlo tal cual
     if (typeof imageData === 'string') {
-      if (imageData.startsWith('http') || imageData.startsWith('/assets')) {
+      // Si ya es una URL completa (http/https)
+      if (imageData.startsWith('http')) {
         return imageData;
       }
-      return imageData.startsWith('data:') ? imageData : `data:image/jpeg;base64,${imageData}`;
+      // Si es una ruta de assets
+      if (imageData.startsWith('/assets')) {
+        return imageData;
+      }
+      // Si ya es una imagen base64 completa
+      if (imageData.startsWith('data:image')) {
+        return imageData;
+      }
+      // Si es solo el contenido base64 sin el prefijo
+      if (imageData.length > 100 && !imageData.includes('<')) {
+        return `data:image/jpeg;base64,${imageData}`;
+      }
+      // Si es una etiqueta HTML img, extraer el src
+      if (imageData.includes('<img') && imageData.includes('src=')) {
+        const srcMatch = imageData.match(/src="([^"]+)"/);
+        if (srcMatch && srcMatch[1]) {
+          return srcMatch[1];
+        }
+      }
     }
     
-    return '/assets/images/placeholder.jpg';
+    return '/assets/images/logoBN.png';
   };
 
   if (loading) {
     return (
       <div style={styles.loadingSpinner}>
-        <div>Cargando publicaciones...</div>
+        Cargando publicaciones...
       </div>
     );
   }
@@ -221,78 +289,70 @@ const AdminPostList = ({
     );
   }
 
-  if (!displayPosts || displayPosts.length === 0) {
+  if (displayPosts.length === 0) {
     return (
       <div style={styles.emptyState}>
-        <FaPlus size={48} style={{ marginBottom: spacing.md }} />
         <h3>No se encontraron publicaciones</h3>
-        <p>No hay publicaciones disponibles con los filtros actuales.</p>
+        <p>
+          {searchTerm || filter !== 'all' 
+            ? 'No hay publicaciones que coincidan con los criterios de búsqueda.'
+            : 'No hay publicaciones disponibles.'}
+        </p>
       </div>
     );
   }
 
   return (
     <div style={styles.container} className={className}>
-      {/* Grid de posts */}
       <div style={styles.postsGrid}>
-        {displayPosts.map((post, index) => (
-          <div 
-            className="admin-post-card-animation" 
-            key={post.ID_publicaciones}
-            style={{
-              "--animation-order": index,
-              background: "transparent"
-            }}
-          >
-            <div style={styles.postCard}>
-              <img 
-                src={getImageUrl(post.Imagen_portada)} 
-                alt={post.Titulo} 
+        {displayPosts.map((post) => {
+          const statusColors = getStatusColor(post.Estado);
+          return (
+            <div key={post.ID_publicaciones} style={styles.postCard}>
+              <img
+                src={getImageUrl(post.Imagen_portada)}
+                alt={post.Titulo}
                 style={styles.postImage}
                 onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/assets/images/placeholder.jpg';
+                  e.target.src = '/assets/images/logoBN.png';
                 }}
               />
+              
               <div style={styles.postContent}>
                 <h3 style={styles.postTitle}>{post.Titulo}</h3>
                 <p style={styles.postExcerpt}>{post.Resumen}</p>
                 
                 <div style={styles.postMeta}>
-                  <div>
-                    <div style={styles.postDate}>
-                      {formatDate(post.Fecha_creacion)}
-                    </div>
-                    <div 
-                      style={{
-                        ...styles.postStatus,
-                        backgroundColor: getStatusColor(post.Estado).bg,
-                        color: getStatusColor(post.Estado).text
-                      }}
-                    >
-                      {post.Estado === 'publicado' ? 'Publicado' : 'Borrador'}
-                    </div>
-                  </div>
+                  <span style={styles.postDate}>
+                    {formatDate(post.Fecha_modificacion || post.Fecha_creacion)}
+                  </span>
+                  <span
+                    style={{
+                      ...styles.postStatus,
+                      backgroundColor: statusColors.bg,
+                      color: statusColors.text
+                    }}
+                  >
+                    {post.Estado}
+                  </span>
                 </div>
                 
                 <div style={styles.actionsContainer}>
-                  <Link to={`/blog/post/${post.ID_publicaciones}`}>
-                    <button 
-                      style={{...styles.actionButton, ...styles.viewButton}}
-                      title="Ver publicación"
-                    >
-                      <FaEye />
-                    </button>
+                  <Link
+                    to={`/blog/post/${post.ID_publicaciones}`}
+                    style={{...styles.actionButton, ...styles.viewButton}}
+                    title="Ver publicación"
+                  >
+                    <FaEye />
                   </Link>
-                  <Link to={`/admin/post/edit/${post.ID_publicaciones}`}>
-                    <button 
-                      style={{...styles.actionButton, ...styles.editButton}}
-                      title="Editar publicación"
-                    >
-                      <FaEdit />
-                    </button>
+                  <Link
+                    to={`/admin/post/edit/${post.ID_publicaciones}`}
+                    style={{...styles.actionButton, ...styles.editButton}}
+                    title="Editar publicación"
+                  >
+                    <FaEdit />
                   </Link>
-                  <button 
+                  <button
                     style={{...styles.actionButton, ...styles.deleteButton}}
                     onClick={() => onDelete && onDelete(post.ID_publicaciones)}
                     title="Eliminar publicación"
@@ -302,88 +362,9 @@ const AdminPostList = ({
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
-
-      {/* Botón para cargar más posts */}
-      {hasMore && (
-        <div style={styles.loadMoreContainer}>
-          <button
-            onClick={loadMorePosts}
-            disabled={loadingMore}
-            style={{
-              ...styles.loadMoreButton,
-              opacity: loadingMore ? 0.7 : 1,
-              cursor: loadingMore ? 'not-allowed' : 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              if (!loadingMore) {
-                e.target.style.backgroundColor = colors.primaryDark;
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = shadows.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loadingMore) {
-                e.target.style.backgroundColor = colors.primary;
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = shadows.sm;
-              }
-            }}
-          >
-            {loadingMore ? (
-              <>
-                <div style={{
-                  width: '16px',
-                  height: '16px',
-                  border: '2px solid transparent',
-                  borderTop: '2px solid currentColor',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
-                Cargando...
-              </>
-            ) : (
-              <>
-                <FaPlus />
-                Cargar más publicaciones
-              </>
-            )}
-          </button>
-        </div>
-      )}
-
-      {/* Estilos para las animaciones */}
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        
-        @keyframes fadeUpIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        .admin-post-card-animation {
-          animation: fadeUpIn 0.6s ease forwards;
-          animation-delay: calc(0.1s * var(--animation-order, 0));
-          opacity: 0;
-          transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          background-color: transparent;
-        }
-        
-        .admin-post-card-animation:hover {
-          transform: translateY(-5px);
-        }
-      `}</style>
     </div>
   );
 };
