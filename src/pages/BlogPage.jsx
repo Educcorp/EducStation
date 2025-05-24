@@ -115,7 +115,7 @@ const BlogPage = () => {
     const selectedValue = e.target.value;
     if (selectedValue === 'explore') {
       // Navigate to categories page with instant reload
-      if(location.pathname === '/categorias') {
+      if (location.pathname === '/categorias') {
         window.location.reload();
       } else {
         window.location.href = '/categorias';
@@ -123,7 +123,7 @@ const BlogPage = () => {
     } else if (selectedValue !== '') {
       // Navigate to specific category page with instant reload
       const targetPath = `/categoria/${selectedValue}`;
-      if(location.pathname === targetPath) {
+      if (location.pathname === targetPath) {
         window.location.reload();
       } else {
         window.location.href = targetPath;
@@ -503,7 +503,7 @@ const BlogPage = () => {
         onMouseLeave={() => setHoveredPromo(false)}
         onClick={() => {
           // Navigate to categories page with instant reload
-          if(location.pathname === '/categorias') {
+          if (location.pathname === '/categorias') {
             window.location.reload();
           } else {
             window.location.href = '/categorias';
@@ -596,6 +596,17 @@ const BlogPage = () => {
       return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
     };
 
+    // Function to get very light transparent background for selections
+    const getSoftBackground = (color, opacity = 0.08) => {
+      // Convert hex to rgb
+      let hex = color.replace('#', '');
+      let r = parseInt(hex.substring(0, 2), 16);
+      let g = parseInt(hex.substring(2, 4), 16);
+      let b = parseInt(hex.substring(4, 6), 16);
+
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
+
     // Function to get current category color
     const getCurrentCategoryColor = () => {
       if (selectedCategory) {
@@ -608,14 +619,14 @@ const BlogPage = () => {
     const handleCategorySelect = (categoryId) => {
       if (categoryId === 'explore') {
         // Navigate to categories page with instant reload
-        if(location.pathname === '/categorias') {
+        if (location.pathname === '/categorias') {
           window.location.reload();
         } else {
           window.location.href = '/categorias';
         }
       } else if (categoryId === '') {
         // Navigate to blog page with instant reload
-        if(location.pathname === '/blog') {
+        if (location.pathname === '/blog') {
           window.location.reload();
         } else {
           window.location.href = '/blog';
@@ -623,7 +634,7 @@ const BlogPage = () => {
       } else if (categoryId !== '') {
         // Navigate to specific category page with instant reload
         const targetPath = `/categoria/${categoryId}`;
-        if(location.pathname === targetPath) {
+        if (location.pathname === targetPath) {
           window.location.reload();
         } else {
           window.location.href = targetPath;
@@ -639,8 +650,8 @@ const BlogPage = () => {
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
-            background: `linear-gradient(to right, ${getLighterColor(getCurrentCategoryColor(), 0.8)}, ${getLighterColor(getCurrentCategoryColor(), 0.9)})`,
-            boxShadow: `0 4px 8px ${getCurrentCategoryColor()}33`,
+            background: `linear-gradient(to right, ${getSoftBackground(getCurrentCategoryColor(), 0.03)}, ${getSoftBackground(getCurrentCategoryColor(), 0.06)})`,
+            boxShadow: `0 4px 8px ${getSoftBackground(getCurrentCategoryColor(), 0.12)}`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -688,7 +699,7 @@ const BlogPage = () => {
             <div
               style={{
                 ...styles.dropdownItem,
-                backgroundColor: !selectedCategory ? getLighterColor(getCurrentCategoryColor(), 0.1) : 'transparent',
+                backgroundColor: !selectedCategory ? getSoftBackground(getCurrentCategoryColor(), 0.1) : 'transparent',
                 color: !selectedCategory ? getCurrentCategoryColor() : colors.primary,
                 fontWeight: !selectedCategory ? 600 : 400,
                 borderLeft: `3px solid ${!selectedCategory ? getCurrentCategoryColor() : 'transparent'}`,
@@ -696,7 +707,7 @@ const BlogPage = () => {
               onClick={() => handleCategorySelect('')}
               onMouseEnter={(e) => {
                 if (selectedCategory) {
-                  e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                  e.currentTarget.style.backgroundColor = getSoftBackground(getCurrentCategoryColor(), 0.05);
                   e.currentTarget.style.color = getCurrentCategoryColor();
                 }
               }}
@@ -729,18 +740,18 @@ const BlogPage = () => {
                 style={{
                   ...styles.dropdownItem,
                   backgroundColor: parseInt(selectedCategory) === category.ID_categoria
-                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
+                    ? getSoftBackground(categoryColors[category.ID_categoria], 0.1)
                     : 'transparent',
                   color: parseInt(selectedCategory) === category.ID_categoria
                     ? categoryColors[category.ID_categoria]
                     : colors.primary,
                   fontWeight: parseInt(selectedCategory) === category.ID_categoria ? 600 : 400,
-                  borderLeft: `3px solid ${parseInt(selectedCategory) === category.ID_categoria ? getCurrentCategoryColor() : 'transparent'}`,
+                  borderLeft: `3px solid ${parseInt(selectedCategory) === category.ID_categoria ? categoryColors[category.ID_categoria] : 'transparent'}`,
                 }}
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
                 onMouseEnter={(e) => {
                   if (parseInt(selectedCategory) !== category.ID_categoria) {
-                    e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                    e.currentTarget.style.backgroundColor = getSoftBackground(categoryColors[category.ID_categoria], 0.05);
                     e.currentTarget.style.color = categoryColors[category.ID_categoria];
                   }
                 }}
@@ -753,7 +764,7 @@ const BlogPage = () => {
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: `${categoryColors[category.ID_categoria]}33`,
+                  backgroundColor: getSoftBackground(categoryColors[category.ID_categoria], 0.15),
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
@@ -863,6 +874,17 @@ const BlogPage = () => {
       return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
     };
 
+    // Function to get very light transparent background for selections
+    const getSoftBackground = (color, opacity = 0.08) => {
+      // Convert hex to rgb
+      let hex = color.replace('#', '');
+      let r = parseInt(hex.substring(0, 2), 16);
+      let g = parseInt(hex.substring(2, 4), 16);
+      let b = parseInt(hex.substring(4, 6), 16);
+
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
+
     const handleSortSelect = (value) => {
       setSortOrder(value);
       setSortDropdownOpen(false);
@@ -875,8 +897,8 @@ const BlogPage = () => {
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
-            background: `linear-gradient(to right, ${getLighterColor(getCurrentCategoryColor(), 0.8)}, ${getLighterColor(getCurrentCategoryColor(), 0.9)})`,
-            boxShadow: `0 4px 8px ${getCurrentCategoryColor()}33`,
+            background: `linear-gradient(to right, ${getSoftBackground(getCurrentCategoryColor(), 0.03)}, ${getSoftBackground(getCurrentCategoryColor(), 0.06)})`,
+            boxShadow: `0 4px 8px ${getSoftBackground(getCurrentCategoryColor(), 0.12)}`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -917,7 +939,7 @@ const BlogPage = () => {
                   style={{
                     ...styles.dropdownItem,
                     backgroundColor: isSelected
-                      ? getLighterColor(getCurrentCategoryColor(), 0.1)
+                      ? getSoftBackground(getCurrentCategoryColor(), 0.1)
                       : 'transparent',
                     color: isSelected
                       ? getCurrentCategoryColor()
@@ -928,7 +950,7 @@ const BlogPage = () => {
                   onClick={() => handleSortSelect(option.value)}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                      e.currentTarget.style.backgroundColor = getSoftBackground(getCurrentCategoryColor(), 0.05);
                       e.currentTarget.style.color = getCurrentCategoryColor();
                     }
                   }}
@@ -941,7 +963,7 @@ const BlogPage = () => {
                 >
                   <span style={{
                     ...styles.dropdownIcon,
-                    backgroundColor: `${getCurrentCategoryColor()}33`,
+                    backgroundColor: getSoftBackground(getCurrentCategoryColor(), 0.15),
                     width: '28px',
                     height: '28px',
                     borderRadius: '50%',
