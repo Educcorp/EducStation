@@ -105,9 +105,9 @@ const PostDetail = ({ post }) => {
       maxWidth: '800px',
       margin: '0 auto',
       padding: spacing.lg,
-      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : '#ffffff',
       borderRadius: borderRadius.md,
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
     },
     header: {
       marginBottom: spacing.xl,

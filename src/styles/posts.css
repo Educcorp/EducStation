@@ -6,9 +6,11 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 20px;
-  background-color: #fff;
+  background-color: #ffffff; /* Blanco puro para mejor contraste con el fondo verde */
   box-sizing: border-box;
   width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* Sombra mejorada */
+  border-radius: 8px; /* Bordes redondeados para mejor presentación */
 }
 
 /* Estilos para los elementos del post */

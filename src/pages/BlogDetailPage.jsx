@@ -109,7 +109,7 @@ const BlogDetailPage = () => {
   const styles = {
     container: {
       fontFamily: 'Poppins, sans-serif',
-      backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
+      backgroundColor: isDarkMode ? colors.backgroundDark : '#91a8a8',
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
