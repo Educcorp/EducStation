@@ -13,6 +13,7 @@ import '../../styles/postHtmlFix.css'; // Importamos los estilos de corrección 
 import { useTheme } from '../../context/ThemeContext';
 import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicionales
 import ComentariosList from '../comentarios/ComentariosList';
+import { processPostHTML } from './utils/postHelpers';
 
 const PostViewer = () => {
   const location = useLocation();
@@ -175,39 +176,8 @@ const PostViewer = () => {
 
   // Función para crear un componente con el contenido HTML
   const createPostComponent = () => {
-    // Procesar el contenido HTML para asegurar que las imágenes y elementos mantengan el tamaño correcto
-    let processedContent = postContent;
-    
-    // Asegurar que el contenedor principal del post tenga los estilos correctos
-    processedContent = processedContent.replace(
-      /<div class="post-container"[^>]*>/g,
-      '<div class="post-container" style="max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important; overflow-x: hidden !important;">'
-    );
-    
-    // Asegurar que las imágenes mantengan su tamaño correcto
-    processedContent = processedContent.replace(
-      /<img([^>]*?)style="([^"]*?)"([^>]*?)>/g,
-      (match, before, style, after) => {
-        // Mantener estilos existentes pero asegurar que no se encojan
-        const newStyle = style + '; max-width: 100% !important; width: auto !important; height: auto !important; display: block !important; margin: 1rem auto !important; box-sizing: border-box !important; min-width: 0 !important; flex-shrink: 0 !important;';
-        return `<img${before}style="${newStyle}"${after}>`;
-      }
-    );
-    
-    // Para imágenes sin estilo inline
-    processedContent = processedContent.replace(
-      /<img(?![^>]*style=)([^>]*?)>/g,
-      '<img$1 style="max-width: 100% !important; width: auto !important; height: auto !important; display: block !important; margin: 1rem auto !important; box-sizing: border-box !important; min-width: 0 !important; flex-shrink: 0 !important;">'
-    );
-    
-    // Asegurar que los contenedores flexibles no afecten las imágenes
-    processedContent = processedContent.replace(
-      /<div([^>]*?)style="([^"]*?display:\s*flex[^"]*?)"([^>]*?)>/g,
-      (match, before, style, after) => {
-        const newStyle = style + '; flex-wrap: wrap !important; width: 100% !important; box-sizing: border-box !important; justify-content: space-between !important;';
-        return `<div${before}style="${newStyle}"${after}>`;
-      }
-    );
+    // Usar la función processPostHTML para procesar el contenido
+    const processedContent = processPostHTML(postContent);
     
     return {
       __html: processedContent
