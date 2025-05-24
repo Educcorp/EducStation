@@ -358,6 +358,17 @@
   background-color: rgba(var(--primary-rgb), 0.08);
 }
 
+/* Nuevos estilos para los botones de editar y eliminar */
+.comentario-edit-btn:hover {
+  color: #4CAF50; /* Verde */
+  background-color: rgba(76, 175, 80, 0.08);
+}
+
+.comentario-delete-btn:hover {
+  color: #F44336; /* Rojo */
+  background-color: rgba(244, 67, 54, 0.08);
+}
+
 .comentario-edit-form {
   margin-top: 1rem;
   margin-left: 3.2rem;

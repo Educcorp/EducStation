@@ -66,9 +66,27 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
     return name.substring(0, 2).toUpperCase();
   };
 
+  // Procesar avatar para asegurar que tiene el formato correcto
+  const processAvatar = (avatarData) => {
+    if (!avatarData) return null;
+    return avatarData.startsWith('data:image') ? avatarData : `data:image/jpeg;base64,${avatarData}`;
+  };
+  
   // Determinar si hay una imagen de avatar disponible
   const userNickname = comentario.usuarioNombre || comentario.Nickname || 'Usuario';
-  const avatarUrl = user && isCurrentUser ? user.avatar : null;
+  
+  // Intentar obtener el avatar del comentario primero
+  let avatarUrl = null;
+  
+  // Si el comentario tiene avatar, usarlo
+  if (comentario.avatar) {
+    avatarUrl = processAvatar(comentario.avatar);
+  } 
+  // Si es el usuario actual y tiene avatar, usarlo
+  else if (user && isCurrentUser && user.avatar) {
+    avatarUrl = processAvatar(user.avatar);
+  }
+  
   const hasAvatar = !!avatarUrl;
   const userInitials = getInitials(userNickname);
 
@@ -126,14 +144,14 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
             {isCurrentUser ? (
               <>
                 <button
-                  className="comentario-action-btn"
+                  className="comentario-action-btn comentario-edit-btn"
                   onClick={handleEdit}
                   title="Editar comentario"
                 >
                   <FaEdit /> Editar
                 </button>
                 <button
-                  className="comentario-action-btn"
+                  className="comentario-action-btn comentario-delete-btn"
                   onClick={handleDelete}
                   title="Eliminar comentario"
                 >
