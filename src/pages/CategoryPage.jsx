@@ -72,6 +72,14 @@ const CategoryPage = () => {
     return categoryColor;
   };
 
+  // Recarga forzada al entrar (solo una vez por sesión)
+  useEffect(() => {
+    if (!window.sessionStorage.getItem('reloaded-category')) {
+      window.sessionStorage.setItem('reloaded-category', 'true');
+      window.location.reload();
+    }
+  }, []);
+
   // Activar animación al montar el componente
   useEffect(() => {
     const timeoutHeader = setTimeout(() => setHeaderVisible(true), 300);

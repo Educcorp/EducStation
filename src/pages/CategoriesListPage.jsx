@@ -31,6 +31,14 @@ const CategoriesListPage = () => {
     { id: 7, name: 'Comunidad y Colaboración', description: 'Interacción y trabajo en equipo en el ámbito educativo', icon: <FaUsers size={38} />, color: '#F18F01' }
   ]);
 
+  // Recarga forzada al entrar (solo una vez por sesión)
+  useEffect(() => {
+    if (!window.sessionStorage.getItem('reloaded-categories')) {
+      window.sessionStorage.setItem('reloaded-categories', 'true');
+      window.location.reload();
+    }
+  }, []);
+
   // Animación de entrada para el título y subtítulo
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 100);

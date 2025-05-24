@@ -24,6 +24,14 @@ const BlogPage = () => {
   const categoryDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
 
+  // Recarga forzada al entrar (solo una vez por sesión)
+  useEffect(() => {
+    if (!window.sessionStorage.getItem('reloaded-blog')) {
+      window.sessionStorage.setItem('reloaded-blog', 'true');
+      window.location.reload();
+    }
+  }, []);
+
   // Animación de entrada
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 100);
