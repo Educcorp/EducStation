@@ -50,8 +50,8 @@ const Footer = () => {
     // Aplicar directamente los estilos al elemento del footer
     if (footerRef.current) {
       // Usar la imagen de fondo en lugar de un color sólido
-      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&width=1440&height=250&section=footer&animation=twinkling')";
-      footerRef.current.style.backgroundSize = "100% auto";
+      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&width=1340&height=240&section=footer&animation=twinkling')";
+      footerRef.current.style.backgroundSize = "120% auto";
       footerRef.current.style.backgroundPosition = "center bottom";
       footerRef.current.style.backgroundRepeat = "no-repeat";
       footerRef.current.style.backgroundColor = "transparent"; // Fondo transparente
@@ -143,13 +143,13 @@ const Footer = () => {
     footer: {
       padding: 0,
       margin: 0,
-      minHeight: '250px', // Altura para acomodar la onda
+      minHeight: '20px', // Altura para acomodar la onda
       position: 'relative',
       width: '100%',
       overflow: 'hidden',
     },
     container: {
-      maxWidth: '1700px',
+      maxWidth: '1900px',
       margin: '0 auto',
       padding: `${spacing.md} ${spacing.lg} ${spacing.xl * 3}`, // Más padding abajo para la onda
       position: 'relative',
@@ -304,14 +304,14 @@ const Footer = () => {
       padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: "4px 0 0 4px",
       border: "none",
-      backgroundColor: "rgba(240, 248, 247, 0.1)",
+      backgroundColor: "rgba(240, 248, 247, 0.04)",
       color: colors.white,
       '&::placeholder': {
         color: colors.gray200
       },
       '&:focus': {
         outline: "none",
-        backgroundColor: "rgba(240, 248, 247, 0.2)"
+        backgroundColor: "rgba(240, 248, 247, 0.01)"
       }
     },
     button: {
@@ -331,7 +331,7 @@ const Footer = () => {
     },
     buttonGlow: {
       animation: "glow 1.5s alternate infinite",
-      boxShadow: `0 0 20px 2px ${colors.secondary}`,
+      boxShadow: `0 0 5px 2px ${colors.secondary}`,
     },
     message: {
       fontSize: typography.fontSize.sm,
