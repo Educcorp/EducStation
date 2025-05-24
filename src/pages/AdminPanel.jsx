@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort } from 'react-icons/fa';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
 import { deletePublicacion, getAllPublicaciones } from '../services/publicacionesService';
 import { toast } from 'react-toastify';
+import AdminPostList from '../components/admin/AdminPostList';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ const AdminPanel = () => {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all'); // 'all', 'published', 'draft'
+  const [sortOrder, setSortOrder] = useState('recientes'); // 'recientes', 'antiguos', 'alfabetico'
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
@@ -250,56 +252,43 @@ const AdminPanel = () => {
       textDecoration: 'none',
       boxShadow: shadows.sm
     },
-    filters: {
+    filtersContainer: {
       display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: spacing.lg,
+      gap: spacing.md,
+      marginBottom: spacing.xl,
       flexWrap: 'wrap',
-      gap: spacing.md
-    },
-    searchContainer: {
-      position: 'relative',
-      flex: 1,
-      maxWidth: '400px'
+      alignItems: 'center',
+      backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.9)',
+      padding: spacing.md,
+      borderRadius: borderRadius.md,
+      boxShadow: shadows.sm
     },
     searchInput: {
-      width: '100%',
-      padding: `${spacing.sm} ${spacing.xl} ${spacing.sm} ${spacing.xl}`,
+      flex: 1,
+      minWidth: '250px',
+      padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: borderRadius.md,
-      border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.gray200}`,
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
+      color: isDarkMode ? colors.white : colors.textPrimary,
+      fontSize: typography.fontSize.md
+    },
+    select: {
+      padding: `${spacing.sm} ${spacing.md}`,
+      borderRadius: borderRadius.md,
+      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
       color: isDarkMode ? colors.white : colors.textPrimary,
       fontSize: typography.fontSize.md,
-      outline: 'none',
-      transition: 'all 0.3s ease'
+      cursor: 'pointer'
     },
-    searchIcon: {
-      position: 'absolute',
-      left: spacing.sm,
-      top: '50%',
-      transform: 'translateY(-50%)',
-      color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : colors.textSecondary
-    },
-    filterButtons: {
+    filterLabel: {
       display: 'flex',
-      gap: spacing.sm
+      alignItems: 'center',
+      gap: spacing.sm,
+      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      fontSize: typography.fontSize.md
     },
-    filterButton: (isActive) => ({
-      padding: `${spacing.xs} ${spacing.md}`,
-      borderRadius: borderRadius.md,
-      border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.gray200}`,
-      backgroundColor: isActive 
-        ? (isDarkMode ? colors.primaryDark : colors.primary) 
-        : (isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white),
-      color: isActive 
-        ? colors.white 
-        : (isDarkMode ? colors.white : colors.textPrimary),
-      fontSize: typography.fontSize.sm,
-      fontWeight: isActive ? typography.fontWeight.semiBold : typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'all 0.3s ease'
-    }),
     postsContainer: {
       display: 'flex',
       flexDirection: 'column',
@@ -541,53 +530,52 @@ const AdminPanel = () => {
       <div style={styles.content}>
         <h1 style={styles.pageTitle}>Panel de Administración</h1>
         <div style={styles.header} className="header">
-          <h2 style={styles.title}>Gestión de Publicaciones</h2>
-          <button 
-            onClick={() => {
-              // Navigate to create post page with instant reload
-              if(location.pathname === '/admin/post') {
-                window.location.reload();
-              } else {
-                window.location.href = '/admin/post';
-              }
-            }}
-            style={styles.createButton} 
-            className="createButton"
-          >
-            <FaPlus /> Crear Nueva Publicación
-          </button>
+          <h2 style={styles.title}>Publicaciones</h2>
+          <Link to="/admin/post/new" style={styles.createButton} className="createButton">
+            + Nueva Publicación
+          </Link>
         </div>
 
-        <div style={styles.filters} className="filters">
-          <div style={styles.searchContainer} className="searchContainer">
-            <FaSearch style={styles.searchIcon} />
+        <div style={styles.filtersContainer}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+            <FaSearch color={isDarkMode ? colors.textLight : colors.textSecondary} />
             <input
               type="text"
               placeholder="Buscar publicaciones..."
-              style={styles.searchInput}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              style={styles.searchInput}
             />
           </div>
-          <div style={styles.filterButtons} className="filterButtons">
-            <button
-              style={styles.filterButton(filter === 'all')}
-              onClick={() => setFilter('all')}
-            >
-              Todos
-            </button>
-            <button
-              style={styles.filterButton(filter === 'published')}
-              onClick={() => setFilter('published')}
-            >
-              Publicados
-            </button>
-            <button
-              style={styles.filterButton(filter === 'draft')}
-              onClick={() => setFilter('draft')}
-            >
-              Borradores
-            </button>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+            <label style={styles.filterLabel}>
+              <FaFilter />
+              <select
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                style={styles.select}
+              >
+                <option value="all">Todos</option>
+                <option value="published">Publicados</option>
+                <option value="draft">Borradores</option>
+              </select>
+            </label>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
+            <label style={styles.filterLabel}>
+              <FaSort />
+              <select
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                style={styles.select}
+              >
+                <option value="recientes">Más recientes</option>
+                <option value="antiguos">Más antiguos</option>
+                <option value="alfabetico">Alfabéticamente</option>
+              </select>
+            </label>
           </div>
         </div>
 
@@ -597,71 +585,13 @@ const AdminPanel = () => {
           </div>
         ) : filteredPosts.length > 0 ? (
           <div style={styles.postsContainer}>
-            {filteredPosts.map(post => (
-              <div key={post.ID_publicaciones} style={styles.postCard} className="postCard">
-                <div style={styles.postHeader} className="postHeader">
-                  <div style={styles.postImageContainer} className="postImageContainer">
-                    <img
-                      src={getImageUrl(post.Imagen_portada)}
-                      alt={post.Titulo}
-                      style={styles.postImage}
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/assets/images/placeholder.jpg';
-                      }}
-                    />
-                  </div>
-                  <div style={styles.postInfo} className="postInfo">
-                    <div style={styles.postTitle}>{post.Titulo}</div>
-                    <div style={styles.postMeta}>
-                      <div style={styles.postDate}>
-                        {formatDate(post.Fecha_modificacion || post.Fecha_creacion)}
-                      </div>
-                      <div style={styles.postStatus(post.Estado)}>
-                        {post.Estado === 'publicado' ? 'Publicado' : 'Borrador'}
-                      </div>
-                      {post.ID_administrador && (
-                        <div style={{ 
-                          fontSize: typography.fontSize.xs, 
-                          color: isDarkMode ? colors.gray300 : colors.textSecondary,
-                          marginLeft: spacing.md
-                        }}>
-                          Admin ID: {post.ID_administrador}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div style={styles.postContent}>
-                  {post.Resumen && (
-                    <div style={styles.postExcerpt}>{post.Resumen}</div>
-                  )}
-                  <div style={styles.postActions}>
-                    <button
-                      style={styles.actionButton('view')}
-                      onClick={() => handleViewPost(post.ID_publicaciones)}
-                      title="Ver publicación"
-                    >
-                      <FaEye />
-                    </button>
-                    <button
-                      style={styles.actionButton('edit')}
-                      onClick={() => handleEditPost(post.ID_publicaciones)}
-                      title="Editar publicación"
-                    >
-                      <FaEdit />
-                    </button>
-                    <button
-                      style={styles.actionButton('delete')}
-                      onClick={() => setConfirmDelete(post.ID_publicaciones)}
-                      title="Eliminar publicación"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <AdminPostList 
+              adminId={user?.id}
+              searchTerm={searchTerm}
+              filter={filter}
+              sortOrder={sortOrder}
+              onDelete={(postId) => setConfirmDelete(postId)}
+            />
           </div>
         ) : (
           <div style={styles.emptyState}>
@@ -704,15 +634,8 @@ const AdminPanel = () => {
               >
                 Recargar publicaciones
               </button>
-              <button 
-                onClick={() => {
-                  // Navigate to create post page with instant reload
-                  if(location.pathname === '/admin/post') {
-                    window.location.reload();
-                  } else {
-                    window.location.href = '/admin/post';
-                  }
-                }}
+              <Link 
+                to="/admin/post"
                 style={{
                   padding: '8px 16px',
                   backgroundColor: isDarkMode ? colors.primaryDark : colors.primary,
@@ -724,7 +647,7 @@ const AdminPanel = () => {
                 }}
               >
                 Crear una publicación
-              </button>
+              </Link>
             </div>
           </div>
         )}
@@ -790,11 +713,11 @@ const AdminPanel = () => {
           .postHeader {
             flex-direction: column;
           }
-          .filters {
+          .filtersContainer {
             flex-direction: column;
             align-items: stretch !important;
           }
-          .searchContainer {
+          .searchInput {
             max-width: 100% !important;
             margin-bottom: 10px;
           }
