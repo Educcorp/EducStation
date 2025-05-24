@@ -256,6 +256,8 @@ const Header = () => {
       padding: '16px',
       position: 'fixed',
       top: 0,
+      left: 0,
+      right: 0,
       width: '100%',
       zIndex: 1000,
       transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -264,6 +266,7 @@ const Header = () => {
       boxShadow: isScrolled ? (isDarkMode ? '0 4px 30px rgba(0, 0, 0, 0.2)' : '0 4px 20px rgba(0, 0, 0, 0.1)') : 'none',
       borderBottom: isScrolled ? (isDarkMode ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid rgba(0, 0, 0, 0.05)') : 'none',
       transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+      boxSizing: 'border-box',
     },
     headerSpacer: {
       height: "80px",
@@ -276,7 +279,9 @@ const Header = () => {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      position: "relative"
+      position: "relative",
+      width: "100%",
+      boxSizing: "border-box"
     },
     logo: {
       display: "flex",
