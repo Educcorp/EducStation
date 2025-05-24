@@ -244,16 +244,8 @@ const Header = () => {
 
   // Función para obtener el avatar con prefijo base64 si es necesario
   const getAvatarSrc = (avatar) => {
-    // Si no hay avatar, usar imagen por defecto
     if (!avatar) return '/assets/images/logoBN.png';
-    
-    // Si ya es una URL completa (data:, http:, https:, o ruta absoluta), devolverla como está
-    if (avatar.startsWith('data:image') || avatar.startsWith('http') || avatar.startsWith('/')) {
-      return avatar;
-    }
-    
-    // Si parece ser base64 sin prefijo, añadir el prefijo
-    return `data:image/jpeg;base64,${avatar}`;
+    return avatar.startsWith('data:image') ? avatar : `data:image/jpeg;base64,${avatar}`;
   };
 
   // Estilos del header
