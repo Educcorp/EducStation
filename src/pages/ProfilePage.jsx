@@ -21,6 +21,25 @@ const ProfilePage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
 
+  // Frases motivadoras sobre la educación
+  const frasesMotivadoras = [
+    "La educación es el arma más poderosa que puedes usar para cambiar el mundo. — Nelson Mandela",
+    "La educación no cambia el mundo, cambia a las personas que van a cambiar el mundo. — Paulo Freire",
+    "El aprendizaje es un tesoro que seguirá a su dueño a todas partes. — Proverbio chino",
+    "La educación es el pasaporte hacia el futuro, el mañana pertenece a quienes se preparan para él hoy. — Malcolm X",
+    "La raíz de la educación es amarga, pero su fruto es dulce. — Aristóteles",
+    "La mente no es un vaso por llenar, sino una lámpara por encender. — Plutarco",
+    "La educación ayuda a la persona a aprender a ser lo que es capaz de ser. — Hesíodo",
+    "La educación es el movimiento de la oscuridad a la luz. — Allan Bloom",
+    "El objetivo de la educación es la virtud y el deseo de convertirse en un buen ciudadano. — Platón",
+    "La educación es el desarrollo en el hombre de toda la perfección de que su naturaleza es capaz. — Kant"
+  ];
+
+  function obtenerFraseAleatoria() {
+    const idx = Math.floor(Math.random() * frasesMotivadoras.length);
+    return frasesMotivadoras[idx];
+  }
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
@@ -549,75 +568,9 @@ const ProfilePage = () => {
         <div style={styles.card}>
           <div style={styles.profileContent}>
             <h2 style={styles.sectionTitle}>Actividad reciente</h2>
-            {isLoadingPosts ? (
-              <div style={styles.loading}>
-                Cargando publicaciones...
-                <div 
-                  style={{
-                    width: '20px',
-                    height: '20px',
-                    borderRadius: '50%',
-                    border: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : colors.gray200}`,
-                    borderTop: `2px solid ${isDarkMode ? colors.white : colors.primary}`,
-                    marginLeft: spacing.sm,
-                    animation: 'spin 1s linear infinite'
-                  }}
-                ></div>
-              </div>
-            ) : userPosts.length > 0 ? (
-              <div style={styles.postsContainer}>
-                {userPosts.map(post => (
-                  <div key={post.ID_publicaciones} style={styles.postCard}>
-                    {post.Imagen_portada && (
-                      <div style={styles.postImageContainer}>
-                        <img 
-                          src={post.Imagen_portada.startsWith('data:image') ? post.Imagen_portada : `data:image/jpeg;base64,${post.Imagen_portada}`} 
-                          alt={post.Titulo}
-                          style={styles.postImage}
-                        />
-                      </div>
-                    )}
-                    <div style={styles.postContent}>
-                      <h3 style={styles.postTitle}>
-                        <Link to={`/blog/post/${post.ID_publicaciones}`} style={styles.postLink}>
-                          {post.Titulo}
-                        </Link>
-                      </h3>
-                      <div style={styles.postMeta}>
-                        <span style={styles.postDate}>{post.Fecha_creacion ? new Date(post.Fecha_creacion.replace(' ', 'T')).toLocaleString() : 'Sin fecha'}</span>
-                        <span style={styles.postStatus}>
-                          <span style={{
-                            display: 'inline-block',
-                            width: '8px',
-                            height: '8px',
-                            borderRadius: '50%',
-                            backgroundColor: post.Estado === 'publicado' ? '#4CAF50' : 
-                                            post.Estado === 'borrador' ? '#FF9800' : '#9E9E9E',
-                            marginRight: '5px'
-                          }}></span>
-                          {post.Estado === 'publicado' ? 'Publicado' : 
-                           post.Estado === 'borrador' ? 'Borrador' : 'Archivado'}
-                        </span>
-                      </div>
-                      {post.Resumen && (
-                        <p style={styles.postExcerpt}>{post.Resumen}</p>
-                      )}
-                      <div style={styles.postCategories}>
-                        {post.categorias && post.categorias.map(cat => (
-                          <span key={cat.ID_categoria} style={styles.categoryTag}>
-                            {cat.Nombre}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div style={styles.placeholder}>
-                No has creado publicaciones aún. Cuando crees contenido, aparecerá aquí.
-              </div>
-            )}
+            <div style={styles.placeholder}>
+              {obtenerFraseAleatoria()}
+            </div>
           </div>
         </div>
       </div>
