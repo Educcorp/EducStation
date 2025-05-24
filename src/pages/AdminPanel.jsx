@@ -183,7 +183,7 @@ const AdminPanel = () => {
 
   // Manejar visualización de publicación
   const handleViewPost = (postId) => {
-    navigate(`/blog/post/${postId}`);
+    navigate(`/blog/${postId}`);
   };
 
   // Recargar publicaciones
@@ -222,7 +222,7 @@ const AdminPanel = () => {
 
   // Procesar imagen de portada
   const getImageUrl = (imageData) => {
-    if (!imageData) return '/assets/images/placeholder.jpg';
+    if (!imageData) return '/assets/images/logoBN.png';
     
     if (typeof imageData === 'string') {
       // Si ya es una URL completa (http/https)
@@ -250,7 +250,7 @@ const AdminPanel = () => {
       }
     }
     
-    return '/assets/images/placeholder.jpg';
+    return '/assets/images/logoBN.png';
   };
 
   // Estilos
@@ -740,7 +740,7 @@ const AdminPanel = () => {
                         alt={post.Titulo}
                         style={styles.postImage}
                         onError={(e) => {
-                          e.target.src = '/assets/images/placeholder.jpg';
+                          e.target.src = '/assets/images/logoBN.png';
                         }}
                       />
                       

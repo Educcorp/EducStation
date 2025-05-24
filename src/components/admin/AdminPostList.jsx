@@ -242,19 +242,35 @@ const AdminPostList = ({
 
   // Procesar imagen de portada
   const getImageUrl = (imageData) => {
-    if (!imageData) return '/assets/images/placeholder.jpg';
+    if (!imageData) return '/assets/images/logoBN.png';
     
     if (typeof imageData === 'string') {
-      if (imageData.startsWith('http') || imageData.startsWith('/assets')) {
+      // Si ya es una URL completa (http/https)
+      if (imageData.startsWith('http')) {
         return imageData;
       }
-      if (imageData.startsWith('data:')) {
+      // Si es una ruta de assets
+      if (imageData.startsWith('/assets')) {
         return imageData;
       }
-      return `data:image/jpeg;base64,${imageData}`;
+      // Si ya es una imagen base64 completa
+      if (imageData.startsWith('data:image')) {
+        return imageData;
+      }
+      // Si es solo el contenido base64 sin el prefijo
+      if (imageData.length > 100 && !imageData.includes('<')) {
+        return `data:image/jpeg;base64,${imageData}`;
+      }
+      // Si es una etiqueta HTML img, extraer el src
+      if (imageData.includes('<img') && imageData.includes('src=')) {
+        const srcMatch = imageData.match(/src="([^"]+)"/);
+        if (srcMatch && srcMatch[1]) {
+          return srcMatch[1];
+        }
+      }
     }
     
-    return '/assets/images/placeholder.jpg';
+    return '/assets/images/logoBN.png';
   };
 
   if (loading) {
@@ -298,7 +314,7 @@ const AdminPostList = ({
                 alt={post.Titulo}
                 style={styles.postImage}
                 onError={(e) => {
-                  e.target.src = '/assets/images/placeholder.jpg';
+                  e.target.src = '/assets/images/logoBN.png';
                 }}
               />
               
