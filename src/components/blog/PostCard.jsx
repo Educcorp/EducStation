@@ -313,6 +313,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
   return (
     <Link
       to={`/blog/${post.ID_publicaciones}`}
+      state={{ forceReload: true }}
       style={{ textDecoration: 'none', color: 'inherit' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

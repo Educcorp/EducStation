@@ -144,6 +144,7 @@ const FeaturedPost = ({ post }) => {
         
         <AnimatedButton 
           to={`/blog/${post.id}`}
+          state={{ forceReload: true }}
           backgroundColor="rgba(8, 44, 44, 0.8)"
           hoverBackgroundColor="#082c2c"
           padding="8px 20px"

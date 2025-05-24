@@ -17,24 +17,17 @@ const BlogDetailPage = () => {
   const [error, setError] = useState(null);
   const { colors, isDarkMode } = useTheme();
 
-  console.log('BlogDetailPage - ID del post en parámetros:', id);
+  // Recarga instantánea antes de renderizar nada
+  if (location.state && location.state.forceReload && !sessionStorage.getItem('blogdetailpage-reloaded')) {
+    sessionStorage.setItem('blogdetailpage-reloaded', 'true');
+    window.history.replaceState(null, '', window.location.pathname);
+    window.location.reload();
+    return null;
+  } else {
+    sessionStorage.removeItem('blogdetailpage-reloaded');
+  }
 
-  useEffect(() => {
-    if (location.state && location.state.forceReload) {
-      // Verificar si ya se realizó la recarga en esta sesión de navegación
-      if (!sessionStorage.getItem('blogdetailpage-reloaded')) {
-        // Marcar que se va a realizar la recarga
-        sessionStorage.setItem('blogdetailpage-reloaded', 'true');
-        // Limpiar el estado para evitar bucles infinitos
-        window.history.replaceState(null, '', window.location.pathname);
-        // Realizar la recarga
-        window.location.reload();
-      }
-    } else {
-      // Limpiar la marca de recarga si no hay forceReload
-      sessionStorage.removeItem('blogdetailpage-reloaded');
-    }
-  }, [location]);
+  console.log('BlogDetailPage - ID del post en parámetros:', id);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -85,7 +78,14 @@ const BlogDetailPage = () => {
     },
     main: {
       flex: 1,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'flex-start', // o 'center' si se desea centrar verticalmente
       padding: `${spacing.xl} 0`,
+    },
+    contentWrapper: {
+      width: '100%',
+      maxWidth: '800px',
     },
     article: {
       maxWidth: '800px',
@@ -230,71 +230,73 @@ const BlogDetailPage = () => {
     <div style={styles.container}>
       <Header />
       <main style={styles.main}>
-        {loading ? (
-          <div style={styles.loadingContainer}>
-            <div style={styles.loadingSpinner}></div>
-            <style>{`
-              @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-              }
-            `}</style>
-          </div>
-        ) : error ? (
-          <div style={styles.errorContainer}>
-            <p>{error}</p>
-            <button 
-              onClick={() => {
-                // Navigate to blog page with instant reload
-                if(location.pathname === '/blog') {
-                  window.location.reload();
-                } else {
-                  window.location.href = '/blog';
+        <div style={styles.contentWrapper}>
+          {loading ? (
+            <div style={styles.loadingContainer}>
+              <div style={styles.loadingSpinner}></div>
+              <style>{`
+                @keyframes spin {
+                  0% { transform: rotate(0deg); }
+                  100% { transform: rotate(360deg); }
                 }
-              }}
-              style={{
-                ...styles.backLink,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-                fontFamily: 'inherit',
-                fontSize: 'inherit',
-                fontWeight: 'inherit'
-              }}
-            >
-              Volver al blog
-            </button>
-          </div>
-        ) : post ? (
-          <PostDetail post={post} />
-        ) : (
-          <div style={styles.errorContainer}>
-            <p>No se encontró la publicación solicitada.</p>
-            <button 
-              onClick={() => {
-                // Navigate to blog page with instant reload
-                if(location.pathname === '/blog') {
-                  window.location.reload();
-                } else {
-                  window.location.href = '/blog';
-                }
-              }}
-              style={{
-                ...styles.backLink,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-                fontFamily: 'inherit',
-                fontSize: 'inherit',
-                fontWeight: 'inherit'
-              }}
-            >
-              Volver al blog
-            </button>
-          </div>
-        )}
+              `}</style>
+            </div>
+          ) : error ? (
+            <div style={styles.errorContainer}>
+              <p>{error}</p>
+              <button 
+                onClick={() => {
+                  // Navigate to blog page with instant reload
+                  if(location.pathname === '/blog') {
+                    window.location.reload();
+                  } else {
+                    window.location.href = '/blog';
+                  }
+                }}
+                style={{
+                  ...styles.backLink,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit',
+                  fontWeight: 'inherit'
+                }}
+              >
+                Volver al blog
+              </button>
+            </div>
+          ) : post ? (
+            <PostDetail post={post} />
+          ) : (
+            <div style={styles.errorContainer}>
+              <p>No se encontró la publicación solicitada.</p>
+              <button 
+                onClick={() => {
+                  // Navigate to blog page with instant reload
+                  if(location.pathname === '/blog') {
+                    window.location.reload();
+                  } else {
+                    window.location.href = '/blog';
+                  }
+                }}
+                style={{
+                  ...styles.backLink,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
+                  fontFamily: 'inherit',
+                  fontSize: 'inherit',
+                  fontWeight: 'inherit'
+                }}
+              >
+                Volver al blog
+              </button>
+            </div>
+          )}
+        </div>
       </main>
       <Footer />
     </div>
