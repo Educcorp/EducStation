@@ -143,6 +143,7 @@ const FeaturedPost = ({ post }) => {
         
         <Link 
           to={`/blog/${post.id}`}
+          state={{ forceReload: true }}
           style={isButtonHovered ? applyHoverStyles(styles.button) : styles.button}
           onMouseEnter={() => setIsButtonHovered(true)}
           onMouseLeave={() => setIsButtonHovered(false)}
