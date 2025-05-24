@@ -8,6 +8,7 @@ import { colors, spacing, typography, shadows, borderRadius } from '../../styles
 import ReactionSection from './ReactionSection';
 // Importamos el archivo CSS específico para posts
 import '../../styles/posts.css';
+import '../../styles/postStyles.css'; // Importamos los nuevos estilos para posts
 import { useTheme } from '../../context/ThemeContext';
 import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicionales
 import ComentariosList from '../comentarios/ComentariosList';

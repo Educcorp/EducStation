@@ -63,8 +63,11 @@ export const extractSummary = (content, maxLength = 150) => {
 export const renderImageHTML = (html) => {
   if (!html) return null;
   
+  // Modificar el HTML para aplicar estilos a la imagen
+  const modifiedHTML = html.replace('<img', '<img style="width:100%;height:100%;object-fit:cover;"');
+  
   return {
-    __html: html
+    __html: modifiedHTML
   };
 };
 
