@@ -57,6 +57,9 @@ const AnimatedButton = ({
   const handleMouseEnter = (e) => {
     setIsHovered(true);
     
+    // Verificar que e.currentTarget existe
+    if (!e.currentTarget) return;
+    
     // Crear y animar el elemento de brillo
     const shineElement = document.createElement('div');
     shineElement.style.cssText = `
@@ -74,14 +77,22 @@ const AnimatedButton = ({
       animation: shine 0.5s 0s linear;
     `;
     
-    e.currentTarget.appendChild(shineElement);
-    
-    // Eliminar el elemento de brillo después de la animación
-    setTimeout(() => {
-      if (e.currentTarget.contains(shineElement)) {
-        e.currentTarget.removeChild(shineElement);
-      }
-    }, 500);
+    // Verificar que el elemento aún existe antes de agregar el brillo
+    if (e.currentTarget && e.currentTarget.appendChild) {
+      e.currentTarget.appendChild(shineElement);
+      
+      // Eliminar el elemento de brillo después de la animación
+      setTimeout(() => {
+        // Verificar que ambos elementos aún existen antes de intentar remover
+        if (e.currentTarget && shineElement && e.currentTarget.contains && e.currentTarget.contains(shineElement)) {
+          try {
+            e.currentTarget.removeChild(shineElement);
+          } catch (error) {
+            // Si falla la remoción, no hacer nada (el elemento ya no existe)
+          }
+        }
+      }, 500);
+    }
   };
   
   const handleMouseLeave = () => {

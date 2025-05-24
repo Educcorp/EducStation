@@ -13,10 +13,11 @@ const PostDetail = ({ post }) => {
   const { id: urlId } = useParams();
   
   // Asegurarse de que tenemos un ID válido, sea del objeto post o de la URL
-  const postId = post?.ID_post || urlId;
+  // El campo en la base de datos es ID_publicaciones, no ID_post
+  const postId = post?.ID_publicaciones || urlId;
   
   console.log('ID del post para comentarios:', {
-    fromPost: post?.ID_post,
+    fromPost: post?.ID_publicaciones,
     fromURL: urlId,
     finalId: postId
   });
