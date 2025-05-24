@@ -496,6 +496,12 @@ const SimpleEditor = ({ content, onChange }) => {
         wrapControlButton.title = 'Opciones de texto';
         wrapControlButton.style.cssText = 'position: absolute; top: -30px; right: 0; background-color: white; border: 1px solid #ddd; border-radius: 4px; width: 25px; height: 25px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; user-select: none; pointer-events: auto;';
         
+        // Crear el círculo de redimensionamiento
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'resize-handle';
+        resizeHandle.title = 'Redimensionar imagen';
+        resizeHandle.style.cssText = 'position: absolute; bottom: -10px; right: -10px; width: 20px; height: 20px; background-color: #1b4fd9; border: 2px solid white; border-radius: 50%; cursor: nw-resize; display: none; z-index: 3; user-select: none; pointer-events: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.3);';
+        
         // Crear el menú de opciones para el wrapping de texto
         const wrapControls = document.createElement('div');
         wrapControls.className = 'text-wrap-controls';
@@ -625,186 +631,275 @@ const SimpleEditor = ({ content, onChange }) => {
           e.stopPropagation();
         });
         
-        // Agregar los elementos al contenedor
-        container.appendChild(wrapControlButton);
-        container.appendChild(wrapControls);
-      }
-      
-      // Variables para el movimiento
-      let isDragging = false;
-      let startX, startY, startLeft, startTop;
-      
-      // Indica si la imagen está seleccionada
-      let isSelected = false;
-      
-      // Mostrar controles al hacer clic en la imagen
-      container.addEventListener('click', (e) => {
-        e.stopPropagation(); // Evitar que el evento llegue al editor
+        // Variables para el movimiento
+        let isDragging = false;
+        let startX, startY, startLeft, startTop;
         
-        // Marcar esta imagen como seleccionada
-        isSelected = true;
-        container.classList.add('selected-image');
+        // Variables para el redimensionamiento
+        let isResizing = false;
+        let startWidth, startHeight, startMouseX, startMouseY;
         
-        // Mostrar el botón de control para esta imagen
-        const wrapControlButton = container.querySelector('.wrap-control-button');
-        if (wrapControlButton) {
-          wrapControlButton.style.display = 'flex';
-        }
+        // Indica si la imagen está seleccionada
+        let isSelected = false;
         
-        // Desmarcar otras imágenes como seleccionadas
-        document.querySelectorAll('.image-container').forEach(otherContainer => {
-          if (otherContainer !== container) {
-            otherContainer.classList.remove('selected-image');
-            
-            // Ocultar controles de otras imágenes
-            const otherWrapControls = otherContainer.querySelector('.text-wrap-controls');
-            const otherWrapControlButton = otherContainer.querySelector('.wrap-control-button');
-            if (otherWrapControls) {
-              otherWrapControls.style.display = 'none';
+        // Mostrar controles al hacer clic en la imagen
+        container.addEventListener('click', (e) => {
+          e.stopPropagation(); // Evitar que el evento llegue al editor
+          
+          // Marcar esta imagen como seleccionada
+          isSelected = true;
+          container.classList.add('selected-image');
+          
+          // Mostrar el botón de control para esta imagen
+          const wrapControlButton = container.querySelector('.wrap-control-button');
+          const resizeHandle = container.querySelector('.resize-handle');
+          if (wrapControlButton) {
+            wrapControlButton.style.display = 'flex';
+          }
+          if (resizeHandle) {
+            resizeHandle.style.display = 'block';
+          }
+          
+          // Desmarcar otras imágenes como seleccionadas
+          document.querySelectorAll('.image-container').forEach(otherContainer => {
+            if (otherContainer !== container) {
+              otherContainer.classList.remove('selected-image');
+              
+              // Ocultar controles de otras imágenes
+              const otherWrapControls = otherContainer.querySelector('.text-wrap-controls');
+              const otherWrapControlButton = otherContainer.querySelector('.wrap-control-button');
+              const otherResizeHandle = otherContainer.querySelector('.resize-handle');
+              if (otherWrapControls) {
+                otherWrapControls.style.display = 'none';
+              }
+              if (otherWrapControlButton) {
+                otherWrapControlButton.style.display = 'none';
+              }
+              if (otherResizeHandle) {
+                otherResizeHandle.style.display = 'none';
+              }
             }
-            if (otherWrapControlButton) {
-              otherWrapControlButton.style.display = 'none';
-            }
+          });
+          
+          // Actualizar el estado de imagen seleccionada
+          checkForSelectedImage();
+          
+          // Si no estamos arrastrando, mantener el foco en el editor
+          if (!isDragging) {
+            editorRef.current.focus();
           }
         });
         
-        // Actualizar el estado de imagen seleccionada
-        checkForSelectedImage();
+        // Ocultar controles al hacer clic fuera de la imagen
+        document.addEventListener('click', (e) => {
+          if (!container.contains(e.target)) {
+            isSelected = false;
+            container.classList.remove('selected-image');
+            
+            // Ocultar controles de wrapping
+            const wrapControls = container.querySelector('.text-wrap-controls');
+            const wrapControlButton = container.querySelector('.wrap-control-button');
+            const resizeHandle = container.querySelector('.resize-handle');
+            if (wrapControls) {
+              wrapControls.style.display = 'none';
+              // Actualizar el estado para mostrar la barra flotante de nuevo
+              setIsImageMenuOpen(false);
+            }
+            if (wrapControlButton) {
+              wrapControlButton.style.display = 'none';
+            }
+            if (resizeHandle) {
+              resizeHandle.style.display = 'none';
+            }
+            
+            // Verificar si hay alguna otra imagen seleccionada
+            checkForSelectedImage();
+          }
+        });
         
-        // Si no estamos arrastrando, mantener el foco en el editor
-        if (!isDragging) {
-          editorRef.current.focus();
-        }
-      });
-      
-      // Ocultar controles al hacer clic fuera de la imagen
-      document.addEventListener('click', (e) => {
-        if (!container.contains(e.target)) {
-          isSelected = false;
-          container.classList.remove('selected-image');
-          
-          // Ocultar controles de wrapping
+        // Evento para comenzar a mover
+        container.addEventListener('mousedown', (e) => {
+          // Verificar que no haga clic en los controles
           const wrapControls = container.querySelector('.text-wrap-controls');
           const wrapControlButton = container.querySelector('.wrap-control-button');
-          if (wrapControls) {
-            wrapControls.style.display = 'none';
-            // Actualizar el estado para mostrar la barra flotante de nuevo
-            setIsImageMenuOpen(false);
-          }
-          if (wrapControlButton) {
-            wrapControlButton.style.display = 'none';
-          }
+          const resizeHandle = container.querySelector('.resize-handle');
           
-          // Verificar si hay alguna otra imagen seleccionada
-          checkForSelectedImage();
-        }
-      });
-      
-      // Evento para comenzar a mover
-      container.addEventListener('mousedown', (e) => {
-        // Verificar que no haga clic en los controles
-        const wrapControls = container.querySelector('.text-wrap-controls');
-        const wrapControlButton = container.querySelector('.wrap-control-button');
-        
-        if (e.target !== wrapControlButton && 
-            !(wrapControls && wrapControls.contains(e.target)) && 
-            e.target !== wrapControlButton) {
-          isDragging = true;
-          startX = e.clientX;
-          startY = e.clientY;
-          
-          // Asegurar que el contenedor tenga posición relativa
-          const computedStyle = window.getComputedStyle(container);
-          if (computedStyle.position !== 'relative') {
-            container.style.position = 'relative';
-          }
-          
-          startLeft = parseInt(computedStyle.left) || 0;
-          startTop = parseInt(computedStyle.top) || 0;
-          
-          e.preventDefault();
-          e.stopPropagation(); // Evitar que el evento llegue al editor
-        }
-      });
-      
-      // Eventos para el documento (para capturar fuera del editor)
-      document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-          const deltaX = e.clientX - startX;
-          const deltaY = e.clientY - startY;
-          
-          // Guardar tamaño actual antes de mover
-          const currentWidth = img.style.width;
-          const currentHeight = img.style.height;
-          
-          container.style.left = `${startLeft + deltaX}px`;
-          container.style.top = `${startTop + deltaY}px`;
-          
-          // Restaurar tamaño después de mover para evitar cambios
-          if (currentWidth && currentHeight) {
-            img.style.width = currentWidth;
-            img.style.height = currentHeight;
-          }
-          
-          e.preventDefault();
-        }
-      });
-      
-      document.addEventListener('mouseup', (e) => {
-        if (isDragging) {
-          isDragging = false;
-          handleContentChange();
-          
-          // Restaurar el foco al editor después de manipular una imagen
-          // Se hace con un pequeño retraso para permitir que el evento de clic se procese
-          setTimeout(() => {
-            if (!editorRef.current.contains(document.activeElement)) {
-              editorRef.current.focus();
-              
-              // Si hay una selección guardada, intentar restaurarla
-              if (window.getSelection && window.getSelection().rangeCount === 0) {
-                // Crear un nuevo rango al final de la imagen
-                const range = document.createRange();
-                range.setStartAfter(container);
-                range.collapse(true);
-                
-                // Aplicar la selección
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-              }
+          if (e.target !== wrapControlButton && 
+              !(wrapControls && wrapControls.contains(e.target)) && 
+              e.target !== wrapControlButton &&
+              e.target !== resizeHandle) {
+            isDragging = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            // Asegurar que el contenedor tenga posición relativa
+            const computedStyle = window.getComputedStyle(container);
+            if (computedStyle.position !== 'relative') {
+              container.style.position = 'relative';
             }
-          }, 10);
-        }
-      });
-      
-      // Evento de doble clic para posicionar el cursor después de la imagen
-      container.addEventListener('dblclick', (e) => {
-        // Verificar que no hicimos doble clic en los controles
-        const wrapControls = container.querySelector('.text-wrap-controls');
-        const wrapControlButton = container.querySelector('.wrap-control-button');
+            
+            startLeft = parseInt(computedStyle.left) || 0;
+            startTop = parseInt(computedStyle.top) || 0;
+            
+            e.preventDefault();
+            e.stopPropagation(); // Evitar que el evento llegue al editor
+          }
+        });
         
-        if (e.target !== wrapControlButton && 
-            !(wrapControls && wrapControls.contains(e.target)) && 
-            e.target !== wrapControlButton) {
-          // Posicionar el cursor después de la imagen
-          const range = document.createRange();
-          range.setStartAfter(container);
-          range.collapse(true);
+        // Eventos para el documento (para capturar fuera del editor)
+        document.addEventListener('mousemove', (e) => {
+          if (isDragging) {
+            const deltaX = e.clientX - startX;
+            const deltaY = e.clientY - startY;
+            
+            // Guardar tamaño actual antes de mover
+            const currentWidth = img.style.width;
+            const currentHeight = img.style.height;
+            
+            container.style.left = `${startLeft + deltaX}px`;
+            container.style.top = `${startTop + deltaY}px`;
+            
+            // Restaurar tamaño después de mover para evitar cambios
+            if (currentWidth && currentHeight) {
+              img.style.width = currentWidth;
+              img.style.height = currentHeight;
+            }
+            
+            e.preventDefault();
+          }
+        });
+        
+        document.addEventListener('mouseup', (e) => {
+          if (isDragging) {
+            isDragging = false;
+            handleContentChange();
+            
+            // Restaurar el foco al editor después de manipular una imagen
+            // Se hace con un pequeño retraso para permitir que el evento de clic se procese
+            setTimeout(() => {
+              if (!editorRef.current.contains(document.activeElement)) {
+                editorRef.current.focus();
+                
+                // Si hay una selección guardada, intentar restaurarla
+                if (window.getSelection && window.getSelection().rangeCount === 0) {
+                  // Crear un nuevo rango al final de la imagen
+                  const range = document.createRange();
+                  range.setStartAfter(container);
+                  range.collapse(true);
+                  
+                  // Aplicar la selección
+                  const selection = window.getSelection();
+                  selection.removeAllRanges();
+                  selection.addRange(range);
+                }
+              }
+            }, 10);
+          }
+        });
+        
+        // Evento de doble clic para posicionar el cursor después de la imagen
+        container.addEventListener('dblclick', (e) => {
+          // Verificar que no hicimos doble clic en los controles
+          const wrapControls = container.querySelector('.text-wrap-controls');
+          const wrapControlButton = container.querySelector('.wrap-control-button');
+          const resizeHandle = container.querySelector('.resize-handle');
           
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-          
-          // Enfocar el editor
-          editorRef.current.focus();
-          
+          if (e.target !== wrapControlButton && 
+              !(wrapControls && wrapControls.contains(e.target)) && 
+              e.target !== wrapControlButton &&
+              e.target !== resizeHandle) {
+            // Posicionar el cursor después de la imagen
+            const range = document.createRange();
+            range.setStartAfter(container);
+            range.collapse(true);
+            
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            // Enfocar el editor
+            editorRef.current.focus();
+            
+            e.preventDefault();
+          }
+        });
+        
+        // Agregar los elementos al contenedor
+        container.appendChild(wrapControlButton);
+        container.appendChild(resizeHandle);
+        container.appendChild(wrapControls);
+        
+        // Event listener para el redimensionamiento
+        resizeHandle.addEventListener('mousedown', (e) => {
           e.preventDefault();
-        }
-      });
-      
-      // Marcar que ya se agregaron los manejadores
-      container.setAttribute('data-handlers-added', 'true');
+          e.stopPropagation();
+          
+          isResizing = true;
+          startMouseX = e.clientX;
+          startMouseY = e.clientY;
+          
+          // Obtener dimensiones actuales de la imagen
+          const computedStyle = window.getComputedStyle(img);
+          startWidth = parseInt(computedStyle.width) || img.offsetWidth;
+          startHeight = parseInt(computedStyle.height) || img.offsetHeight;
+          
+          // Obtener el aspect ratio de la imagen
+          let aspectRatio = img.getAttribute('data-aspect-ratio');
+          if (!aspectRatio) {
+            aspectRatio = startWidth / startHeight;
+            img.setAttribute('data-aspect-ratio', aspectRatio);
+          } else {
+            aspectRatio = parseFloat(aspectRatio);
+          }
+          
+          // Event listeners para el documento durante el redimensionamiento
+          const handleMouseMove = (e) => {
+            if (!isResizing) return;
+            
+            e.preventDefault();
+            
+            // Calcular el cambio en la posición del mouse
+            const deltaX = e.clientX - startMouseX;
+            const deltaY = e.clientY - startMouseY;
+            
+            // Usar la mayor distancia para mantener proporciones
+            const delta = Math.max(deltaX, deltaY);
+            
+            // Calcular nuevas dimensiones manteniendo el aspect ratio
+            let newWidth = Math.max(50, startWidth + delta); // Mínimo 50px
+            let newHeight = newWidth / aspectRatio;
+            
+            // Aplicar las nuevas dimensiones
+            img.style.width = `${newWidth}px`;
+            img.style.height = `${newHeight}px`;
+          };
+          
+          const handleMouseUp = () => {
+            if (isResizing) {
+              isResizing = false;
+              handleContentChange();
+              
+              // Restaurar el foco al editor
+              setTimeout(() => {
+                if (editorRef.current && !editorRef.current.contains(document.activeElement)) {
+                  editorRef.current.focus();
+                }
+              }, 10);
+            }
+            
+            // Remover event listeners
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+          };
+          
+          // Agregar event listeners al documento
+          document.addEventListener('mousemove', handleMouseMove);
+          document.addEventListener('mouseup', handleMouseUp);
+        });
+        
+        // Marcar que ya se agregaron los manejadores
+        container.setAttribute('data-handlers-added', 'true');
+      }
     });
   };
 
