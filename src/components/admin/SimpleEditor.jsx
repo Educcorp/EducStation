@@ -408,7 +408,7 @@ const SimpleEditor = ({ content, onChange }) => {
           }
         });
         
-        // Creamos HTML personalizado para la imagen con atributos para resize y estilos
+        // Creamos HTML personalizado para la imagen con estilos básicos
         const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
           <img src="${processedImgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
         </div>`;
@@ -526,7 +526,7 @@ const SimpleEditor = ({ content, onChange }) => {
         wrapControlButton.className = 'wrap-control-button';
         wrapControlButton.innerHTML = '≡'; // Icono simple para representar opciones de texto
         wrapControlButton.title = 'Opciones de texto';
-        wrapControlButton.style.cssText = 'position: absolute; top: -30px; right: 0; background-color: white; border: 1px solid #ddd; border-radius: 4px; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; user-select: none; pointer-events: auto;';
+        wrapControlButton.style.cssText = 'position: absolute; top: -30px; right: 0; background-color: white; border: 1px solid #ddd; border-radius: 4px; width: 25px; height: 25px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; user-select: none; pointer-events: auto;';
         
         // Crear el menú de opciones para el wrapping de texto
         const wrapControls = document.createElement('div');
@@ -677,6 +677,12 @@ const SimpleEditor = ({ content, onChange }) => {
         isSelected = true;
         container.classList.add('selected-image');
         
+        // Mostrar el botón de control para esta imagen
+        const wrapControlButton = container.querySelector('.wrap-control-button');
+        if (wrapControlButton) {
+          wrapControlButton.style.display = 'flex';
+        }
+        
         // Desmarcar otras imágenes como seleccionadas
         document.querySelectorAll('.image-container').forEach(otherContainer => {
           if (otherContainer !== container) {
@@ -684,8 +690,12 @@ const SimpleEditor = ({ content, onChange }) => {
             
             // Ocultar controles de otras imágenes
             const otherWrapControls = otherContainer.querySelector('.text-wrap-controls');
+            const otherWrapControlButton = otherContainer.querySelector('.wrap-control-button');
             if (otherWrapControls) {
               otherWrapControls.style.display = 'none';
+            }
+            if (otherWrapControlButton) {
+              otherWrapControlButton.style.display = 'none';
             }
           }
         });
@@ -693,7 +703,7 @@ const SimpleEditor = ({ content, onChange }) => {
         // Actualizar el estado de imagen seleccionada
         checkForSelectedImage();
         
-        // Si no estamos arrastrando ni redimensionando, mantener el foco en el editor
+        // Si no estamos arrastrando, mantener el foco en el editor
         if (!isDragging) {
           editorRef.current.focus();
         }
@@ -707,10 +717,14 @@ const SimpleEditor = ({ content, onChange }) => {
           
           // Ocultar controles de wrapping
           const wrapControls = container.querySelector('.text-wrap-controls');
+          const wrapControlButton = container.querySelector('.wrap-control-button');
           if (wrapControls) {
             wrapControls.style.display = 'none';
             // Actualizar el estado para mostrar la barra flotante de nuevo
             setIsImageMenuOpen(false);
+          }
+          if (wrapControlButton) {
+            wrapControlButton.style.display = 'none';
           }
           
           // Verificar si hay alguna otra imagen seleccionada
@@ -720,7 +734,7 @@ const SimpleEditor = ({ content, onChange }) => {
       
       // Evento para comenzar a mover
       container.addEventListener('mousedown', (e) => {
-        // Verificar que no haga clic en el manejador de resize o en los controles
+        // Verificar que no haga clic en los controles
         const wrapControls = container.querySelector('.text-wrap-controls');
         const wrapControlButton = container.querySelector('.wrap-control-button');
         
@@ -798,7 +812,7 @@ const SimpleEditor = ({ content, onChange }) => {
       
       // Evento de doble clic para posicionar el cursor después de la imagen
       container.addEventListener('dblclick', (e) => {
-        // Verificar que no hicimos doble clic en el manejador de resize o en los controles
+        // Verificar que no hicimos doble clic en los controles
         const wrapControls = container.querySelector('.text-wrap-controls');
         const wrapControlButton = container.querySelector('.wrap-control-button');
         
