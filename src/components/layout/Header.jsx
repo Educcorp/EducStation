@@ -890,10 +890,36 @@ const Header = () => {
                     <FaUser size={24} />
                   </span> Mi Perfil
                 </Link>
+                
+                {/* Admin Panel - Solo visible para administradores */}
+                {isSuperUser && (
+                  <Link
+                    to="/admin/panel"
+                    style={getMenuItemStyle(1)}
+                    onMouseEnter={() => setHoveredItem('menu-1')}
+                    onMouseLeave={() => setHoveredItem(null)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setIsMenuOpen(false);
+                      // Si ya estamos en admin panel, recargar inmediatamente
+                      if(location.pathname === '/admin/panel') {
+                        window.location.reload();
+                      } else {
+                        // Si estamos en otra página, navegar directamente
+                        window.location.href = '/admin/panel';
+                      }
+                    }}
+                  >
+                    <span style={styles.menuItemIcon}>
+                      <FaCog size={24} />
+                    </span> Panel de Admin
+                  </Link>
+                )}
+                
                 <a
                   href="/settings"
-                  style={getMenuItemStyle(1)}
-                  onMouseEnter={() => setHoveredItem('menu-1')}
+                  style={getMenuItemStyle(isSuperUser ? 2 : 1)}
+                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-2' : 'menu-1')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -917,8 +943,8 @@ const Header = () => {
                 {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
                 <Link
                   to="/about"
-                  style={getMenuItemStyle(2)}
-                  onMouseEnter={() => setHoveredItem('menu-2')}
+                  style={getMenuItemStyle(isSuperUser ? 3 : 2)}
+                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-3' : 'menu-2')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -938,8 +964,8 @@ const Header = () => {
                 </Link>
                 <Link
                   to="/contact"
-                  style={getMenuItemStyle(3)}
-                  onMouseEnter={() => setHoveredItem('menu-3')}
+                  style={getMenuItemStyle(isSuperUser ? 4 : 3)}
+                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-4' : 'menu-3')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -962,8 +988,8 @@ const Header = () => {
 
                 <a
                   href="#"
-                  style={getMenuItemStyle(4)}
-                  onMouseEnter={() => setHoveredItem('menu-4')}
+                  style={getMenuItemStyle(isSuperUser ? 5 : 4)}
+                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-5' : 'menu-4')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();

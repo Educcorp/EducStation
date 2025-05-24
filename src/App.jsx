@@ -14,6 +14,7 @@ import BlogDetailPage from './pages/BlogDetailPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import AdminPostPage from './pages/AdminPostPage';
+import AdminPanel from './pages/AdminPanel';
 import CategoryPage from './pages/CategoryPage';
 import CategoriesListPage from './pages/CategoriesListPage';
 import LoginPage from './components/auth/LoginPage';
@@ -63,6 +64,28 @@ const PrivateRoute = ({ children }) => {
   // Redirigir a login si no está autenticado
   if (!isAuth) {
     return <Navigate to="/login" replace />;
+  }
+  
+  return children;
+};
+
+// Componente para rutas de administrador (solo accesibles para superusers)
+const SuperUserRoute = ({ children }) => {
+  const { isAuth, isSuperUser, loading } = useAuth();
+  
+  // Mostrar loader mientras se verifica la autenticación
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  
+  // Redirigir a login si no está autenticado
+  if (!isAuth) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Redirigir a home si está autenticado pero no es superuser
+  if (!isSuperUser) {
+    return <Navigate to="/" replace />;
   }
   
   return children;
@@ -202,25 +225,33 @@ const App = () => {
               <Route 
                 path="/admin/post" 
                 element={
-                  <PrivateRoute>
+                  <SuperUserRoute>
                     <AdminPostPage />
-                  </PrivateRoute>
+                  </SuperUserRoute>
                 } 
               />
               <Route 
                 path="/admin/post/new" 
                 element={
-                  <PrivateRoute>
+                  <SuperUserRoute>
                     <AdminPostPage />
-                  </PrivateRoute>
+                  </SuperUserRoute>
                 } 
               />
               <Route 
                 path="/admin/post/:postId" 
                 element={
-                  <PrivateRoute>
+                  <SuperUserRoute>
                     <AdminPostPage />
-                  </PrivateRoute>
+                  </SuperUserRoute>
+                } 
+              />
+              <Route 
+                path="/admin/post/edit/:postId" 
+                element={
+                  <SuperUserRoute>
+                    <AdminPostPage />
+                  </SuperUserRoute>
                 } 
               />
               <Route 
@@ -253,6 +284,14 @@ const App = () => {
                   <PrivateRoute>
                     <ProfilePage />
                   </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/admin/panel" 
+                element={
+                  <SuperUserRoute>
+                    <AdminPanel />
+                  </SuperUserRoute>
                 } 
               />
               
