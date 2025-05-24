@@ -336,16 +336,26 @@ const PostEditor = () => {
 
   // Manejador para cambios en la imagen de portada
   const handleImageChange = (e, base64Image) => {
-    const file = e.target.files[0];
-    if (file) {
+    const file = e.target.files && e.target.files[0];
+    
+    // Si hay un archivo y base64Image, es una nueva imagen
+    if (file && base64Image) {
       console.log("Imagen Base64 recibida:", base64Image ? base64Image.substring(0, 50) + "..." : "No hay imagen Base64");
-      // Guardar tanto el archivo como la vista previa
       setPost(prev => ({
         ...prev,
         coverImage: file,
-        coverImagePreview: URL.createObjectURL(file),
-        // Guardar la versión Base64 de la imagen para enviarla al backend
-        Imagen_portada: base64Image || null
+        coverImagePreview: base64Image, // Usar base64 en lugar de blob URL
+        Imagen_portada: base64Image
+      }));
+    } 
+    // Si no hay archivo (eliminación de imagen)
+    else if (!file && base64Image === null) {
+      console.log("Eliminando imagen seleccionada");
+      setPost(prev => ({
+        ...prev,
+        coverImage: null,
+        coverImagePreview: null,
+        Imagen_portada: null
       }));
     }
   };

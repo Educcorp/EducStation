@@ -199,6 +199,45 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
     }
   };
 
+  // Función para eliminar la imagen seleccionada
+  const handleRemoveImage = () => {
+    // Limpiar todos los estados
+    setConversionStatus(null);
+    setImageInfo(null);
+    
+    // Crear un evento fake para llamar a onChange con valores vacíos
+    const fakeEvent = {
+      target: {
+        name: 'coverImage',
+        files: [],
+        value: ''
+      }
+    };
+    
+    // Llamar a onChange del componente padre para limpiar la imagen
+    onChange(fakeEvent, null);
+    
+    // Limpiar el input file
+    const fileInput = document.getElementById('coverImage');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  // Función para validar URLs de imagen
+  const getValidImageSrc = (src) => {
+    if (!src) return null;
+    
+    if (src.startsWith('data:')) {
+      return src;
+    } else if (src.startsWith('http') || src.startsWith('https')) {
+      return src;
+    } else {
+      console.warn('URL de imagen no válida:', src);
+      return null;
+    }
+  };
+
   const styles = {
     card: {
       backgroundColor: colors.white,
@@ -291,6 +330,26 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
       backgroundColor: 'rgba(33, 150, 243, 0.1)', 
       color: '#2196F3',
       border: '1px solid rgba(33, 150, 243, 0.2)',
+    },
+    removeButton: {
+      position: 'absolute',
+      top: '8px',
+      right: '8px',
+      width: '24px',
+      height: '24px',
+      borderRadius: '50%',
+      backgroundColor: 'rgba(255, 82, 82, 0.9)',
+      color: 'white',
+      border: 'none',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      transition: 'all 0.3s ease',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+      zIndex: 10,
     }
   };
 
@@ -378,17 +437,40 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
           }}
         >
           {coverImagePreview ? (
-            <img 
-              src={coverImagePreview} 
-              alt="Vista previa de la portada" 
-              style={styles.coverImage}
-              onMouseEnter={(e) => {
-                e.target.style.transform = 'scale(1.05)';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.transform = 'scale(1)';
-              }}
-            />
+            <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+              <img 
+                src={getValidImageSrc(coverImagePreview)} 
+                alt="Vista previa de la portada" 
+                style={styles.coverImage}
+                onError={(e) => {
+                  console.warn('Error cargando imagen preview:', coverImagePreview);
+                  e.target.style.display = 'none';
+                  e.target.parentNode.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; text-align: center;"><span style="font-size: 28px; margin-bottom: 8px;">❌</span><span>Error al cargar imagen</span></div>';
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                style={styles.removeButton}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = 'rgba(255, 82, 82, 1)';
+                  e.target.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'rgba(255, 82, 82, 0.9)';
+                  e.target.style.transform = 'scale(1)';
+                }}
+                title="Eliminar imagen"
+              >
+                ✕
+              </button>
+            </div>
           ) : (
             <div style={styles.imageUploadText}>
               <span style={styles.imageIcon}>🖼️</span>
@@ -396,8 +478,9 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
             </div>
           )}
         </label>
-        {renderStatusMessage()}
-        {renderImageInfo()}
+        {/* Solo mostrar mensajes de estado y información si hay imagen seleccionada */}
+        {coverImagePreview && renderStatusMessage()}
+        {coverImagePreview && renderImageInfo()}
         <p style={styles.helperText}>
           <span style={{color: colors.primary}}>💡</span>
           Para mejores resultados, usa imágenes de hasta 4MB. Las imágenes más grandes serán comprimidas automáticamente.
