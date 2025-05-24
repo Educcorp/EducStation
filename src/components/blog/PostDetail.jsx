@@ -1,11 +1,12 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
 import ComentariosList from '../comentarios/ComentariosList';
 
 const PostDetail = ({ post }) => {
   const { colors, isDarkMode } = useTheme();
+  const location = useLocation();
   // Extraer el ID del post directamente de los parámetros de la URL
   const { id: urlId } = useParams();
   
@@ -212,9 +213,28 @@ const PostDetail = ({ post }) => {
       {/* Sección de comentarios */}
       <ComentariosList postId={postId} />
       
-      <Link to="/blog" style={styles.backLink}>
+      <button 
+        onClick={() => {
+          // Navigate to blog page with instant reload
+          if(location.pathname === '/blog') {
+            window.location.reload();
+          } else {
+            window.location.href = '/blog';
+          }
+        }}
+        style={{
+          ...styles.backLink,
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: 0,
+          fontFamily: 'inherit',
+          fontSize: 'inherit',
+          fontWeight: 'inherit'
+        }}
+      >
         ← Volver al blog
-      </Link>
+      </button>
     </article>
   );
 };

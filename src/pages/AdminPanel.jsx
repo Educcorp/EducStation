@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaBug } from 'react-icons/fa';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch } from 'react-icons/fa';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuth, isSuperUser } = useAuth();
   const { isDarkMode } = useTheme();
   const [posts, setPosts] = useState([]);
@@ -530,23 +531,20 @@ const AdminPanel = () => {
         <h1 style={styles.pageTitle}>Panel de Administración</h1>
         <div style={styles.header} className="header">
           <h2 style={styles.title}>Gestión de Publicaciones</h2>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button 
-              onClick={fetchDebugInfo} 
-              style={{
-                ...styles.createButton,
-                backgroundColor: isDarkMode ? '#444' : '#666',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <FaBug /> Depurar
-            </button>
-            <Link to="/admin/post" style={styles.createButton} className="createButton">
-              <FaPlus /> Crear Nueva Publicación
-            </Link>
-          </div>
+          <button 
+            onClick={() => {
+              // Navigate to create post page with instant reload
+              if(location.pathname === '/admin/post') {
+                window.location.reload();
+              } else {
+                window.location.href = '/admin/post';
+              }
+            }}
+            style={styles.createButton} 
+            className="createButton"
+          >
+            <FaPlus /> Crear Nueva Publicación
+          </button>
         </div>
 
         <div style={styles.filters} className="filters">

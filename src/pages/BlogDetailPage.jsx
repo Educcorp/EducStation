@@ -243,14 +243,56 @@ const BlogDetailPage = () => {
         ) : error ? (
           <div style={styles.errorContainer}>
             <p>{error}</p>
-            <Link to="/blog" style={styles.backLink}>Volver al blog</Link>
+            <button 
+              onClick={() => {
+                // Navigate to blog page with instant reload
+                if(location.pathname === '/blog') {
+                  window.location.reload();
+                } else {
+                  window.location.href = '/blog';
+                }
+              }}
+              style={{
+                ...styles.backLink,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+                fontWeight: 'inherit'
+              }}
+            >
+              Volver al blog
+            </button>
           </div>
         ) : post ? (
           <PostDetail post={post} />
         ) : (
           <div style={styles.errorContainer}>
             <p>No se encontró la publicación solicitada.</p>
-            <Link to="/blog" style={styles.backLink}>Volver al blog</Link>
+            <button 
+              onClick={() => {
+                // Navigate to blog page with instant reload
+                if(location.pathname === '/blog') {
+                  window.location.reload();
+                } else {
+                  window.location.href = '/blog';
+                }
+              }}
+              style={{
+                ...styles.backLink,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                fontFamily: 'inherit',
+                fontSize: 'inherit',
+                fontWeight: 'inherit'
+              }}
+            >
+              Volver al blog
+            </button>
           </div>
         )}
       </main>

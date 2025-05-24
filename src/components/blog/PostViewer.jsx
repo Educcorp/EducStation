@@ -1,7 +1,7 @@
 /* Modificación para el componente PostViewer.jsx */
 // Actualiza el componente para usar los estilos corregidos
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
@@ -14,6 +14,7 @@ import ComentariosList from '../comentarios/ComentariosList';
 
 const PostViewer = () => {
   const { postId } = useParams(); // Obtiene el ID del post de la URL
+  const location = useLocation();
   const [postContent, setPostContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -195,12 +196,27 @@ const PostViewer = () => {
               onMouseLeave={(e) => e.target.style.color = isDarkMode ? colors.textLight : colors.textSecondary}
             >Inicio</Link>
             <span style={{color: isDarkMode ? 'rgba(255,255,255,0.3)' : colors.gray300, fontSize: '10px'}}>►</span>
-            <Link 
-              to="/blog"
-              style={styles.breadcrumbLink}
+            <button 
+              onClick={() => {
+                // Navigate to blog page with instant reload
+                if(location.pathname === '/blog') {
+                  window.location.reload();
+                } else {
+                  window.location.href = '/blog';
+                }
+              }}
+              style={{
+                ...styles.breadcrumbLink,
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                fontFamily: 'inherit',
+                fontSize: 'inherit'
+              }}
               onMouseEnter={(e) => e.target.style.color = colors.primary} 
               onMouseLeave={(e) => e.target.style.color = isDarkMode ? colors.textLight : colors.textSecondary}
-            >Blog</Link>
+            >Blog</button>
             <span style={{color: isDarkMode ? 'rgba(255,255,255,0.3)' : colors.gray300, fontSize: '10px'}}>►</span>
             <span>Post {postId}</span>
           </div>
