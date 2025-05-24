@@ -362,22 +362,6 @@ const SimpleEditor = ({ content, onChange }) => {
     const file = e.target.files[0];
     if (file) {
       try {
-        // Mostrar un indicador de carga
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.textContent = "Procesando imagen...";
-        loadingIndicator.style.padding = "10px";
-        loadingIndicator.style.margin = "5px";
-        loadingIndicator.style.backgroundColor = "#f0f8ff";
-        loadingIndicator.style.border = "1px solid #add8e6";
-        loadingIndicator.style.borderRadius = "4px";
-        
-        // Guardar la posición del cursor
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0).cloneRange();
-        
-        // Insertar indicador de carga
-        document.execCommand('insertHTML', false, loadingIndicator.outerHTML);
-        
         // Leer el archivo como Data URL
         const readFileAsDataURL = new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -399,14 +383,6 @@ const SimpleEditor = ({ content, onChange }) => {
         if (base64Size > 45 * 1024 * 1024) { // Limitar a 45MB (por debajo del max_allowed_packet)
           throw new Error(`La imagen procesada sigue siendo demasiado grande (${(base64Size / 1024 / 1024).toFixed(2)} MB). Por favor, utiliza una imagen más pequeña.`);
         }
-        
-        // Eliminar el indicador de carga
-        const loadingElements = editorRef.current.querySelectorAll('div');
-        loadingElements.forEach(el => {
-          if (el.textContent === "Procesando imagen...") {
-            el.remove();
-          }
-        });
         
         // Creamos HTML personalizado para la imagen con estilos básicos
         const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
@@ -446,14 +422,6 @@ const SimpleEditor = ({ content, onChange }) => {
         }, 10);
       } catch (error) {
         console.error("Error al insertar imagen:", error);
-        
-        // Limpiar cualquier indicador de carga
-        const loadingElements = editorRef.current.querySelectorAll('div');
-        loadingElements.forEach(el => {
-          if (el.textContent === "Procesando imagen...") {
-            el.remove();
-          }
-        });
         
         // Notificar al usuario del error de forma amistosa
         const errorNode = document.createElement('span');
@@ -910,15 +878,6 @@ const SimpleEditor = ({ content, onChange }) => {
           }
           
           // Mostrar indicador de carga
-          const loadingIndicator = document.createElement('div');
-          loadingIndicator.textContent = "Procesando imagen pegada...";
-          loadingIndicator.style.padding = "10px";
-          loadingIndicator.style.margin = "5px";
-          loadingIndicator.style.backgroundColor = "#f0f8ff";
-          loadingIndicator.style.border = "1px solid #add8e6";
-          loadingIndicator.style.borderRadius = "4px";
-          document.execCommand('insertHTML', false, loadingIndicator.outerHTML);
-          
           const reader = new FileReader();
           
           reader.onload = async (event) => {
@@ -926,14 +885,6 @@ const SimpleEditor = ({ content, onChange }) => {
               // Comprimir la imagen pegada
               const imgSrc = event.target.result;
               const processedImgSrc = await compressImage(blob, imgSrc);
-              
-              // Eliminar el indicador de carga
-              const loadingElements = editorRef.current.querySelectorAll('div');
-              loadingElements.forEach(el => {
-                if (el.textContent === "Procesando imagen pegada...") {
-                  el.remove();
-                }
-              });
               
               // Creamos HTML personalizado para la imagen
               const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
@@ -973,14 +924,6 @@ const SimpleEditor = ({ content, onChange }) => {
             } catch (error) {
               console.error("Error al procesar imagen pegada:", error);
               
-              // Limpiar cualquier indicador de carga
-              const loadingElements = editorRef.current.querySelectorAll('div');
-              loadingElements.forEach(el => {
-                if (el.textContent === "Procesando imagen pegada...") {
-                  el.remove();
-                }
-              });
-              
               // Notificar al usuario del error
               const errorNode = document.createElement('span');
               errorNode.style.color = 'red';
@@ -1002,14 +945,6 @@ const SimpleEditor = ({ content, onChange }) => {
           
           reader.onerror = (error) => {
             console.error("Error al leer imagen del portapapeles:", error);
-            
-            // Limpiar indicador de carga
-            const loadingElements = editorRef.current.querySelectorAll('div');
-            loadingElements.forEach(el => {
-              if (el.textContent === "Procesando imagen pegada...") {
-                el.remove();
-              }
-            });
             
             // Mostrar error
             const errorNode = document.createElement('span');
@@ -1057,15 +992,6 @@ const SimpleEditor = ({ content, onChange }) => {
         }
         
         // Mostrar indicador de carga
-        const loadingIndicator = document.createElement('div');
-        loadingIndicator.textContent = "Procesando imagen arrastrada...";
-        loadingIndicator.style.padding = "10px";
-        loadingIndicator.style.margin = "5px";
-        loadingIndicator.style.backgroundColor = "#f0f8ff";
-        loadingIndicator.style.border = "1px solid #add8e6";
-        loadingIndicator.style.borderRadius = "4px";
-        document.execCommand('insertHTML', false, loadingIndicator.outerHTML);
-        
         const reader = new FileReader();
         
         reader.onload = async (event) => {
@@ -1073,14 +999,6 @@ const SimpleEditor = ({ content, onChange }) => {
             // Comprimir la imagen arrastrada
             const imgSrc = event.target.result;
             const processedImgSrc = await compressImage(file, imgSrc);
-            
-            // Eliminar el indicador de carga
-            const loadingElements = editorRef.current.querySelectorAll('div');
-            loadingElements.forEach(el => {
-              if (el.textContent === "Procesando imagen arrastrada...") {
-                el.remove();
-              }
-            });
             
             // Creamos HTML personalizado para la imagen
             const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
@@ -1119,14 +1037,6 @@ const SimpleEditor = ({ content, onChange }) => {
             }, 10);
           } catch (error) {
             console.error("Error al procesar imagen arrastrada:", error);
-            
-            // Limpiar cualquier indicador de carga
-            const loadingElements = editorRef.current.querySelectorAll('div');
-            loadingElements.forEach(el => {
-              if (el.textContent === "Procesando imagen arrastrada...") {
-                el.remove();
-              }
-            });
             
             // Notificar al usuario del error
             const errorNode = document.createElement('span');
