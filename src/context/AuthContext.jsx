@@ -28,7 +28,8 @@ export const AuthProvider = ({ children }) => {
     // Verificar si hay un token en localStorage cuando la aplicación se carga
     const checkAuth = async () => {
       const token = localStorage.getItem('userToken');
-      console.log('AuthContext - Verificando autenticación, token existe:', !!token);
+      const refreshTokenValue = localStorage.getItem('refreshToken');
+      console.log('AuthContext - Verificando autenticación, token existe:', !!token, 'refresh token existe:', !!refreshTokenValue);
       
       if (token) {
         try {
@@ -59,10 +60,53 @@ export const AuthProvider = ({ children }) => {
             });
           } else {
             console.warn('El token es inválido o ha expirado. Intentando refrescar...');
-            // El token puede estar expirado, intentar refrescarlo
+            // El token puede estar expirado, intentar refrescarlo solo si tenemos refresh token
+            if (refreshTokenValue) {
+              try {
+                await refreshToken();
+                // Si el refresco es exitoso, intentar obtener datos del usuario nuevamente
+                const newResponse = await fetch(`${API_URL}/api/auth/user/`, {
+                  headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
+                  },
+                });
+                
+                if (newResponse.ok) {
+                  const userData = await newResponse.json();
+                  setUser(userData);
+                  setIsAuth(true);
+                  
+                  // Actualizar estado de superusuario
+                  const userIsSuperUser = userData.is_superuser === true;
+                  setIsSuperUser(userIsSuperUser);
+                  localStorage.setItem('isSuperUser', userIsSuperUser ? 'true' : 'false');
+                  
+                  console.log('Auth check después de refresh:', { 
+                    isAuth: true, 
+                    isSuperUser: userIsSuperUser,
+                    userData 
+                  });
+                } else {
+                  console.error('No se pudo renovar la autenticación, sesión expirada.');
+                  handleLogout();
+                }
+              } catch (error) {
+                // Error al refrescar token
+                console.error('Error al refrescar token:', error);
+                handleLogout();
+              }
+            } else {
+              console.warn('No hay refresh token disponible, cerrando sesión');
+              handleLogout();
+            }
+          }
+        } catch (error) {
+          console.error('Error al verificar autenticación:', error);
+          // Si hay un refresh token, intentar usarlo antes de hacer logout
+          if (refreshTokenValue) {
             try {
               await refreshToken();
-              // Si el refresco es exitoso, intentar obtener datos del usuario nuevamente
+              // Repetir la verificación después del refresh
               const newResponse = await fetch(`${API_URL}/api/auth/user/`, {
                 headers: {
                   'Authorization': `Bearer ${localStorage.getItem('userToken')}`,
@@ -73,30 +117,19 @@ export const AuthProvider = ({ children }) => {
                 const userData = await newResponse.json();
                 setUser(userData);
                 setIsAuth(true);
-                
-                // Actualizar estado de superusuario
                 const userIsSuperUser = userData.is_superuser === true;
                 setIsSuperUser(userIsSuperUser);
                 localStorage.setItem('isSuperUser', userIsSuperUser ? 'true' : 'false');
-                
-                console.log('Auth check después de refresh:', { 
-                  isAuth: true, 
-                  isSuperUser: userIsSuperUser,
-                  userData 
-                });
               } else {
-                console.error('No se pudo renovar la autenticación, sesión expirada.');
                 handleLogout();
               }
-            } catch (error) {
-              // Error al refrescar token
-              console.error('Error al refrescar token:', error);
+            } catch (refreshError) {
+              console.error('Error en refresh fallback:', refreshError);
               handleLogout();
             }
+          } else {
+            handleLogout();
           }
-        } catch (error) {
-          console.error('Error al verificar autenticación:', error);
-          handleLogout();
         }
       } else {
         console.log('No hay token, usuario no autenticado');

@@ -353,6 +353,17 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
     );
   };
 
+  const getValidImageSrc = (src) => {
+    if (src.startsWith('data:')) {
+      return src;
+    } else if (src.startsWith('http') || src.startsWith('https')) {
+      return src;
+    } else {
+      console.warn('URL de imagen no válida:', src);
+      return null;
+    }
+  };
+
   return (
     <div style={styles.card}>
       <div style={styles.formGroup}>
@@ -379,9 +390,14 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
         >
           {coverImagePreview ? (
             <img 
-              src={coverImagePreview} 
+              src={getValidImageSrc(coverImagePreview)} 
               alt="Vista previa de la portada" 
               style={styles.coverImage}
+              onError={(e) => {
+                console.warn('Error cargando imagen preview:', coverImagePreview);
+                e.target.style.display = 'none';
+                e.target.parentNode.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; text-align: center;"><span style="font-size: 28px; margin-bottom: 8px;">❌</span><span>Error al cargar imagen</span></div>';
+              }}
               onMouseEnter={(e) => {
                 e.target.style.transform = 'scale(1.05)';
               }}

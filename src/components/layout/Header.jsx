@@ -242,10 +242,27 @@ const Header = () => {
     return location.pathname === path;
   };
 
-  // Función para obtener el avatar con prefijo base64 si es necesario
+  // Función para obtener el avatar con validación correcta
   const getAvatarSrc = (avatar) => {
+    // Si no hay avatar, usar imagen por defecto desde public
     if (!avatar) return '/assets/images/logoBN.png';
-    return avatar.startsWith('data:image') ? avatar : `data:image/jpeg;base64,${avatar}`;
+    
+    // Si ya es una URL data válida, devolverla como está
+    if (avatar.startsWith('data:image/')) return avatar;
+    
+    // Si es una URL HTTP/HTTPS válida, devolverla
+    if (avatar.startsWith('http://') || avatar.startsWith('https://')) return avatar;
+    
+    // Si es una ruta relativa válida, devolverla
+    if (avatar.startsWith('/')) return avatar;
+    
+    // Si es base64 sin prefijo, añadir el prefijo
+    if (avatar.match(/^[A-Za-z0-9+/=]+$/)) {
+      return `data:image/jpeg;base64,${avatar}`;
+    }
+    
+    // Si nada funciona, usar imagen por defecto
+    return '/assets/images/logoBN.png';
   };
 
   // Estilos del header
