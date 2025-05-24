@@ -192,26 +192,65 @@ const PostViewer = () => {
 
   // Función para crear un componente con el contenido HTML
   const createPostComponent = () => {
-    // Usar el contenido HTML directamente sin procesamiento excesivo
-    // Solo hacer una corrección mínima para las imágenes
+    // Preservar los estilos originales del HTML y corregir problemas de layout
     let processedContent = postContent;
     
-    // Solo asegurar que las imágenes no se desborden
+    // Asegurar que el contenedor principal mantenga su ancho y no se vea restringido
+    processedContent = processedContent.replace(
+      /<div class="post-container"([^>]*)>/g,
+      '<div class="post-container"$1 style="max-width: none !important; width: 100% !important; margin: 0 auto !important; box-sizing: border-box !important;">'
+    );
+    
+    // Mejorar el manejo de imágenes para preservar su tamaño original
     processedContent = processedContent.replace(
       /<img([^>]*?)>/g,
       (match, attributes) => {
-        if (!attributes.includes('max-width')) {
+        // Preservar los estilos existentes y añadir protecciones adicionales
+        const hasStyle = attributes.includes('style=');
+        const hasMaxWidth = attributes.includes('max-width');
+        
+        if (hasStyle) {
+          // Si ya tiene atributo style, modificarlo preservando los estilos originales
           const styleMatch = attributes.match(/style="([^"]*)"/);
           if (styleMatch) {
-            const existingStyle = styleMatch[1];
-            const newStyle = existingStyle + '; max-width: 100%; height: auto;';
-            return match.replace(styleMatch[0], `style="${newStyle}"`);
-          } else {
-            return `<img${attributes} style="max-width: 100%; height: auto;">`;
+            let existingStyle = styleMatch[1];
+            
+            // Solo agregar max-width si no está presente
+            if (!hasMaxWidth) {
+              existingStyle = existingStyle.endsWith(';') ? existingStyle : existingStyle + ';';
+              existingStyle += ' max-width: 100%; height: auto; display: block; margin: 0 auto;';
+            }
+            
+            // Asegurar que las imágenes mantengan su calidad y no se pixelen
+            existingStyle += ' image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;';
+            
+            return match.replace(styleMatch[0], `style="${existingStyle}"`);
           }
+        } else {
+          // Si no tiene estilo, agregar uno básico que preserve la calidad
+          return `<img${attributes} style="max-width: 100%; height: auto; display: block; margin: 0 auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">`;
         }
+        
         return match;
       }
+    );
+    
+    // Asegurar que los contenedores de imagen mantengan su estructura
+    processedContent = processedContent.replace(
+      /<div([^>]*?)style="([^"]*?text-align:\s*center[^"]*?)"([^>]*)>/g,
+      '<div$1style="$2; width: 100%; box-sizing: border-box; margin: 25px auto; clear: both;"$3>'
+    );
+    
+    // Mejorar contenedores flex para imágenes múltiples
+    processedContent = processedContent.replace(
+      /<div([^>]*?)style="([^"]*?display:\s*flex[^"]*?)"([^>]*)>/g,
+      '<div$1style="$2; width: 100% !important; max-width: none !important; box-sizing: border-box !important; margin: 30px auto !important;"$3>'
+    );
+    
+    // Corregir elementos con ancho específico que pueden causar problemas
+    processedContent = processedContent.replace(
+      /style="([^"]*?)width:\s*48%([^"]*?)"/g,
+      'style="$1width: 48%; min-width: 250px; flex: 0 0 48%; box-sizing: border-box;$2"'
     );
     
     return {

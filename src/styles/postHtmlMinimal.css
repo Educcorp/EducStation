@@ -1,53 +1,132 @@
-/* postHtmlMinimal.css - Estilos mínimos para posts HTML sin interferir con su layout original */
+/* postHtmlMinimal.css - Estilos mejorados para posts HTML */
 
-/* Solo aplicar estilos esenciales para la integración con React */
+/* Contenedor principal del post */
 .post-content {
   width: 100%;
-  /* Permitir que el contenido HTML use su propio overflow */
   overflow: visible;
-}
-
-/* Asegurar que el contenido HTML se centre correctamente en la página */
-.post-content .post-container {
-  /* Solo centrar el contenido, no cambiar su estructura interna */
-  margin: 0 auto !important;
-  /* Permitir que mantenga su ancho original */
+  /* Asegurar que no haya restricciones de ancho */
   max-width: none !important;
-  /* Permitir que use su propio background */
+  box-sizing: border-box;
+}
+
+/* Contenedor del post - preservar estructura original */
+.post-content .post-container {
+  margin: 0 auto !important;
+  max-width: none !important;
+  width: 100% !important;
   background-color: inherit !important;
-  /* Permitir que use su propio padding */
   padding: inherit !important;
-  /* Permitir que use su propio box-shadow */
   box-shadow: inherit !important;
-  /* Permitir que use su propio border-radius */
   border-radius: inherit !important;
+  box-sizing: border-box !important;
+  /* Prevenir colapso de márgenes */
+  overflow: hidden;
 }
 
-/* Solo corregir problemas críticos de imágenes sin cambiar el layout */
+/* Mejorar el manejo de imágenes */
 .post-content img {
-  /* Solo prevenir desbordamiento horizontal */
-  max-width: 100%;
-  height: auto;
-  /* Mantener display y margin originales */
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+  /* Preservar calidad de imagen */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  /* Asegurar que las imágenes no se encojan más de lo necesario */
+  min-height: auto;
+  object-fit: contain;
+  /* Prevenir problemas de layout */
+  vertical-align: middle;
 }
 
-/* Asegurar que el footer se mantenga separado */
+/* Contenedores de imágenes centradas */
+.post-content div[style*="text-align: center"],
+.post-content div[style*="text-align:center"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 25px auto !important;
+  clear: both !important;
+}
+
+/* Contenedores flex para múltiples imágenes */
+.post-content div[style*="display: flex"],
+.post-content div[style*="display:flex"] {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+  margin: 30px auto !important;
+  /* Asegurar que el flex funcione correctamente */
+  flex-wrap: wrap !important;
+  gap: 20px !important;
+}
+
+/* Elementos hijos en contenedores flex */
+.post-content div[style*="display: flex"] > div,
+.post-content div[style*="display:flex"] > div {
+  flex: 0 0 calc(48% - 10px) !important;
+  min-width: 250px !important;
+  box-sizing: border-box !important;
+}
+
+/* Corregir problemas específicos con anchura del 48% */
+.post-content div[style*="width: 48%"],
+.post-content div[style*="width:48%"] {
+  flex: 0 0 calc(48% - 10px) !important;
+  min-width: 250px !important;
+  box-sizing: border-box !important;
+}
+
+/* Asegurar separación adecuada del footer */
 .post-content + * {
   clear: both;
   margin-top: 2rem;
 }
 
-/* Solo para modo oscuro - ajustes mínimos */
+/* Prevenir problemas con elementos flotantes */
+.post-content::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Estilos para modo oscuro */
 .post-content.dark-mode {
-  /* Permitir que el contenido HTML mantenga sus colores originales */
   color: inherit;
 }
 
-/* Responsive básico - solo para casos extremos */
+/* Responsive mejorado */
 @media (max-width: 768px) {
   .post-content .post-container {
-    /* En móviles, asegurar que no se desborde */
     max-width: 100vw !important;
     overflow-x: hidden !important;
+    padding: 20px !important;
   }
+  
+  /* En móviles, hacer que las imágenes ocupen todo el ancho disponible */
+  .post-content div[style*="width: 48%"],
+  .post-content div[style*="width:48%"] {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .post-content div[style*="display: flex"],
+  .post-content div[style*="display:flex"] {
+    flex-direction: column !important;
+  }
+}
+
+/* Correcciones adicionales para problemas de layout específicos */
+.post-content .stat-box,
+.post-content .highlight-box,
+.post-content .news-card {
+  max-width: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Asegurar que los contenedores con posición relativa no causen problemas */
+.post-content div[style*="position: relative"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
 } 
