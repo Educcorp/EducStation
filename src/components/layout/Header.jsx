@@ -755,6 +755,8 @@ const Header = () => {
                       navigate('/', { state: { forceReload: true } });
                     } else if(item.path === '/blog') {
                       navigate('/blog', { state: { forceReload: true } });
+                    } else if(item.path === '/categorias') {
+                      navigate('/categorias', { state: { forceReload: true } });
                     } else {
                       navigate(item.path);
                     }
