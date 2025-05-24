@@ -174,7 +174,13 @@ const Header = () => {
 
     // Solo si está autenticado, ir a la página de perfil
     if (isAuth && localStorage.getItem('userToken')) {
-      navigate(path);
+      // Si ya estamos en la página de perfil, recargar inmediatamente
+      if(location.pathname === path) {
+        window.location.reload();
+      } else {
+        // Si estamos en otra página, navegar directamente con recarga instantánea
+        window.location.href = path;
+      }
     } else {
       console.warn('Usuario no autenticado, redirigiendo a login');
       navigate('/login');
@@ -892,7 +898,13 @@ const Header = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
-                    navigate('/settings');
+                    // Si ya estamos en settings, recargar inmediatamente
+                    if(location.pathname === '/settings') {
+                      window.location.reload();
+                    } else {
+                      // Si estamos en otra página, navegar directamente con recarga instantánea
+                      window.location.href = '/settings';
+                    }
                   }}
                 >
                   <span style={styles.menuItemIcon}>
@@ -911,7 +923,13 @@ const Header = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
-                    navigate('/about');
+                    // Si ya estamos en about, recargar inmediatamente
+                    if(location.pathname === '/about') {
+                      window.location.reload();
+                    } else {
+                      // Si estamos en otra página, navegar directamente con recarga instantánea
+                      window.location.href = '/about';
+                    }
                   }}
                 >
                   <span style={styles.menuItemIcon}>
@@ -926,7 +944,13 @@ const Header = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
-                    window.location.href = '/contact';
+                    // Si ya estamos en contact, recargar inmediatamente
+                    if(location.pathname === '/contact') {
+                      window.location.reload();
+                    } else {
+                      // Si estamos en otra página, navegar directamente con recarga instantánea
+                      window.location.href = '/contact';
+                    }
                   }}
                 >
                   <span style={styles.menuItemIcon}>
