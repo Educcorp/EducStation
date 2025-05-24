@@ -1,64 +1,58 @@
 /* src/styles/posts.css */
-/* Estilos globales para los posts cargados dinámicamente */
+/* Estilos específicos para los posts cargados dinámicamente */
 
-/* Contenedor principal del post */
+/* Contenedor principal del post - CORREGIDO PARA CENTRADO */
 .post-container {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  padding: 20px !important;
-  background-color: #fff !important;
-  margin: 0 !important;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  box-sizing: border-box;
+  width: 100%;
 }
 
 /* Estilos para los elementos del post */
 .post-header {
-  margin-bottom: 25px !important;
-  width: 100% !important;
+  margin-bottom: 25px;
+  width: 100%;
 }
 
 .post-title {
-  font-size: 28px !important;
-  width: 100% !important;
+  font-size: 28px;
+  width: 100%;
 }
 
 .post-meta {
-  display: flex !important;
-  justify-content: space-between !important;
-  width: 100% !important;
-  flex-wrap: wrap !important;
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
 .post-content {
-  width: 100% !important;
+  width: 100%;
 }
 
 .post-footer {
-  width: 100% !important;
-  margin-top: 40px !important;
-  padding-top: 20px !important;
+  width: 100%;
+  margin-top: 40px;
+  padding-top: 20px;
 }
 
 /* Media queries para responsive */
 @media (max-width: 768px) {
   .post-container {
-    padding: 15px !important;
+    padding: 15px;
+    margin: 0 auto;
   }
 
   .post-title {
-    font-size: 24px !important;
+    font-size: 24px;
   }
 
   .post-meta {
-    flex-direction: column !important;
+    flex-direction: column;
   }
-}
-
-/* Adaptaciones adicionales para asegurar consistencia */
-body {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100% !important;
 }
 
 /* Estilos para componentes comunes dentro de los posts */
@@ -68,14 +62,35 @@ body {
 .author-section,
 .tags-section,
 .related-posts {
-  width: 100% !important;
-  box-sizing: border-box !important;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Garantizar que las imágenes no se desborden */
-img {
-  max-width: 100% !important;
-  height: auto !important;
+.post-content img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Estilos para blockquotes dentro de posts */
+.post-content blockquote {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 20px 0;
+  padding: 15px 20px;
+  border-left: 4px solid #1F4E4E;
+  background-color: rgba(31, 78, 78, 0.05);
+}
+
+/* Contenedor de post con tema oscuro */
+.post-content.dark-mode {
+  background-color: #1a1e23;
+  color: #ffffff;
+}
+
+.post-content.dark-mode blockquote {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-left-color: #93ABA3;
 }
 
 /* Estilos para blockquotes */

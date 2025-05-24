@@ -101,6 +101,7 @@ const PostDetail = ({ post }) => {
   // Estilos para el componente
   const styles = {
     article: {
+      width: '100%',
       maxWidth: '800px',
       margin: '0 auto',
       padding: spacing.lg,

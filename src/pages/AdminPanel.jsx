@@ -25,6 +25,55 @@ const AdminPanel = () => {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
+  // Verificación inmediata al montar el componente - DETECCIÓN INSTANTÁNEA (AdminPanel)
+  useEffect(() => {
+    const checkForInstantReload = () => {
+      if (location.state && location.state.forceReload && !sessionStorage.getItem('adminpanel-reloaded')) {
+        sessionStorage.setItem('adminpanel-reloaded', 'true');
+        window.history.replaceState(null, '', window.location.pathname);
+        window.location.reload();
+      }
+    };
+
+    // Ejecutar inmediatamente
+    checkForInstantReload();
+  }, []); // Solo al montar
+
+  // Recarga forzada al entrar (solo una vez por sesión) - OPTIMIZADA PARA ADMINPANEL
+  useEffect(() => {
+    const shouldForceReload = () => {
+      // Si viene con forceReload explícito
+      if (location.state && location.state.forceReload) {
+        return true;
+      }
+      
+      // Detectar navegación hacia atrás usando performance.navigation (INMEDIATO)
+      const isBackNavigation = window.performance?.navigation?.type === 2; // TYPE_BACK_FORWARD
+      
+      // Detectar si viene desde otras páginas usando referrer (INMEDIATO)
+      const previousUrl = document.referrer;
+      const currentUrl = window.location.href;
+      
+      const comesFromOtherPage = previousUrl && 
+        (previousUrl.includes('/blog') || previousUrl.includes('/categoria') || previousUrl.includes('/profile')) &&
+        currentUrl.includes('/admin/panel');
+      
+      return isBackNavigation || comesFromOtherPage;
+    };
+
+    if (shouldForceReload()) {
+      const reloadKey = 'adminpanel-reloaded';
+      if (!sessionStorage.getItem(reloadKey)) {
+        sessionStorage.setItem(reloadKey, 'true');
+        window.history.replaceState(null, '', window.location.pathname);
+        window.location.reload();
+      }
+    } else {
+      // Limpiar la marca de recarga si no hay forceReload
+      sessionStorage.removeItem('adminpanel-reloaded');
+    }
+  }, [location]);
+
   // Verificar si el usuario es administrador
   useEffect(() => {
     if (!isAuth) {
