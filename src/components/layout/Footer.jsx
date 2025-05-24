@@ -431,7 +431,7 @@ const Footer = () => {
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaInfo size={18} /></span>
-                  <Link to="/about" style={styles.linkAnchor}>Acerca de</Link>
+                  <a href="/about" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/about', e)}>Acerca de</a>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaEnvelope size={18} /></span>
