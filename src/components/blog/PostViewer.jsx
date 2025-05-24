@@ -1,29 +1,55 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
-import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import ReactionSection from './ReactionSection';
-import { useTheme } from '../../context/ThemeContext';
 import ComentariosList from '../comentarios/ComentariosList';
+import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
+/**
+ * Componente PostViewer rediseñado desde cero
+ * Utiliza un iframe con aislamiento total para mostrar el contenido HTML de los posts
+ */
 const PostViewer = () => {
   const { id: postId } = useParams();
   const navigate = useNavigate();
-  const [postContent, setPostContent] = useState('');
+  const { isDarkMode } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { isDarkMode } = useTheme();
-  const postContainerRef = useRef(null);
+  const [iframeHeight, setIframeHeight] = useState(500); // Altura inicial
+  const [postHTML, setPostHTML] = useState('');
+  const [iframeKey, setIframeKey] = useState(Date.now()); // Clave para forzar re-render
 
+  // Escuchar mensajes desde el iframe
+  useEffect(() => {
+    const handleMessage = (event) => {
+      // Verificar que el mensaje sea del iframe de contenido
+      if (event.data && event.data.type === 'post-height') {
+        setIframeHeight(event.data.height + 50); // Añadir margen
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  // Detectar cambios de tema para refrescar el iframe
+  useEffect(() => {
+    // Cuando cambia el tema, actualizar el iframe con una nueva clave
+    setIframeKey(Date.now());
+  }, [isDarkMode]);
+
+  // Cargar el contenido del post
   useEffect(() => {
     const fetchPostContent = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        const postPath = postId === 'featured' ? `/post/postfeature.html` : `/post/post${postId}.html`;
-        console.log('Intentando cargar post desde:', postPath);
+        const postPath = postId === 'featured' 
+          ? `/post/postfeature.html` 
+          : `/post/post${postId}.html`;
         
         const response = await fetch(postPath);
         
@@ -32,7 +58,7 @@ const PostViewer = () => {
         }
         
         const htmlContent = await response.text();
-        setPostContent(htmlContent);
+        setPostHTML(htmlContent);
         setLoading(false);
       } catch (err) {
         console.error('Error al cargar el post:', err);
@@ -46,30 +72,337 @@ const PostViewer = () => {
     }
   }, [postId]);
 
-  // Nuevo useEffect para manejar el renderizado del contenido con Shadow DOM
-  useEffect(() => {
-    if (!loading && !error && postContent && postContainerRef.current) {
-      // Limpiar cualquier contenido previo
-      while (postContainerRef.current.firstChild) {
-        postContainerRef.current.removeChild(postContainerRef.current.firstChild);
-      }
+  // Generar el documento HTML completo para el iframe
+  const generateIframeContent = () => {
+    if (!postHTML) return '';
 
-      // Crear un Shadow DOM para aislar los estilos
-      const shadowRoot = postContainerRef.current.attachShadow({ mode: 'open' });
-      
-      // Procesar el contenido HTML
-      const processedContent = processPostContent();
-      
-      // Crear un elemento div para el contenido
-      const contentContainer = document.createElement('div');
-      contentContainer.className = 'post-content-container';
-      contentContainer.innerHTML = processedContent;
-      
-      // Añadir el contenido al Shadow DOM
-      shadowRoot.appendChild(contentContainer);
+    // Extraer el título del post, si existe
+    let title = 'Post';
+    const titleMatch = postHTML.match(/<h1[^>]*>(.*?)<\/h1>/i) || 
+                      postHTML.match(/<title[^>]*>(.*?)<\/title>/i);
+    if (titleMatch && titleMatch[1]) {
+      title = titleMatch[1].replace(/<[^>]+>/g, ''); // Eliminar etiquetas HTML dentro del título
     }
-  }, [loading, error, postContent, isDarkMode]);
 
+    return `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${title}</title>
+        <style>
+          /* Resetear todos los estilos */
+          *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+          }
+          
+          :root {
+            --text-color: ${isDarkMode ? '#e1e1e1' : '#333'};
+            --bg-color: ${isDarkMode ? '#1a1a1a' : '#ffffff'};
+            --heading-color: ${isDarkMode ? '#f1f1f1' : colors.primary};
+            --link-color: ${colors.secondary};
+            --link-hover: ${colors.primaryLight};
+            --border-color: ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+            --code-bg: ${isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)'};
+            --blockquote-bg: ${isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)'};
+            --font-family: ${typography.fontFamily.replace(/"/g, '\\"')}, -apple-system, BlinkMacSystemFont, sans-serif;
+          }
+          
+          html, body {
+            width: 100%;
+            font-family: var(--font-family);
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+          }
+          
+          /* Contenedor principal - Con margen y padding controlados */
+          .post-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          
+          /* Estilos para encabezados */
+          h1, h2, h3, h4, h5, h6 {
+            margin: 1.5em 0 0.5em;
+            line-height: 1.3;
+            color: var(--heading-color);
+            font-weight: 700;
+            width: 100%;
+          }
+          
+          h1 { font-size: 2.2em; margin-top: 0.8em; }
+          h2 { font-size: 1.8em; }
+          h3 { font-size: 1.5em; }
+          h4 { font-size: 1.3em; }
+          h5 { font-size: 1.1em; }
+          h6 { font-size: 1em; }
+          
+          /* Párrafos y texto */
+          p {
+            margin-bottom: 1.2em;
+            width: 100%;
+          }
+          
+          /* Enlaces */
+          a {
+            color: var(--link-color);
+            text-decoration: none;
+            transition: color 0.3s ease, text-decoration 0.3s ease;
+          }
+          
+          a:hover, a:focus {
+            color: var(--link-hover);
+            text-decoration: underline;
+          }
+          
+          /* Imágenes */
+          img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 1.5em auto;
+            border-radius: 8px;
+            object-fit: contain;
+          }
+          
+          /* Sobreescribir cualquier estilo inline de imágenes */
+          img[style] {
+            max-width: 100% !important;
+            height: auto !important;
+            margin: 1.5em auto !important;
+          }
+          
+          /* Videos e iframes */
+          iframe, video {
+            max-width: 100%;
+            margin: 1.5em auto;
+            display: block;
+            border-radius: 8px;
+            border: none;
+          }
+          
+          /* Listas */
+          ul, ol {
+            width: 100%;
+            padding-left: 2em;
+            margin-bottom: 1.2em;
+          }
+          
+          li {
+            margin-bottom: 0.5em;
+            width: 100%;
+          }
+          
+          /* Tablas */
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5em 0;
+            overflow-x: auto;
+            display: block;
+          }
+          
+          table, th, td {
+            border: 1px solid var(--border-color);
+          }
+          
+          th, td {
+            padding: 12px;
+            text-align: left;
+          }
+          
+          th {
+            background-color: ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
+            font-weight: 600;
+          }
+          
+          /* Bloques de código */
+          pre, code {
+            font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+            background-color: var(--code-bg);
+            border-radius: 4px;
+          }
+          
+          code {
+            padding: 0.2em 0.4em;
+            font-size: 0.9em;
+          }
+          
+          pre {
+            padding: 1em;
+            margin: 1.5em 0;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+          }
+          
+          pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: 0.95em;
+            color: inherit;
+          }
+          
+          /* Citas */
+          blockquote {
+            margin: 1.5em 0;
+            padding: 1em 1.5em;
+            border-left: 4px solid var(--link-color);
+            background-color: var(--blockquote-bg);
+            font-style: italic;
+            position: relative;
+          }
+          
+          blockquote p:last-child {
+            margin-bottom: 0;
+          }
+          
+          /* Separadores */
+          hr {
+            margin: 2em 0;
+            border: 0;
+            height: 1px;
+            background-color: var(--border-color);
+          }
+          
+          /* Estilos adicionales para elementos flex */
+          div[style*="display: flex"],
+          div[style*="display:flex"] {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 20px !important;
+            justify-content: center !important;
+            width: 100% !important;
+          }
+          
+          /* Corrección para elementos en flex containers */
+          div[style*="display: flex"] > *,
+          div[style*="display:flex"] > * {
+            flex: 1 1 300px !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+          }
+          
+          /* Estilos para divs con width específico */
+          div[style*="width:"],
+          div[style*="width: "] {
+            max-width: 100% !important;
+          }
+          
+          /* Anotaciones y figcaption */
+          figcaption, .caption, .annotation {
+            font-size: 0.9em;
+            color: ${isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
+            text-align: center;
+            margin-top: 0.5em;
+            font-style: italic;
+          }
+          
+          /* Media queries para responsividad */
+          @media (max-width: 768px) {
+            .post-container {
+              padding: 15px;
+            }
+            
+            h1 { font-size: 1.8em; }
+            h2 { font-size: 1.6em; }
+            h3 { font-size: 1.4em; }
+            
+            div[style*="display: flex"],
+            div[style*="display:flex"] {
+              flex-direction: column !important;
+              align-items: center !important;
+            }
+            
+            div[style*="display: flex"] > *,
+            div[style*="display:flex"] > * {
+              flex: 1 1 100% !important;
+            }
+            
+            blockquote {
+              padding: 0.8em 1em;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="post-container">
+          ${postHTML}
+        </div>
+        <script>
+          // Función para notificar la altura al padre
+          function notifyHeight() {
+            const height = document.body.scrollHeight;
+            window.parent.postMessage({ 
+              type: 'post-height',
+              height: height
+            }, '*');
+          }
+          
+          // Observar cambios en el DOM para detectar cuando se cargan imágenes o cambia el contenido
+          const observer = new MutationObserver(notifyHeight);
+          observer.observe(document.body, { 
+            childList: true, 
+            subtree: true,
+            attributes: true,
+            characterData: true
+          });
+          
+          // Notificar altura cuando se carga la página
+          document.addEventListener('DOMContentLoaded', notifyHeight);
+          
+          // Notificar altura cuando se cargan las imágenes
+          document.querySelectorAll('img').forEach(img => {
+            if (img.complete) {
+              notifyHeight();
+            } else {
+              img.addEventListener('load', notifyHeight);
+              img.addEventListener('error', notifyHeight);
+            }
+          });
+          
+          // Notificar altura cuando se cargan iframes o videos
+          document.querySelectorAll('iframe, video').forEach(media => {
+            media.addEventListener('load', notifyHeight);
+          });
+          
+          // Ejecutar inmediatamente y también después de un pequeño retraso
+          notifyHeight();
+          setTimeout(notifyHeight, 100);
+          setTimeout(notifyHeight, 500);
+          setTimeout(notifyHeight, 1000);
+          
+          // Ajustar ancho de elementos con ancho fijo en inline styles
+          document.querySelectorAll('[style*="width"]').forEach(el => {
+            if (el.style.width && el.style.width.includes('px')) {
+              const width = parseInt(el.style.width);
+              if (width > window.innerWidth - 40) {
+                el.style.width = '100%';
+              }
+            }
+          });
+        </script>
+      </body>
+      </html>
+    `;
+  };
+
+  // Navegación al blog
+  const navigateToBlog = () => {
+    navigate('/blog', { state: { forceReload: true } });
+  };
+  
+  // Estilos del componente principal
   const styles = {
     pageWrapper: {
       width: "100%",
@@ -101,11 +434,14 @@ const PostViewer = () => {
       padding: `${spacing.xl} ${spacing.md}`,
       boxSizing: "border-box",
     },
-    postContent: {
+    iframeContainer: {
       width: "100%",
-      minHeight: "300px", // Garantiza altura mínima para contenido corto
+      height: `${iframeHeight}px`,
+      border: "none",
+      transition: "height 0.3s ease",
       backgroundColor: "transparent",
-      display: "block", // Forzar display block
+      overflow: "hidden",
+      display: "block",
     },
     commentsWrapper: {
       width: "100%",
@@ -166,319 +502,21 @@ const PostViewer = () => {
       width: "100%",
       maxWidth: "1200px",
       margin: "0 auto",
-      padding: `0 ${spacing.md}`,
+      padding: `${spacing.xl} ${spacing.md} 0`,
     },
     separator: {
       borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
       margin: `${spacing.xxl} auto`,
       width: '100%',
       maxWidth: "1200px",
-    },
-    iframeContainer: {
-      width: '100%',
-      height: 'auto',
-      minHeight: '50vh',
-      border: 'none',
-      overflow: 'visible',
     }
   };
-
-  // Función mejorada para procesar el contenido HTML - ahora retorna un string
-  const processPostContent = () => {
-    if (!postContent) return '';
-    
-    let processedContent = postContent;
-    
-    // Eliminar elementos HTML, HEAD y BODY si existen
-    processedContent = processedContent
-      .replace(/<\/?html[^>]*>/gi, '')
-      .replace(/<\/?head[^>]*>/gi, '')
-      .replace(/<\/?body[^>]*>/gi, '');
-    
-    // CSS para el Shadow DOM - Este CSS solo se aplicará dentro del contenedor aislado
-    const shadowStyles = `
-      <style>
-        /* Estilos base para todos los elementos */
-        :host {
-          all: initial;
-          display: block;
-          width: 100%;
-          box-sizing: border-box;
-          font-family: ${typography.fontFamily};
-          color: ${isDarkMode ? colors.textLight : colors.textDark};
-          line-height: 1.6;
-          font-size: 16px;
-        }
-        
-        /* Contenedor principal */
-        .post-content-container {
-          width: 100%;
-          max-width: 100%;
-          margin: 0 auto;
-          padding: 0;
-          overflow-x: hidden;
-        }
-        
-        /* Resetear todos los elementos del HTML para asegurar consistencia */
-        div, p, h1, h2, h3, h4, h5, h6, span, a, ul, ol, li, img, table, tr, td, th, pre, code, blockquote {
-          max-width: 100%;
-          box-sizing: border-box;
-          margin-top: 0;
-        }
-        
-        /* Headings */
-        h1, h2, h3, h4, h5, h6 {
-          margin-bottom: 0.5em;
-          line-height: 1.3;
-          color: ${isDarkMode ? colors.textLight : colors.primary};
-          font-weight: 700;
-        }
-        
-        h1 { font-size: 2.2em; margin-top: 0.8em; }
-        h2 { font-size: 1.8em; margin-top: 0.8em; }
-        h3 { font-size: 1.5em; margin-top: 0.7em; }
-        h4 { font-size: 1.3em; margin-top: 0.6em; }
-        h5 { font-size: 1.1em; margin-top: 0.5em; }
-        h6 { font-size: 1em; margin-top: 0.5em; }
-        
-        /* Párrafos */
-        p {
-          margin-bottom: 1em;
-          width: 100%;
-        }
-        
-        /* Enlaces */
-        a {
-          color: ${colors.secondary};
-          text-decoration: none;
-          transition: color 0.3s ease;
-        }
-        
-        a:hover, a:focus {
-          color: ${colors.primaryLight};
-          text-decoration: underline;
-        }
-        
-        /* Imágenes */
-        img {
-          max-width: 100%;
-          height: auto;
-          display: block;
-          margin: 1.5em auto;
-          border-radius: 8px;
-        }
-        
-        /* Listas */
-        ul, ol {
-          padding-left: 2em;
-          margin-bottom: 1em;
-        }
-        
-        li {
-          margin-bottom: 0.5em;
-        }
-        
-        /* Tablas */
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin: 1em 0;
-          overflow-x: auto;
-          display: block;
-        }
-        
-        table, th, td {
-          border: 1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-        }
-        
-        th, td {
-          padding: 8px 12px;
-          text-align: left;
-        }
-        
-        th {
-          background-color: ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'};
-        }
-        
-        /* Bloques de código */
-        pre, code {
-          background-color: ${isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)'};
-          border-radius: 4px;
-          font-family: monospace;
-          padding: 0.2em 0.4em;
-          overflow-x: auto;
-        }
-        
-        pre {
-          padding: 1em;
-          margin: 1em 0;
-          white-space: pre-wrap;
-        }
-        
-        pre code {
-          background-color: transparent;
-          padding: 0;
-        }
-        
-        /* Citas */
-        blockquote {
-          margin: 1em 0;
-          padding: 0.5em 1em;
-          border-left: 4px solid ${colors.secondary};
-          background-color: ${isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.03)'};
-          font-style: italic;
-        }
-        
-        /* Flexbox containers */
-        div[style*="display: flex"],
-        div[style*="display:flex"] {
-          display: flex !important;
-          flex-wrap: wrap !important;
-          gap: 20px !important;
-          justify-content: center !important;
-          width: 100% !important;
-        }
-        
-        /* Elementos responsivos en flex containers */
-        div[style*="display: flex"] > *,
-        div[style*="display:flex"] > * {
-          flex: 1 1 300px !important;
-          min-width: 0 !important;
-          max-width: 100% !important;
-        }
-        
-        /* Responsive grid para móviles */
-        @media (max-width: 768px) {
-          div[style*="display: flex"],
-          div[style*="display:flex"] {
-            flex-direction: column !important;
-          }
-          
-          h1 { font-size: 1.8em; }
-          h2 { font-size: 1.5em; }
-          h3 { font-size: 1.3em; }
-        }
-      </style>
-    `;
-    
-    // Devolver el HTML procesado con los estilos del Shadow DOM
-    return `${shadowStyles}${processedContent}`;
-  };
-
-  // Versión alternativa para uso con sandbox iframe si Shadow DOM no es viable
-  const createSandboxContent = () => {
-    if (!postContent) return '';
-    
-    let processedContent = postContent;
-    
-    // Crear un documento HTML completo para el iframe
-    const htmlTemplate = `
-      <!DOCTYPE html>
-      <html lang="es">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          /* Resetear estilos */
-          * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-          }
-          
-          body {
-            font-family: ${typography.fontFamily};
-            line-height: 1.6;
-            color: ${isDarkMode ? '#e1e1e1' : '#333'};
-            background-color: transparent;
-            width: 100%;
-            overflow-x: hidden;
-            padding: 20px;
-          }
-          
-          /* Mismos estilos que para Shadow DOM... */
-          h1, h2, h3, h4, h5, h6 {
-            margin-bottom: 0.5em;
-            line-height: 1.3;
-            color: ${isDarkMode ? '#f1f1f1' : colors.primary};
-            font-weight: 700;
-          }
-          
-          h1 { font-size: 2.2em; margin-top: 0.8em; }
-          h2 { font-size: 1.8em; margin-top: 0.8em; }
-          h3 { font-size: 1.5em; margin-top: 0.7em; }
-          
-          p { margin-bottom: 1em; width: 100%; }
-          
-          img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 1.5em auto;
-            border-radius: 8px;
-          }
-        </style>
-      </head>
-      <body>
-        ${processedContent}
-        <script>
-          // Script para ajustar altura del iframe
-          document.addEventListener('DOMContentLoaded', function() {
-            const height = document.body.scrollHeight;
-            window.parent.postMessage({ type: 'resize', height: height }, '*');
-          });
-          
-          // Notificar cuando se carguen imágenes para reajustar
-          document.querySelectorAll('img').forEach(img => {
-            img.onload = function() {
-              const height = document.body.scrollHeight;
-              window.parent.postMessage({ type: 'resize', height: height }, '*');
-            }
-          });
-        </script>
-      </body>
-      </html>
-    `;
-    
-    return htmlTemplate;
-  };
-
-  const navigateToBlog = () => {
-    navigate('/blog', { state: { forceReload: true } });
-  };
-
-  // Función para manejar mensajes del iframe
-  const handleIframeMessage = (event) => {
-    if (event.data && event.data.type === 'resize') {
-      const iframe = document.getElementById('post-content-iframe');
-      if (iframe) {
-        iframe.style.height = `${event.data.height + 30}px`; // Añadir margen
-      }
-    }
-  };
-
-  // Agregar/remover event listener para mensajes del iframe
-  useEffect(() => {
-    window.addEventListener('message', handleIframeMessage);
-    return () => {
-      window.removeEventListener('message', handleIframeMessage);
-    };
-  }, []);
-
-  // Determinar si usar Shadow DOM o iframe sandbox basado en características del navegador
-  const shouldUseShadowDOM = () => {
-    return true; // Valor por defecto, podría detectarse la compatibilidad del navegador
-  };
-
-  if (!postContent && !loading) {
-    return null;
-  }
 
   return (
-    <div style={styles.pageWrapper} className="pageWrapper">
+    <div style={styles.pageWrapper}>
       <Header />
       
-      <div style={styles.mainContainer} className="mainContainer">
+      <div style={styles.mainContainer}>
         <main style={styles.contentContainer}>
           {/* Breadcrumb */}
           <div style={styles.breadcrumb}>
@@ -504,25 +542,18 @@ const PostViewer = () => {
                 </div>
               ) : (
                 <>
-                  {shouldUseShadowDOM() ? (
-                    // Opción 1: Shadow DOM
-                    <div 
-                      ref={postContainerRef}
-                      style={styles.postContent}
-                    />
-                  ) : (
-                    // Opción 2: iframe sandbox (alternativa para navegadores sin soporte Shadow DOM)
-                    <iframe
-                      id="post-content-iframe"
-                      srcDoc={createSandboxContent()}
-                      style={styles.iframeContainer}
-                      sandbox="allow-same-origin"
-                      frameBorder="0"
-                      scrolling="no"
-                      title="Contenido del post"
-                    />
-                  )}
+                  {/* Contenido del post en un iframe para aislamiento total */}
+                  <iframe 
+                    key={iframeKey}
+                    title={`Post ${postId}`}
+                    style={styles.iframeContainer}
+                    srcDoc={generateIframeContent()}
+                    sandbox="allow-same-origin allow-scripts"
+                    frameBorder="0"
+                    scrolling="no"
+                  />
                   
+                  {/* Sección de reacciones */}
                   <div style={styles.reactionWrapper}>
                     <ReactionSection postId={postId} />
                   </div>
@@ -548,4 +579,4 @@ const PostViewer = () => {
   );
 };
 
-export default PostViewer;
+export default PostViewer; 
