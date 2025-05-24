@@ -32,28 +32,28 @@ const BlogPage = () => {
       if (location.state && location.state.forceReload) {
         return true;
       }
-      
+
       // 2. Detectar si viene de un post usando sessionStorage (MÉTODO PRINCIPAL)
       const leftPost = sessionStorage.getItem('left-post');
       const cameFromBlog = sessionStorage.getItem('came-from-blog');
-      
+
       if (leftPost && cameFromBlog) {
         return true;
       }
-      
+
       // 3. Detectar navegación hacia atrás usando performance.navigation (INMEDIATO)
       const isBackNavigation = window.performance?.navigation?.type === 2; // TYPE_BACK_FORWARD
-      
+
       // 4. Detectar si viene de un post individual usando referrer (INMEDIATO)
       const previousUrl = document.referrer;
       const currentUrl = window.location.href;
-      
-      const comesFromPost = previousUrl && 
-        previousUrl.includes('/blog/') && 
+
+      const comesFromPost = previousUrl &&
+        previousUrl.includes('/blog/') &&
         /\/blog\/\d+/.test(previousUrl) &&
         currentUrl.includes('/blog') &&
         !currentUrl.includes('/blog/');
-      
+
       return isBackNavigation || comesFromPost;
     };
 
@@ -80,12 +80,12 @@ const BlogPage = () => {
     const handlePopState = (event) => {
       const currentPath = window.location.pathname;
       const isOnBlog = currentPath === '/blog';
-      
+
       if (isOnBlog) {
         // SIN DELAY - Verificación inmediata
         const leftPost = sessionStorage.getItem('left-post');
         const cameFromBlog = sessionStorage.getItem('came-from-blog');
-        
+
         if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded')) {
           // Limpiar marcadores inmediatamente
           sessionStorage.removeItem('left-post');
@@ -99,7 +99,7 @@ const BlogPage = () => {
 
     // Agregar listener para navegación hacia atrás
     window.addEventListener('popstate', handlePopState);
-    
+
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };
@@ -194,7 +194,7 @@ const BlogPage = () => {
     const checkForInstantReload = () => {
       const leftPost = sessionStorage.getItem('left-post');
       const cameFromBlog = sessionStorage.getItem('came-from-blog');
-      
+
       if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded')) {
         // Limpiar marcadores y recargar inmediatamente
         sessionStorage.removeItem('left-post');
@@ -665,6 +665,17 @@ const BlogPage = () => {
       return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
     };
 
+    // Function to get very light transparent background for selections
+    const getSoftBackground = (color, opacity = 0.08) => {
+      // Convert hex to rgb
+      let hex = color.replace('#', '');
+      let r = parseInt(hex.substring(0, 2), 16);
+      let g = parseInt(hex.substring(2, 4), 16);
+      let b = parseInt(hex.substring(4, 6), 16);
+
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
+
     // Function to get current category color
     const getCurrentCategoryColor = () => {
       if (selectedCategory) {
@@ -695,8 +706,8 @@ const BlogPage = () => {
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
-            background: `linear-gradient(to right, ${getLighterColor(getCurrentCategoryColor(), 0.8)}, ${getLighterColor(getCurrentCategoryColor(), 0.9)})`,
-            boxShadow: `0 4px 8px ${getCurrentCategoryColor()}33`,
+            background: `linear-gradient(to right, ${getSoftBackground(getCurrentCategoryColor(), 0.03)}, ${getSoftBackground(getCurrentCategoryColor(), 0.06)})`,
+            boxShadow: `0 4px 8px ${getSoftBackground(getCurrentCategoryColor(), 0.12)}`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -737,14 +748,14 @@ const BlogPage = () => {
         {categoryDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
-            boxShadow: `0 8px 20px ${getCurrentCategoryColor()}33`,
+            boxShadow: `0 8px 20px ${getSoftBackground(getCurrentCategoryColor(), 0.15)}`,
             backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
             <div
               style={{
                 ...styles.dropdownItem,
-                backgroundColor: !selectedCategory ? getLighterColor(getCurrentCategoryColor(), 0.1) : 'transparent',
+                backgroundColor: !selectedCategory ? getSoftBackground(getCurrentCategoryColor(), 0.1) : 'transparent',
                 color: !selectedCategory ? getCurrentCategoryColor() : colors.primary,
                 fontWeight: !selectedCategory ? 600 : 400,
                 borderLeft: `3px solid ${!selectedCategory ? getCurrentCategoryColor() : 'transparent'}`,
@@ -752,7 +763,7 @@ const BlogPage = () => {
               onClick={() => handleCategorySelect('')}
               onMouseEnter={(e) => {
                 if (selectedCategory) {
-                  e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                  e.currentTarget.style.backgroundColor = getSoftBackground(getCurrentCategoryColor(), 0.05);
                   e.currentTarget.style.color = getCurrentCategoryColor();
                 }
               }}
@@ -785,18 +796,18 @@ const BlogPage = () => {
                 style={{
                   ...styles.dropdownItem,
                   backgroundColor: parseInt(selectedCategory) === category.ID_categoria
-                    ? getLighterColor(getCurrentCategoryColor(), 0.1)
+                    ? getSoftBackground(categoryColors[category.ID_categoria], 0.1)
                     : 'transparent',
                   color: parseInt(selectedCategory) === category.ID_categoria
                     ? categoryColors[category.ID_categoria]
                     : colors.primary,
                   fontWeight: parseInt(selectedCategory) === category.ID_categoria ? 600 : 400,
-                  borderLeft: `3px solid ${parseInt(selectedCategory) === category.ID_categoria ? getCurrentCategoryColor() : 'transparent'}`,
+                  borderLeft: `3px solid ${parseInt(selectedCategory) === category.ID_categoria ? categoryColors[category.ID_categoria] : 'transparent'}`,
                 }}
                 onClick={() => handleCategorySelect(category.ID_categoria.toString())}
                 onMouseEnter={(e) => {
                   if (parseInt(selectedCategory) !== category.ID_categoria) {
-                    e.currentTarget.style.backgroundColor = `${categoryColors[category.ID_categoria]}15`;
+                    e.currentTarget.style.backgroundColor = getSoftBackground(categoryColors[category.ID_categoria], 0.05);
                     e.currentTarget.style.color = categoryColors[category.ID_categoria];
                   }
                 }}
@@ -809,7 +820,7 @@ const BlogPage = () => {
               >
                 <span style={{
                   ...styles.dropdownIcon,
-                  backgroundColor: `${categoryColors[category.ID_categoria]}33`,
+                  backgroundColor: getSoftBackground(categoryColors[category.ID_categoria], 0.15),
                   width: '28px',
                   height: '28px',
                   borderRadius: '50%',
@@ -834,42 +845,6 @@ const BlogPage = () => {
                 })()}
               </div>
             ))}
-
-            <div
-              style={{
-                ...styles.dropdownItem,
-                backgroundColor: 'rgba(31, 147, 111, 0.1)',
-                marginTop: spacing.sm,
-                borderTop: `1px solid rgba(31, 78, 78, 0.1)`,
-                paddingTop: spacing.md,
-                color: colors.primary,
-                fontWeight: 600,
-              }}
-              onClick={() => handleCategorySelect('explore')}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(31, 147, 111, 0.2)';
-                e.currentTarget.style.color = colors.primary;
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(31, 147, 111, 0.1)';
-                e.currentTarget.style.color = colors.primary;
-              }}
-            >
-              <span style={{
-                ...styles.dropdownIcon,
-                backgroundColor: 'rgba(31, 147, 111, 0.2)',
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: colors.primary,
-              }}>
-                <FaTags size={14} />
-              </span>
-              Explorar todas las categorías
-            </div>
           </div>
         )}
       </div>
@@ -919,6 +894,17 @@ const BlogPage = () => {
       return `#${Math.round(r).toString(16).padStart(2, '0')}${Math.round(g).toString(16).padStart(2, '0')}${Math.round(b).toString(16).padStart(2, '0')}`;
     };
 
+    // Function to get very light transparent background for selections
+    const getSoftBackground = (color, opacity = 0.08) => {
+      // Convert hex to rgb
+      let hex = color.replace('#', '');
+      let r = parseInt(hex.substring(0, 2), 16);
+      let g = parseInt(hex.substring(2, 4), 16);
+      let b = parseInt(hex.substring(4, 6), 16);
+
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    };
+
     const handleSortSelect = (value) => {
       setSortOrder(value);
       setSortDropdownOpen(false);
@@ -931,8 +917,8 @@ const BlogPage = () => {
           style={{
             ...styles.dropdownButton,
             borderColor: 'rgba(31, 78, 78, 0.2)',
-            background: `linear-gradient(to right, ${getLighterColor(getCurrentCategoryColor(), 0.8)}, ${getLighterColor(getCurrentCategoryColor(), 0.9)})`,
-            boxShadow: `0 4px 8px ${getCurrentCategoryColor()}33`,
+            background: `linear-gradient(to right, ${getSoftBackground(getCurrentCategoryColor(), 0.03)}, ${getSoftBackground(getCurrentCategoryColor(), 0.06)})`,
+            boxShadow: `0 4px 8px ${getSoftBackground(getCurrentCategoryColor(), 0.12)}`,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -960,7 +946,7 @@ const BlogPage = () => {
         {sortDropdownOpen && (
           <div style={{
             ...styles.dropdownMenu,
-            boxShadow: `0 8px 20px ${getCurrentCategoryColor()}33`,
+            boxShadow: `0 8px 20px ${getSoftBackground(getCurrentCategoryColor(), 0.15)}`,
             backgroundColor: 'rgba(255, 255, 255, 0.98)',
             animation: 'fadeIn 0.3s ease forwards',
           }}>
@@ -973,7 +959,7 @@ const BlogPage = () => {
                   style={{
                     ...styles.dropdownItem,
                     backgroundColor: isSelected
-                      ? getLighterColor(getCurrentCategoryColor(), 0.1)
+                      ? getSoftBackground(getCurrentCategoryColor(), 0.1)
                       : 'transparent',
                     color: isSelected
                       ? getCurrentCategoryColor()
@@ -984,7 +970,7 @@ const BlogPage = () => {
                   onClick={() => handleSortSelect(option.value)}
                   onMouseEnter={(e) => {
                     if (!isSelected) {
-                      e.currentTarget.style.backgroundColor = `${getCurrentCategoryColor()}15`;
+                      e.currentTarget.style.backgroundColor = getSoftBackground(getCurrentCategoryColor(), 0.05);
                       e.currentTarget.style.color = getCurrentCategoryColor();
                     }
                   }}
@@ -997,7 +983,7 @@ const BlogPage = () => {
                 >
                   <span style={{
                     ...styles.dropdownIcon,
-                    backgroundColor: `${getCurrentCategoryColor()}33`,
+                    backgroundColor: getSoftBackground(getCurrentCategoryColor(), 0.15),
                     width: '28px',
                     height: '28px',
                     borderRadius: '50%',
