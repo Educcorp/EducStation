@@ -6,6 +6,31 @@ import { spacing, typography, transitions } from '../../styles/theme';
 import { FaHome, FaInfo, FaEnvelope, FaQuestionCircle, FaPenSquare, FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaList, FaTags, FaGlobe, FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiX } from 'react-icons/si';
 
+// Estilo keyframes para la animación de brillo
+const shineAnimation = `
+  @keyframes shine {
+    from {
+      opacity: 0;
+      left: 0%;
+    }
+    50% {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      left: 100%;
+    }
+  }
+`;
+
+// Añadir los estilos keyframes al documento
+const addKeyframeStyles = () => {
+  const styleSheet = document.createElement("style");
+  styleSheet.type = "text/css";
+  styleSheet.innerText = shineAnimation;
+  document.head.appendChild(styleSheet);
+};
+
 const Footer = () => {
   const { isDarkMode, colors } = useTheme(); // Obtener colores actualizados del contexto
   const location = useLocation(); // Para detectar la página actual
@@ -14,6 +39,11 @@ const Footer = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const footerRef = useRef(null);
   const buttonRef = useRef(null);
+
+  // Añadir los keyframes al montar el componente
+  useEffect(() => {
+    addKeyframeStyles();
+  }, []);
 
   // Actualizar todos los estilos dependientes del tema cuando cambie isDarkMode
   useEffect(() => {
@@ -222,37 +252,44 @@ const Footer = () => {
     },
     link: {
       marginBottom: spacing.xs,
-      transition: transitions.default,
+      transition: 'all 0.2s ease-in',
       fontSize: typography.fontSize.sm,
       display: "flex",
       alignItems: "center",
       borderRadius: "8px",
       padding: "8px 40px 8px 32px",
-      boxShadow: `0 2px 8px 0 ${colors.secondary}11`,
-      background: 'rgba(8, 44, 44, 0.6)', // Fondo semitransparente para los enlaces
+      boxShadow: '0 0 0 0 transparent',
+      background: 'rgba(8, 44, 44, 0.6)',
+      position: 'relative',
+      overflow: 'hidden',
+      willChange: "box-shadow, background, color, transform",
+      border: 'none',
+      minWidth: '140px',
+      color: '#fff',
+      cursor: 'pointer',
       backdropFilter: 'blur(5px)',
       WebkitBackdropFilter: 'blur(5px)',
-      willChange: "box-shadow, background, color, transform",
-      border: `1px solid rgba(255, 255, 255, 0.2)`,
-      minWidth: '140px',
     },
     linkIcon: {
       marginRight: '12px',
       marginLeft: '8px',
       display: 'inline-flex',
       alignItems: 'center',
-      color: '#ffffff',
+      color: '#fff',
       fontSize: '18px',
       transition: transitions.default,
+      position: 'relative',
+      zIndex: 2,
     },
     linkAnchor: {
-      color: isDarkMode ? '#fff' : '#fff', // Siempre blanco para mejor contraste
+      color: '#fff',
       textDecoration: "none",
       transition: transitions.default,
       fontSize: typography.fontSize.md,
       fontWeight: 600,
       letterSpacing: "0.01em",
-      filter: "drop-shadow(0 0 2px rgba(0, 0, 0, 0.5))", // Sombra para mejor legibilidad
+      position: 'relative',
+      zIndex: 2,
       marginLeft: '6px',
     },
     newsletter: {
@@ -324,10 +361,21 @@ const Footer = () => {
       color: '#fff',
       fontSize: typography.fontSize.sm,
       textDecoration: "none",
-      transition: transitions.default,
-      textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', // Sombra para mejor legibilidad
+      transition: 'all 0.2s ease-in',
+      padding: '8px 16px',
+      border: 'none',
+      borderRadius: '5px',
+      position: 'relative',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      background: 'rgba(8, 44, 44, 0.6)',
+      backdropFilter: 'blur(5px)',
+      WebkitBackdropFilter: 'blur(5px)',
       '&:hover': {
-        color: colors.secondary
+        color: 'white',
+        boxShadow: '0 0 30px 0 rgba(8, 44, 44, 0.5)',
+        backgroundColor: '#082c2c',
+        transition: 'all 0.2s ease-out'
       }
     },
     educationalTip: {
@@ -378,18 +426,59 @@ const Footer = () => {
   ];
 
   // --- HANDLERS MEJORADOS PARA EFECTOS GLOW Y ANIMACIONES ---
-  const glowColor = isDarkMode ? '#7de2fc33' : '#b9ffb755'; // glow mucho más sutil
   const handleLinkMouseEnter = (e) => {
-    e.currentTarget.style.boxShadow = `0 0 16px 4px ${glowColor}`;
-    e.currentTarget.style.background = isDarkMode ? 'rgba(35,64,79,0.85)' : 'rgba(185,255,183,0.55)'; // fondo pastel translúcido
-    e.currentTarget.style.color = isDarkMode ? '#fff' : '#23404f';
-    e.currentTarget.style.transform = 'scale(1.03)';
+    // Aplicar estilos de hover con el color verde temático
+    e.currentTarget.style.color = 'white';
+    e.currentTarget.style.boxShadow = '0 0 30px 0 rgba(8, 44, 44, 0.5)';
+    e.currentTarget.style.backgroundColor = '#082c2c';
+    e.currentTarget.style.transition = 'all 0.2s ease-out';
+    
+    // Cambiar el color del texto y los iconos a blanco
+    const iconElement = e.currentTarget.querySelector('[style*="linkIcon"]');
+    const textElement = e.currentTarget.querySelector('[style*="linkAnchor"]');
+    
+    if (iconElement) iconElement.style.color = 'white';
+    if (textElement) textElement.style.color = 'white';
+    
+    // Crear y animar el elemento de brillo
+    const shineElement = document.createElement('div');
+    shineElement.style.cssText = `
+      content: '';
+      display: block;
+      width: 0px;
+      height: 86%;
+      position: absolute;
+      top: 7%;
+      left: 0%;
+      opacity: 0;
+      background: white;
+      box-shadow: 0 0 15px 3px white;
+      transform: skewX(-20deg);
+      animation: shine 0.5s 0s linear;
+    `;
+    
+    e.currentTarget.appendChild(shineElement);
+    
+    // Eliminar el elemento de brillo después de la animación
+    setTimeout(() => {
+      if (e.currentTarget.contains(shineElement)) {
+        e.currentTarget.removeChild(shineElement);
+      }
+    }, 500);
   };
+
   const handleLinkMouseLeave = (e) => {
-    e.currentTarget.style.boxShadow = `0 0 0 0 ${colors.secondary}00`;
-    e.currentTarget.style.background = isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)';
-    e.currentTarget.style.color = isDarkMode ? '#fff' : colors.primary;
-    e.currentTarget.style.transform = 'scale(1)';
+    e.currentTarget.style.boxShadow = '0 0 0 0 transparent';
+    e.currentTarget.style.backgroundColor = 'rgba(8, 44, 44, 0.6)';
+    e.currentTarget.style.color = '#fff';
+    e.currentTarget.style.transition = 'all 0.2s ease-in';
+    
+    // Restaurar el color del texto y los iconos
+    const iconElement = e.currentTarget.querySelector('[style*="linkIcon"]');
+    const textElement = e.currentTarget.querySelector('[style*="linkAnchor"]');
+    
+    if (iconElement) iconElement.style.color = '#fff';
+    if (textElement) textElement.style.color = '#fff';
   };
 
   const socialLinks = [
@@ -537,9 +626,39 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
           <div style={styles.bottomLinks}>
-            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/terms', e)}>Términos</span>
-            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/privacy', e)}>Privacidad</span>
-            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/cookies', e)}>Cookies</span>
+            <span 
+              style={{...styles.bottomLink}} 
+              onClick={(e) => {
+                handleLinkMouseEnter(e);
+                handleInstantNavigation('/terms', e);
+              }}
+              onMouseEnter={handleLinkMouseEnter}
+              onMouseLeave={handleLinkMouseLeave}
+            >
+              Términos
+            </span>
+            <span 
+              style={{...styles.bottomLink}} 
+              onClick={(e) => {
+                handleLinkMouseEnter(e);
+                handleInstantNavigation('/privacy', e);
+              }}
+              onMouseEnter={handleLinkMouseEnter}
+              onMouseLeave={handleLinkMouseLeave}
+            >
+              Privacidad
+            </span>
+            <span 
+              style={{...styles.bottomLink}} 
+              onClick={(e) => {
+                handleLinkMouseEnter(e);
+                handleInstantNavigation('/cookies', e);
+              }}
+              onMouseEnter={handleLinkMouseEnter}
+              onMouseLeave={handleLinkMouseLeave}
+            >
+              Cookies
+            </span>
           </div>
         </div>
       </div>
