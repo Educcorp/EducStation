@@ -705,7 +705,13 @@ const Header = () => {
             onMouseLeave={() => setHoveredItem(null)}
             onClick={e => {
               e.preventDefault();
-              navigate('/', { state: { forceReload: true } });
+              // Si ya estamos en home, recargar inmediatamente
+              if(location.pathname === '/') {
+                window.location.reload();
+              } else {
+                // Si estamos en otra página, navegar directamente con recarga instantánea
+                window.location.href = '/';
+              }
             }}
           >
             <div style={{
@@ -751,13 +757,21 @@ const Header = () => {
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
-                    if(item.path === '/') {
-                      navigate('/', { state: { forceReload: true } });
-                    } else if(item.path === '/blog') {
-                      navigate('/blog', { state: { forceReload: true } });
-                    } else if(item.path === '/categorias') {
-                      navigate('/categorias', { state: { forceReload: true } });
+                    
+                    // Para páginas con recarga forzada instantánea
+                    if(item.path === '/' || item.path === '/blog' || item.path === '/categorias') {
+                      // Si ya estamos en la página, recargar inmediatamente
+                      if(location.pathname === item.path || 
+                         (item.path === '/blog' && (location.pathname.startsWith('/blog') || 
+                          location.pathname.includes('/post/') || 
+                          location.pathname.includes('/category/')))) {
+                        window.location.reload();
+                      } else {
+                        // Si estamos en otra página, navegar directamente con recarga instantánea
+                        window.location.href = item.path;
+                      }
                     } else {
+                      // Para otras páginas, navegación normal
                       navigate(item.path);
                     }
                   }}
