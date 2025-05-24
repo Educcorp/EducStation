@@ -3,49 +3,67 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-pr
 // Obtener todas las publicaciones
 export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null) => {
     try {
-        let url = `${API_URL}/api/publicaciones?limite=${limite}&offset=${offset}`;
-        if (estado) {
-            url += `&estado=${estado}`;
-        }
+        // Obtener el token de autenticación
+        const token = localStorage.getItem('userToken');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         
-        console.log("Solicitando todas las publicaciones:", url);
-        
+        // Primera estrategia: endpoint directo /all
         try {
-            // Obtener el token de autenticación
-            const token = localStorage.getItem('userToken');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const response = await fetch(url, { headers });
-            if (!response.ok) {
-                console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
-                throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
+            const directUrl = `${API_URL}/api/publicaciones/all?limite=${limite}&offset=${offset}`;
+            console.log("Intentando cargar con endpoint directo:", directUrl);
+            
+            const directResponse = await fetch(directUrl, { headers });
+            if (directResponse.ok) {
+                const directData = await directResponse.json();
+                console.log(`Obtenidas ${directData.length} publicaciones mediante acceso directo`);
+                return directData;
+            } else {
+                console.log(`Error en endpoint directo: ${directResponse.status}. Intentando alternativas...`);
+                throw new Error(`Error en endpoint directo: ${directResponse.status}`);
+            }
+        } catch (directError) {
+            console.error("Error en endpoint directo:", directError);
+            
+            // Segunda estrategia: endpoint principal
+            let url = `${API_URL}/api/publicaciones?limite=${limite}&offset=${offset}`;
+            if (estado) {
+                url += `&estado=${estado}`;
             }
             
-            const data = await response.json();
-            console.log(`Obtenidas ${data.length} publicaciones correctamente`);
-            return data;
-        } catch (fetchError) {
-            console.error("Error en la petición principal:", fetchError);
+            console.log("Intentando con endpoint principal:", url);
             
-            // Si falla la petición principal, intentamos un enfoque alternativo
-            console.log("Intentando método alternativo para cargar publicaciones...");
-            
-            // Podemos intentar cargar las últimas publicaciones sin parámetros de estado
-            const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
-            console.log("URL alternativa:", fallbackUrl);
-            
-            const fallbackResponse = await fetch(fallbackUrl);
-            if (!fallbackResponse.ok) {
-                // Si también falla el fallback, lanzamos el error original
-                throw fetchError;
+            try {
+                const response = await fetch(url, { headers });
+                if (!response.ok) {
+                    console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
+                    throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(`Obtenidas ${data.length} publicaciones correctamente`);
+                return data;
+            } catch (fetchError) {
+                console.error("Error en la petición principal:", fetchError);
+                
+                // Tercera estrategia: endpoint latest
+                console.log("Intentando método alternativo para cargar publicaciones...");
+                const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
+                console.log("URL alternativa:", fallbackUrl);
+                
+                const fallbackResponse = await fetch(fallbackUrl, { headers });
+                if (!fallbackResponse.ok) {
+                    throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
+                }
+                
+                const fallbackData = await fallbackResponse.json();
+                console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
+                return fallbackData;
             }
-            
-            const fallbackData = await fallbackResponse.json();
-            console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
-            return fallbackData;
         }
     } catch (error) {
         console.error('Error final en getAllPublicaciones:', error);
-        throw error;
+        // Devolver array vacío en lugar de lanzar error
+        return [];
     }
 };
 
@@ -279,23 +297,68 @@ export const getAdminPublicaciones = async (limite = 100, offset = 0) => {
     const token = localStorage.getItem('userToken');
     
     if (!token) {
+      console.error('Error: No hay token de autenticación');
       throw new Error('Usuario no autenticado');
     }
     
-    const response = await fetch(`${API_URL}/api/publicaciones/admin/me?limite=${limite}&offset=${offset}`, {
+    console.log(`Solicitando publicaciones de administrador con limite=${limite}, offset=${offset}`);
+    
+    const url = `${API_URL}/api/publicaciones/admin/me?limite=${limite}&offset=${offset}`;
+    console.log('URL de solicitud:', url);
+    
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
     
     if (!response.ok) {
-      throw new Error('Error al obtener las publicaciones del administrador');
+      const errorData = await response.json().catch(e => ({ detail: 'Error al procesar la respuesta' }));
+      console.error('Error en respuesta del servidor:', response.status, errorData);
+      throw new Error(errorData.detail || 'Error al obtener las publicaciones del administrador');
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log(`Recibidas ${data.length} publicaciones del administrador`);
+    return data;
   } catch (error) {
     console.error('Error en getAdminPublicaciones:', error);
-    return []; // Devolver array vacío en caso de error
+    // Devolver array vacío en lugar de lanzar error
+    return [];
+  }
+};
+
+// Obtener información de depuración del administrador
+export const getAdminDebugInfo = async () => {
+  try {
+    const token = localStorage.getItem('userToken');
+    
+    if (!token) {
+      console.error('Error: No hay token de autenticación');
+      throw new Error('Usuario no autenticado');
+    }
+    
+    const url = `${API_URL}/api/publicaciones/admin/debug`;
+    console.log('URL de solicitud debug:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(e => ({ detail: 'Error al procesar la respuesta' }));
+      console.error('Error en respuesta del servidor debug:', response.status, errorData);
+      throw new Error(errorData.detail || 'Error al obtener información de depuración');
+    }
+    
+    const data = await response.json();
+    console.log('Información de depuración del administrador:', data);
+    return data;
+  } catch (error) {
+    console.error('Error en getAdminDebugInfo:', error);
+    return null;
   }
 };
 
@@ -307,5 +370,6 @@ export default {
     updatePublicacion,
     deletePublicacion,
     getUserPublicaciones,
-    getAdminPublicaciones
+    getAdminPublicaciones,
+    getAdminDebugInfo
 }; 

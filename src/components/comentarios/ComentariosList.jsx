@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { useTheme } from '../../context/ThemeContext';
 import { FaSync, FaSpinner, FaPaperPlane, FaExclamationTriangle, FaSignInAlt, FaSort } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { AnimatedButton } from '../utils';
 import './Comentarios.css';
 
 const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId }) => {
@@ -139,7 +140,7 @@ const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId 
       <h2 className="comentarios-title">Comentarios</h2>
       
       {isAuthenticated ? (
-        <form className="comentarios-form" onSubmit={handleCrearComentario}>
+        <form className="comentarios-form" onSubmit={(e) => e.preventDefault()}>
           <textarea
             className="comentarios-textarea"
             placeholder="Escribe tu comentario..."
@@ -148,21 +149,41 @@ const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId 
             onChange={(e) => setComentarioText(e.target.value)}
             disabled={isSubmitting}
           />
-          <button
-            type="submit"
-            className={`comentarios-submit ${isSubmitting ? 'comentarios-submit-disabled' : ''}`}
-            disabled={isSubmitting || !comentarioText.trim()}
-          >
-            {isSubmitting ? <FaSpinner /> : <FaPaperPlane />}
-            {isSubmitting ? 'Publicando...' : 'Publicar comentario'}
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '12px' }}>
+            <AnimatedButton
+              onClick={handleCrearComentario}
+              backgroundColor="rgba(8, 44, 44, 0.8)"
+              hoverBackgroundColor="#082c2c"
+              padding="10px 20px"
+              borderRadius="8px"
+              style={{
+                opacity: isSubmitting || !comentarioText.trim() ? 0.7 : 1,
+                cursor: isSubmitting || !comentarioText.trim() ? 'not-allowed' : 'pointer',
+              }}
+              disabled={isSubmitting || !comentarioText.trim()}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {isSubmitting ? <FaSpinner style={{ animation: 'spin 1s linear infinite' }} /> : <FaPaperPlane />}
+                <span>{isSubmitting ? 'Publicando...' : 'Publicar comentario'}</span>
+              </div>
+            </AnimatedButton>
+          </div>
         </form>
       ) : (
         <div className="comentarios-login-message">
           <p>Inicia sesión para dejar un comentario</p>
-          <Link to="/login">
-            <FaSignInAlt /> Iniciar sesión
-          </Link>
+          <AnimatedButton
+            to="/login"
+            backgroundColor="rgba(8, 44, 44, 0.8)"
+            hoverBackgroundColor="#082c2c"
+            padding="10px 20px"
+            borderRadius="8px"
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <FaSignInAlt />
+              <span>Iniciar sesión</span>
+            </div>
+          </AnimatedButton>
         </div>
       )}
       
@@ -186,9 +207,8 @@ const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId 
           </select>
           
           <button
-            className="comentarios-refresh"
             onClick={cargarComentarios}
-            title="Actualizar comentarios"
+            className="comentario-btn comentario-btn-refresh"
           >
             <FaSync /> Actualizar
           </button>

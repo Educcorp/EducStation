@@ -2,6 +2,7 @@ import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows } from '../../styles/theme';
 import { FaPlus, FaBookOpen } from 'react-icons/fa';
+import { AnimatedButton } from '../utils';
 
 // Importar el hook personalizado y componentes
 import { usePosts } from './hooks/usePosts';
@@ -123,31 +124,21 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
       {/* Botón para cargar más posts */}
       {hasMore && (
         <div style={styles.loadMoreContainer}>
-          <button
+          <AnimatedButton
             onClick={loadMorePosts}
-            disabled={loadingMore}
+            backgroundColor={colors.primary}
+            hoverBackgroundColor={colors.primaryDark}
+            padding={`${spacing.md} ${spacing.xl}`}
+            borderRadius={borderRadius.md}
             style={{
-              ...styles.loadMoreButton,
               opacity: loadingMore ? 0.7 : 1,
-              cursor: loadingMore ? 'not-allowed' : 'pointer'
-            }}
-            onMouseEnter={(e) => {
-              if (!loadingMore) {
-                e.target.style.backgroundColor = colors.primaryDark;
-                e.target.style.transform = 'translateY(-2px)';
-                e.target.style.boxShadow = shadows.md;
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loadingMore) {
-                e.target.style.backgroundColor = colors.primary;
-                e.target.style.transform = 'translateY(0)';
-                e.target.style.boxShadow = shadows.sm;
-              }
+              cursor: loadingMore ? 'not-allowed' : 'pointer',
+              fontSize: typography.fontSize.md,
+              fontWeight: typography.fontWeight.medium,
             }}
           >
             {loadingMore ? (
-              <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                 <div style={{
                   width: '16px',
                   height: '16px',
@@ -156,15 +147,15 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
                   borderRadius: '50%',
                   animation: 'spin 1s linear infinite'
                 }} />
-                Cargando...
-              </>
+                <span>Cargando...</span>
+              </div>
             ) : (
-              <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
                 <FaPlus />
-                Cargar más publicaciones
-              </>
+                <span>Cargar más publicaciones</span>
+              </div>
             )}
-          </button>
+          </AnimatedButton>
         </div>
       )}
 

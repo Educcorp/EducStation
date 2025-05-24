@@ -6,6 +6,31 @@ import { spacing, typography, transitions } from '../../styles/theme';
 import { FaHome, FaInfo, FaEnvelope, FaQuestionCircle, FaPenSquare, FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaList, FaTags, FaGlobe, FaGithub, FaLinkedin } from 'react-icons/fa';
 import { SiX } from 'react-icons/si';
 
+// Estilo keyframes para la animación de brillo
+const shineAnimation = `
+  @keyframes shine {
+    from {
+      opacity: 0;
+      left: 0%;
+    }
+    50% {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      left: 100%;
+    }
+  }
+`;
+
+// Añadir los estilos keyframes al documento
+const addKeyframeStyles = () => {
+  const styleSheet = document.createElement("style");
+  styleSheet.type = "text/css";
+  styleSheet.innerText = shineAnimation;
+  document.head.appendChild(styleSheet);
+};
+
 const Footer = () => {
   const { isDarkMode, colors } = useTheme(); // Obtener colores actualizados del contexto
   const location = useLocation(); // Para detectar la página actual
@@ -15,14 +40,45 @@ const Footer = () => {
   const footerRef = useRef(null);
   const buttonRef = useRef(null);
 
+  // Añadir los keyframes al montar el componente
+  useEffect(() => {
+    addKeyframeStyles();
+  }, []);
+
   // Actualizar todos los estilos dependientes del tema cuando cambie isDarkMode
   useEffect(() => {
     // Aplicar directamente los estilos al elemento del footer
     if (footerRef.current) {
-      footerRef.current.style.backgroundColor = isDarkMode ? '#222' : colors.primary;
+      // Usar la imagen de fondo en lugar de un color sólido
+      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&width=1440&height=250&section=footer&animation=twinkling')";
+      footerRef.current.style.backgroundSize = "100% auto";
+      footerRef.current.style.backgroundPosition = "center bottom";
+      footerRef.current.style.backgroundRepeat = "no-repeat";
+      footerRef.current.style.backgroundColor = "transparent"; // Fondo transparente
       footerRef.current.style.color = isDarkMode ? '#ccc' : colors.white;
+      
+      // Eliminar cualquier otro estilo que pueda estar causando el rectángulo verde
+      footerRef.current.style.border = "none";
+      footerRef.current.style.boxShadow = "none";
     }
   }, [isDarkMode, colors]);
+
+  // Crear un estilo global para el body para asegurar que no haya fondo verde
+  useEffect(() => {
+    // Obtener el elemento body
+    const bodyElement = document.body;
+    
+    // Guardar el estilo original para restaurarlo cuando se desmonte
+    const originalBackgroundColor = bodyElement.style.backgroundColor;
+    
+    // Aplicar un fondo transparente al body
+    bodyElement.style.backgroundColor = "transparent";
+    
+    // Limpiar cuando se desmonte el componente
+    return () => {
+      bodyElement.style.backgroundColor = originalBackgroundColor;
+    };
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -85,13 +141,37 @@ const Footer = () => {
     // Quitamos backgroundColor y color del objeto de estilo
     // porque ahora lo aplicamos directamente al elemento con useEffect
     footer: {
-      padding: `${spacing.lg} 0 ${spacing.lg}`,
-      marginTop: spacing.lg,
+      padding: 0,
+      margin: 0,
+      minHeight: '250px', // Altura para acomodar la onda
+      position: 'relative',
+      width: '100%',
+      overflow: 'hidden',
     },
     container: {
       maxWidth: '1700px',
       margin: '0 auto',
-      padding: `0 ${spacing.lg}`,
+      padding: `${spacing.md} ${spacing.lg} ${spacing.xl * 3}`, // Más padding abajo para la onda
+      position: 'relative',
+      zIndex: 3, // Ensure content is above the background
+      backgroundColor: 'transparent', // Contenedor transparente
+    },
+    contentBox: {
+      backgroundColor: 'rgba(8, 44, 44, 0.6)', // Más transparente
+      borderRadius: '12px',
+      padding: spacing.md,
+      backdropFilter: 'blur(5px)',
+      WebkitBackdropFilter: 'blur(5px)',
+      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      marginBottom: spacing.md,
+    },
+    transparentBox: {
+      backgroundColor: 'transparent',
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      border: 'none',
+      boxShadow: 'none',
     },
     grid: {
       display: "grid",
@@ -123,10 +203,11 @@ const Footer = () => {
       borderRadius: "8px"
     },
     description: {
-      color: isDarkMode ? '#aaa' : colors.gray200,
+      color: '#fff', // Siempre blanco
       marginBottom: spacing.xxl,
       lineHeight: "1.8",
-      fontSize: typography.fontSize.md
+      fontSize: typography.fontSize.md,
+      textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)', // Sombra para mejor legibilidad
     },
     social: {
       display: "flex",
@@ -154,9 +235,10 @@ const Footer = () => {
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.bold,
       marginBottom: spacing.sm,
-      color: isDarkMode ? '#fff' : colors.white,
+      color: '#fff', // Siempre blanco
       textAlign: "left",
-      width: "100%"
+      width: "100%",
+      textShadow: '0 2px 4px rgba(0, 0, 0, 0.3)', // Sombra para mejor legibilidad
     },
     links: {
       listStyle: "none",
@@ -170,35 +252,44 @@ const Footer = () => {
     },
     link: {
       marginBottom: spacing.xs,
-      transition: transitions.default,
+      transition: 'all 0.2s ease-in',
       fontSize: typography.fontSize.sm,
       display: "flex",
       alignItems: "center",
       borderRadius: "8px",
       padding: "8px 40px 8px 32px",
-      boxShadow: `0 2px 8px 0 ${colors.secondary}11`,
-      background: isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)',
+      boxShadow: '0 0 0 0 transparent',
+      background: 'rgba(8, 44, 44, 0.6)',
+      position: 'relative',
+      overflow: 'hidden',
       willChange: "box-shadow, background, color, transform",
-      border: `1px solid ${colors.secondary}22`,
+      border: 'none',
       minWidth: '140px',
+      color: '#fff',
+      cursor: 'pointer',
+      backdropFilter: 'blur(5px)',
+      WebkitBackdropFilter: 'blur(5px)',
     },
     linkIcon: {
       marginRight: '12px',
       marginLeft: '8px',
       display: 'inline-flex',
       alignItems: 'center',
-      color: '#ffffff',
+      color: '#fff',
       fontSize: '18px',
       transition: transitions.default,
+      position: 'relative',
+      zIndex: 2,
     },
     linkAnchor: {
-      color: isDarkMode ? '#fff' : colors.primary,
+      color: '#fff',
       textDecoration: "none",
       transition: transitions.default,
       fontSize: typography.fontSize.md,
       fontWeight: 600,
       letterSpacing: "0.01em",
-      filter: "drop-shadow(0 0 2px #0002)",
+      position: 'relative',
+      zIndex: 2,
       marginLeft: '6px',
     },
     newsletter: {
@@ -250,7 +341,7 @@ const Footer = () => {
     bottom: {
       marginTop: spacing.xxl * 2,
       paddingTop: spacing.xl,
-      borderTop: `1px solid ${isDarkMode ? '#444' : 'rgba(240, 248, 247, 0.1)'}`,
+      borderTop: `1px solid rgba(255, 255, 255, 0.2)`,
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
@@ -258,20 +349,33 @@ const Footer = () => {
       gap: spacing.xl
     },
     copyright: {
-      color: isDarkMode ? '#aaa' : colors.gray200, // Cambia el color del texto de copyright
-      fontSize: typography.fontSize.sm
+      color: '#fff',
+      fontSize: typography.fontSize.sm,
+      textShadow: '0 1px 2px rgba(0, 0, 0, 0.3)', // Sombra para mejor legibilidad
     },
     bottomLinks: {
       display: "flex",
       gap: spacing.md
     },
     bottomLink: {
-      color: colors.gray200,
+      color: '#fff',
       fontSize: typography.fontSize.sm,
       textDecoration: "none",
-      transition: transitions.default,
+      transition: 'all 0.2s ease-in',
+      padding: '8px 16px',
+      border: 'none',
+      borderRadius: '5px',
+      position: 'relative',
+      overflow: 'hidden',
+      cursor: 'pointer',
+      background: 'rgba(8, 44, 44, 0.6)',
+      backdropFilter: 'blur(5px)',
+      WebkitBackdropFilter: 'blur(5px)',
       '&:hover': {
-        color: colors.secondary
+        color: 'white',
+        boxShadow: '0 0 30px 0 rgba(8, 44, 44, 0.5)',
+        backgroundColor: '#082c2c',
+        transition: 'all 0.2s ease-out'
       }
     },
     educationalTip: {
@@ -322,18 +426,59 @@ const Footer = () => {
   ];
 
   // --- HANDLERS MEJORADOS PARA EFECTOS GLOW Y ANIMACIONES ---
-  const glowColor = isDarkMode ? '#7de2fc33' : '#b9ffb755'; // glow mucho más sutil
   const handleLinkMouseEnter = (e) => {
-    e.currentTarget.style.boxShadow = `0 0 16px 4px ${glowColor}`;
-    e.currentTarget.style.background = isDarkMode ? 'rgba(35,64,79,0.85)' : 'rgba(185,255,183,0.55)'; // fondo pastel translúcido
-    e.currentTarget.style.color = isDarkMode ? '#fff' : '#23404f';
-    e.currentTarget.style.transform = 'scale(1.03)';
+    // Aplicar estilos de hover con el color verde temático
+    e.currentTarget.style.color = 'white';
+    e.currentTarget.style.boxShadow = '0 0 30px 0 rgba(8, 44, 44, 0.5)';
+    e.currentTarget.style.backgroundColor = '#082c2c';
+    e.currentTarget.style.transition = 'all 0.2s ease-out';
+    
+    // Cambiar el color del texto y los iconos a blanco
+    const iconElement = e.currentTarget.querySelector('[style*="linkIcon"]');
+    const textElement = e.currentTarget.querySelector('[style*="linkAnchor"]');
+    
+    if (iconElement) iconElement.style.color = 'white';
+    if (textElement) textElement.style.color = 'white';
+    
+    // Crear y animar el elemento de brillo
+    const shineElement = document.createElement('div');
+    shineElement.style.cssText = `
+      content: '';
+      display: block;
+      width: 0px;
+      height: 86%;
+      position: absolute;
+      top: 7%;
+      left: 0%;
+      opacity: 0;
+      background: white;
+      box-shadow: 0 0 15px 3px white;
+      transform: skewX(-20deg);
+      animation: shine 0.5s 0s linear;
+    `;
+    
+    e.currentTarget.appendChild(shineElement);
+    
+    // Eliminar el elemento de brillo después de la animación
+    setTimeout(() => {
+      if (e.currentTarget.contains(shineElement)) {
+        e.currentTarget.removeChild(shineElement);
+      }
+    }, 500);
   };
+
   const handleLinkMouseLeave = (e) => {
-    e.currentTarget.style.boxShadow = `0 0 0 0 ${colors.secondary}00`;
-    e.currentTarget.style.background = isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.10)';
-    e.currentTarget.style.color = isDarkMode ? '#fff' : colors.primary;
-    e.currentTarget.style.transform = 'scale(1)';
+    e.currentTarget.style.boxShadow = '0 0 0 0 transparent';
+    e.currentTarget.style.backgroundColor = 'rgba(8, 44, 44, 0.6)';
+    e.currentTarget.style.color = '#fff';
+    e.currentTarget.style.transition = 'all 0.2s ease-in';
+    
+    // Restaurar el color del texto y los iconos
+    const iconElement = e.currentTarget.querySelector('[style*="linkIcon"]');
+    const textElement = e.currentTarget.querySelector('[style*="linkAnchor"]');
+    
+    if (iconElement) iconElement.style.color = '#fff';
+    if (textElement) textElement.style.color = '#fff';
   };
 
   const socialLinks = [
@@ -373,14 +518,8 @@ const Footer = () => {
   ];
 
   return (
-    <footer ref={footerRef} style={{ ...styles.footer, position: 'relative', overflow: 'hidden' }}>
-      {/* SVG para la curva superior */}
-      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '48px', zIndex: 1, pointerEvents: 'none' }}>
-        <svg viewBox="0 0 1440 48" width="100%" height="100%" preserveAspectRatio="none" style={{ display: 'block' }}>
-          <path fill={isDarkMode ? '#222' : colors.primary} d="M0,36 Q720,0 1440,36 L1440,0 L0,0 Z" />
-        </svg>
-      </div>
-      <div style={{ ...styles.container, paddingTop: '48px', position: 'relative', zIndex: 2 }}>
+    <footer ref={footerRef} style={styles.footer}>
+      <div style={styles.container}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1.5fr',
@@ -391,7 +530,7 @@ const Footer = () => {
           margin: '0 auto',
         }}>
           {/* Columna Izquierda: Logo, descripción y redes sociales */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: spacing.sm }}>
+          <div style={{ ...styles.transparentBox, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: spacing.sm }}>
             <div 
               style={styles.logo}
               onClick={(e) => handleInstantNavigation('/', e)}
@@ -434,7 +573,7 @@ const Footer = () => {
           </div>
 
           {/* Columna Derecha: Enlaces y Categorías */}
-          <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: spacing.xl, width: '100%' }}>
+          <div style={{ ...styles.transparentBox, display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: spacing.xl, width: '100%' }}>
             {/* Descubre Más */}
             <div>
               <h3 style={styles.title}>Descubre Más</h3>
@@ -482,14 +621,44 @@ const Footer = () => {
           </div>
         </div>
         {/* Bottom Section */}
-        <div style={styles.bottom}>
+        <div style={{...styles.bottom, ...styles.transparentBox, marginTop: spacing.xl}}>
           <div style={styles.copyright}>
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
           <div style={styles.bottomLinks}>
-            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/terms', e)}>Términos</span>
-            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/privacy', e)}>Privacidad</span>
-            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/cookies', e)}>Cookies</span>
+            <span 
+              style={{...styles.bottomLink}} 
+              onClick={(e) => {
+                handleLinkMouseEnter(e);
+                handleInstantNavigation('/terms', e);
+              }}
+              onMouseEnter={handleLinkMouseEnter}
+              onMouseLeave={handleLinkMouseLeave}
+            >
+              Términos
+            </span>
+            <span 
+              style={{...styles.bottomLink}} 
+              onClick={(e) => {
+                handleLinkMouseEnter(e);
+                handleInstantNavigation('/privacy', e);
+              }}
+              onMouseEnter={handleLinkMouseEnter}
+              onMouseLeave={handleLinkMouseLeave}
+            >
+              Privacidad
+            </span>
+            <span 
+              style={{...styles.bottomLink}} 
+              onClick={(e) => {
+                handleLinkMouseEnter(e);
+                handleInstantNavigation('/cookies', e);
+              }}
+              onMouseEnter={handleLinkMouseEnter}
+              onMouseLeave={handleLinkMouseLeave}
+            >
+              Cookies
+            </span>
           </div>
         </div>
       </div>
