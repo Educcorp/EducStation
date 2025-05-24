@@ -937,7 +937,90 @@ const SimpleEditor = ({ content, onChange }) => {
     return false;
   };
 
-  // Handle paste events with improved image handling
+  // Función para convertir URL de imagen a base64
+  const convertImageUrlToBase64 = async (imageUrl) => {
+    try {
+      // Crear una imagen temporal para cargar la URL
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Intentar evitar problemas de CORS
+      
+      return new Promise((resolve, reject) => {
+        img.onload = () => {
+          try {
+            // Crear un canvas para convertir la imagen a base64
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            
+            ctx.drawImage(img, 0, 0);
+            
+            // Convertir a base64 con compresión
+            const base64 = canvas.toDataURL('image/jpeg', 0.8);
+            resolve(base64);
+          } catch (error) {
+            reject(new Error('No se pudo convertir la imagen a base64'));
+          }
+        };
+        
+        img.onerror = () => {
+          reject(new Error('No se pudo cargar la imagen desde la URL'));
+        };
+        
+        img.src = imageUrl;
+      });
+    } catch (error) {
+      throw new Error(`Error al procesar imagen: ${error.message}`);
+    }
+  };
+
+  // Función para procesar URLs de imágenes en el contenido pegado
+  const processImageUrls = async (htmlContent) => {
+    // Buscar todas las etiquetas <img> con src de URL
+    const imgRegex = /<img[^>]*src="(https?:\/\/[^"]*)"[^>]*>/gi;
+    const matches = [];
+    let match;
+    
+    while ((match = imgRegex.exec(htmlContent)) !== null) {
+      matches.push({
+        fullMatch: match[0],
+        url: match[1]
+      });
+    }
+    
+    if (matches.length === 0) {
+      return htmlContent;
+    }
+    
+    console.log(`Convirtiendo ${matches.length} imagen(es) de URL a base64...`);
+    
+    let processedContent = htmlContent;
+    
+    for (const imageMatch of matches) {
+      try {
+        // Convertir la URL a base64
+        const base64 = await convertImageUrlToBase64(imageMatch.url);
+        
+        // Reemplazar la URL original con el base64
+        const newImgTag = imageMatch.fullMatch.replace(
+          `src="${imageMatch.url}"`,
+          `src="${base64}"`
+        );
+        
+        processedContent = processedContent.replace(imageMatch.fullMatch, newImgTag);
+        
+        console.log(`✅ Imagen convertida: ${imageMatch.url.substring(0, 50)}...`);
+        
+      } catch (error) {
+        console.warn(`⚠️ No se pudo convertir imagen: ${imageMatch.url}`, error);
+        // Mantener la imagen original si no se puede convertir
+      }
+    }
+    
+    return processedContent;
+  };
+
   const handlePaste = (e) => {
     // Check for images in clipboard
     const items = e.clipboardData?.items;
@@ -1052,6 +1135,80 @@ const SimpleEditor = ({ content, onChange }) => {
           reader.readAsDataURL(blob);
           return;
         }
+      }
+    }
+    
+    // Si no hay imágenes de archivo, verificar si hay contenido HTML con URLs de imágenes
+    const clipboardData = e.clipboardData || window.clipboardData;
+    const htmlData = clipboardData.getData('text/html');
+    const textData = clipboardData.getData('text/plain');
+    
+    if (htmlData && htmlData.includes('<img')) {
+      e.preventDefault();
+      
+      // Procesar URLs de imágenes de forma asíncrona
+      processImageUrls(htmlData)
+        .then(processedHtml => {
+          // Insertar el HTML procesado
+          document.execCommand('insertHTML', false, processedHtml);
+          
+          // Añadir event listeners para las nuevas imágenes
+          setTimeout(() => {
+            addImageEventListeners();
+            handleContentChange();
+          }, 100);
+        })
+        .catch(error => {
+          console.error('Error al procesar contenido pegado:', error);
+          // Si falla el procesamiento, insertar el HTML original
+          document.execCommand('insertHTML', false, htmlData);
+          handleContentChange();
+        });
+      
+      return;
+    }
+    
+    // Si es solo texto que contiene URLs de imágenes, intentar convertirlas
+    if (textData && (textData.includes('http') && (textData.includes('.jpg') || textData.includes('.jpeg') || textData.includes('.png') || textData.includes('.gif') || textData.includes('.webp')))) {
+      e.preventDefault();
+      
+      // Convertir URLs de texto simple a etiquetas img y luego a base64
+      const urlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/gi;
+      const imageUrls = textData.match(urlRegex);
+      
+      if (imageUrls && imageUrls.length > 0) {
+        // Crear HTML básico con las imágenes
+        const imagePromises = imageUrls.map(async (url) => {
+          try {
+            const base64 = await convertImageUrlToBase64(url);
+            return `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
+              <img src="${base64}" alt="Imagen desde URL" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
+            </div>`;
+          } catch (error) {
+            console.warn(`No se pudo convertir: ${url}`, error);
+            return `<p>⚠️ No se pudo cargar imagen: ${url}</p>`;
+          }
+        });
+        
+        Promise.all(imagePromises)
+          .then(imageHtmls => {
+            const finalHtml = imageHtmls.join('<br>');
+            document.execCommand('insertHTML', false, finalHtml);
+            
+            // Añadir event listeners
+            setTimeout(() => {
+              addImageEventListeners();
+              handleContentChange();
+            }, 100);
+          })
+          .catch(error => {
+            console.error('Error al procesar URLs de imágenes:', error);
+            // Insertar texto original si falla
+            document.execCommand('insertHTML', false, textData);
+            handleContentChange();
+          });
+        
+        return;
       }
     }
   };
