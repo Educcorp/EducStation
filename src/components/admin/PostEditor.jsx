@@ -452,8 +452,24 @@ const PostEditor = () => {
         console.log(`Actualizando borrador existente con ID: ${postId}`);
         result = await updatePublicacion(postId, postData);
       } else {
-        // Si es un nuevo post, usamos createPublicacion
-        result = await createPublicacion(postData);
+        // Detectar si el contenido tiene imágenes HTML (de SimpleEditor)
+        const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
+        const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
+        
+        if (shouldUseHTMLEndpoint) {
+          console.log("Guardando borrador usando endpoint HTML - Modo:", post.editorMode, "- Tiene imágenes:", hasHTMLImages);
+          result = await createPublicacionFromHTML({
+            titulo: postData.titulo,
+            htmlContent: post.content,
+            resumen: postData.resumen,
+            estado: postData.estado,
+            categorias: postData.categorias,
+            Imagen_portada: postData.Imagen_portada
+          });
+        } else {
+          console.log("Guardando borrador usando endpoint estándar");
+          result = await createPublicacion(postData);
+        }
       }
       
       // Guardar en localStorage como respaldo
@@ -532,7 +548,7 @@ const PostEditor = () => {
         console.log("No se incluyó imagen en la publicación");
       }
       
-      // Determinar qué endpoint usar según el modo del editor y si es una edición o creación
+      // Determinar qué endpoint usar
       let result;
       
       if (isEditing) {
@@ -545,9 +561,13 @@ const PostEditor = () => {
           icon: '🎉'
         });
       } else {
-        // Si es un nuevo post, usamos createPublicacion o createPublicacionFromHTML
-        if (post.editorMode === 'html') {
-          console.log("Usando endpoint HTML con contenido HTML de longitud:", post.content.length);
+        // Detectar si el contenido tiene imágenes HTML (de SimpleEditor) o es modo HTML explícito
+        const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
+        const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
+        
+        if (shouldUseHTMLEndpoint) {
+          console.log("Usando endpoint HTML - Modo:", post.editorMode, "- Tiene imágenes:", hasHTMLImages);
+          console.log("Contenido HTML longitud:", post.content.length);
           console.log("Muestra del contenido HTML:", post.content.substring(0, 150) + "...");
           
           // Verificar que el contenido no sea vacío o solo espacios
@@ -555,20 +575,16 @@ const PostEditor = () => {
             throw new Error("El contenido HTML está vacío o solo contiene espacios");
           }
           
-          // Verificar que el contenido tenga etiquetas HTML válidas
-          if (!post.content.includes("<") || !post.content.includes(">")) {
-            console.warn("El contenido no parece contener etiquetas HTML válidas");
-          }
-          
           result = await createPublicacionFromHTML({
             titulo: postData.titulo,
-            htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
+            htmlContent: post.content, // Enviar como htmlContent
             resumen: post.resumen || postData.resumen,
             estado: postData.estado,
             categorias: postData.categorias,
             Imagen_portada: postData.Imagen_portada // Enviar la imagen en Base64
           });
         } else {
+          console.log("Usando endpoint estándar para contenido simple");
           result = await createPublicacion(postData);
         }
         
