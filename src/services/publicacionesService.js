@@ -279,23 +279,68 @@ export const getAdminPublicaciones = async (limite = 100, offset = 0) => {
     const token = localStorage.getItem('userToken');
     
     if (!token) {
+      console.error('Error: No hay token de autenticación');
       throw new Error('Usuario no autenticado');
     }
     
-    const response = await fetch(`${API_URL}/api/publicaciones/admin/me?limite=${limite}&offset=${offset}`, {
+    console.log(`Solicitando publicaciones de administrador con limite=${limite}, offset=${offset}`);
+    
+    const url = `${API_URL}/api/publicaciones/admin/me?limite=${limite}&offset=${offset}`;
+    console.log('URL de solicitud:', url);
+    
+    const response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
     });
     
     if (!response.ok) {
-      throw new Error('Error al obtener las publicaciones del administrador');
+      const errorData = await response.json().catch(e => ({ detail: 'Error al procesar la respuesta' }));
+      console.error('Error en respuesta del servidor:', response.status, errorData);
+      throw new Error(errorData.detail || 'Error al obtener las publicaciones del administrador');
     }
     
-    return await response.json();
+    const data = await response.json();
+    console.log(`Recibidas ${data.length} publicaciones del administrador`);
+    return data;
   } catch (error) {
     console.error('Error en getAdminPublicaciones:', error);
-    return []; // Devolver array vacío en caso de error
+    // Devolver array vacío en lugar de lanzar error
+    return [];
+  }
+};
+
+// Obtener información de depuración del administrador
+export const getAdminDebugInfo = async () => {
+  try {
+    const token = localStorage.getItem('userToken');
+    
+    if (!token) {
+      console.error('Error: No hay token de autenticación');
+      throw new Error('Usuario no autenticado');
+    }
+    
+    const url = `${API_URL}/api/publicaciones/admin/debug`;
+    console.log('URL de solicitud debug:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(e => ({ detail: 'Error al procesar la respuesta' }));
+      console.error('Error en respuesta del servidor debug:', response.status, errorData);
+      throw new Error(errorData.detail || 'Error al obtener información de depuración');
+    }
+    
+    const data = await response.json();
+    console.log('Información de depuración del administrador:', data);
+    return data;
+  } catch (error) {
+    console.error('Error en getAdminDebugInfo:', error);
+    return null;
   }
 };
 
@@ -307,5 +352,6 @@ export default {
     updatePublicacion,
     deletePublicacion,
     getUserPublicaciones,
-    getAdminPublicaciones
+    getAdminPublicaciones,
+    getAdminDebugInfo
 }; 

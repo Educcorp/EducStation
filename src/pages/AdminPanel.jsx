@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaBug } from 'react-icons/fa';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
-import { getAllPublicaciones, deletePublicacion, getAdminPublicaciones } from '../services/publicacionesService';
+import { getAllPublicaciones, deletePublicacion, getAdminPublicaciones, getAdminDebugInfo } from '../services/publicacionesService';
 import { toast } from 'react-toastify';
 
 const AdminPanel = () => {
@@ -19,6 +19,8 @@ const AdminPanel = () => {
   const [filter, setFilter] = useState('all'); // 'all', 'published', 'draft'
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  const [debugInfo, setDebugInfo] = useState(null);
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
 
   // Verificar si el usuario es administrador
   useEffect(() => {
@@ -50,26 +52,72 @@ const AdminPanel = () => {
     }
   }, [notification.show]);
 
+  // Función para obtener información de depuración
+  const fetchDebugInfo = async () => {
+    try {
+      const info = await getAdminDebugInfo();
+      setDebugInfo(info);
+      setShowDebugInfo(true);
+      console.log('Información de depuración:', info);
+    } catch (error) {
+      console.error('Error al obtener información de depuración:', error);
+      toast.error('Error al obtener información de depuración');
+    }
+  };
+
   // Cargar publicaciones
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
+        console.log('Iniciando carga de publicaciones del administrador...');
+        
         // Cargar las publicaciones del administrador actual
         const adminPosts = await getAdminPublicaciones(100, 0);
         
         if (adminPosts && adminPosts.length > 0) {
           setPosts(adminPosts);
           console.log(`Cargadas ${adminPosts.length} publicaciones del administrador`);
+          showNotification(`Se cargaron ${adminPosts.length} publicaciones`, 'success');
         } else {
           console.log('No se encontraron publicaciones para este administrador');
           setPosts([]);
-          showNotification('No se encontraron publicaciones para tu cuenta de administrador', 'info');
+          
+          // Intentar obtener todas las publicaciones como fallback
+          try {
+            console.log('Intentando cargar todas las publicaciones como alternativa...');
+            const allPosts = await getAllPublicaciones(100, 0);
+            
+            if (allPosts && allPosts.length > 0) {
+              setPosts(allPosts);
+              console.log(`Cargadas ${allPosts.length} publicaciones generales`);
+              showNotification(`Se cargaron ${allPosts.length} publicaciones del sistema`, 'info');
+            } else {
+              showNotification('No se encontraron publicaciones en el sistema', 'info');
+            }
+          } catch (fallbackError) {
+            console.error('Error al cargar publicaciones alternativas:', fallbackError);
+            showNotification('No se encontraron publicaciones para tu cuenta de administrador', 'info');
+          }
         }
       } catch (error) {
         console.error('Error al cargar publicaciones:', error);
         toast.error('Error al cargar las publicaciones');
         showNotification('Error al cargar las publicaciones del administrador', 'error');
+        
+        // Intentar obtener todas las publicaciones como fallback
+        try {
+          console.log('Intentando cargar todas las publicaciones como alternativa después de error...');
+          const allPosts = await getAllPublicaciones(100, 0);
+          
+          if (allPosts && allPosts.length > 0) {
+            setPosts(allPosts);
+            console.log(`Cargadas ${allPosts.length} publicaciones generales después de error`);
+            showNotification(`Se cargaron ${allPosts.length} publicaciones del sistema`, 'info');
+          }
+        } catch (fallbackError) {
+          console.error('Error al cargar publicaciones alternativas:', fallbackError);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -482,9 +530,23 @@ const AdminPanel = () => {
         <h1 style={styles.pageTitle}>Panel de Administración</h1>
         <div style={styles.header} className="header">
           <h2 style={styles.title}>Gestión de Publicaciones</h2>
-          <Link to="/admin/post" style={styles.createButton} className="createButton">
-            <FaPlus /> Crear Nueva Publicación
-          </Link>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              onClick={fetchDebugInfo} 
+              style={{
+                ...styles.createButton,
+                backgroundColor: isDarkMode ? '#444' : '#666',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+            >
+              <FaBug /> Depurar
+            </button>
+            <Link to="/admin/post" style={styles.createButton} className="createButton">
+              <FaPlus /> Crear Nueva Publicación
+            </Link>
+          </div>
         </div>
 
         <div style={styles.filters} className="filters">
@@ -587,7 +649,39 @@ const AdminPanel = () => {
           <div style={styles.emptyState}>
             <h3>No se encontraron publicaciones</h3>
             <p>No hay publicaciones asociadas a tu cuenta de administrador (ID: {user?.id || 'desconocido'}).</p>
-            <p>Crea una nueva publicación o ajusta tus filtros de búsqueda.</p>
+            <p>Esto puede deberse a una de las siguientes razones:</p>
+            <ul style={{ textAlign: 'left', maxWidth: '500px', margin: '0 auto', paddingLeft: '20px' }}>
+              <li>Aún no has creado ninguna publicación</li>
+              <li>Tu cuenta de administrador no está correctamente vinculada</li>
+              <li>Hay un problema de conexión con el servidor</li>
+            </ul>
+            <p style={{ marginTop: '20px' }}>Puedes intentar:</p>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
+              <button 
+                onClick={() => window.location.reload()} 
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}
+              >
+                Recargar la página
+              </button>
+              <Link 
+                to="/admin/post" 
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: isDarkMode ? colors.primaryDark : colors.primary,
+                  color: 'white',
+                  textDecoration: 'none',
+                  borderRadius: '4px'
+                }}
+              >
+                Crear una publicación
+              </Link>
+            </div>
           </div>
         )}
       </div>
@@ -612,6 +706,59 @@ const AdminPanel = () => {
                 onClick={() => handleDeletePost(confirmDelete)}
               >
                 Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de depuración */}
+      {showDebugInfo && (
+        <div style={styles.modalOverlay} onClick={() => setShowDebugInfo(false)}>
+          <div 
+            style={{
+              ...styles.modalContent,
+              width: '80%',
+              maxWidth: '800px',
+              maxHeight: '80vh',
+              overflow: 'auto'
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={styles.modalTitle}>Información de Depuración</h3>
+            <div style={{ 
+              backgroundColor: isDarkMode ? '#1e1e1e' : '#f5f5f5',
+              padding: '15px',
+              borderRadius: '5px',
+              marginBottom: '15px',
+              fontFamily: 'monospace',
+              whiteSpace: 'pre-wrap',
+              overflowX: 'auto'
+            }}>
+              {debugInfo ? (
+                <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
+              ) : (
+                'No hay información disponible'
+              )}
+            </div>
+            <div style={styles.modalActions}>
+              <button
+                style={styles.cancelButton}
+                onClick={() => setShowDebugInfo(false)}
+              >
+                Cerrar
+              </button>
+              <button
+                style={{
+                  ...styles.deleteButton,
+                  backgroundColor: isDarkMode ? '#2c5282' : '#3182ce'
+                }}
+                onClick={() => {
+                  fetchDebugInfo();
+                  toast.info('Actualizando información de depuración');
+                }}
+              >
+                Actualizar
               </button>
             </div>
           </div>
