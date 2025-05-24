@@ -58,11 +58,22 @@ const Footer = () => {
   const handleInstantNavigation = (path, e) => {
     e.preventDefault();
     
-    // Si ya estamos en la página, recargar inmediatamente
-    if(location.pathname === path) {
-      window.location.reload();
+    // Para páginas con recarga forzada instantánea
+    if(path === '/' || path === '/blog' || path === '/categorias' || 
+       path === '/about' || path === '/contact' || path.startsWith('/categoria/') ||
+       path === '/admin/post' || path === '/terms' || path === '/privacy' || path === '/cookies') {
+      // Si ya estamos en la página, recargar inmediatamente
+      if(location.pathname === path || 
+         (path === '/blog' && (location.pathname.startsWith('/blog') || 
+          location.pathname.includes('/post/') || 
+          location.pathname.includes('/category/')))) {
+        window.location.reload();
+      } else {
+        // Si estamos en otra página, navegar directamente con recarga instantánea
+        window.location.href = path;
+      }
     } else {
-      // Si estamos en otra página, navegar directamente con recarga instantánea
+      // Para otras páginas, navegación normal
       window.location.href = path;
     }
   };

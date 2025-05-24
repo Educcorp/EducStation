@@ -765,7 +765,7 @@ const Header = () => {
                     e.preventDefault();
                     
                     // Para páginas con recarga forzada instantánea
-                    if(item.path === '/' || item.path === '/blog' || item.path === '/categorias') {
+                    if(item.path === '/' || item.path === '/blog' || item.path === '/categorias' || item.path === '/admin/post') {
                       // Si ya estamos en la página, recargar inmediatamente
                       if(location.pathname === item.path || 
                          (item.path === '/blog' && (location.pathname.startsWith('/blog') || 
