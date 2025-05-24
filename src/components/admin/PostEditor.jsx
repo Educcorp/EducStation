@@ -2,9 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
-import { createPublicacion, createPublicacionFromHTML } from '../../services/publicacionesService';
+import { createPublicacion, createPublicacionFromHTML, getPublicacionById, updatePublicacion } from '../../services/publicacionesService';
 import { getAllCategorias } from '../../services/categoriasServices';
 import { Calendar } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
 
 // Componentes para el editor
 import DualModeEditor from './DualModeEditor';
@@ -114,6 +115,8 @@ const ContentLabel = () => {
 const PostEditor = () => {
   // Obtener los colores del tema actual
   const { colors, isDarkMode } = useTheme();
+  const { postId } = useParams(); // Obtener el ID del post de los parámetros de la URL
+  const navigate = useNavigate();
 
   const [post, setPost] = useState({
     title: '',
@@ -128,6 +131,7 @@ const PostEditor = () => {
     resumen: '', // Añadimos el campo resumen
   });
 
+  const [isEditing, setIsEditing] = useState(false); // Estado para saber si estamos editando un post existente
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -251,6 +255,72 @@ const PostEditor = () => {
     };
   }, [dropdownOpen]);
 
+  // Cargar post existente si hay un postId
+  useEffect(() => {
+    const loadExistingPost = async () => {
+      if (postId) {
+        try {
+          const postData = await getPublicacionById(postId);
+          console.log('Post cargado para edición:', postData);
+          
+          // Encontrar la categoría por su ID
+          let categoryName = '';
+          if (postData.categorias && postData.categorias.length > 0 && categories.length > 0) {
+            const category = categories.find(cat => 
+              cat.ID_categoria === postData.categorias[0].ID_categoria
+            );
+            if (category) {
+              categoryName = category.Nombre_categoria;
+            }
+          }
+          
+          setPost({
+            title: postData.Titulo || '',
+            category: categoryName,
+            content: postData.contenido || '',
+            tags: '',
+            coverImage: null,
+            coverImagePreview: postData.Imagen_portada ? 
+              (postData.Imagen_portada.startsWith('data:') ? 
+                postData.Imagen_portada : 
+                `data:image/jpeg;base64,${postData.Imagen_portada}`) : 
+              null,
+            status: postData.Estado || 'draft',
+            publishDate: postData.Fecha_publicacion ? 
+              new Date(postData.Fecha_publicacion).toISOString().slice(0, 10) : 
+              new Date().toISOString().slice(0, 10),
+            editorMode: 'simple',
+            resumen: postData.Resumen || '',
+            Imagen_portada: postData.Imagen_portada || null
+          });
+          
+          setIsEditing(true);
+          setSaveMessage({
+            type: 'success',
+            text: 'Post cargado correctamente para edición',
+            icon: '✓'
+          });
+          
+          setTimeout(() => setSaveMessage(null), 3000);
+        } catch (error) {
+          console.error('Error al cargar el post para edición:', error);
+          setSaveMessage({
+            type: 'error',
+            text: `Error al cargar el post: ${error.message}`,
+            icon: '✖'
+          });
+          
+          setTimeout(() => setSaveMessage(null), 3000);
+        }
+      }
+    };
+    
+    // Solo cargar el post después de que las categorías estén disponibles
+    if (categories.length > 0 && postId) {
+      loadExistingPost();
+    }
+  }, [postId, categories]);
+
   // Manejador para cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -365,7 +435,16 @@ const PostEditor = () => {
       console.log("Guardando borrador con datos:", postData);
       
       // Guardar en el backend
-      const result = await createPublicacion(postData);
+      let result;
+      
+      if (isEditing) {
+        // Si estamos editando un post existente, usamos updatePublicacion
+        console.log(`Actualizando borrador existente con ID: ${postId}`);
+        result = await updatePublicacion(postId, postData);
+      } else {
+        // Si es un nuevo post, usamos createPublicacion
+        result = await createPublicacion(postData);
+      }
       
       // Guardar en localStorage como respaldo
       savePostToLocalStorage(post);
@@ -443,47 +522,66 @@ const PostEditor = () => {
         console.log("No se incluyó imagen en la publicación");
       }
       
-      // Determinar qué endpoint usar según el modo del editor
+      // Determinar qué endpoint usar según el modo del editor y si es una edición o creación
       let result;
-      if (post.editorMode === 'html') {
-        console.log("Usando endpoint HTML con contenido HTML de longitud:", post.content.length);
-        console.log("Muestra del contenido HTML:", post.content.substring(0, 150) + "...");
-        
-        // Verificar que el contenido no sea vacío o solo espacios
-        if (!post.content.trim()) {
-          throw new Error("El contenido HTML está vacío o solo contiene espacios");
-        }
-        
-        // Verificar que el contenido tenga etiquetas HTML válidas
-        if (!post.content.includes("<") || !post.content.includes(">")) {
-          console.warn("El contenido no parece contener etiquetas HTML válidas");
-        }
-        
-        result = await createPublicacionFromHTML({
-          titulo: postData.titulo,
-          htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
-          resumen: post.resumen || postData.resumen,
-          estado: postData.estado,
-          categorias: postData.categorias,
-          Imagen_portada: postData.Imagen_portada // Enviar la imagen en Base64
+      
+      if (isEditing) {
+        // Si estamos editando un post existente, usamos updatePublicacion
+        console.log(`Actualizando post existente con ID: ${postId}`);
+        result = await updatePublicacion(postId, postData);
+        setSaveMessage({
+          type: 'success',
+          text: '¡Post actualizado correctamente!',
+          icon: '🎉'
         });
       } else {
-        result = await createPublicacion(postData);
+        // Si es un nuevo post, usamos createPublicacion o createPublicacionFromHTML
+        if (post.editorMode === 'html') {
+          console.log("Usando endpoint HTML con contenido HTML de longitud:", post.content.length);
+          console.log("Muestra del contenido HTML:", post.content.substring(0, 150) + "...");
+          
+          // Verificar que el contenido no sea vacío o solo espacios
+          if (!post.content.trim()) {
+            throw new Error("El contenido HTML está vacío o solo contiene espacios");
+          }
+          
+          // Verificar que el contenido tenga etiquetas HTML válidas
+          if (!post.content.includes("<") || !post.content.includes(">")) {
+            console.warn("El contenido no parece contener etiquetas HTML válidas");
+          }
+          
+          result = await createPublicacionFromHTML({
+            titulo: postData.titulo,
+            htmlContent: post.content, // Aquí está el cambio clave: enviamos el contenido como htmlContent
+            resumen: post.resumen || postData.resumen,
+            estado: postData.estado,
+            categorias: postData.categorias,
+            Imagen_portada: postData.Imagen_portada // Enviar la imagen en Base64
+          });
+        } else {
+          result = await createPublicacion(postData);
+        }
+        
+        setSaveMessage({
+          type: 'success',
+          text: '¡Post publicado correctamente!',
+          icon: '🎉'
+        });
       }
       
       setIsPublishing(false);
       setPost(prev => ({ ...prev, status: 'published' }));
-      setSaveMessage({
-        type: 'success',
-        text: '¡Post publicado correctamente!',
-        icon: '🎉'
-      });
       
       // Limpiar mensaje después de unos segundos
       setTimeout(() => setSaveMessage(null), 3000);
       
       // Limpieza del borrador en localStorage después de publicar
       localStorage.removeItem('post_draft');
+      
+      // Redireccionar al panel de administración después de publicar/actualizar
+      setTimeout(() => {
+        navigate('/admin/panel');
+      }, 1500);
     } catch (error) {
       console.error('Error al publicar:', error);
       setIsPublishing(false);
