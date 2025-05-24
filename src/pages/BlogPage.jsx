@@ -27,11 +27,46 @@ const BlogPage = () => {
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    if (location.state && location.state.forceReload) {
+    const shouldForceReload = () => {
+      // 1. Si viene con forceReload explícito
+      if (location.state && location.state.forceReload) {
+        return true;
+      }
+      
+      // 2. Detectar si viene de un post usando sessionStorage
+      const leftPost = sessionStorage.getItem('left-post');
+      const cameFromBlog = sessionStorage.getItem('came-from-blog');
+      
+      if (leftPost && cameFromBlog) {
+        // Limpiar los marcadores
+        sessionStorage.removeItem('left-post');
+        sessionStorage.removeItem('came-from-blog');
+        return true;
+      }
+      
+      // 3. Detectar si viene de un post individual (navegación hacia atrás)
+      const previousUrl = document.referrer;
+      const currentUrl = window.location.href;
+      
+      // Si el referrer contiene /blog/ seguido de un número (ID de post)
+      const comesFromPost = previousUrl && 
+        previousUrl.includes('/blog/') && 
+        /\/blog\/\d+/.test(previousUrl) &&
+        currentUrl.includes('/blog') &&
+        !currentUrl.includes('/blog/');
+      
+      // 4. Detectar navegación hacia atrás usando performance.navigation (si está disponible)
+      const isBackNavigation = window.performance?.navigation?.type === 2; // TYPE_BACK_FORWARD
+      
+      return comesFromPost || isBackNavigation;
+    };
+
+    if (shouldForceReload()) {
       // Verificar si ya se realizó la recarga en esta sesión de navegación
-      if (!sessionStorage.getItem('blogpage-reloaded')) {
+      const reloadKey = 'blogpage-reloaded';
+      if (!sessionStorage.getItem(reloadKey)) {
         // Marcar que se va a realizar la recarga
-        sessionStorage.setItem('blogpage-reloaded', 'true');
+        sessionStorage.setItem(reloadKey, 'true');
         // Limpiar el estado para evitar bucles infinitos
         window.history.replaceState(null, '', window.location.pathname);
         // Realizar la recarga
@@ -42,6 +77,47 @@ const BlogPage = () => {
       sessionStorage.removeItem('blogpage-reloaded');
     }
   }, [location]);
+
+  // Detectar navegación hacia atrás desde posts
+  useEffect(() => {
+    const handlePopState = (event) => {
+      // Verificar si venimos de un post individual
+      const currentPath = window.location.pathname;
+      const isOnBlog = currentPath === '/blog';
+      
+      if (isOnBlog) {
+        // Pequeño delay para permitir que la navegación se complete
+        setTimeout(() => {
+          // Verificar usando sessionStorage primero
+          const leftPost = sessionStorage.getItem('left-post');
+          const cameFromBlog = sessionStorage.getItem('came-from-blog');
+          
+          // O verificar usando referrer
+          const previousUrl = document.referrer;
+          const comesFromPost = previousUrl && 
+            previousUrl.includes('/blog/') && 
+            /\/blog\/\d+/.test(previousUrl);
+          
+          if ((leftPost && cameFromBlog) || comesFromPost) {
+            if (!sessionStorage.getItem('blogpage-reloaded')) {
+              // Limpiar marcadores
+              sessionStorage.removeItem('left-post');
+              sessionStorage.removeItem('came-from-blog');
+              sessionStorage.setItem('blogpage-reloaded', 'true');
+              window.location.reload();
+            }
+          }
+        }, 100);
+      }
+    };
+
+    // Agregar listener para navegación hacia atrás
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   // Animación de entrada
   useEffect(() => {

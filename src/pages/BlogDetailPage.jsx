@@ -57,6 +57,10 @@ const BlogDetailPage = () => {
           postData: data
         });
         
+        // Marcar que estamos viendo un post (para detectar navegación hacia atrás)
+        sessionStorage.setItem('viewing-post', id);
+        sessionStorage.setItem('came-from-blog', 'true');
+        
         // Actualizar título de la página
         document.title = `${data.Titulo} | EducStation`;
       } catch (error) {
@@ -75,6 +79,15 @@ const BlogDetailPage = () => {
       setLoading(false);
     }
   }, [id]);
+
+  // Limpiar marcadores al desmontar el componente
+  useEffect(() => {
+    return () => {
+      // Marcar que salimos del post para detectar navegación hacia atrás
+      sessionStorage.setItem('left-post', sessionStorage.getItem('viewing-post') || '');
+      sessionStorage.removeItem('viewing-post');
+    };
+  }, []);
 
   // Función para formatear la fecha
   const formatDate = (dateString) => {
