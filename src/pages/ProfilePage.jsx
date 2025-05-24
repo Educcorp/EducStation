@@ -567,7 +567,7 @@ const ProfilePage = () => {
         
         <div style={styles.card}>
           <div style={styles.profileContent}>
-            <h2 style={styles.sectionTitle}>Actividad reciente</h2>
+            <h2 style={styles.sectionTitle}>Frase del momento</h2>
             <div style={styles.placeholder}>
               {obtenerFraseAleatoria()}
             </div>
