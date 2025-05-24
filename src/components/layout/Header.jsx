@@ -753,6 +753,8 @@ const Header = () => {
                     e.preventDefault();
                     if(item.path === '/') {
                       navigate('/', { state: { forceReload: true } });
+                    } else if(item.path === '/blog') {
+                      navigate('/blog', { state: { forceReload: true } });
                     } else {
                       navigate(item.path);
                     }
