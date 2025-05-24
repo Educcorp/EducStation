@@ -71,61 +71,69 @@ const AdminPanel = () => {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        console.log('Iniciando carga de publicaciones del administrador...');
+        console.log('Iniciando carga de publicaciones...');
         
-        // Cargar las publicaciones del administrador actual
-        const adminPosts = await getAdminPublicaciones(100, 0);
+        // Intentar cargar todas las publicaciones y filtrar por usuario actual
+        console.log('Cargando todas las publicaciones y filtrando por ID de administrador...');
+        let allPosts = [];
         
-        if (adminPosts && adminPosts.length > 0) {
-          setPosts(adminPosts);
-          console.log(`Cargadas ${adminPosts.length} publicaciones del administrador`);
-          showNotification(`Se cargaron ${adminPosts.length} publicaciones`, 'success');
-        } else {
-          console.log('No se encontraron publicaciones para este administrador');
-          setPosts([]);
+        try {
+          // Intentar con el endpoint principal
+          allPosts = await getAllPublicaciones(100, 0, null);
+        } catch (error) {
+          console.error('Error al cargar todas las publicaciones:', error);
           
-          // Intentar obtener todas las publicaciones como fallback
+          // Si falla, intentar con el endpoint alternativo
           try {
-            console.log('Intentando cargar todas las publicaciones como alternativa...');
-            const allPosts = await getAllPublicaciones(100, 0);
-            
-            if (allPosts && allPosts.length > 0) {
-              setPosts(allPosts);
-              console.log(`Cargadas ${allPosts.length} publicaciones generales`);
-              showNotification(`Se cargaron ${allPosts.length} publicaciones del sistema`, 'info');
-            } else {
-              showNotification('No se encontraron publicaciones en el sistema', 'info');
+            console.log('Intentando con endpoint alternativo...');
+            const response = await fetch('https://educstation-backend-production.up.railway.app/api/publicaciones/latest?limite=100');
+            if (response.ok) {
+              allPosts = await response.json();
             }
           } catch (fallbackError) {
-            console.error('Error al cargar publicaciones alternativas:', fallbackError);
-            showNotification('No se encontraron publicaciones para tu cuenta de administrador', 'info');
+            console.error('Error en endpoint alternativo:', fallbackError);
           }
+        }
+        
+        console.log(`Total de publicaciones cargadas: ${allPosts.length}`);
+        
+        // Filtrar publicaciones por ID de administrador del usuario actual
+        if (user && user.id) {
+          console.log(`Filtrando publicaciones para el usuario ID: ${user.id}`);
+          
+          // Filtrar por ID_administrador que coincida con el ID del usuario actual
+          const userPosts = allPosts.filter(post => {
+            const adminIdMatch = post.ID_administrador === user.id;
+            if (adminIdMatch) {
+              console.log(`Coincidencia encontrada para publicación ID: ${post.ID_publicaciones}`);
+            }
+            return adminIdMatch;
+          });
+          
+          console.log(`Publicaciones filtradas para el usuario: ${userPosts.length}`);
+          setPosts(userPosts);
+          
+          if (userPosts.length > 0) {
+            showNotification(`Se encontraron ${userPosts.length} publicaciones para tu cuenta`, 'success');
+          } else {
+            showNotification('No se encontraron publicaciones asociadas a tu cuenta', 'info');
+          }
+        } else {
+          console.log('No hay información de usuario disponible para filtrar publicaciones');
+          setPosts([]);
+          showNotification('No se puede identificar tu cuenta de administrador', 'error');
         }
       } catch (error) {
         console.error('Error al cargar publicaciones:', error);
         toast.error('Error al cargar las publicaciones');
-        showNotification('Error al cargar las publicaciones del administrador', 'error');
-        
-        // Intentar obtener todas las publicaciones como fallback
-        try {
-          console.log('Intentando cargar todas las publicaciones como alternativa después de error...');
-          const allPosts = await getAllPublicaciones(100, 0);
-          
-          if (allPosts && allPosts.length > 0) {
-            setPosts(allPosts);
-            console.log(`Cargadas ${allPosts.length} publicaciones generales después de error`);
-            showNotification(`Se cargaron ${allPosts.length} publicaciones del sistema`, 'info');
-          }
-        } catch (fallbackError) {
-          console.error('Error al cargar publicaciones alternativas:', fallbackError);
-        }
+        setPosts([]);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchPosts();
-  }, []);
+  }, [user]);
 
   // Filtrar publicaciones según búsqueda y filtro
   const filteredPosts = posts.filter(post => {
@@ -650,9 +658,21 @@ const AdminPanel = () => {
             <p>Esto puede deberse a una de las siguientes razones:</p>
             <ul style={{ textAlign: 'left', maxWidth: '500px', margin: '0 auto', paddingLeft: '20px' }}>
               <li>Aún no has creado ninguna publicación</li>
-              <li>Tu cuenta de administrador no está correctamente vinculada</li>
+              <li>Tus publicaciones están asociadas a un ID de administrador diferente</li>
               <li>Hay un problema de conexión con el servidor</li>
             </ul>
+            <div style={{ marginTop: '20px', backgroundColor: isDarkMode ? '#1a2e2d' : '#f0f7f7', padding: '15px', borderRadius: '8px', maxWidth: '600px', margin: '0 auto' }}>
+              <h4 style={{ margin: '0 0 10px 0' }}>Información de depuración:</h4>
+              <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
+                ID de usuario: {user?.id || 'No disponible'}
+              </p>
+              <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
+                Nombre de usuario: {user?.username || 'No disponible'}
+              </p>
+              <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
+                Es superusuario: {isSuperUser ? 'Sí' : 'No'}
+              </p>
+            </div>
             <p style={{ marginTop: '20px' }}>Puedes intentar:</p>
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
               <button 
@@ -667,18 +687,27 @@ const AdminPanel = () => {
               >
                 Recargar la página
               </button>
-              <Link 
-                to="/admin/post" 
+              <button 
+                onClick={() => {
+                  // Navigate to create post page with instant reload
+                  if(location.pathname === '/admin/post') {
+                    window.location.reload();
+                  } else {
+                    window.location.href = '/admin/post';
+                  }
+                }}
                 style={{
                   padding: '8px 16px',
                   backgroundColor: isDarkMode ? colors.primaryDark : colors.primary,
                   color: 'white',
                   textDecoration: 'none',
-                  borderRadius: '4px'
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
                 }}
               >
                 Crear una publicación
-              </Link>
+              </button>
             </div>
           </div>
         )}

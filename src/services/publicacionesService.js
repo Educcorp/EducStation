@@ -10,10 +10,12 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
         
         console.log("Solicitando todas las publicaciones:", url);
         
+        // Obtener el token de autenticación
+        const token = localStorage.getItem('userToken');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
+        // Primera estrategia: endpoint principal
         try {
-            // Obtener el token de autenticación
-            const token = localStorage.getItem('userToken');
-            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
             const response = await fetch(url, { headers });
             if (!response.ok) {
                 console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
@@ -26,17 +28,25 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
         } catch (fetchError) {
             console.error("Error en la petición principal:", fetchError);
             
-            // Si falla la petición principal, intentamos un enfoque alternativo
+            // Segunda estrategia: endpoint alternativo
             console.log("Intentando método alternativo para cargar publicaciones...");
-            
-            // Podemos intentar cargar las últimas publicaciones sin parámetros de estado
             const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
             console.log("URL alternativa:", fallbackUrl);
             
-            const fallbackResponse = await fetch(fallbackUrl);
+            const fallbackResponse = await fetch(fallbackUrl, { headers });
             if (!fallbackResponse.ok) {
-                // Si también falla el fallback, lanzamos el error original
-                throw fetchError;
+                // Tercera estrategia: llamada directa a la base de datos
+                console.log("Intentando acceso directo a la base de datos...");
+                const directUrl = `${API_URL}/api/publicaciones/all?limite=${limite}&offset=${offset}`;
+                const directResponse = await fetch(directUrl, { headers });
+                
+                if (!directResponse.ok) {
+                    throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
+                }
+                
+                const directData = await directResponse.json();
+                console.log(`Obtenidas ${directData.length} publicaciones mediante acceso directo`);
+                return directData;
             }
             
             const fallbackData = await fallbackResponse.json();
@@ -45,7 +55,8 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
         }
     } catch (error) {
         console.error('Error final en getAllPublicaciones:', error);
-        throw error;
+        // Devolver array vacío en lugar de lanzar error
+        return [];
     }
 };
 
