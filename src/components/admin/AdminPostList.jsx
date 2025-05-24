@@ -273,6 +273,36 @@ const AdminPostList = ({
     return '/assets/images/logoBN.png';
   };
 
+  // Procesar resumen para mostrar texto limpio
+  const getCleanSummary = (post) => {
+    // Prioridad 1: Usar el campo Resumen si existe y no está vacío
+    if (post.Resumen && post.Resumen.trim() !== '') {
+      // Si el resumen contiene HTML, extraer solo el texto
+      if (post.Resumen.includes('<') && post.Resumen.includes('>')) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = post.Resumen;
+        const cleanText = tempDiv.textContent || tempDiv.innerText || '';
+        return cleanText.trim() || 'Sin resumen disponible';
+      }
+      return post.Resumen;
+    }
+    
+    // Prioridad 2: Si no hay resumen, extraer del contenido
+    if (post.Contenido && post.Contenido.trim() !== '') {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = post.Contenido;
+      const cleanText = tempDiv.textContent || tempDiv.innerText || '';
+      
+      // Truncar a 150 caracteres máximo
+      if (cleanText.length > 150) {
+        return cleanText.substring(0, 150).trim() + '...';
+      }
+      return cleanText.trim() || 'Sin contenido disponible';
+    }
+    
+    return 'Sin resumen disponible';
+  };
+
   if (loading) {
     return (
       <div style={styles.loadingSpinner}>
@@ -320,7 +350,7 @@ const AdminPostList = ({
               
               <div style={styles.postContent}>
                 <h3 style={styles.postTitle}>{post.Titulo}</h3>
-                <p style={styles.postExcerpt}>{post.Resumen}</p>
+                <p style={styles.postExcerpt}>{getCleanSummary(post)}</p>
                 
                 <div style={styles.postMeta}>
                   <span style={styles.postDate}>
@@ -339,7 +369,7 @@ const AdminPostList = ({
                 
                 <div style={styles.actionsContainer}>
                   <Link
-                    to={`/blog/post/${post.ID_publicaciones}`}
+                    to={`/blog/${post.ID_publicaciones}`}
                     style={{...styles.actionButton, ...styles.viewButton}}
                     title="Ver publicación"
                   >
