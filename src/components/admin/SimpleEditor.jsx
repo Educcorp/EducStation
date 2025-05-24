@@ -411,7 +411,6 @@ const SimpleEditor = ({ content, onChange }) => {
         // Creamos HTML personalizado para la imagen con atributos para resize y estilos
         const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
           <img src="${processedImgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
-          <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
         </div>`;
         
         // Insertamos el HTML personalizado
@@ -496,7 +495,6 @@ const SimpleEditor = ({ content, onChange }) => {
       if (container.getAttribute('data-handlers-added')) return;
       
       const img = container.querySelector('img');
-      const resizeHandle = container.querySelector('.resize-handle');
       
       // Detectar y establecer el tamaño real de la imagen
       if (img) {
@@ -521,374 +519,38 @@ const SimpleEditor = ({ content, onChange }) => {
         tempImg.src = img.src;
       }
       
-      // Asegurar que se añadan los controles de text-wrap si no existen
-      if (!container.querySelector('.text-wrap-controls')) {
-        // Crear el botón para abrir el menú de opciones de wrapping
-        const wrapControlButton = document.createElement('div');
-        wrapControlButton.className = 'wrap-control-button';
-        wrapControlButton.innerHTML = '≡'; // Icono simple para representar opciones de texto
-        wrapControlButton.title = 'Opciones de texto';
-        wrapControlButton.style.cssText = 'position: absolute; top: -30px; right: 0; background-color: white; border: 1px solid #ddd; border-radius: 4px; width: 25px; height: 25px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; user-select: none; pointer-events: auto;';
-        
-        // Crear el menú de opciones para el wrapping de texto
-        const wrapControls = document.createElement('div');
-        wrapControls.className = 'text-wrap-controls';
-        wrapControls.style.cssText = 'position: absolute; top: -30px; right: 30px; background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: none; z-index: 2; user-select: none; pointer-events: auto;';
-        
-        // Opciones de wrapping
-        const wrapOptions = [
-          { class: 'wrap-inline', title: 'En línea con el texto', icon: '─' },
-          { class: 'wrap-square', title: 'Cuadrado', icon: '□' },
-          { class: 'wrap-tight', title: 'Ajustado', icon: '▢' }
-        ];
-        
-        wrapOptions.forEach(option => {
-          const button = document.createElement('button');
-          button.className = option.class;
-          button.title = option.title;
-          button.innerHTML = option.icon;
-          button.style.cssText = 'margin-right: 4px; cursor: pointer; background: none; border: 1px solid #ddd; border-radius: 2px; padding: 2px 5px; width: 28px; text-align: center; user-select: none;';
-          
-          button.addEventListener('click', (e) => {
-            // Remover todas las clases de wrapping previas
-            wrapOptions.forEach(opt => container.classList.remove(opt.class));
-            
-            // Añadir la clase seleccionada
-            container.classList.add(option.class);
-            
-            // Aplicar estilos específicos para cada tipo de wrapping
-            switch(option.class) {
-              case 'wrap-inline':
-                container.style.float = 'none';
-                container.style.display = 'inline-block';
-                container.style.verticalAlign = 'middle';
-                container.style.margin = '0 10px';
-                container.style.position = 'relative';
-                container.style.zIndex = '0'; // Aseguramos que no esté encima del texto
-                // Eliminar cualquier propiedad shape-outside que pudiera estar establecida
-                container.style.shapeOutside = 'none';
-                // Preservar tamaño de la imagen
-                const inlineWidth = img.style.width;
-                const inlineHeight = img.style.height;
-                if (inlineWidth && inlineHeight) {
-                  // Asegurar que no se pierda la dimensión al cambiar el estilo
-                  setTimeout(() => {
-                    img.style.width = inlineWidth;
-                    img.style.height = inlineHeight;
-                  }, 0);
-                }
-                break;
-              case 'wrap-square':
-                // Guardar dimensiones actuales antes de cambiar estilos
-                const squareWidth = img.style.width;
-                const squareHeight = img.style.height;
-                
-                container.style.float = 'left';
-                container.style.margin = '0 15px 10px 0';
-                container.style.position = 'relative';
-                container.style.zIndex = '0'; // Aseguramos que no esté encima del texto
-                container.style.shapeOutside = 'content-box';
-                container.style.shapeMargin = '10px'; // Añadimos margen para el texto
-                // Aseguramos que el flujo de texto respete la imagen
-                container.style.overflow = 'visible';
-                
-                // Restaurar dimensiones
-                if (squareWidth && squareHeight) {
-                  setTimeout(() => {
-                    img.style.width = squareWidth;
-                    img.style.height = squareHeight;
-                  }, 0);
-                }
-                break;
-              case 'wrap-tight':
-                // Guardar dimensiones actuales
-                const tightWidth = img.style.width;
-                const tightHeight = img.style.height;
-                
-                container.style.float = 'left';
-                container.style.margin = '0 15px 10px 0';
-                container.style.position = 'relative';
-                container.style.zIndex = '0'; // Aseguramos que no esté encima del texto
-                container.style.shapeOutside = 'margin-box';
-                container.style.shapeMargin = '10px'; // Aumentamos el margen para mayor espacio
-                // Aseguramos que el flujo de texto respete la imagen
-                container.style.overflow = 'visible';
-                
-                // Restaurar dimensiones
-                if (tightWidth && tightHeight) {
-                  setTimeout(() => {
-                    img.style.width = tightWidth;
-                    img.style.height = tightHeight;
-                  }, 0);
-                }
-                break;
-            }
-            
-            // Notificar cambios
-            handleContentChange();
-            e.stopPropagation();
-            e.preventDefault(); // Prevenir que se posicione el cursor
-            
-            // Ocultar los controles después de seleccionar
-            wrapControls.style.display = 'none';
-            // Actualizar estado para mostrar la barra flotante nuevamente
-            setIsImageMenuOpen(false);
-          });
-          
-          wrapControls.appendChild(button);
-        });
-        
-        // Mostrar/ocultar el menú al hacer clic en el botón
-        wrapControlButton.addEventListener('click', (e) => {
-          const isVisible = wrapControls.style.display === 'none';
-          wrapControls.style.display = isVisible ? 'block' : 'none';
-          // Actualizar el estado para ocultar la barra flotante
-          setIsImageMenuOpen(isVisible);
-          e.stopPropagation();
-          e.preventDefault(); // Prevenir que se posicione el cursor
-        });
-        
-        // Prevenir la interacción con el cursor en estos elementos
-        wrapControlButton.addEventListener('mousedown', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        });
-        
-        wrapControls.addEventListener('mousedown', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        });
-        
-        // Agregar los elementos al contenedor
-        container.appendChild(wrapControlButton);
-        container.appendChild(wrapControls);
-      }
-      
-      // Variables para el movimiento
-      let isDragging = false;
-      let startX, startY, startLeft, startTop;
-      
-      // Variables para el resize
-      let isResizing = false;
-      let startWidth, startHeight;
-      
-      // Indica si la imagen está seleccionada
-      let isSelected = false;
-      
-      // Mostrar controles al hacer clic en la imagen
+      // Hacer las imágenes seleccionables para posicionamiento del cursor
       container.addEventListener('click', (e) => {
-        e.stopPropagation(); // Evitar que el evento llegue al editor
+        e.stopPropagation();
         
-        // Marcar esta imagen como seleccionada
-        isSelected = true;
+        // Remover clase selected-image de otras imágenes
+        const allImages = editorRef.current.querySelectorAll('.image-container');
+        allImages.forEach(img => img.classList.remove('selected-image'));
+        
+        // Agregar clase a la imagen actual
         container.classList.add('selected-image');
-        
-        // Desmarcar otras imágenes como seleccionadas
-        document.querySelectorAll('.image-container').forEach(otherContainer => {
-          if (otherContainer !== container) {
-            otherContainer.classList.remove('selected-image');
-            
-            // Ocultar controles de otras imágenes
-            const otherWrapControls = otherContainer.querySelector('.text-wrap-controls');
-            if (otherWrapControls) {
-              otherWrapControls.style.display = 'none';
-            }
-          }
-        });
-        
-        // Actualizar el estado de imagen seleccionada
-        checkForSelectedImage();
-        
-        // Si no estamos arrastrando ni redimensionando, mantener el foco en el editor
-        if (!isDragging && !isResizing) {
-          editorRef.current.focus();
-        }
       });
       
-      // Ocultar controles al hacer clic fuera de la imagen
-      document.addEventListener('click', (e) => {
-        if (!container.contains(e.target)) {
-          isSelected = false;
-          container.classList.remove('selected-image');
-          
-          // Ocultar controles de wrapping
-          const wrapControls = container.querySelector('.text-wrap-controls');
-          if (wrapControls) {
-            wrapControls.style.display = 'none';
-            // Actualizar el estado para mostrar la barra flotante de nuevo
-            setIsImageMenuOpen(false);
-          }
-          
-          // Verificar si hay alguna otra imagen seleccionada
-          checkForSelectedImage();
-        }
-      });
-      
-      // Evento para comenzar a mover
-      container.addEventListener('mousedown', (e) => {
-        // Verificar que no haga clic en el manejador de resize o en los controles
-        const wrapControls = container.querySelector('.text-wrap-controls');
-        const wrapControlButton = container.querySelector('.wrap-control-button');
-        
-        if (e.target !== resizeHandle && 
-            !(wrapControls && wrapControls.contains(e.target)) && 
-            e.target !== wrapControlButton) {
-          isDragging = true;
-          startX = e.clientX;
-          startY = e.clientY;
-          
-          // Asegurar que el contenedor tenga posición relativa
-          const computedStyle = window.getComputedStyle(container);
-          if (computedStyle.position !== 'relative') {
-            container.style.position = 'relative';
-          }
-          
-          startLeft = parseInt(computedStyle.left) || 0;
-          startTop = parseInt(computedStyle.top) || 0;
-          
-          e.preventDefault();
-          e.stopPropagation(); // Evitar que el evento llegue al editor
-        }
-      });
-      
-      // Evento para comenzar resize
-      if (resizeHandle) {
-        resizeHandle.addEventListener('mousedown', (e) => {
-          isResizing = true;
-          startX = e.clientX;
-          startY = e.clientY;
-          startWidth = parseInt(window.getComputedStyle(img).width);
-          startHeight = parseInt(window.getComputedStyle(img).height);
-          e.preventDefault();
-          e.stopPropagation();
-        });
-      }
-      
-      // Eventos para el documento (para capturar fuera del editor)
-      document.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-          const deltaX = e.clientX - startX;
-          const deltaY = e.clientY - startY;
-          
-          // Guardar tamaño actual antes de mover
-          const currentWidth = img.style.width;
-          const currentHeight = img.style.height;
-          
-          container.style.left = `${startLeft + deltaX}px`;
-          container.style.top = `${startTop + deltaY}px`;
-          
-          // Restaurar tamaño después de mover para evitar cambios
-          if (currentWidth && currentHeight) {
-            img.style.width = currentWidth;
-            img.style.height = currentHeight;
-          }
-          
-          e.preventDefault();
-        } else if (isResizing && img) {
-          const deltaX = e.clientX - startX;
-          const aspectRatio = parseFloat(img.getAttribute('data-aspect-ratio')) || 1;
-          
-          // Calcular nuevo ancho manteniendo el aspect ratio
-          const newWidth = Math.max(50, startWidth + deltaX);
-          const newHeight = newWidth / aspectRatio;
-          
-          img.style.width = `${newWidth}px`;
-          img.style.height = `${newHeight}px`;
-          e.preventDefault();
-        }
-      });
-      
-      document.addEventListener('mouseup', (e) => {
-        if (isDragging || isResizing) {
-          isDragging = false;
-          isResizing = false;
-          handleContentChange();
-          
-          // Restaurar el foco al editor después de manipular una imagen
-          // Se hace con un pequeño retraso para permitir que el evento de clic se procese
-          setTimeout(() => {
-            if (!editorRef.current.contains(document.activeElement)) {
-              editorRef.current.focus();
-              
-              // Si hay una selección guardada, intentar restaurarla
-              if (window.getSelection && window.getSelection().rangeCount === 0) {
-                // Crear un nuevo rango al final de la imagen
-                const range = document.createRange();
-                range.setStartAfter(container);
-                range.collapse(true);
-                
-                // Aplicar la selección
-                const selection = window.getSelection();
-                selection.removeAllRanges();
-                selection.addRange(range);
-              }
-            }
-          }, 10);
-        }
-      });
-      
-      // Evento de doble clic para posicionar el cursor después de la imagen
+      // Permitir posicionar cursor después de hacer doble clic
       container.addEventListener('dblclick', (e) => {
-        // Verificar que no hicimos doble clic en el manejador de resize o en los controles
-        const wrapControls = container.querySelector('.text-wrap-controls');
-        const wrapControlButton = container.querySelector('.wrap-control-button');
+        // Posicionar el cursor después de la imagen
+        const range = document.createRange();
+        range.setStartAfter(container);
+        range.collapse(true);
         
-        if (e.target !== resizeHandle && 
-            !(wrapControls && wrapControls.contains(e.target)) && 
-            e.target !== wrapControlButton) {
-          // Posicionar el cursor después de la imagen
-          const range = document.createRange();
-          range.setStartAfter(container);
-          range.collapse(true);
-          
-          const selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-          
-          // Enfocar el editor
-          editorRef.current.focus();
-          
-          e.preventDefault();
-        }
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // Enfocar el editor
+        editorRef.current.focus();
+        
+        e.preventDefault();
       });
       
       // Marcar que ya se agregaron los manejadores
       container.setAttribute('data-handlers-added', 'true');
     });
-  };
-
-  // Función para eliminar la imagen seleccionada
-  const deleteSelectedImage = () => {
-    const selectedImage = editorRef.current.querySelector('.selected-image');
-    
-    if (selectedImage) {
-      // Guardamos la posición para posicionar el cursor después
-      const parent = selectedImage.parentNode;
-      const nextSibling = selectedImage.nextSibling;
-      
-      // Eliminamos la imagen
-      selectedImage.remove();
-      
-      // Posicionamos el cursor donde estaba la imagen
-      const range = document.createRange();
-      if (nextSibling) {
-        range.setStartBefore(nextSibling);
-      } else {
-        range.setEndOfNode(parent);
-      }
-      range.collapse(true);
-      
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-      
-      // Notificamos el cambio
-      handleContentChange();
-      
-      return true;
-    }
-    
-    return false;
   };
 
   // Handle paste events with improved image handling
@@ -955,7 +617,6 @@ const SimpleEditor = ({ content, onChange }) => {
               // Creamos HTML personalizado para la imagen
               const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
                 <img src="${processedImgSrc}" alt="Imagen pegada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
-                <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
               </div>`;
               
               document.execCommand('insertHTML', false, imgHtml);
@@ -1103,7 +764,6 @@ const SimpleEditor = ({ content, onChange }) => {
             // Creamos HTML personalizado para la imagen
             const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
               <img src="${processedImgSrc}" alt="Imagen arrastrada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block; resize: both; overflow: auto;" data-image-type="html-encoded" />
-              <div class="resize-handle" style="position: absolute; right: -10px; bottom: -10px; width: 20px; height: 20px; background-color: #007BFF; border-radius: 50%; cursor: nwse-resize; z-index: 10;"></div>
             </div>`;
             
             document.execCommand('insertHTML', false, imgHtml);
@@ -1189,13 +849,6 @@ const SimpleEditor = ({ content, onChange }) => {
       document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp;');
       return;
     }
-    
-    // Eliminar imagen seleccionada con Delete o Backspace
-    if ((e.key === 'Delete' || e.key === 'Backspace') && editorRef.current) {
-      if (deleteSelectedImage()) {
-        e.preventDefault();
-      }
-    }
   };
 
   // Mostrar la barra flotante al hacer clic en el editor
@@ -1267,33 +920,6 @@ const SimpleEditor = ({ content, onChange }) => {
     checkActiveFormats();
   };
 
-  // Variable para saber si hay una imagen seleccionada
-  const [hasSelectedImage, setHasSelectedImage] = useState(false);
-  // Variable para saber si el menú de opciones de la imagen está abierto
-  const [isImageMenuOpen, setIsImageMenuOpen] = useState(false);
-
-  // Función para verificar si hay una imagen seleccionada
-  const checkForSelectedImage = () => {
-    const selectedImage = editorRef.current?.querySelector('.selected-image');
-    setHasSelectedImage(!!selectedImage);
-    
-    // Verificar si algún menú de opciones está visible
-    const visibleMenu = editorRef.current?.querySelector('.text-wrap-controls[style*="display: block"]');
-    setIsImageMenuOpen(!!visibleMenu);
-  };
-
-  // Agregar listener para detectar clics en el documento
-  useEffect(() => {
-    const handleDocumentClick = () => {
-      checkForSelectedImage();
-    };
-
-    document.addEventListener('click', handleDocumentClick);
-    return () => {
-      document.removeEventListener('click', handleDocumentClick);
-    };
-  }, []);
-
   // Estilos para el editor - siempre usando colores claros
   const styles = {
     container: {
@@ -1342,17 +968,15 @@ const SimpleEditor = ({ content, onChange }) => {
   return (
     <div style={styles.container}>
       {/* Barra de herramientas flotante */}
-      {!hasSelectedImage && !isImageMenuOpen && (
-        <FloatingToolbar 
-          onFormatText={applyFormat}
-          activeFormats={activeFormats}
-          editorRef={editorRef}
-          fontSize={currentFontSize}
-          setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
-          // Pasamos los colores claros forzados
-          forceLightMode={true}
-        />
-      )}
+      <FloatingToolbar 
+        onFormatText={applyFormat}
+        activeFormats={activeFormats}
+        editorRef={editorRef}
+        fontSize={currentFontSize}
+        setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
+        // Pasamos los colores claros forzados
+        forceLightMode={true}
+      />
       
       {/* Placeholder text when editor is empty */}
       {(!internalContent || internalContent === '<p><br></p>' || internalContent === '<br>') && (
@@ -1387,46 +1011,50 @@ const SimpleEditor = ({ content, onChange }) => {
       </div>
 
       {/* Estilos para imágenes redimensionables */}
-      <style>
-        {`
-          /* Aplicar estilos de modo claro forzados al editor y todos sus elementos */
-          #editorContent {
-            background-color: ${lightColors.white} !important;
-            color: ${lightColors.textPrimary} !important;
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .image-container {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
+            cursor: move;
+            z-index: 0;
+            overflow: visible;
           }
-          
-          #editorContent h1, 
-          #editorContent h2, 
-          #editorContent h3, 
-          #editorContent p,
-          #editorContent div:not(.image-container),
-          #editorContent span,
-          #editorContent li {
-            color: ${lightColors.textPrimary} !important;
-          }
-          
-          /* Resto de los estilos sin cambios */
+
           .image-container img {
-            transition: box-shadow 0.2s ease;
-            vertical-align: middle;
             max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            display: block;
+            resize: both;
+            overflow: auto;
           }
-          
-          /* Menús y controles en modo claro */
-          .text-wrap-controls {
-            background-color: ${lightColors.white} !important;
-            border: 1px solid #ddd !important;
-            color: ${lightColors.textPrimary} !important;
+
+          .image-container.selected-image {
+            outline: 2px solid #007BFF;
           }
-          
-          .wrap-control-button {
-            background-color: ${lightColors.white} !important;
-            border: 1px solid #ddd !important;
+
+          .image-container.wrap-inline {
+            float: none;
+            display: inline-block;
+            vertical-align: middle;
+            margin: 0 10px;
           }
-          
-          /* ... resto de los estilos ... */
-        `}
-      </style>
+
+          .image-container.wrap-square {
+            float: left;
+            margin: 0 15px 10px 0;
+          }
+
+          .image-container.wrap-tight {
+            float: left;
+            margin: 0 15px 10px 0;
+            shape-outside: margin-box;
+            shape-margin: 10px;
+          }
+        `
+      }} />
     </div>
   );
 };
