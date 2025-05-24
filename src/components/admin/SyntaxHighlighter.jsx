@@ -15,12 +15,13 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
 
   // Actualizar el contenido resaltado cuando cambia el contenido
   useEffect(() => {
-    console.log("SyntaxHighlighter - Contenido actualizado:", content ? content.substring(0, 50) + "..." : "vacío");
+    const contentStr = typeof content === 'string' ? content : '';
+    console.log("SyntaxHighlighter - Contenido actualizado:", contentStr ? contentStr.substring(0, 50) + "..." : "vacío");
     
     if (highlighterRef.current && textAreaRef.current) {
       try {
         // Simplemente escapar HTML - sin añadir clases o modificar el texto
-        const escapedContent = escapeHtml(content);
+        const escapedContent = escapeHtml(contentStr);
         highlighterRef.current.innerHTML = createDivs(escapedContent);
         
         // Configurar event listeners
@@ -86,7 +87,8 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
 
   // Manejar cambios en el texto
   const handleChange = (e) => {
-    console.log("SyntaxHighlighter - handleChange:", e.target.value ? e.target.value.substring(0, 50) + "..." : "vacío");
+    const value = e.target.value || '';
+    console.log("SyntaxHighlighter - handleChange:", value ? value.substring(0, 50) + "..." : "vacío");
     if (onChange) {
       onChange(e);
     }
@@ -244,7 +246,7 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
       {/* Textarea para edición (visible pero con texto transparente) */}
       <textarea
         ref={textAreaRef}
-        value={content || ''}
+        value={typeof content === 'string' ? content : ''}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onScroll={syncScroll}
