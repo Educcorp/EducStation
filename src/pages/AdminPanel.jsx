@@ -6,32 +6,22 @@ import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
-import { deletePublicacion } from '../services/publicacionesService';
+import { deletePublicacion, getAllPublicaciones } from '../services/publicacionesService';
 import { toast } from 'react-toastify';
-import { useAdminPosts } from '../components/admin/utils/useAdminPosts';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuth, isSuperUser } = useAuth();
   const { isDarkMode } = useTheme();
+  const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all'); // 'all', 'published', 'draft'
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-
-  // Usar el hook personalizado para cargar los posts del administrador
-  const { 
-    posts, 
-    loading: isLoading, 
-    error,
-    refreshPosts,
-    removePost
-  } = useAdminPosts({ 
-    adminId: user?.id, 
-    searchTerm, 
-    filter 
-  });
 
   // Verificar si el usuario es administrador
   useEffect(() => {
@@ -46,6 +36,69 @@ const AdminPanel = () => {
       return;
     }
   }, [isAuth, isSuperUser, navigate]);
+
+  // Cargar todas las publicaciones
+  useEffect(() => {
+    const fetchAllPosts = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log('Cargando todas las publicaciones para el panel de administración');
+        
+        // Intentar cargar todas las publicaciones
+        const allPosts = await getAllPublicaciones(100, 0, null);
+        console.log(`Obtenidas ${allPosts.length} publicaciones totales`);
+        
+        // Ordenar por fecha de modificación o creación (más reciente primero)
+        allPosts.sort((a, b) => {
+          const dateA = a.Fecha_modificacion ? new Date(a.Fecha_modificacion) : new Date(a.Fecha_creacion);
+          const dateB = b.Fecha_modificacion ? new Date(b.Fecha_modificacion) : new Date(b.Fecha_creacion);
+          return dateB - dateA;
+        });
+        
+        setPosts(allPosts);
+        applyFilters(allPosts, searchTerm, filter);
+      } catch (error) {
+        console.error('Error al cargar publicaciones:', error);
+        setError('No se pudieron cargar las publicaciones. Por favor, intenta de nuevo más tarde.');
+        setPosts([]);
+        setFilteredPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAllPosts();
+  }, []);
+
+  // Aplicar filtros cuando cambian los criterios
+  const applyFilters = (postsToFilter, term, statusFilter) => {
+    let result = postsToFilter;
+    
+    // Filtrar por término de búsqueda
+    if (term && term.trim() !== '') {
+      const searchTermLower = term.toLowerCase();
+      result = result.filter(post => 
+        post.Titulo?.toLowerCase().includes(searchTermLower) || 
+        post.Resumen?.toLowerCase().includes(searchTermLower)
+      );
+    }
+    
+    // Filtrar por estado
+    if (statusFilter !== 'all') {
+      const estado = statusFilter === 'published' ? 'publicado' : 'borrador';
+      result = result.filter(post => post.Estado === estado);
+    }
+    
+    setFilteredPosts(result);
+  };
+
+  // Cuando cambian los filtros
+  useEffect(() => {
+    if (posts.length > 0) {
+      applyFilters(posts, searchTerm, filter);
+    }
+  }, [searchTerm, filter, posts]);
 
   // Mostrar notificación
   const showNotification = (message, type = 'success') => {
@@ -67,7 +120,8 @@ const AdminPanel = () => {
   const handleDeletePost = async (postId) => {
     try {
       await deletePublicacion(postId);
-      removePost(postId); // Eliminar del estado local
+      setPosts(prevPosts => prevPosts.filter(post => post.ID_publicaciones !== postId));
+      setFilteredPosts(prevPosts => prevPosts.filter(post => post.ID_publicaciones !== postId));
       toast.success('Publicación eliminada correctamente');
       setConfirmDelete(null);
       showNotification('Publicación eliminada correctamente');
@@ -86,6 +140,23 @@ const AdminPanel = () => {
   // Manejar visualización de publicación
   const handleViewPost = (postId) => {
     navigate(`/blog/post/${postId}`);
+  };
+
+  // Recargar publicaciones
+  const refreshPosts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const allPosts = await getAllPublicaciones(100, 0, null);
+      setPosts(allPosts);
+      applyFilters(allPosts, searchTerm, filter);
+      showNotification('Publicaciones actualizadas correctamente');
+    } catch (error) {
+      console.error('Error al recargar publicaciones:', error);
+      setError('Error al recargar las publicaciones');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Formatear fecha
@@ -520,13 +591,13 @@ const AdminPanel = () => {
           </div>
         </div>
 
-        {isLoading ? (
+        {loading ? (
           <div style={styles.loadingState}>
             <div style={styles.loadingSpinner}></div>
           </div>
-        ) : posts.length > 0 ? (
+        ) : filteredPosts.length > 0 ? (
           <div style={styles.postsContainer}>
-            {posts.map(post => (
+            {filteredPosts.map(post => (
               <div key={post.ID_publicaciones} style={styles.postCard} className="postCard">
                 <div style={styles.postHeader} className="postHeader">
                   <div style={styles.postImageContainer} className="postImageContainer">
@@ -549,6 +620,15 @@ const AdminPanel = () => {
                       <div style={styles.postStatus(post.Estado)}>
                         {post.Estado === 'publicado' ? 'Publicado' : 'Borrador'}
                       </div>
+                      {post.ID_administrador && (
+                        <div style={{ 
+                          fontSize: typography.fontSize.xs, 
+                          color: isDarkMode ? colors.gray300 : colors.textSecondary,
+                          marginLeft: spacing.md
+                        }}>
+                          Admin ID: {post.ID_administrador}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -586,23 +666,23 @@ const AdminPanel = () => {
         ) : (
           <div style={styles.emptyState}>
             <h3>No se encontraron publicaciones</h3>
-            <p>No hay publicaciones asociadas a tu cuenta de administrador (ID: {user?.id || 'desconocido'}).</p>
+            <p>No hay publicaciones que coincidan con los criterios de búsqueda.</p>
             <p>Esto puede deberse a una de las siguientes razones:</p>
             <ul style={{ textAlign: 'left', maxWidth: '500px', margin: '0 auto', paddingLeft: '20px' }}>
-              <li>Aún no has creado ninguna publicación</li>
-              <li>Tus publicaciones están asociadas a un ID de administrador diferente</li>
+              <li>No hay publicaciones en la base de datos</li>
+              <li>El filtro aplicado no muestra resultados</li>
               <li>Hay un problema de conexión con el servidor</li>
             </ul>
             <div style={{ marginTop: '20px', backgroundColor: isDarkMode ? '#1a2e2d' : '#f0f7f7', padding: '15px', borderRadius: '8px', maxWidth: '600px', margin: '0 auto' }}>
               <h4 style={{ margin: '0 0 10px 0' }}>Información de depuración:</h4>
               <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
-                ID de usuario: {user?.id || 'No disponible'}
+                Filtro actual: {filter}
               </p>
               <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
-                Nombre de usuario: {user?.username || 'No disponible'}
+                Término de búsqueda: {searchTerm || 'Ninguno'}
               </p>
               <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
-                Es superusuario: {isSuperUser ? 'Sí' : 'No'}
+                Total de publicaciones sin filtrar: {posts.length}
               </p>
               {error && (
                 <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px', color: 'red' }}>

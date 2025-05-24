@@ -3,55 +3,62 @@ const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-pr
 // Obtener todas las publicaciones
 export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null) => {
     try {
-        let url = `${API_URL}/api/publicaciones?limite=${limite}&offset=${offset}`;
-        if (estado) {
-            url += `&estado=${estado}`;
-        }
-        
-        console.log("Solicitando todas las publicaciones:", url);
-        
         // Obtener el token de autenticación
         const token = localStorage.getItem('userToken');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         
-        // Primera estrategia: endpoint principal
+        // Primera estrategia: endpoint directo /all
         try {
-            const response = await fetch(url, { headers });
-            if (!response.ok) {
-                console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
-                throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
-            }
+            const directUrl = `${API_URL}/api/publicaciones/all?limite=${limite}&offset=${offset}`;
+            console.log("Intentando cargar con endpoint directo:", directUrl);
             
-            const data = await response.json();
-            console.log(`Obtenidas ${data.length} publicaciones correctamente`);
-            return data;
-        } catch (fetchError) {
-            console.error("Error en la petición principal:", fetchError);
-            
-            // Segunda estrategia: endpoint alternativo
-            console.log("Intentando método alternativo para cargar publicaciones...");
-            const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
-            console.log("URL alternativa:", fallbackUrl);
-            
-            const fallbackResponse = await fetch(fallbackUrl, { headers });
-            if (!fallbackResponse.ok) {
-                // Tercera estrategia: llamada directa a la base de datos
-                console.log("Intentando acceso directo a la base de datos...");
-                const directUrl = `${API_URL}/api/publicaciones/all?limite=${limite}&offset=${offset}`;
-                const directResponse = await fetch(directUrl, { headers });
-                
-                if (!directResponse.ok) {
-                    throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
-                }
-                
+            const directResponse = await fetch(directUrl, { headers });
+            if (directResponse.ok) {
                 const directData = await directResponse.json();
                 console.log(`Obtenidas ${directData.length} publicaciones mediante acceso directo`);
                 return directData;
+            } else {
+                console.log(`Error en endpoint directo: ${directResponse.status}. Intentando alternativas...`);
+                throw new Error(`Error en endpoint directo: ${directResponse.status}`);
+            }
+        } catch (directError) {
+            console.error("Error en endpoint directo:", directError);
+            
+            // Segunda estrategia: endpoint principal
+            let url = `${API_URL}/api/publicaciones?limite=${limite}&offset=${offset}`;
+            if (estado) {
+                url += `&estado=${estado}`;
             }
             
-            const fallbackData = await fallbackResponse.json();
-            console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
-            return fallbackData;
+            console.log("Intentando con endpoint principal:", url);
+            
+            try {
+                const response = await fetch(url, { headers });
+                if (!response.ok) {
+                    console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
+                    throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log(`Obtenidas ${data.length} publicaciones correctamente`);
+                return data;
+            } catch (fetchError) {
+                console.error("Error en la petición principal:", fetchError);
+                
+                // Tercera estrategia: endpoint latest
+                console.log("Intentando método alternativo para cargar publicaciones...");
+                const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
+                console.log("URL alternativa:", fallbackUrl);
+                
+                const fallbackResponse = await fetch(fallbackUrl, { headers });
+                if (!fallbackResponse.ok) {
+                    throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
+                }
+                
+                const fallbackData = await fallbackResponse.json();
+                console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
+                return fallbackData;
+            }
         }
     } catch (error) {
         console.error('Error final en getAllPublicaciones:', error);
