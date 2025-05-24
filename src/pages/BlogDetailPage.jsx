@@ -116,14 +116,18 @@ const BlogDetailPage = () => {
     },
     main: {
       flex: 1,
+      width: '100%',
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: `${spacing.xl} ${spacing.md}`,
       display: 'flex',
       justifyContent: 'center',
-      alignItems: 'flex-start', // o 'center' si se desea centrar verticalmente
-      padding: `${spacing.xl} 0`,
+      alignItems: 'flex-start',
     },
     contentWrapper: {
       width: '100%',
       maxWidth: '800px',
+      margin: '0 auto',
     },
     article: {
       maxWidth: '800px',

@@ -580,7 +580,7 @@ const PostEditor = () => {
       
       // Redireccionar al panel de administración después de publicar/actualizar
       setTimeout(() => {
-        navigate('/admin/panel');
+        navigate('/admin/panel', { state: { forceReload: true } });
       }, 1500);
     } catch (error) {
       console.error('Error al publicar:', error);

@@ -901,13 +901,8 @@ const Header = () => {
                     onClick={(e) => {
                       e.preventDefault();
                       setIsMenuOpen(false);
-                      // Si ya estamos en admin panel, recargar inmediatamente
-                      if(location.pathname === '/admin/panel') {
-                        window.location.reload();
-                      } else {
-                        // Si estamos en otra página, navegar directamente
-                        window.location.href = '/admin/panel';
-                      }
+                      // Usar navigate con forceReload para consistencia
+                      navigate('/admin/panel', { state: { forceReload: true } });
                     }}
                   >
                     <span style={styles.menuItemIcon}>

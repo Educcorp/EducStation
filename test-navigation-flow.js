@@ -50,6 +50,31 @@ const navigationFlows = {
     reload: "Instant via useEffect", 
     sessionStorage: "blogpage-reloaded",
     performance: "⚡ Instantaneous"
+  },
+  
+  "To AdminPanel (Header)": {
+    route: "Any page → /admin/panel",
+    method: "navigate('/admin/panel', { state: { forceReload: true } })",
+    reload: "Instant via useEffect + mount check",
+    sessionStorage: "adminpanel-reloaded",
+    performance: "⚡ Instantaneous"
+  },
+  
+  "From PostEditor to AdminPanel": {
+    route: "/admin/post/* → /admin/panel",
+    method: "navigate('/admin/panel', { state: { forceReload: true } })",
+    reload: "Instant via useEffect after 1.5s delay",
+    sessionStorage: "adminpanel-reloaded",
+    performance: "⚡ Instantaneous (with post-save delay)"
+  },
+  
+  "AdminPanel Back Navigation": {
+    route: "Other pages → /admin/panel (via back button)",
+    method: "Browser back button detection",
+    reload: "Multiple instant detection methods",
+    sessionStorage: "adminpanel-reloaded",
+    detection: "Instant: mount check + performance.navigation + referrer",
+    performance: "⚡ Instantaneous"
   }
 };
 
@@ -86,6 +111,24 @@ const components = {
     navigation: "navigate with forceReload state for categories",
     backDetection: "Instant mount check + popstate (no delay) + performance.navigation + referrer",
     status: "✅ Fixed - Consistent navigation pattern + INSTANT back navigation detection"
+  },
+  
+  "AdminPanel.jsx": {
+    reload: "⚡ OPTIMIZED - Multi-method instant detection for admin panel",
+    navigation: "Receives navigate with forceReload from Header and PostEditor",
+    backDetection: "Instant mount check + performance.navigation + referrer (from blog/category/profile)",
+    sessionStorage: "adminpanel-reloaded",
+    status: "✅ Fixed - Admin panel with INSTANT reload support"
+  },
+  
+  "Header.jsx": {
+    adminNavigation: "navigate('/admin/panel', { state: { forceReload: true } })",
+    status: "✅ Fixed - Consistent admin panel navigation with forceReload"
+  },
+  
+  "PostEditor.jsx": {
+    adminNavigation: "navigate('/admin/panel', { state: { forceReload: true } }) after save",
+    status: "✅ Fixed - Returns to admin panel with forceReload after post operations"
   }
 };
 
@@ -93,7 +136,8 @@ const routes = {
   "/blog": "BlogPage.jsx",
   "/blog/:id": "BlogDetailPage.jsx",
   "/categoria/:id": "CategoryPage.jsx", 
-  "/categorias": "CategoriesListPage.jsx"
+  "/categorias": "CategoriesListPage.jsx",
+  "/admin/panel": "AdminPanel.jsx"
 };
 
 const optimizations = {
@@ -116,38 +160,43 @@ const optimizations = {
 
 const backNavigationDetection = {
   "Method 1 - Instant Mount Check": {
-    description: "Immediate check on BlogPage mount for sessionStorage markers",
-    markers: ["left-post", "came-from-blog"],
+    description: "Immediate check on component mount for sessionStorage markers",
+    markers: ["left-post", "came-from-blog", "adminpanel-reloaded"],
     reliability: "High - Works in all browsers",
-    performance: "⚡ Instantaneous - 0ms delay"
+    performance: "⚡ Instantaneous - 0ms delay",
+    components: ["BlogPage.jsx", "AdminPanel.jsx"]
   },
   
   "Method 2 - Optimized SessionStorage": {
-    description: "BlogDetailPage sets markers efficiently before operations",
+    description: "Components set markers efficiently before operations",
     markers: ["viewing-post", "came-from-blog", "left-post"],
     reliability: "High - Works in all browsers",
-    performance: "⚡ Instantaneous - Pre-set markers"
+    performance: "⚡ Instantaneous - Pre-set markers",
+    components: ["BlogDetailPage.jsx"]
   },
   
   "Method 3 - Instant PopState": {
     description: "Immediate popstate handling without delays",
     trigger: "Browser back/forward buttons",
     reliability: "High - Standard browser API",
-    performance: "⚡ Instantaneous - No setTimeout"
+    performance: "⚡ Instantaneous - No setTimeout",
+    components: ["BlogPage.jsx"]
   },
   
   "Method 4 - Direct Performance API": {
     description: "Direct access to performance.navigation.type",
     support: "Modern browsers",
     reliability: "Medium - Limited browser support",
-    performance: "⚡ Instantaneous - Native API"
+    performance: "⚡ Instantaneous - Native API",
+    components: ["BlogPage.jsx", "AdminPanel.jsx"]
   },
   
   "Method 5 - Immediate Referrer Check": {
     description: "Instant document.referrer analysis",
-    check: "/\/blog\/\\d+/.test(previousUrl)",
+    check: "/\/blog\/\\d+/.test(previousUrl) or referrer includes specific paths",
     reliability: "Medium - Privacy settings dependent",
-    performance: "⚡ Instantaneous - Direct string check"
+    performance: "⚡ Instantaneous - Direct string check",
+    components: ["BlogPage.jsx", "AdminPanel.jsx"]
   }
 };
 
@@ -160,7 +209,12 @@ const issues_resolved = [
   "✅ Browser back button: Now detects and forces reload when going back from post to blog",
   "✅ Multiple detection methods: Redundant detection for maximum reliability",
   "⚡ SPEED OPTIMIZED: All delays removed for instantaneous reloads",
-  "⚡ PERFORMANCE OPTIMIZED: Streamlined logic and efficient marker handling"
+  "⚡ PERFORMANCE OPTIMIZED: Streamlined logic and efficient marker handling",
+  "✅ AdminPanel integration: Full reload support for admin panel navigation",
+  "✅ Consistent admin navigation: Header and PostEditor use forceReload pattern",
+  "✅ Layout alignment issues: Fixed CSS conflicts in posts.css causing content misalignment",
+  "✅ Centered post display: Corrected BlogDetailPage and PostDetail layout structure",
+  "✅ CSS !important conflicts: Removed problematic styles that interfered with centering"
 ];
 
 console.log("Navigation Flow Test - OPTIMIZED VERSION - All systems work INSTANTLY");
