@@ -1,19 +1,13 @@
-/* Modificación para el componente PostViewer.jsx */
-// Actualiza el componente para usar los estilos corregidos
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import ReactionSection from './ReactionSection';
-// Usar solo el CSS minimalista que no interfiere con el layout del HTML
-import '../../styles/postHtmlMinimal.css';
 import { useTheme } from '../../context/ThemeContext';
-import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicionales
 import ComentariosList from '../comentarios/ComentariosList';
 
 const PostViewer = () => {
-  const location = useLocation();
   const { id: postId } = useParams();
   const navigate = useNavigate();
   const [postContent, setPostContent] = useState('');
@@ -27,7 +21,6 @@ const PostViewer = () => {
         setLoading(true);
         setError(null);
         
-        // Cargar el archivo HTML correspondiente al ID del post
         const postPath = postId === 'featured' ? `/post/postfeature.html` : `/post/post${postId}.html`;
         console.log('Intentando cargar post desde:', postPath);
         
@@ -52,7 +45,6 @@ const PostViewer = () => {
     }
   }, [postId]);
 
-  // Estilos modificados para eliminar completamente cualquier restricción de ancho
   const styles = {
     pageWrapper: {
       width: "100%",
@@ -64,27 +56,34 @@ const PostViewer = () => {
     },
     mainContainer: {
       width: "100%",
-      margin: "0",
-      padding: "0",
-      boxSizing: "border-box",
       flex: "1 0 auto",
+      display: "flex",
+      flexDirection: "column",
     },
     contentContainer: {
-      padding: "100px 0 0",
-      position: "relative",
       width: "100%",
-      margin: "0",
+      flex: "1",
+      paddingTop: "100px",
+    },
+    postWrapper: {
+      width: "100%",
+      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
     },
     postContainer: {
       width: "100%",
-      margin: "0",
-      padding: "0",
+      maxWidth: "1200px",
+      margin: "0 auto",
+      padding: `${spacing.xl} ${spacing.md}`,
       boxSizing: "border-box",
+    },
+    postContent: {
+      width: "100%",
       backgroundColor: "transparent",
-      border: "none",
-      boxShadow: "none",
-      borderRadius: "0",
-      marginBottom: "0",
+    },
+    commentsWrapper: {
+      width: "100%",
+      backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
+      padding: `${spacing.xl} 0`,
     },
     commentsContainer: {
       backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
@@ -102,8 +101,6 @@ const PostViewer = () => {
       padding: `${spacing.xxl} 0`,
       color: isDarkMode ? colors.textLight : colors.primary,
       fontSize: typography.fontSize.lg,
-      maxWidth: "1200px",
-      margin: "0 auto",
     },
     errorMessage: {
       textAlign: "center",
@@ -113,214 +110,258 @@ const PostViewer = () => {
       backgroundColor: isDarkMode ? 'rgba(181, 61, 0, 0.2)' : 'rgba(181, 61, 0, 0.1)',
       borderRadius: borderRadius.md,
       margin: `${spacing.xl} auto`,
-      maxWidth: "1200px",
-    },
-    errorDetails: {
-      marginTop: spacing.md,
-      color: colors.textSecondary,
-      fontSize: typography.fontSize.sm
-    },
-    errorHelp: {
-      marginTop: spacing.lg,
-      padding: spacing.lg,
-      backgroundColor: colors.white,
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm,
-      color: colors.textPrimary,
-      border: `1px solid ${colors.gray200}`
+      maxWidth: "800px",
     },
     breadcrumb: {
-      margin: `${spacing.lg} 0`,
+      padding: `${spacing.lg} 0`,
       color: isDarkMode ? colors.textLight : colors.textSecondary,
       fontSize: typography.fontSize.sm,
       display: "flex",
       alignItems: "center",
       gap: spacing.sm,
       maxWidth: "1200px",
-      margin: `${spacing.lg} auto`,
-      padding: `0 ${spacing.md}`,
+      margin: "0 auto",
+      paddingLeft: spacing.md,
+      paddingRight: spacing.md,
     },
     breadcrumbLink: {
       color: isDarkMode ? colors.textLight : colors.textSecondary,
       textDecoration: "none",
       transition: "all 0.3s ease",
-      '&:hover': {
-        color: colors.primary
-      }
+      cursor: "pointer",
+      background: "none",
+      border: "none",
+      fontFamily: "inherit",
+      fontSize: "inherit",
+      padding: 0,
     },
-    returnButton: {
-      display: "inline-flex",
-      alignItems: "center",
-      gap: spacing.xs,
-      marginTop: spacing.lg,
-      padding: `${spacing.sm} ${spacing.md}`,
-      backgroundColor: colors.secondary,
-      color: colors.primary,
-      borderRadius: borderRadius.md,
-      textDecoration: "none",
-      fontWeight: typography.fontWeight.medium,
-      transition: "all 0.3s ease",
-      '&:hover': {
-        backgroundColor: colors.primary,
-        color: colors.white
-      }
-    },
-    container: {
+    reactionWrapper: {
       width: "100%",
-      margin: "0",
-      padding: "0",
-      boxSizing: "border-box",
-    },
-    sectionTitle: {
-      fontSize: typography.fontSize.xl,
-      fontWeight: typography.fontWeight.bold,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      marginBottom: spacing.lg,
-      paddingBottom: spacing.sm,
-      borderBottom: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
       maxWidth: "1200px",
-      margin: `0 auto ${spacing.lg} auto`,
-      padding: `0 ${spacing.md} ${spacing.sm} ${spacing.md}`,
+      margin: "0 auto",
+      padding: `0 ${spacing.md}`,
     },
     separator: {
       borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
-      margin: '2.5rem auto',
+      margin: `${spacing.xxl} auto`,
       width: '100%',
       maxWidth: "1200px",
     }
   };
 
-  // Función completamente rediseñada para crear el componente HTML
-  const createPostComponent = () => {
+  // Función mejorada para procesar el contenido HTML
+  const processPostContent = () => {
     if (!postContent) return { __html: '' };
     
     let processedContent = postContent;
     
-    // PASO 1: Inyectar CSS para sobrescribir COMPLETAMENTE cualquier restricción de ancho
-    const overrideCss = `
+    // CSS global para sobrescribir cualquier restricción de ancho
+    const globalStyles = `
       <style>
-        /* Sobrescribir TODOS los posibles estilos que limiten el ancho */
-        * {
-          max-width: none !important;
-        }
-        
-        body {
+        /* Reset global para el contenedor del post */
+        .post-html-content {
+          width: 100% !important;
+          max-width: 100% !important;
           margin: 0 !important;
           padding: 0 !important;
-          width: 100% !important;
-          max-width: none !important;
+          box-sizing: border-box !important;
+          overflow-x: hidden !important;
         }
         
-        .post-container {
-          max-width: none !important;
-          width: 100% !important;
-          margin: 0 !important;
-          padding: 20px !important;
+        /* Asegurar que TODOS los elementos internos respeten el ancho */
+        .post-html-content * {
+          max-width: 100% !important;
           box-sizing: border-box !important;
         }
         
-        /* Asegurar que todos los contenedores principales no tengan restricciones */
-        div, article, section, main {
-          max-width: none !important;
+        /* Contenedor principal del post */
+        .post-html-content .post-container,
+        .post-html-content > div:first-child {
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 0 auto !important;
+          padding: 40px 20px !important;
+          box-sizing: border-box !important;
         }
         
-        /* Corregir imágenes específicamente */
-        img {
+        /* Imágenes responsivas */
+        .post-html-content img {
           max-width: 100% !important;
           height: auto !important;
+          display: block !important;
+          margin: 20px auto !important;
           object-fit: contain !important;
         }
         
-        /* Contenedores de imágenes */
-        div[style*="text-align"] {
+        /* Contenedores de imagen */
+        .post-html-content div[style*="text-align: center"],
+        .post-html-content div[style*="text-align:center"] {
           width: 100% !important;
+          max-width: 100% !important;
+          margin: 20px auto !important;
         }
         
         /* Contenedores flex */
-        div[style*="display: flex"] {
+        .post-html-content div[style*="display: flex"],
+        .post-html-content div[style*="display:flex"] {
           width: 100% !important;
-          max-width: none !important;
+          max-width: 100% !important;
           flex-wrap: wrap !important;
+          justify-content: center !important;
+          gap: 20px !important;
+        }
+        
+        /* Elementos con ancho fijo */
+        .post-html-content div[style*="width: 48%"],
+        .post-html-content div[style*="width:48%"] {
+          width: calc(50% - 10px) !important;
+          min-width: 280px !important;
+          max-width: 500px !important;
+          flex: 0 0 calc(50% - 10px) !important;
+        }
+        
+        /* Párrafos y texto */
+        .post-html-content p,
+        .post-html-content h1,
+        .post-html-content h2,
+        .post-html-content h3,
+        .post-html-content h4,
+        .post-html-content h5,
+        .post-html-content h6 {
+          max-width: 100% !important;
+          width: 100% !important;
+          word-wrap: break-word !important;
+          overflow-wrap: break-word !important;
+        }
+        
+        /* Tablas responsivas */
+        .post-html-content table {
+          width: 100% !important;
+          max-width: 100% !important;
+          overflow-x: auto !important;
+          display: block !important;
+        }
+        
+        /* Listas */
+        .post-html-content ul,
+        .post-html-content ol {
+          max-width: 100% !important;
+          padding-left: 20px !important;
+        }
+        
+        /* Elementos especiales */
+        .post-html-content .stat-box,
+        .post-html-content .highlight-box,
+        .post-html-content .news-card {
+          width: 100% !important;
+          max-width: 100% !important;
+          margin: 20px auto !important;
+        }
+        
+        /* Responsive para móviles */
+        @media (max-width: 768px) {
+          .post-html-content .post-container,
+          .post-html-content > div:first-child {
+            padding: 20px 15px !important;
+          }
+          
+          .post-html-content div[style*="width: 48%"],
+          .post-html-content div[style*="width:48%"] {
+            width: 100% !important;
+            flex: 0 0 100% !important;
+            max-width: 100% !important;
+          }
+          
+          .post-html-content div[style*="display: flex"],
+          .post-html-content div[style*="display:flex"] {
+            flex-direction: column !important;
+            align-items: center !important;
+          }
+        }
+        
+        /* Modo oscuro */
+        .post-html-content.dark-mode {
+          color: ${colors.textLight};
+        }
+        
+        .post-html-content.dark-mode h1,
+        .post-html-content.dark-mode h2,
+        .post-html-content.dark-mode h3,
+        .post-html-content.dark-mode h4,
+        .post-html-content.dark-mode h5,
+        .post-html-content.dark-mode h6 {
+          color: ${colors.textLight};
+        }
+        
+        /* Prevenir overflow horizontal */
+        .post-html-content pre {
+          max-width: 100% !important;
+          overflow-x: auto !important;
+          white-space: pre-wrap !important;
+          word-wrap: break-word !important;
         }
         
         /* Asegurar que el footer no se vea afectado */
-        footer {
+        body > footer,
+        #root > div > footer {
           width: 100% !important;
-          max-width: none !important;
+          max-width: 100% !important;
           position: relative !important;
-          bottom: auto !important;
-          left: auto !important;
-          right: auto !important;
+          margin-top: auto !important;
         }
       </style>
     `;
     
-    // PASO 2: Inyectar el CSS al principio del contenido HTML
-    if (processedContent.includes('<head>')) {
-      processedContent = processedContent.replace('</head>', overrideCss + '</head>');
-    } else if (processedContent.includes('<body>')) {
-      processedContent = processedContent.replace('<body>', '<body>' + overrideCss);
-    } else {
-      processedContent = overrideCss + processedContent;
-    }
+    // Eliminar elementos HTML, HEAD y BODY
+    processedContent = processedContent
+      .replace(/<\/?html[^>]*>/gi, '')
+      .replace(/<\/?head[^>]*>/gi, '')
+      .replace(/<\/?body[^>]*>/gi, '');
     
-    // PASO 3: Eliminar elementos HTML, HEAD y BODY ya que React los manejará
-    processedContent = processedContent.replace(/<\/?html[^>]*>/gi, '');
-    processedContent = processedContent.replace(/<\/?head[^>]*>/gi, '');
-    processedContent = processedContent.replace(/<\/?body[^>]*>/gi, '');
+    // Envolver el contenido en un div con clase específica
+    processedContent = `
+      ${globalStyles}
+      <div class="post-html-content ${isDarkMode ? 'dark-mode' : ''}">
+        ${processedContent}
+      </div>
+    `;
     
-    // PASO 4: Procesar contenedores principales
-    processedContent = processedContent.replace(
-      /<div class="post-container"([^>]*)>/g,
-      '<div class="post-container"$1 style="max-width: none !important; width: 100% !important; margin: 0 !important; padding: 20px !important; box-sizing: border-box !important;">'
-    );
-    
-    // PASO 5: Procesar imágenes
+    // Procesar imágenes para asegurar responsividad
     processedContent = processedContent.replace(
       /<img([^>]*?)>/g,
       (match, attributes) => {
-        // Agregar o modificar estilos para imágenes
-        if (attributes.includes('style=')) {
-          const styleMatch = attributes.match(/style="([^"]*)"/);
-          if (styleMatch) {
-            let existingStyle = styleMatch[1];
-            existingStyle = existingStyle.replace(/max-width:[^;]*;?/gi, '');
-            existingStyle = existingStyle.replace(/width:[^;]*;?/gi, '');
-            existingStyle += '; max-width: 100% !important; height: auto !important; object-fit: contain !important;';
-            return match.replace(styleMatch[0], `style="${existingStyle}"`);
-          }
-        } else {
-          return `<img${attributes} style="max-width: 100% !important; height: auto !important; object-fit: contain !important;">`;
-        }
-        return match;
+        // Remover estilos de ancho fijo
+        let newAttributes = attributes
+          .replace(/width="?\d+"?/gi, '')
+          .replace(/height="?\d+"?/gi, '')
+          .replace(/style="[^"]*"/gi, '');
+        
+        return `<img${newAttributes} style="max-width: 100%; height: auto; display: block; margin: 20px auto; object-fit: contain;">`;
       }
     );
     
-    // PASO 6: Procesar contenedores de contenido
+    // Procesar contenedores con estilos inline problemáticos
     processedContent = processedContent.replace(
       /<div([^>]*?)style="([^"]*?)"([^>]*)>/g,
       (match, before, styleContent, after) => {
-        // Remover restricciones de ancho de todos los divs
-        let newStyle = styleContent
-          .replace(/max-width:[^;]*;?/gi, '')
-          .replace(/width:\s*\d+px[^;]*;?/gi, '');
+        let newStyle = styleContent;
         
-        // Si el div tenía display: flex, asegurar que use todo el ancho
-        if (newStyle.includes('display: flex') || newStyle.includes('display:flex')) {
-          newStyle += '; width: 100% !important; max-width: none !important;';
+        // Remover anchos fijos excepto los porcentuales específicos
+        if (!styleContent.includes('width: 48%') && !styleContent.includes('width:48%')) {
+          newStyle = newStyle.replace(/width:\s*\d+px/gi, 'width: 100%');
         }
+        
+        // Remover max-width restrictivos
+        newStyle = newStyle.replace(/max-width:\s*\d+px/gi, 'max-width: 100%');
         
         return `<div${before}style="${newStyle}"${after}>`;
       }
     );
     
-    return {
-      __html: processedContent
-    };
+    return { __html: processedContent };
   };
 
-  // Función para navegar de vuelta al blog con recarga
-  const navigateToBlог = () => {
+  const navigateToBlog = () => {
     navigate('/blog', { state: { forceReload: true } });
   };
 
@@ -336,78 +377,50 @@ const PostViewer = () => {
         <main style={styles.contentContainer}>
           {/* Breadcrumb */}
           <div style={styles.breadcrumb}>
-            <Link 
-              to="/"
-              style={styles.breadcrumbLink}
-              onMouseEnter={(e) => e.target.style.color = colors.primary} 
-              onMouseLeave={(e) => e.target.style.color = isDarkMode ? colors.textLight : colors.textSecondary}
-            >Inicio</Link>
-            <span style={{color: isDarkMode ? 'rgba(255,255,255,0.3)' : colors.gray300, fontSize: '10px'}}>►</span>
-            <button 
-              onClick={navigateToBlог}
-              style={{
-                ...styles.breadcrumbLink,
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: 0,
-                fontFamily: 'inherit',
-                fontSize: 'inherit'
-              }}
-              onMouseEnter={(e) => e.target.style.color = colors.primary} 
-              onMouseLeave={(e) => e.target.style.color = isDarkMode ? colors.textLight : colors.textSecondary}
-            >Blog</button>
-            <span style={{color: isDarkMode ? 'rgba(255,255,255,0.3)' : colors.gray300, fontSize: '10px'}}>►</span>
+            <Link to="/" style={styles.breadcrumbLink}>Inicio</Link>
+            <span>►</span>
+            <button onClick={navigateToBlog} style={styles.breadcrumbLink}>
+              Blog
+            </button>
+            <span>►</span>
             <span>Post {postId}</span>
           </div>
           
-          {/* Contenedor del Post */}
-          <div style={styles.postContainer}>
-            {loading ? (
-              <div style={styles.loadingMessage}>
-                Cargando contenido del post...
-              </div>
-            ) : error ? (
-              <div style={styles.errorMessage}>
-                <div>Error: {error}</div>
-                <div style={styles.errorDetails}>
-                  No se pudo cargar el contenido del post solicitado.
+          {/* Post Content */}
+          <div style={styles.postWrapper}>
+            <div style={styles.postContainer}>
+              {loading ? (
+                <div style={styles.loadingMessage}>
+                  Cargando contenido del post...
                 </div>
-                <div style={styles.errorHelp}>
-                  <p><strong>Posibles soluciones:</strong></p>
-                  <ul>
-                    <li>Verifica que el archivo HTML del post exista en la carpeta 'public/post/'</li>
-                    <li>El nombre del archivo debe ser 'post{postId}.html'</li>
-                    <li>Si estás en desarrollo local, reinicia el servidor</li>
-                  </ul>
-                  <Link
-                    to="/"
-                    style={styles.returnButton}
-                  >
-                    ← Volver a la página principal
-                  </Link>
+              ) : error ? (
+                <div style={styles.errorMessage}>
+                  Error: {error}
                 </div>
-              </div>
-            ) : (
-              <>
-                <div
-                  className={`post-content ${isDarkMode ? 'dark-mode' : 'light-mode'}`}
-                  style={styles.container}
-                  dangerouslySetInnerHTML={createPostComponent()}
-                />
-                <ReactionSection postId={postId} />
-              </>
-            )}
+              ) : (
+                <>
+                  <div
+                    style={styles.postContent}
+                    dangerouslySetInnerHTML={processPostContent()}
+                  />
+                  
+                  <div style={styles.reactionWrapper}>
+                    <ReactionSection postId={postId} />
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
-          {/* Separador visual */}
+          {/* Separador */}
           <div style={styles.separator} />
 
-          {/* Sección de Comentarios */}
-          <div style={styles.commentsContainer}>
-            <ComentariosList postId={postId} />
+          {/* Comentarios */}
+          <div style={styles.commentsWrapper}>
+            <div style={styles.commentsContainer}>
+              <ComentariosList postId={postId} />
+            </div>
           </div>
-
         </main>
       </div>
       
