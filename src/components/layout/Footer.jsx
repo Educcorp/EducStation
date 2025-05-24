@@ -446,8 +446,8 @@ const Footer = () => {
                   <Link to="/categoria/6" style={styles.linkAnchor}>Desarrollo Profesional</Link>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
-                  <span style={styles.linkIcon}><FaUsers size={18} /></span>
-                  <Link to="/categoria/7" style={styles.linkAnchor}>Comunidad</Link>
+                  <span style={styles.linkIcon}><FaTags size={18} /></span>
+                  <Link to="https://www.educstation.com/blog" style={styles.linkAnchor}>Descubre más categorías</Link>
                 </li>
               </ul>
             </div>
