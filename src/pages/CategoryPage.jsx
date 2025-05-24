@@ -1242,7 +1242,14 @@ const CategoryPage = () => {
             <h3>Error al cargar la categoría</h3>
             <p>{error}</p>
             <button
-              onClick={() => navigate('/categorias')}
+              onClick={() => {
+                // Navigate to categories page with instant reload
+                if(location.pathname === '/categorias') {
+                  window.location.reload();
+                } else {
+                  window.location.href = '/categorias';
+                }
+              }}
               style={{
                 padding: `${spacing.md} ${spacing.xl}`,
                 backgroundColor: colors.primary,
@@ -1476,7 +1483,14 @@ const CategoryPage = () => {
                       No se encontraron artículos en esta categoría{searchQuery ? ` que coincidan con "${searchQuery}"` : ''}.
                     </p>
                     <button
-                      onClick={() => navigate('/categorias')}
+                      onClick={() => {
+                        // Navigate to categories page with instant reload
+                        if(location.pathname === '/categorias') {
+                          window.location.reload();
+                        } else {
+                          window.location.href = '/categorias';
+                        }
+                      }}
                       style={{
                         padding: `${spacing.sm} ${spacing.lg}`,
                         backgroundColor: colors.primary,

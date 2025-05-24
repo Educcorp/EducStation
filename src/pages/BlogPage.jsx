@@ -501,7 +501,14 @@ const BlogPage = () => {
         }}
         onMouseEnter={() => setHoveredPromo(true)}
         onMouseLeave={() => setHoveredPromo(false)}
-        onClick={() => navigate('/categorias')}
+        onClick={() => {
+          // Navigate to categories page with instant reload
+          if(location.pathname === '/categorias') {
+            window.location.reload();
+          } else {
+            window.location.href = '/categorias';
+          }
+        }}
       >
         <div>
           <h3

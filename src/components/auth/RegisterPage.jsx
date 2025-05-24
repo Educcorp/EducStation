@@ -1,6 +1,6 @@
 // src/components/auth/RegisterPage.jsx - Completamente Renovado
 import React, { useState, useContext, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { checkUsernameAvailability, checkEmailAvailability } from '../../services/authService';
 import { colors, spacing, typography } from '../../styles/theme';
 import '@fortawesome/fontawesome-free/css/all.css';
@@ -13,6 +13,7 @@ const DEV_MODE = process.env.NODE_ENV === 'development';
 
 const RegisterPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { register, isAuth, loading } = useAuth();
     const { setForceLightMode } = useContext(ThemeContext);
 
@@ -1521,8 +1522,48 @@ const RegisterPage = () => {
                                     </div>
 
                                     <label>
-                                        He leído y acepto los <Link to="/terms" className="link-hover-effect">términos y condiciones</Link> y
-                                        la <Link to="/privacy" className="link-hover-effect">política de privacidad</Link>.
+                                        He leído y acepto los <button 
+                                            onClick={() => {
+                                                // Navigate to terms page with instant reload
+                                                if(location.pathname === '/terms') {
+                                                    window.location.reload();
+                                                } else {
+                                                    window.location.href = '/terms';
+                                                }
+                                            }}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: '#1F4E4E',
+                                                textDecoration: 'underline',
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                fontFamily: 'inherit',
+                                                fontSize: 'inherit'
+                                            }}
+                                            className="link-hover-effect"
+                                        >términos y condiciones</button> y
+                                        la <button 
+                                            onClick={() => {
+                                                // Navigate to privacy page with instant reload
+                                                if(location.pathname === '/privacy') {
+                                                    window.location.reload();
+                                                } else {
+                                                    window.location.href = '/privacy';
+                                                }
+                                            }}
+                                            style={{
+                                                background: 'none',
+                                                border: 'none',
+                                                color: '#1F4E4E',
+                                                textDecoration: 'underline',
+                                                cursor: 'pointer',
+                                                padding: 0,
+                                                fontFamily: 'inherit',
+                                                fontSize: 'inherit'
+                                            }}
+                                            className="link-hover-effect"
+                                        >política de privacidad</button>.
                                     </label>
                                 </div>
                                 {errors.termsAccepted && (
