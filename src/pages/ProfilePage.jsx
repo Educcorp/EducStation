@@ -70,8 +70,21 @@ const ProfilePage = () => {
         // Utilizamos el servicio para obtener los datos reales del usuario
         const userData = await getUserProfile();
         
-        // Formatear la fecha de registro
-        const joinDate = new Date(userData.date_joined || new Date()).toLocaleDateString();
+        // Formatear la fecha de registro con hora incluida
+        let joinDate;
+        if (userData.date_joined) {
+          const date = new Date(userData.date_joined);
+          joinDate = date.toLocaleString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          });
+        } else {
+          joinDate = new Date().toLocaleDateString();
+        }
         
         // Crear objeto de perfil con datos reales y algunos predeterminados para campos aún no implementados
         setUserProfile({
@@ -578,7 +591,7 @@ const ProfilePage = () => {
               </div>
               <div style={styles.infoItem}>
                 <div style={styles.infoLabel}>Miembro desde</div>
-                <div style={styles.infoValue}>{userProfile.joinDate}</div>
+                <div style={styles.infoValue} title="Fecha y hora exacta de registro">{userProfile.joinDate}</div>
               </div>
             </div>
           </div>
