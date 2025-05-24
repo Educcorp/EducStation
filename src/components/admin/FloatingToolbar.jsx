@@ -332,238 +332,155 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
     return luminance > 0.5 ? '#000000' : '#ffffff';
   };
 
-  // Estilos CSS para animaciones
-  const cssAnimation = `
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px) scale(0.95); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateX(-10px); }
-      to { opacity: 1; transform: translateX(0); }
-    }
-    
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(0.95); }
-      100% { transform: scale(1); }
-    }
-    
-    @keyframes glow {
-      0% { box-shadow: 0 0 5px rgba(27, 79, 217, 0.3); }
-      50% { box-shadow: 0 0 20px rgba(27, 79, 217, 0.6); }
-      100% { box-shadow: 0 0 5px rgba(27, 79, 217, 0.3); }
-    }
-    
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-    
-    .toolbar-button {
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .toolbar-button::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-      transition: left 0.5s ease;
-    }
-    
-    .toolbar-button:hover::before {
-      left: 100%;
-    }
-    
-    .floating-toolbar {
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-  `;
-
   // Estilos para la barra de herramientas
   const styles = {
     floatingBar: {
       position: 'absolute',
-      zIndex: 100,
+      zIndex: 100, // Reducir el z-index para que sea menor que el del header
       display: visible ? 'flex' : 'none',
       alignItems: 'center',
-      backgroundColor: 'rgba(248, 250, 252, 0.95)',
-      borderRadius: '16px',
-      padding: '12px 16px',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)',
-      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      backgroundColor: 'rgb(245, 247, 250)',
+      borderRadius: '12px',
+      padding: '8px 10px',
+      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.08)',
+      transition: 'opacity 0.3s ease, transform 0.3s ease',
       opacity: visible ? 1 : 0,
-      transform: visible ? 'translateY(0) scale(1)' : 'translateY(10px) scale(0.95)',
-      gap: '6px',
-      border: '1px solid rgba(200, 210, 220, 0.6)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      minWidth: '300px',
-      animation: visible ? 'fadeIn 0.3s ease-out' : 'none'
+      transform: visible ? 'translateY(0)' : 'translateY(10px)',
+      gap: '3px',
+      border: '1px solid rgba(200, 210, 220, 0.5)',
+      backdropFilter: 'blur(8px)',
     },
     button: (isActive, buttonId) => ({
       background: 'none',
       border: 'none',
-      borderRadius: '12px',
-      padding: '10px',
+      borderRadius: '8px',
+      padding: '7px',
       margin: '0 2px',
-      fontSize: '16px',
+      fontSize: '15px',
       cursor: 'pointer',
-      color: isActive ? '#1b4fd9' : '#334155',
-      backgroundColor: isActive ? 'rgba(27, 79, 217, 0.15)' : 'rgba(255, 255, 255, 0.8)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      color: isActive ? '#1b4fd9' : '#0b4444',
+      backgroundColor: isActive ? 'rgba(43, 87, 154, 0.12)' : 'transparent',
+      transition: 'all 0.2s ease',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      width: '36px',
-      height: '36px',
+      width: '32px',
+      height: '32px',
       position: 'relative',
-      transform: animateButton === buttonId ? 'scale(0.9)' : 'scale(1)',
-      boxShadow: isActive 
-        ? '0 4px 12px rgba(27, 79, 217, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.5)' 
-        : '0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-      fontWeight: isActive ? '600' : '500',
-      overflow: 'hidden'
+      transform: animateButton === buttonId ? 'scale(0.92)' : 'scale(1)',
+      boxShadow: isActive ? '0 1px 3px rgba(0, 0, 0, 0.05) inset' : 'none',
     }),
     colorButton: (showingPicker) => ({
       background: 'none',
       border: 'none',
-      borderRadius: '12px',
-      padding: '10px',
+      borderRadius: '8px',
+      padding: '7px',
       margin: '0 2px',
-      fontSize: '16px',
+      fontSize: '15px',
       cursor: 'pointer',
-      color: '#334155',
-      backgroundColor: showingPicker ? 'rgba(27, 79, 217, 0.15)' : 'rgba(255, 255, 255, 0.8)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      color: '#0b4444',
+      backgroundColor: showingPicker ? 'rgba(43, 87, 154, 0.12)' : 'transparent',
+      transition: 'all 0.2s ease',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      width: '36px',
-      height: '36px',
+      width: '32px',
+      height: '32px',
       position: 'relative',
-      transform: animateButton === 'color' ? 'scale(0.9)' : 'scale(1)',
-      boxShadow: showingPicker 
-        ? '0 4px 12px rgba(27, 79, 217, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.5)' 
-        : '0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-      overflow: 'hidden'
+      transform: animateButton === 'color' ? 'scale(0.92)' : 'scale(1)',
+      boxShadow: showingPicker ? '0 1px 3px rgba(0, 0, 0, 0.05) inset' : 'none',
     }),
     fontSizeButton: {
       display: 'flex',
       alignItems: 'center',
-      background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
-      border: '1px solid rgba(226, 232, 240, 0.8)',
-      borderRadius: '12px',
-      padding: '8px 12px',
-      margin: '0 4px',
+      background: 'white',
+      border: '1px solid #dfe3e8',
+      borderRadius: '8px',
+      padding: '4px 10px',
+      margin: '0 3px',
       fontSize: '14px',
       cursor: 'pointer',
-      color: '#475569',
-      fontWeight: '500',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      color: '#333333',
+      fontWeight: 'normal',
+      transition: 'all 0.2s ease',
       position: 'relative',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)',
-      minWidth: '50px',
+      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)',
+      minWidth: '40px',
       textAlign: 'center',
       transform: animateButton === 'fontSize' ? 'scale(0.95)' : 'scale(1)',
-      backdropFilter: 'blur(8px)'
     },
     fontSizeInput: {
-      width: '50px',
-      border: '1px solid rgba(226, 232, 240, 0.8)',
-      borderRadius: '10px',
-      padding: '8px',
+      width: '40px',
+      border: '1px solid #dfe3e8',
+      borderRadius: '6px',
+      padding: '5px',
       fontSize: '14px',
-      color: '#475569',
+      color: '#333333',
       textAlign: 'center',
       outline: 'none',
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08) inset',
-      transition: 'all 0.3s ease',
-      fontWeight: '500'
+      backgroundColor: 'white',
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05) inset',
     },
     fontSizeMenu: {
       position: 'absolute',
       top: '100%',
       left: '0',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      border: '1px solid rgba(226, 232, 240, 0.8)',
-      borderRadius: '12px',
-      boxShadow: '0 12px 48px rgba(0, 0, 0, 0.15), 0 4px 16px rgba(0, 0, 0, 0.1)',
+      backgroundColor: 'white',
+      border: '1px solid #dfe3e8',
+      borderRadius: '8px',
+      boxShadow: '0 6px 16px rgba(0, 0, 0, 0.12)',
       maxHeight: '300px',
       overflow: 'auto',
       zIndex: 1001,
       display: showFontSizeMenu ? 'block' : 'none',
-      marginTop: '8px',
-      width: '80px',
-      animation: showFontSizeMenu ? 'slideIn 0.2s ease-out' : 'none',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)'
+      marginTop: '5px',
+      width: '60px',
+      animation: showFontSizeMenu ? 'fadeIn 0.2s ease' : 'none',
     },
     fontSizeItem: {
-      padding: '10px 16px',
+      padding: '8px 12px',
       cursor: 'pointer',
       userSelect: 'none',
-      transition: 'all 0.2s ease',
+      transition: 'background-color 0.2s',
       textAlign: 'center',
-      color: '#475569',
+      color: '#0b4444',
       fontSize: '14px',
-      fontWeight: '500',
-      borderRadius: '8px',
-      margin: '4px'
     },
     customOption: {
-      borderTop: '1px solid rgba(226, 232, 240, 0.6)', 
+      borderTop: '1px solid #ebeef2', 
       fontStyle: 'italic',
-      padding: '10px 16px',
+      padding: '8px 12px',
       cursor: 'pointer',
       userSelect: 'none',
       textAlign: 'center',
       color: '#1b4fd9',
       fontSize: '13px',
-      fontWeight: '500',
-      borderRadius: '8px',
-      margin: '4px',
-      background: 'linear-gradient(145deg, rgba(27, 79, 217, 0.05), rgba(27, 79, 217, 0.1))'
     },
     separator: {
       width: '1px',
-      height: '28px',
-      margin: '0 8px',
-      background: 'linear-gradient(to bottom, transparent, rgba(226, 232, 240, 0.6), transparent)'
+      height: '24px',
+      margin: '0 6px',
+      backgroundColor: '#dfe3e8'
     },
     sizeControls: {
       display: 'flex',
       alignItems: 'center',
-      position: 'relative',
-      gap: '4px'
+      position: 'relative'
     },
     incrementButton: {
-      background: 'linear-gradient(145deg, #ffffff, #f8fafc)',
-      border: '1px solid rgba(226, 232, 240, 0.8)',
-      padding: '8px',
+      background: 'none',
+      border: 'none',
+      padding: '5px',
       cursor: 'pointer',
-      color: '#475569', 
-      fontSize: '12px',
+      color: '#2B579A', 
+      fontSize: '14px',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: '10px',
+      borderRadius: '6px',
       position: 'relative',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.2s ease',
       transform: (animateButton === 'increaseSize' || animateButton === 'decreaseSize') ? 'scale(0.9)' : 'scale(1)',
-      width: '28px',
-      height: '28px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)'
     },
     colorIconContainer: {
       display: 'flex',
@@ -572,26 +489,37 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
       position: 'relative',
       width: '20px',
       height: '20px',
-      borderRadius: '6px',
+      borderRadius: '4px',
       backgroundColor: currentIconColor,
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3)',
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      border: '1px solid rgba(255, 255, 255, 0.5)'
+      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+      transition: 'transform 0.3s ease',
     },
     colorIcon: {
-      fontSize: '12px',
+      fontSize: '14px',
       fontWeight: 'bold',
       color: getContrastColor(currentIconColor),
       transition: 'all 0.3s ease',
-      textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
     },
     iconImage: {
-      width: '18px',
-      height: '18px',
-      objectFit: 'contain',
-      filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1))'
+      width: '16px',
+      height: '16px',
+      objectFit: 'contain'
     }
   };
+
+  // Estilos CSS para animaciones
+  const cssAnimation = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+  `;
 
   // Función para calcular la posición de la barra
   const calculateBarPosition = (selection) => {

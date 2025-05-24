@@ -1,7 +1,7 @@
 // src/components/admin/PostEditor.jsx
 import React, { useState, useEffect } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
-import { useTheme } from '../../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
 import { createPublicacion, createPublicacionFromHTML, getPublicacionById, updatePublicacion } from '../../services/publicacionesService';
 import { getAllCategorias } from '../../services/categoriasServices';
 import { Calendar } from 'lucide-react';
@@ -37,6 +37,79 @@ const loadPostFromLocalStorage = () => {
     console.error('Error loading from localStorage:', error);
     return null;
   }
+};
+
+// Componente para la etiqueta de Contenido animada
+const ContentLabel = () => {
+  const [isAnimated, setIsAnimated] = useState(false);
+  const { colors, isDarkMode } = useTheme(); // Obtener colores del tema
+
+  useEffect(() => {
+    // Activar animación después de un breve retraso
+    const timer = setTimeout(() => {
+      setIsAnimated(true);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const styles = {
+    container: {
+      display: 'flex',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+      transform: isAnimated ? 'translateX(0)' : 'translateX(-20px)',
+      opacity: isAnimated ? 1 : 0,
+      transition: 'all 0.6s ease-out'
+    },
+    icon: {
+      fontSize: '22px',
+      marginRight: spacing.sm,
+      color: colors.secondary,
+      animation: isAnimated ? 'pulseIcon 2s infinite' : 'none'
+    },
+    label: {
+      fontSize: typography.fontSize.lg,
+      fontWeight: typography.fontWeight.semiBold,
+      color: isDarkMode ? colors.textLight : colors.primary, // Ajustar color según el tema
+      position: 'relative',
+      paddingBottom: '3px'
+    },
+    underline: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      width: isAnimated ? '100%' : '0%',
+      height: '2px',
+      backgroundColor: colors.secondary,
+      transition: 'width 0.8s ease-in-out',
+      transitionDelay: '0.3s'
+    },
+    badge: {
+      display: 'inline-block',
+      backgroundColor: isAnimated ? colors.primary : 'transparent',
+      color: 'white',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.round,
+      fontSize: typography.fontSize.xs,
+      marginLeft: spacing.md,
+      transform: isAnimated ? 'scale(1)' : 'scale(0)',
+      transition: 'all 0.5s ease-out',
+      transitionDelay: '0.6s',
+      boxShadow: isAnimated ? '0 2px 4px rgba(11, 68, 68, 0.2)' : 'none'
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <span style={styles.icon}>📝</span>
+      <h3 style={styles.label}>
+        Contenido
+        <span style={styles.underline}></span>
+      </h3>
+      <span style={styles.badge}>Editor</span>
+    </div>
+  );
 };
 
 const PostEditor = () => {
@@ -84,6 +157,43 @@ const PostEditor = () => {
     "Comunidad": "Espacios de colaboración e intercambio entre miembros de la comunidad educativa.",
     "Comunidad y Colaboración": "Espacios de colaboración e intercambio entre miembros de la comunidad educativa."
   };
+
+  // Estilos para animaciones de tooltips
+  const keyframes = `
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 0.98;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeOut {
+      from {
+        opacity: 0.98;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+    }
+
+    .tooltip-arrow {
+      position: absolute;
+      bottom: -8px;
+      left: 50%;
+      margin-left: -8px;
+      width: 0;
+      height: 0;
+      border-left: 8px solid transparent;
+      border-right: 8px solid transparent;
+      border-top: 8px solid white;
+    }
+  `;
 
   // Cargar categorías desde el backend
   useEffect(() => {
@@ -222,35 +332,6 @@ const PostEditor = () => {
       ...prev,
       [name]: value
     }));
-  };
-
-  // Manejador específico para cambios del DualModeEditor
-  const handleEditorChange = (eventOrContent) => {
-    // Si es un string directo (contenido), manejar como contenido
-    if (typeof eventOrContent === 'string') {
-      console.log('DualModeEditor - Actualizando contenido:', eventOrContent.substring(0, 50) + '...');
-      setPost(prev => ({ ...prev, content: eventOrContent }));
-      return;
-    }
-
-    // Si es un evento del editor, verificar qué tipo de cambio es
-    if (eventOrContent && eventOrContent.target) {
-      const { name, value } = eventOrContent.target;
-      
-      console.log(`DualModeEditor - Changing ${name} to ${value}`);
-      
-      if (name === 'content') {
-        // Cambio de contenido
-        setPost(prev => ({ ...prev, content: value }));
-      } else if (name === 'editorMode') {
-        // Cambio de modo del editor
-        console.log('DualModeEditor - Cambiando modo del editor a:', value);
-        setPost(prev => ({ ...prev, editorMode: value }));
-      } else {
-        // Otros cambios
-        setPost(prev => ({ ...prev, [name]: value }));
-      }
-    }
   };
 
   // Manejador para cambios en la imagen de portada
@@ -623,20 +704,22 @@ const PostEditor = () => {
     container: {
       maxWidth: "1200px",
       margin: "0 auto",
-      padding: spacing.lg,
+      padding: `${"100px"} ${spacing.md}`,
       fontFamily: typography.fontFamily
     },
     editorContainer: {
       display: "grid",
+      // Cambiado: Invertir el orden de las columnas para que la barra lateral esté a la izquierda
       gridTemplateColumns: "300px 1fr",
       gap: spacing.xl,
       marginBottom: spacing.xxl
     },
     mainEditor: {
-      width: "100%"
+      width: "100%",
+      maxWidth: "800px" // Anchura predefinida para el contenido del post
     },
     sidebar: {
-      // Estilos para la barra lateral
+      // No necesita cambios específicos de estilo aquí
     },
     formGroup: {
       marginBottom: spacing.lg
@@ -655,18 +738,25 @@ const PostEditor = () => {
       transition: "all 0.3s ease",
       fontSize: typography.fontSize.md,
       border: "none",
+      // Estilos específicos se aplicarán en cada botón
     },
     saveButton: {
       backgroundColor: colors.secondary,
       color: colors.primary,
+      "&:hover": {
+        backgroundColor: colors.secondary + "cc", // Añadir transparencia al hover
+      }
     },
     publishButton: {
       backgroundColor: colors.primary,
       color: colors.white,
+      "&:hover": {
+        backgroundColor: colors.primaryLight,
+      }
     }
   };
 
-  // Renderizar metadatos del post
+  // Modificar el componente PostMetadata para usar las categorías cargadas
   const renderPostMetadata = () => {
     return (
       <div style={{
@@ -690,6 +780,7 @@ const PostEditor = () => {
             fontWeight: typography.fontWeight.medium,
             color: isDarkMode ? colors.textLight : colors.textPrimary
           }} htmlFor="category">
+            <span style={{ color: colors.secondary, fontSize: '1.1em', marginRight: spacing.xs }}></span>
             Categoría
           </label>
 
@@ -735,6 +826,7 @@ const PostEditor = () => {
                 backgroundColor: colors.white,
                 borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
+                //borderLeft: `4px solid ${colors.secondary}`,
                 boxShadow: shadows.md,
                 zIndex: 20,
                 maxHeight: "300px",
@@ -746,12 +838,14 @@ const PostEditor = () => {
                 <div
                   style={{
                     padding: `${spacing.sm} ${spacing.md}`,
+                    paddingLeft: spacing.md,
                     cursor: "pointer",
                     borderBottom: `1px solid ${colors.gray200}`,
                     transition: "background-color 0.2s ease",
                     position: "relative",
-                    color: colors.primary,
-                    backgroundColor: 'transparent'
+                    color: colors.primary, // Cambiado a color primario
+                    backgroundColor: 'transparent',
+                    borderLeft: 'none'
                   }}
                   onClick={() => {
                     handleChange({ target: { name: 'category', value: '' } });
@@ -771,17 +865,19 @@ const PostEditor = () => {
                       key={categoryName}
                       style={{
                         padding: `${spacing.sm} ${spacing.md}`,
+                        paddingLeft: spacing.md,
                         cursor: "pointer",
                         borderBottom: `1px solid ${colors.gray200}`,
                         transition: "all 0.2s ease",
                         position: "relative",
                         backgroundColor: hoveredCategory === categoryName
-                          ? colors.secondary + '15'
+                          ? colors.secondary + '15' // Reducido de 25% a 15% para hover
                           : isSelected
-                            ? colors.secondary + '08'
+                            ? colors.secondary + '08' // Reducido de 15% a 8% para selección
                             : 'transparent',
-                        color: colors.primary,
-                        fontWeight: isSelected ? typography.fontWeight.bold : typography.fontWeight.normal
+                        color: colors.primary, // Color de texto
+                        fontWeight: isSelected ? typography.fontWeight.bold : typography.fontWeight.normal,
+                        borderLeft: 'none'
                       }}
                       onClick={() => {
                         handleChange({ target: { name: 'category', value: categoryName } });
@@ -806,10 +902,13 @@ const PostEditor = () => {
                           borderRadius: borderRadius.md,
                           fontSize: typography.fontSize.sm,
                           border: `1px solid ${colors.gray200}`,
+                          borderLeft: `4px solid ${colors.primary}`,
                           boxShadow: `0 3px 6px rgba(0,0,0,0.1)`,
                           zIndex: 100,
                           width: "100%",
                           opacity: 0.98,
+                          animation: "fadeIn 0.2s ease-in-out",
+                          pointerEvents: "none",
                           fontWeight: typography.fontWeight.medium,
                           maxWidth: "100%",
                           whiteSpace: "normal",
@@ -817,6 +916,7 @@ const PostEditor = () => {
                           textAlign: "left"
                         }}>
                           {categoryDescriptions[categoryName]}
+                          <span className="tooltip-arrow"></span>
                         </div>
                       )}
                     </div>
@@ -826,6 +926,7 @@ const PostEditor = () => {
             )}
           </div>
         </div>
+
 
         <div style={{ marginBottom: spacing.md, position: 'relative' }}>
           <label style={{
@@ -837,6 +938,7 @@ const PostEditor = () => {
             Fecha de publicación
           </label>
 
+          {/* Campo de fecha con estilo similar a categorías y etiquetas */}
           <div style={{
             position: "relative",
             width: "100%",
@@ -853,7 +955,7 @@ const PostEditor = () => {
               justifyContent: "space-between",
               alignItems: "center",
               color: isDarkMode ? colors.textLight : colors.textPrimary,
-              pointerEvents: "none"
+              pointerEvents: "none", // Deshabilita interacciones con el contenedor
             }}>
               <input
                 type="text"
@@ -869,7 +971,7 @@ const PostEditor = () => {
                   fontSize: typography.fontSize.md,
                   backgroundColor: "transparent",
                   color: isDarkMode ? colors.textLight : colors.textPrimary,
-                  cursor: "default"
+                  cursor: "default" // Cambia el cursor para indicar que no es interactivo
                 }}
               />
               <Calendar size={18} color={colors.gray400} />
@@ -882,58 +984,50 @@ const PostEditor = () => {
 
   // Solo renderizar una vez inicializado para evitar problemas de redimensión
   if (loadingCategories) {
-    return (
-      <div style={{
-        ...styles.container,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        minHeight: '400px'
-      }}>
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: spacing.md
-        }}>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            border: `3px solid ${colors.gray200}`,
-            borderTop: `3px solid ${colors.secondary}`,
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <span style={{
-            color: colors.textPrimary,
-            fontSize: typography.fontSize.md
-          }}>
-            Cargando categorías...
-          </span>
-        </div>
-      </div>
-    );
+    return <div style={styles.container}>Cargando categorías...</div>;
   }
 
   return (
     <div style={styles.container}>
-      <h1 style={{
-        fontSize: typography.fontSize.xxl,
-        fontWeight: typography.fontWeight.bold,
-        color: colors.primary,
-        marginBottom: spacing.lg,
-        textAlign: 'center'
-      }}>
-        {isEditing ? 'Editar Publicación' : 'Nueva Publicación'}
-      </h1>
+      {/* Estilos CSS en línea para animaciones */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+          }
+          @keyframes pulseIcon {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+          }
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes shine {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+          }
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+          }
+          ${keyframes}
+        `
+      }} />
 
       <div style={styles.editorContainer}>
-        {/* Sidebar - Izquierda */}
+        {/* Sidebar - Ahora a la izquierda */}
         <div style={styles.sidebar}>
           <CoverImageUploader
-            coverImage={post.coverImage}
             coverImagePreview={post.coverImagePreview}
-            onImageChange={handleImageChange}
+            onChange={handleImageChange}
           />
 
           {renderPostMetadata()}
@@ -944,16 +1038,18 @@ const PostEditor = () => {
           />
         </div>
 
-        {/* Main Editor - Derecha */}
+        {/* Main Editor - Ahora a la derecha */}
         <div style={styles.mainEditor}>
           <div style={styles.formGroup}>
             <label style={{
-              display: 'block',
+              display: 'flex',
+              alignItems: 'center',
+              gap: spacing.xs,
               marginBottom: spacing.xs,
               fontWeight: typography.fontWeight.medium,
               color: isDarkMode ? colors.textLight : colors.primary
             }} htmlFor="title">
-              Título del post
+              <span style={{ color: isDarkMode ? colors.textLight : colors.primary, fontSize: '1.4em' }}>📝</span> Título del post
             </label>
             <input
               type="text"
@@ -972,7 +1068,7 @@ const PostEditor = () => {
                 fontWeight: typography.fontWeight.semiBold,
                 borderLeft: `4px solid ${colors.primary}`,
                 backgroundColor: colors.white,
-                color: colors.textPrimary,
+                color: isDarkMode ? colors.textPrimary : "#000000",
               }}
               placeholder="Escribe un título atractivo"
               onFocus={(e) => {
@@ -987,88 +1083,71 @@ const PostEditor = () => {
           </div>
 
           <div style={styles.formGroup}>
-            <label style={{
-              display: 'block',
-              marginBottom: spacing.xs,
-              fontWeight: typography.fontWeight.medium,
-              color: isDarkMode ? colors.textLight : colors.primary
-            }} htmlFor="resumen">
-              Resumen
+            {/* Etiqueta "Contenido" animada */}
+            <ContentLabel />
+
+            <DualModeEditor
+              content={post.content}
+              onChange={handleChange}
+              initialMode={post.editorMode}
+            />
+          </div>
+
+          {/* Campo para resumen */}
+          <div style={{
+            marginBottom: spacing.xl,
+            marginTop: spacing.xl,
+            border: `1px solid ${colors.gray200}`,
+            borderRadius: borderRadius.md,
+            padding: spacing.md,
+            backgroundColor: colors.white,
+            boxShadow: shadows.sm,
+          }}>
+            <label 
+              htmlFor="resumen" 
+              style={{
+                display: 'block',
+                marginBottom: spacing.sm,
+                fontSize: typography.fontSize.md,
+                fontWeight: typography.fontWeight.medium,
+                color: colors.textPrimary,
+              }}
+            >
+              Resumen de la publicación
             </label>
             <textarea
               id="resumen"
               name="resumen"
               value={post.resumen}
               onChange={handleChange}
-              rows={3}
+              placeholder="Ingresa un resumen para tu publicación (máximo 500 caracteres)"
               style={{
-                width: "100%",
+                width: '100%',
                 padding: spacing.md,
-                borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
+                borderRadius: borderRadius.md,
+                minHeight: '120px',
                 fontSize: typography.fontSize.md,
-                backgroundColor: colors.white,
                 color: colors.textPrimary,
                 resize: 'vertical',
-                marginBottom: spacing.md
               }}
-              placeholder="Breve descripción de tu publicación..."
+              maxLength={500}
             />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={{
-              display: 'block',
-              marginBottom: spacing.xs,
-              fontWeight: typography.fontWeight.medium,
-              color: isDarkMode ? colors.textLight : colors.primary
-            }} htmlFor="tags">
-              Etiquetas
-            </label>
-            <input
-              type="text"
-              id="tags"
-              name="tags"
-              value={post.tags}
-              onChange={handleChange}
-              style={{
-                width: "100%",
-                padding: spacing.md,
-                borderRadius: borderRadius.md,
-                border: `1px solid ${colors.gray200}`,
-                fontSize: typography.fontSize.md,
-                backgroundColor: colors.white,
-                color: colors.textPrimary,
-                marginBottom: spacing.md
-              }}
-              placeholder="Separadas por comas: educación, tecnología..."
-            />
-          </div>
-
-          <div style={styles.formGroup}>
-            <label style={{
-              display: 'block',
-              marginBottom: spacing.xs,
-              fontWeight: typography.fontWeight.medium,
-              color: isDarkMode ? colors.textLight : colors.primary
+            <div style={{
+              textAlign: 'right',
+              marginTop: spacing.xs,
+              fontSize: typography.fontSize.sm,
+              color: colors.textSecondary,
             }}>
-              Contenido
-            </label>
-
-            <DualModeEditor
-              content={post.content}
-              onChange={handleEditorChange}
-              initialMode={post.editorMode}
-              onExport={exportToFile}
-              onImport={importFile}
-            />
+              {post.resumen.length}/500 caracteres
+            </div>
           </div>
 
           {saveMessage && (
             <StatusMessage
-              message={saveMessage}
               type={saveMessage.type}
-              onClose={() => setSaveMessage(null)}
+              text={saveMessage.text}
+              icon={saveMessage.icon}
             />
           )}
 
