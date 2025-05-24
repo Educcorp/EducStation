@@ -1,0 +1,53 @@
+/* postHtmlMinimal.css - Estilos mínimos para posts HTML sin interferir con su layout original */
+
+/* Solo aplicar estilos esenciales para la integración con React */
+.post-content {
+  width: 100%;
+  /* Permitir que el contenido HTML use su propio overflow */
+  overflow: visible;
+}
+
+/* Asegurar que el contenido HTML se centre correctamente en la página */
+.post-content .post-container {
+  /* Solo centrar el contenido, no cambiar su estructura interna */
+  margin: 0 auto !important;
+  /* Permitir que mantenga su ancho original */
+  max-width: none !important;
+  /* Permitir que use su propio background */
+  background-color: inherit !important;
+  /* Permitir que use su propio padding */
+  padding: inherit !important;
+  /* Permitir que use su propio box-shadow */
+  box-shadow: inherit !important;
+  /* Permitir que use su propio border-radius */
+  border-radius: inherit !important;
+}
+
+/* Solo corregir problemas críticos de imágenes sin cambiar el layout */
+.post-content img {
+  /* Solo prevenir desbordamiento horizontal */
+  max-width: 100%;
+  height: auto;
+  /* Mantener display y margin originales */
+}
+
+/* Asegurar que el footer se mantenga separado */
+.post-content + * {
+  clear: both;
+  margin-top: 2rem;
+}
+
+/* Solo para modo oscuro - ajustes mínimos */
+.post-content.dark-mode {
+  /* Permitir que el contenido HTML mantenga sus colores originales */
+  color: inherit;
+}
+
+/* Responsive básico - solo para casos extremos */
+@media (max-width: 768px) {
+  .post-content .post-container {
+    /* En móviles, asegurar que no se desborde */
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+} 

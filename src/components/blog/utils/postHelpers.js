@@ -218,43 +218,24 @@ export const processPostHTML = (htmlContent) => {
   
   let processedContent = htmlContent;
   
-  // Asegurar que el contenedor principal del post tenga los estilos correctos
-  processedContent = processedContent.replace(
-    /<div class="post-container"[^>]*>/g,
-    '<div class="post-container" style="max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important; overflow-x: hidden !important; background-color: transparent !important;">'
-  );
+  // Solo hacer ajustes mínimos y esenciales
   
-  // Asegurar que las imágenes mantengan su tamaño correcto
+  // Solo asegurar que las imágenes no se desborden horizontalmente
   processedContent = processedContent.replace(
-    /<img([^>]*?)style="([^"]*?)"([^>]*?)>/g,
-    (match, before, style, after) => {
-      // Mantener estilos existentes pero asegurar que no se encojan
-      const newStyle = style + '; max-width: 100% !important; width: auto !important; height: auto !important; display: block !important; margin: 1rem auto !important; box-sizing: border-box !important; min-width: 0 !important; flex-shrink: 0 !important; object-fit: contain !important;';
-      return `<img${before}style="${newStyle}"${after}>`;
-    }
-  );
-  
-  // Para imágenes sin estilo inline
-  processedContent = processedContent.replace(
-    /<img(?![^>]*style=)([^>]*?)>/g,
-    '<img$1 style="max-width: 100% !important; width: auto !important; height: auto !important; display: block !important; margin: 1rem auto !important; box-sizing: border-box !important; min-width: 0 !important; flex-shrink: 0 !important; object-fit: contain !important;">'
-  );
-  
-  // Asegurar que los contenedores flexibles no afecten las imágenes
-  processedContent = processedContent.replace(
-    /<div([^>]*?)style="([^"]*?display:\s*flex[^"]*?)"([^>]*?)>/g,
-    (match, before, style, after) => {
-      const newStyle = style + '; flex-wrap: wrap !important; width: 100% !important; box-sizing: border-box !important; justify-content: space-between !important;';
-      return `<div${before}style="${newStyle}"${after}>`;
-    }
-  );
-  
-  // Corregir contenedores con ancho específico
-  processedContent = processedContent.replace(
-    /<div([^>]*?)style="([^"]*?width:\s*48%[^"]*?)"([^>]*?)>/g,
-    (match, before, style, after) => {
-      const newStyle = style + '; min-width: 250px !important; box-sizing: border-box !important;';
-      return `<div${before}style="${newStyle}"${after}>`;
+    /<img([^>]*?)>/g,
+    (match, attributes) => {
+      // Solo agregar max-width si no existe
+      if (!attributes.includes('style=') || !attributes.includes('max-width')) {
+        const styleMatch = attributes.match(/style="([^"]*)"/);
+        if (styleMatch) {
+          const existingStyle = styleMatch[1];
+          const newStyle = existingStyle + '; max-width: 100%; height: auto;';
+          return match.replace(styleMatch[0], `style="${newStyle}"`);
+        } else {
+          return `<img${attributes} style="max-width: 100%; height: auto;">`;
+        }
+      }
+      return match;
     }
   );
   
