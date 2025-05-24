@@ -49,23 +49,63 @@ export const extractSummary = (content, maxLength = 150) => {
   tempDiv.innerHTML = content;
   
   // Obtener el texto plano
-  const plainText = tempDiv.textContent || tempDiv.innerText || '';
+  let plainText = tempDiv.textContent || tempDiv.innerText || '';
   
-  // Eliminar espacios extra, saltos de línea y caracteres especiales
-  const cleanText = plainText
-    .replace(/\s+/g, ' ') // Reemplazar múltiples espacios con uno solo
-    .replace(/[\r\n\t]/g, ' ') // Reemplazar saltos de línea y tabs
-    .replace(/&nbsp;/g, ' ') // Reemplazar entidades HTML de espacio
-    .replace(/&amp;/g, '&') // Reemplazar entidades HTML de ampersand
-    .replace(/&lt;/g, '<') // Reemplazar entidades HTML de menor que
-    .replace(/&gt;/g, '>') // Reemplazar entidades HTML de mayor que
-    .replace(/&quot;/g, '"') // Reemplazar entidades HTML de comillas
-    .replace(/&#39;/g, "'") // Reemplazar entidades HTML de apostrofe
-    .trim();
+  // Limpiar y normalizar el texto de manera más completa
+  plainText = plainText
+    // Reemplazar múltiples espacios en blanco con uno solo
+    .replace(/\s+/g, ' ')
+    // Reemplazar saltos de línea y tabs
+    .replace(/[\r\n\t]/g, ' ')
+    // Limpiar entidades HTML comunes
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&ldquo;/g, '"')
+    .replace(/&rdquo;/g, '"')
+    .replace(/&lsquo;/g, "'")
+    .replace(/&rsquo;/g, "'")
+    .replace(/&ndash;/g, '-')
+    .replace(/&mdash;/g, '—')
+    .replace(/&hellip;/g, '...')
+    // Eliminar caracteres de control y caracteres especiales problemáticos
+    .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+    // Limpiar espacios extra al principio y final
+    .trim()
+    // Eliminar puntos suspensivos múltiples
+    .replace(/\.{4,}/g, '...')
+    // Normalizar espacios alrededor de signos de puntuación
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .replace(/([,.;:!?])\s+/g, '$1 ');
   
-  return cleanText.length > maxLength
-    ? cleanText.substring(0, maxLength) + '...'
-    : cleanText;
+  // Verificar si el texto resultante está vacío o solo tiene espacios
+  if (!plainText || plainText.trim().length === 0) {
+    return 'Sin contenido disponible...';
+  }
+  
+  // Truncar manteniendo palabras completas
+  if (plainText.length <= maxLength) {
+    return plainText;
+  }
+  
+  // Encontrar el último espacio antes del límite
+  let truncated = plainText.substring(0, maxLength);
+  const lastSpace = truncated.lastIndexOf(' ');
+  
+  // Si encontramos un espacio y no está muy cerca del inicio
+  if (lastSpace > maxLength * 0.6) {
+    truncated = truncated.substring(0, lastSpace);
+  }
+  
+  // Asegurar que no termine con signos de puntuación problemáticos
+  truncated = truncated.replace(/[,;:\-–—]$/, '');
+  
+  return truncated + '...';
 };
 
 /**
@@ -218,25 +258,71 @@ export const processPostHTML = (htmlContent) => {
   
   let processedContent = htmlContent;
   
-  // Solo hacer ajustes mínimos y esenciales
+  // Corregir contenedor principal para evitar restricciones de ancho
+  processedContent = processedContent.replace(
+    /<div class="post-container"([^>]*)>/g,
+    '<div class="post-container"$1 style="max-width: none !important; width: 100% !important; margin: 0 auto !important; box-sizing: border-box !important;">'
+  );
   
-  // Solo asegurar que las imágenes no se desborden horizontalmente
+  // Mejorar el manejo de imágenes preservando estilos originales
   processedContent = processedContent.replace(
     /<img([^>]*?)>/g,
     (match, attributes) => {
-      // Solo agregar max-width si no existe
-      if (!attributes.includes('style=') || !attributes.includes('max-width')) {
+      const hasStyle = attributes.includes('style=');
+      const hasMaxWidth = attributes.includes('max-width');
+      
+      if (hasStyle) {
         const styleMatch = attributes.match(/style="([^"]*)"/);
         if (styleMatch) {
-          const existingStyle = styleMatch[1];
-          const newStyle = existingStyle + '; max-width: 100%; height: auto;';
-          return match.replace(styleMatch[0], `style="${newStyle}"`);
-        } else {
-          return `<img${attributes} style="max-width: 100%; height: auto;">`;
+          let existingStyle = styleMatch[1];
+          
+          // Solo agregar max-width si no está presente
+          if (!hasMaxWidth) {
+            existingStyle = existingStyle.endsWith(';') ? existingStyle : existingStyle + ';';
+            existingStyle += ' max-width: 100%; height: auto; display: block; margin: 0 auto;';
+          }
+          
+          // Mejorar calidad de imagen
+          existingStyle += ' image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; object-fit: contain; vertical-align: middle;';
+          
+          return match.replace(styleMatch[0], `style="${existingStyle}"`);
         }
+      } else {
+        return `<img${attributes} style="max-width: 100%; height: auto; display: block; margin: 0 auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; object-fit: contain; vertical-align: middle;">`;
       }
+      
       return match;
     }
+  );
+  
+  // Corregir contenedores de imagen centrada
+  processedContent = processedContent.replace(
+    /<div([^>]*?)style="([^"]*?text-align:\s*center[^"]*?)"([^>]*)>/g,
+    '<div$1style="$2; width: 100%; box-sizing: border-box; margin: 25px auto; clear: both;"$3>'
+  );
+  
+  // Mejorar contenedores flex para múltiples imágenes
+  processedContent = processedContent.replace(
+    /<div([^>]*?)style="([^"]*?display:\s*flex[^"]*?)"([^>]*)>/g,
+    '<div$1style="$2; width: 100% !important; max-width: none !important; box-sizing: border-box !important; margin: 30px auto !important; flex-wrap: wrap !important;"$3>'
+  );
+  
+  // Corregir elementos con ancho del 48% para layout flex
+  processedContent = processedContent.replace(
+    /style="([^"]*?)width:\s*48%([^"]*?)"/g,
+    'style="$1width: calc(48% - 10px); min-width: 250px; flex: 0 0 calc(48% - 10px); box-sizing: border-box; margin-bottom: 20px;$2"'
+  );
+  
+  // Asegurar que elementos como stat-box, highlight-box, etc. mantengan su estructura
+  processedContent = processedContent.replace(
+    /<div class="(stat-box|highlight-box|news-card)"([^>]*)>/g,
+    '<div class="$1"$2 style="max-width: none !important; width: 100% !important; box-sizing: border-box !important;">'
+  );
+  
+  // Corregir contenedores con posición relativa
+  processedContent = processedContent.replace(
+    /<div([^>]*?)style="([^"]*?position:\s*relative[^"]*?)"([^>]*)>/g,
+    '<div$1style="$2; width: 100% !important; box-sizing: border-box !important;"$3>'
   );
   
   return processedContent;
