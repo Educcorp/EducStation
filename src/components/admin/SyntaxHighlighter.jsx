@@ -16,6 +16,7 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
   // Actualizar el contenido resaltado cuando cambia el contenido
   useEffect(() => {
     console.log("SyntaxHighlighter - Contenido actualizado:", content ? content.substring(0, 50) + "..." : "vacío");
+    
     if (highlighterRef.current && textAreaRef.current) {
       try {
         // Simplemente escapar HTML - sin añadir clases o modificar el texto
@@ -28,14 +29,14 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
       } catch (error) {
         console.error("Error applying syntax highlighting:", error);
       }
-      
-      // Limpiar event listeners
-      return () => {
-        if (textAreaRef.current) {
-          textAreaRef.current.removeEventListener('scroll', syncScroll);
-        }
-      };
     }
+    
+    // Función de limpieza separada
+    return () => {
+      if (textAreaRef.current) {
+        textAreaRef.current.removeEventListener('scroll', syncScroll);
+      }
+    };
   }, [content]);
 
   // Asegurarse de que el texto se renderice correctamente sin perder formato
@@ -45,8 +46,10 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
       // Cuando el editor reciba el foco, queremos asegurar que el contenido
       // se mantenga exactamente como fue escrito, preservando espacios y saltos
       const preserveFormatting = () => {
-        textAreaRef.current.style.whiteSpace = 'pre';
-        textAreaRef.current.style.overflowWrap = 'normal';
+        if (textAreaRef.current) {
+          textAreaRef.current.style.whiteSpace = 'pre';
+          textAreaRef.current.style.overflowWrap = 'normal';
+        }
       };
       
       textAreaRef.current.addEventListener('focus', preserveFormatting);
@@ -84,7 +87,9 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
   // Manejar cambios en el texto
   const handleChange = (e) => {
     console.log("SyntaxHighlighter - handleChange:", e.target.value ? e.target.value.substring(0, 50) + "..." : "vacío");
-    onChange(e);
+    if (onChange) {
+      onChange(e);
+    }
   };
 
   // Manejar eventos de teclado (Tab, Enter, etc.)
@@ -239,7 +244,7 @@ const SyntaxHighlighter = ({ content, onChange, textAreaRef }) => {
       {/* Textarea para edición (visible pero con texto transparente) */}
       <textarea
         ref={textAreaRef}
-        value={content}
+        value={content || ''}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onScroll={syncScroll}

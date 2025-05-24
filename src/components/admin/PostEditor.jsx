@@ -334,6 +334,35 @@ const PostEditor = () => {
     }));
   };
 
+  // Manejador específico para cambios del DualModeEditor
+  const handleEditorChange = (eventOrContent) => {
+    // Si es un string directo (contenido), manejar como contenido
+    if (typeof eventOrContent === 'string') {
+      console.log('DualModeEditor - Actualizando contenido:', eventOrContent.substring(0, 50) + '...');
+      setPost(prev => ({ ...prev, content: eventOrContent }));
+      return;
+    }
+
+    // Si es un evento del editor, verificar qué tipo de cambio es
+    if (eventOrContent && eventOrContent.target) {
+      const { name, value } = eventOrContent.target;
+      
+      console.log(`DualModeEditor - Changing ${name} to ${value}`);
+      
+      if (name === 'content') {
+        // Cambio de contenido
+        setPost(prev => ({ ...prev, content: value }));
+      } else if (name === 'editorMode') {
+        // Cambio de modo del editor
+        console.log('DualModeEditor - Cambiando modo del editor a:', value);
+        setPost(prev => ({ ...prev, editorMode: value }));
+      } else {
+        // Otros cambios
+        setPost(prev => ({ ...prev, [name]: value }));
+      }
+    }
+  };
+
   // Manejador para cambios en la imagen de portada
   const handleImageChange = (e, base64Image) => {
     const file = e.target.files[0];
@@ -1026,8 +1055,9 @@ const PostEditor = () => {
         {/* Sidebar - Ahora a la izquierda */}
         <div style={styles.sidebar}>
           <CoverImageUploader
+            coverImage={post.coverImage}
             coverImagePreview={post.coverImagePreview}
-            onChange={handleImageChange}
+            onImageChange={handleImageChange}
           />
 
           {renderPostMetadata()}
@@ -1088,8 +1118,10 @@ const PostEditor = () => {
 
             <DualModeEditor
               content={post.content}
-              onChange={handleChange}
+              onChange={handleEditorChange}
               initialMode={post.editorMode}
+              onExport={exportToFile}
+              onImport={importFile}
             />
           </div>
 
