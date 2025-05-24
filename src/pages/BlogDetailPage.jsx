@@ -21,7 +21,18 @@ const BlogDetailPage = () => {
 
   useEffect(() => {
     if (location.state && location.state.forceReload) {
-      window.location.reload();
+      // Verificar si ya se realizó la recarga en esta sesión de navegación
+      if (!sessionStorage.getItem('blogdetailpage-reloaded')) {
+        // Marcar que se va a realizar la recarga
+        sessionStorage.setItem('blogdetailpage-reloaded', 'true');
+        // Limpiar el estado para evitar bucles infinitos
+        window.history.replaceState(null, '', window.location.pathname);
+        // Realizar la recarga
+        window.location.reload();
+      }
+    } else {
+      // Limpiar la marca de recarga si no hay forceReload
+      sessionStorage.removeItem('blogdetailpage-reloaded');
     }
   }, [location]);
 

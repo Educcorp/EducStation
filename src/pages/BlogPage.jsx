@@ -28,7 +28,18 @@ const BlogPage = () => {
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
     if (location.state && location.state.forceReload) {
-      window.location.reload();
+      // Verificar si ya se realizó la recarga en esta sesión de navegación
+      if (!sessionStorage.getItem('blogpage-reloaded')) {
+        // Marcar que se va a realizar la recarga
+        sessionStorage.setItem('blogpage-reloaded', 'true');
+        // Limpiar el estado para evitar bucles infinitos
+        window.history.replaceState(null, '', window.location.pathname);
+        // Realizar la recarga
+        window.location.reload();
+      }
+    } else {
+      // Limpiar la marca de recarga si no hay forceReload
+      sessionStorage.removeItem('blogpage-reloaded');
     }
   }, [location]);
 
