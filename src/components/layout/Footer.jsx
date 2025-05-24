@@ -428,21 +428,21 @@ const Footer = () => {
             <div>
               <h3 style={styles.title}>Descubre Más</h3>
               <ul style={styles.links}>
-                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/', e)}>
                   <span style={styles.linkIcon}><FaHome size={18} /></span>
-                  <a href="/" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/', e)}>Inicio</a>
+                  <span style={styles.linkAnchor}>Inicio</span>
                 </li>
-                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/about', e)}>
                   <span style={styles.linkIcon}><FaInfo size={18} /></span>
-                  <a href="/about" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/about', e)}>Acerca de</a>
+                  <span style={styles.linkAnchor}>Acerca de</span>
                 </li>
-                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/contact', e)}>
                   <span style={styles.linkIcon}><FaEnvelope size={18} /></span>
-                  <a href="/contact" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/contact', e)}>Contacto</a>
+                  <span style={styles.linkAnchor}>Contacto</span>
                 </li>
-                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/contact', e)}>
                   <span style={styles.linkIcon}><FaQuestionCircle size={18} /></span>
-                  <a href="/contact#faq-section" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/contact', e)}>FAQ</a>
+                  <span style={styles.linkAnchor}>FAQ</span>
                 </li>
               </ul>
             </div>
@@ -450,21 +450,21 @@ const Footer = () => {
             <div>
               <h3 style={styles.title}>Categorías</h3>
               <ul style={styles.links}>
-                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/1', e)}>
                   <span style={styles.linkIcon}><FaBook size={18} /></span>
-                  <a href="/categoria/1" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/categoria/1', e)}>Noticias</a>
+                  <span style={styles.linkAnchor}>Noticias</span>
                 </li>
-                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/2', e)}>
                   <span style={styles.linkIcon}><FaChartBar size={18} /></span>
-                  <a href="/categoria/2" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/categoria/2', e)}>Técnicas de Estudio</a>
+                  <span style={styles.linkAnchor}>Técnicas de Estudio</span>
                 </li>
-                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/6', e)}>
                   <span style={styles.linkIcon}><FaAward size={18} /></span>
-                  <a href="/categoria/6" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/categoria/6', e)}>Desarrollo Profesional</a>
+                  <span style={styles.linkAnchor}>Desarrollo Profesional</span>
                 </li>
-                <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
+                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categorias', e)}>
                   <span style={styles.linkIcon}><FaTags size={18} /></span>
-                  <a href="/categorias" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/categorias', e)}>Descubre más categorías</a>
+                  <span style={styles.linkAnchor}>Descubre más categorías</span>
                 </li>
               </ul>
             </div>
@@ -476,9 +476,9 @@ const Footer = () => {
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
           <div style={styles.bottomLinks}>
-            <a href="/terms" style={styles.bottomLink} onClick={(e) => handleInstantNavigation('/terms', e)}>Términos</a>
-            <a href="/privacy" style={styles.bottomLink} onClick={(e) => handleInstantNavigation('/privacy', e)}>Privacidad</a>
-            <a href="/cookies" style={styles.bottomLink} onClick={(e) => handleInstantNavigation('/cookies', e)}>Cookies</a>
+            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/terms', e)}>Términos</span>
+            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/privacy', e)}>Privacidad</span>
+            <span style={{...styles.bottomLink, cursor: 'pointer'}} onClick={(e) => handleInstantNavigation('/cookies', e)}>Cookies</span>
           </div>
         </div>
       </div>
