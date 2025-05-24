@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FaEdit, FaTrash, FaSave, FaTimes, FaUser, FaReply, FaThumbsUp } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useTheme } from '../../context/ThemeContext';
+import { AnimatedButton } from '../utils';
 import './Comentarios.css';
 
 const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
@@ -120,19 +121,32 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
             autoFocus
           />
           <div className="comentario-edit-btns">
-            <button
-              className="comentario-save-btn"
+            <AnimatedButton
               onClick={handleSave}
+              backgroundColor="rgba(8, 44, 44, 0.6)"
+              hoverBackgroundColor="#082c2c"
+              padding="8px 16px"
+              borderRadius="6px"
+              style={{ marginRight: '10px' }}
               disabled={!editedContent.trim()}
             >
-              <FaSave /> Guardar
-            </button>
-            <button
-              className="comentario-cancel-btn"
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaSave />
+                <span>Guardar</span>
+              </div>
+            </AnimatedButton>
+            <AnimatedButton
               onClick={handleCancel}
+              backgroundColor="rgba(220, 53, 69, 0.6)"
+              hoverBackgroundColor="#dc3545"
+              padding="8px 16px"
+              borderRadius="6px"
             >
-              <FaTimes /> Cancelar
-            </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaTimes />
+                <span>Cancelar</span>
+              </div>
+            </AnimatedButton>
           </div>
         </div>
       ) : (
@@ -143,30 +157,45 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
           <div className="comentario-actions">
             {isCurrentUser ? (
               <>
-                <button
-                  className="comentario-action-btn comentario-edit-btn"
+                <AnimatedButton
                   onClick={handleEdit}
-                  title="Editar comentario"
+                  backgroundColor="rgba(8, 44, 44, 0.6)"
+                  hoverBackgroundColor="#082c2c"
+                  padding="6px 12px"
+                  borderRadius="6px"
+                  style={{ marginRight: '10px' }}
                 >
-                  <FaEdit /> Editar
-                </button>
-                <button
-                  className="comentario-action-btn comentario-delete-btn"
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FaEdit />
+                    <span>Editar</span>
+                  </div>
+                </AnimatedButton>
+                <AnimatedButton
                   onClick={handleDelete}
-                  title="Eliminar comentario"
+                  backgroundColor="rgba(220, 53, 69, 0.6)"
+                  hoverBackgroundColor="#dc3545"
+                  padding="6px 12px"
+                  borderRadius="6px"
                 >
-                  <FaTrash /> Eliminar
-                </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <FaTrash />
+                    <span>Eliminar</span>
+                  </div>
+                </AnimatedButton>
               </>
             ) : (
-              <>
-                <button className="comentario-action-btn" title="Me gusta">
-                  <FaThumbsUp /> Me gusta
-                </button>
-                <button className="comentario-action-btn" title="Responder">
-                  <FaReply /> Responder
-                </button>
-              </>
+              <AnimatedButton
+                onClick={() => {}}
+                backgroundColor="rgba(8, 44, 44, 0.6)"
+                hoverBackgroundColor="#082c2c"
+                padding="6px 12px"
+                borderRadius="6px"
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <FaThumbsUp />
+                  <span>Me gusta</span>
+                </div>
+              </AnimatedButton>
             )}
           </div>
         </>

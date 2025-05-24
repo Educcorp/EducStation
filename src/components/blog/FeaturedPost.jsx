@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
+import { FaArrowRight } from 'react-icons/fa';
+import { AnimatedButton } from '../utils';
 
 const FeaturedPost = ({ post }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [isButtonHovered, setIsButtonHovered] = useState(false);
   
   // Obtener tanto los colores actuales como los colores del tema claro
   const { lightColors } = useTheme();
@@ -141,14 +142,19 @@ const FeaturedPost = ({ post }) => {
         <h2 style={styles.featuredTitle}>{post.title}</h2>
         <p style={styles.featuredExcerpt}>{post.excerpt}</p>
         
-        <Link 
+        <AnimatedButton 
           to={`/blog/${post.id}`}
-          style={isButtonHovered ? applyHoverStyles(styles.button) : styles.button}
-          onMouseEnter={() => setIsButtonHovered(true)}
-          onMouseLeave={() => setIsButtonHovered(false)}
+          backgroundColor="rgba(8, 44, 44, 0.8)"
+          hoverBackgroundColor="#082c2c"
+          padding="8px 20px"
+          borderRadius="20px"
+          style={{ marginTop: spacing.sm }}
         >
-          Leer más <span>→</span>
-        </Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span>Leer más</span>
+            <FaArrowRight size={12} />
+          </div>
+        </AnimatedButton>
       </div>
     </div>
   );

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
-import { FaUser, FaCalendarAlt, FaTag, FaEye, FaBookOpen } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaTag, FaEye, FaBookOpen, FaArrowRight } from 'react-icons/fa';
+import AnimatedButton from '../utils/AnimatedButton';
 
 // Importar utilidades
 import { 
@@ -247,8 +248,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
   };
 
   return (
-    <Link
-      to={`/blog/${post.ID_publicaciones}`}
+    <div
       style={{ textDecoration: 'none', color: 'inherit' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -276,6 +276,22 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           <p style={styles.postSummary}>
             {extractSummary(post.contenido || post.Contenido, 120)}
           </p>
+
+          {/* Botón Leer más con animación */}
+          <div style={{ marginBottom: spacing.md, display: 'flex', justifyContent: 'flex-end' }}>
+            <AnimatedButton 
+              to={`/blog/${post.ID_publicaciones}`}
+              backgroundColor="rgba(8, 44, 44, 0.6)"
+              hoverBackgroundColor="#082c2c"
+              padding="8px 16px"
+              borderRadius="6px"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>Leer más</span>
+                <FaArrowRight size={12} />
+              </div>
+            </AnimatedButton>
+          </div>
           
           {/* Metadatos */}
           <div style={styles.postMeta}>
@@ -305,7 +321,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           </div>
         </div>
       </article>
-    </Link>
+    </div>
   );
 };
 
