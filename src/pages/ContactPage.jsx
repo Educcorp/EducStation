@@ -1,5 +1,6 @@
 // src/pages/ContactPage.jsx
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { spacing, typography, shadows, borderRadius, transitions } from '../styles/theme';
@@ -10,6 +11,25 @@ const ContactPage = () => {
   // Estado para el formulario
   const [animate, setAnimate] = useState(false);
   const { colors, isDarkMode } = useTheme(); // Obtenemos los colores del tema actual
+  const location = useLocation();
+
+  // Recarga forzada al entrar (solo una vez por sesión)
+  useEffect(() => {
+    if (location.state && location.state.forceReload) {
+      // Verificar si ya se realizó la recarga en esta sesión de navegación
+      if (!sessionStorage.getItem('contactpage-reloaded')) {
+        // Marcar que se va a realizar la recarga
+        sessionStorage.setItem('contactpage-reloaded', 'true');
+        // Limpiar el estado para evitar bucles infinitos
+        window.history.replaceState(null, '', window.location.pathname);
+        // Realizar la recarga
+        window.location.reload();
+      }
+    } else {
+      // Limpiar la marca de recarga si no hay forceReload
+      sessionStorage.removeItem('contactpage-reloaded');
+    }
+  }, [location]);
 
   useEffect(() => {
     const timeout = setTimeout(() => setAnimate(true), 0); // Activa la animación al montar el componente

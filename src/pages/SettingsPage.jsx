@@ -5,7 +5,7 @@ import { deleteAccount } from '../services/authService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SettingsPage = () => {
   const { isDarkMode, toggleTheme } = useTheme();
@@ -15,6 +15,25 @@ const SettingsPage = () => {
   const [isDeleting, setIsDeleting] = useState(false); // Para manejar estado de carga
   const [error, setError] = useState(null); // Para manejar errores
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Recarga forzada al entrar (solo una vez por sesión)
+  useEffect(() => {
+    if (location.state && location.state.forceReload) {
+      // Verificar si ya se realizó la recarga en esta sesión de navegación
+      if (!sessionStorage.getItem('settingspage-reloaded')) {
+        // Marcar que se va a realizar la recarga
+        sessionStorage.setItem('settingspage-reloaded', 'true');
+        // Limpiar el estado para evitar bucles infinitos
+        window.history.replaceState(null, '', window.location.pathname);
+        // Realizar la recarga
+        window.location.reload();
+      }
+    } else {
+      // Limpiar la marca de recarga si no hay forceReload
+      sessionStorage.removeItem('settingspage-reloaded');
+    }
+  }, [location]);
 
   const [settings, setSettings] = useState({
     notifications: {

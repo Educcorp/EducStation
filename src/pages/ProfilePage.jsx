@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
@@ -20,6 +20,25 @@ const ProfilePage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef(null);
+  const location = useLocation();
+
+  // Recarga forzada al entrar (solo una vez por sesión)
+  useEffect(() => {
+    if (location.state && location.state.forceReload) {
+      // Verificar si ya se realizó la recarga en esta sesión de navegación
+      if (!sessionStorage.getItem('profilepage-reloaded')) {
+        // Marcar que se va a realizar la recarga
+        sessionStorage.setItem('profilepage-reloaded', 'true');
+        // Limpiar el estado para evitar bucles infinitos
+        window.history.replaceState(null, '', window.location.pathname);
+        // Realizar la recarga
+        window.location.reload();
+      }
+    } else {
+      // Limpiar la marca de recarga si no hay forceReload
+      sessionStorage.removeItem('profilepage-reloaded');
+    }
+  }, [location]);
 
   // Frases motivadoras sobre la educación
   const frasesMotivadoras = [

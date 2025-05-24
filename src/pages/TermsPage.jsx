@@ -1,5 +1,6 @@
 // src/pages/TermsPage.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { spacing, typography, shadows, borderRadius } from '../styles/theme';
@@ -9,6 +10,25 @@ const TermsPage = () => {
   // Fecha de última actualización
   const lastUpdated = "10 de febrero de 2025";
   const { colors } = useTheme(); // Obtenemos los colores del tema actual
+  const location = useLocation();
+
+  // Recarga forzada al entrar (solo una vez por sesión)
+  useEffect(() => {
+    if (location.state && location.state.forceReload) {
+      // Verificar si ya se realizó la recarga en esta sesión de navegación
+      if (!sessionStorage.getItem('termspage-reloaded')) {
+        // Marcar que se va a realizar la recarga
+        sessionStorage.setItem('termspage-reloaded', 'true');
+        // Limpiar el estado para evitar bucles infinitos
+        window.history.replaceState(null, '', window.location.pathname);
+        // Realizar la recarga
+        window.location.reload();
+      }
+    } else {
+      // Limpiar la marca de recarga si no hay forceReload
+      sessionStorage.removeItem('termspage-reloaded');
+    }
+  }, [location]);
 
   const styles = {
     container: {
