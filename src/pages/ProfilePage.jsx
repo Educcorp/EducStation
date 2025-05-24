@@ -229,9 +229,9 @@ const ProfilePage = () => {
       marginBottom: spacing.xl
     },
     profileHeader: {
-      backgroundColor: isDarkMode ? colors.primaryDark : colors.primary,
+      backgroundColor: colors.white,
       padding: `${spacing.xl} ${spacing.xl}`,
-      color: colors.white,
+      color: colors.primary,
       display: 'flex',
       alignItems: 'center',
       position: 'relative'
