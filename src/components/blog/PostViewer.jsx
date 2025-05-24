@@ -242,6 +242,16 @@ const PostViewer = () => {
           max-width: none !important;
           flex-wrap: wrap !important;
         }
+        
+        /* Asegurar que el footer no se vea afectado */
+        footer {
+          width: 100% !important;
+          max-width: none !important;
+          position: relative !important;
+          bottom: auto !important;
+          left: auto !important;
+          right: auto !important;
+        }
       </style>
     `;
     

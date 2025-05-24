@@ -341,7 +341,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           </h3>
           
           <p style={styles.postSummary}>
-            {extractSummary(post.contenido || post.Contenido, 120)}
+            {extractSummary(post.contenido || post.Contenido, 120).replace(/<[^>]*>?/gm, '')}
           </p>
 
           {/* Botón Leer más con animación */}
