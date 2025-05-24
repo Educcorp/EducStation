@@ -7,58 +7,64 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
         const token = localStorage.getItem('userToken');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
         
-        // Primera estrategia: endpoint directo /all
-        try {
-            const directUrl = `${API_URL}/api/publicaciones/all?limite=${limite}&offset=${offset}`;
-            console.log("Intentando cargar con endpoint directo:", directUrl);
-            
-            const directResponse = await fetch(directUrl, { headers });
-            if (directResponse.ok) {
-                const directData = await directResponse.json();
-                console.log(`Obtenidas ${directData.length} publicaciones mediante acceso directo`);
-                return directData;
-            } else {
-                console.log(`Error en endpoint directo: ${directResponse.status}. Intentando alternativas...`);
-                throw new Error(`Error en endpoint directo: ${directResponse.status}`);
+        // Verificar si el usuario es administrador para usar la ruta correcta
+        const isSuperUser = localStorage.getItem('isSuperUser') === 'true';
+        
+        if (isSuperUser && token) {
+            // Para administradores, usar la ruta /all que incluye todas las publicaciones
+            try {
+                const adminUrl = `${API_URL}/api/publicaciones/all?limite=${limite}&offset=${offset}`;
+                console.log("Admin cargando con endpoint /all:", adminUrl);
+                
+                const adminResponse = await fetch(adminUrl, { headers });
+                if (adminResponse.ok) {
+                    const adminData = await adminResponse.json();
+                    console.log(`Obtenidas ${adminData.length} publicaciones como administrador`);
+                    return adminData;
+                } else {
+                    console.log(`Error en endpoint admin: ${adminResponse.status}. Intentando alternativas...`);
+                    throw new Error(`Error en endpoint admin: ${adminResponse.status}`);
+                }
+            } catch (adminError) {
+                console.error("Error en endpoint admin:", adminError);
+                // Continuar con métodos alternativos
             }
-        } catch (directError) {
-            console.error("Error en endpoint directo:", directError);
-            
-            // Segunda estrategia: endpoint principal
+        }
+        
+        // Método estándar para usuarios normales o fallback para administradores
+        try {
             let url = `${API_URL}/api/publicaciones?limite=${limite}&offset=${offset}`;
             if (estado) {
                 url += `&estado=${estado}`;
             }
             
-            console.log("Intentando con endpoint principal:", url);
+            console.log("Cargando con endpoint principal:", url);
             
-            try {
-                const response = await fetch(url, { headers });
-                if (!response.ok) {
-                    console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
-                    throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log(`Obtenidas ${data.length} publicaciones correctamente`);
-                return data;
-            } catch (fetchError) {
-                console.error("Error en la petición principal:", fetchError);
-                
-                // Tercera estrategia: endpoint latest
-                console.log("Intentando método alternativo para cargar publicaciones...");
-                const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
-                console.log("URL alternativa:", fallbackUrl);
-                
-                const fallbackResponse = await fetch(fallbackUrl, { headers });
-                if (!fallbackResponse.ok) {
-                    throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
-                }
-                
-                const fallbackData = await fallbackResponse.json();
-                console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
-                return fallbackData;
+            const response = await fetch(url, { headers });
+            if (!response.ok) {
+                console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
+                throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
             }
+            
+            const data = await response.json();
+            console.log(`Obtenidas ${data.length} publicaciones correctamente`);
+            return data;
+        } catch (fetchError) {
+            console.error("Error en la petición principal:", fetchError);
+            
+            // Método alternativo: endpoint latest
+            console.log("Intentando método alternativo para cargar publicaciones...");
+            const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
+            console.log("URL alternativa:", fallbackUrl);
+            
+            const fallbackResponse = await fetch(fallbackUrl, { headers });
+            if (!fallbackResponse.ok) {
+                throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
+            }
+            
+            const fallbackData = await fallbackResponse.json();
+            console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
+            return fallbackData;
         }
     } catch (error) {
         console.error('Error final en getAllPublicaciones:', error);

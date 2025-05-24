@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort, FaSync } from 'react-icons/fa';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
@@ -8,24 +8,29 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
 import { deletePublicacion, getAllPublicaciones } from '../services/publicacionesService';
 import { toast } from 'react-toastify';
-import AdminPostList from '../components/admin/AdminPostList';
 
 const AdminPanel = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuth, isSuperUser } = useAuth();
   const { isDarkMode } = useTheme();
+  
+  // Estados para las publicaciones
   const [posts, setPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Estados para filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all'); // 'all', 'published', 'draft'
   const [sortOrder, setSortOrder] = useState('recientes'); // 'recientes', 'antiguos', 'alfabetico'
+  
+  // Estados para UI
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
-  // Verificación inmediata al montar el componente - DETECCIÓN INSTANTÁNEA (AdminPanel)
+  // Verificación inmediata al montar el componente
   useEffect(() => {
     const checkForInstantReload = () => {
       if (location.state && location.state.forceReload && !sessionStorage.getItem('adminpanel-reloaded')) {
@@ -34,45 +39,8 @@ const AdminPanel = () => {
         window.location.reload();
       }
     };
-
-    // Ejecutar inmediatamente
     checkForInstantReload();
-  }, []); // Solo al montar
-
-  // Recarga forzada al entrar (solo una vez por sesión) - OPTIMIZADA PARA ADMINPANEL
-  useEffect(() => {
-    const shouldForceReload = () => {
-      // Si viene con forceReload explícito
-      if (location.state && location.state.forceReload) {
-        return true;
-      }
-      
-      // Detectar navegación hacia atrás usando performance.navigation (INMEDIATO)
-      const isBackNavigation = window.performance?.navigation?.type === 2; // TYPE_BACK_FORWARD
-      
-      // Detectar si viene desde otras páginas usando referrer (INMEDIATO)
-      const previousUrl = document.referrer;
-      const currentUrl = window.location.href;
-      
-      const comesFromOtherPage = previousUrl && 
-        (previousUrl.includes('/blog') || previousUrl.includes('/categoria') || previousUrl.includes('/profile')) &&
-        currentUrl.includes('/admin/panel');
-      
-      return isBackNavigation || comesFromOtherPage;
-    };
-
-    if (shouldForceReload()) {
-      const reloadKey = 'adminpanel-reloaded';
-      if (!sessionStorage.getItem(reloadKey)) {
-        sessionStorage.setItem(reloadKey, 'true');
-        window.history.replaceState(null, '', window.location.pathname);
-        window.location.reload();
-      }
-    } else {
-      // Limpiar la marca de recarga si no hay forceReload
-      sessionStorage.removeItem('adminpanel-reloaded');
-    }
-  }, [location]);
+  }, []);
 
   // Verificar si el usuario es administrador
   useEffect(() => {
@@ -88,50 +56,61 @@ const AdminPanel = () => {
     }
   }, [isAuth, isSuperUser, navigate]);
 
-  // Cargar todas las publicaciones
-  useEffect(() => {
-    const fetchAllPosts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        console.log('Cargando todas las publicaciones para el panel de administración');
-        
-        // Intentar cargar todas las publicaciones
-        const allPosts = await getAllPublicaciones(100, 0, null);
-        console.log(`Obtenidas ${allPosts.length} publicaciones totales`);
-        
-        // Ordenar por fecha de modificación o creación (más reciente primero)
-        allPosts.sort((a, b) => {
-          const dateA = a.Fecha_modificacion ? new Date(a.Fecha_modificacion) : new Date(a.Fecha_creacion);
-          const dateB = b.Fecha_modificacion ? new Date(b.Fecha_modificacion) : new Date(b.Fecha_creacion);
-          return dateB - dateA;
-        });
-        
-        setPosts(allPosts);
-        applyFilters(allPosts, searchTerm, filter);
-      } catch (error) {
-        console.error('Error al cargar publicaciones:', error);
-        setError('No se pudieron cargar las publicaciones. Por favor, intenta de nuevo más tarde.');
+  // Función para cargar todas las publicaciones
+  const fetchAllPosts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      console.log('Cargando todas las publicaciones para el panel de administración');
+      
+      // Cargar todas las publicaciones sin filtrar por administrador
+      const allPosts = await getAllPublicaciones(200, 0, null);
+      console.log(`Obtenidas ${allPosts.length} publicaciones totales`);
+      
+      if (!allPosts || allPosts.length === 0) {
+        console.log('No se encontraron publicaciones');
         setPosts([]);
         setFilteredPosts([]);
-      } finally {
-        setLoading(false);
+        setError('No hay publicaciones disponibles en el sistema.');
+        return;
       }
-    };
-    
+      
+      // Ordenar por fecha de modificación o creación (más reciente primero)
+      allPosts.sort((a, b) => {
+        const dateA = a.Fecha_modificacion ? new Date(a.Fecha_modificacion) : new Date(a.Fecha_creacion);
+        const dateB = b.Fecha_modificacion ? new Date(b.Fecha_modificacion) : new Date(b.Fecha_creacion);
+        return dateB - dateA;
+      });
+      
+      setPosts(allPosts);
+      applyFilters(allPosts, searchTerm, filter, sortOrder);
+      
+    } catch (error) {
+      console.error('Error al cargar publicaciones:', error);
+      setError('No se pudieron cargar las publicaciones. Por favor, intenta de nuevo más tarde.');
+      setPosts([]);
+      setFilteredPosts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Cargar publicaciones al montar el componente
+  useEffect(() => {
     fetchAllPosts();
   }, []);
 
-  // Aplicar filtros cuando cambian los criterios
-  const applyFilters = (postsToFilter, term, statusFilter) => {
-    let result = postsToFilter;
+  // Función para aplicar filtros
+  const applyFilters = (postsToFilter, term, statusFilter, order) => {
+    let result = [...postsToFilter];
     
     // Filtrar por término de búsqueda
     if (term && term.trim() !== '') {
       const searchTermLower = term.toLowerCase();
       result = result.filter(post => 
         post.Titulo?.toLowerCase().includes(searchTermLower) || 
-        post.Resumen?.toLowerCase().includes(searchTermLower)
+        post.Resumen?.toLowerCase().includes(searchTermLower) ||
+        post.Contenido?.toLowerCase().includes(searchTermLower)
       );
     }
     
@@ -141,31 +120,44 @@ const AdminPanel = () => {
       result = result.filter(post => post.Estado === estado);
     }
     
+    // Ordenar
+    switch (order) {
+      case 'recientes':
+        result.sort((a, b) => {
+          const dateA = a.Fecha_modificacion ? new Date(a.Fecha_modificacion) : new Date(a.Fecha_creacion);
+          const dateB = b.Fecha_modificacion ? new Date(b.Fecha_modificacion) : new Date(b.Fecha_creacion);
+          return dateB - dateA;
+        });
+        break;
+      case 'antiguos':
+        result.sort((a, b) => {
+          const dateA = a.Fecha_modificacion ? new Date(a.Fecha_modificacion) : new Date(a.Fecha_creacion);
+          const dateB = b.Fecha_modificacion ? new Date(b.Fecha_modificacion) : new Date(b.Fecha_creacion);
+          return dateA - dateB;
+        });
+        break;
+      case 'alfabetico':
+        result.sort((a, b) => a.Titulo.localeCompare(b.Titulo));
+        break;
+      default:
+        break;
+    }
+    
     setFilteredPosts(result);
   };
 
-  // Cuando cambian los filtros
+  // Aplicar filtros cuando cambian los criterios
   useEffect(() => {
     if (posts.length > 0) {
-      applyFilters(posts, searchTerm, filter);
+      applyFilters(posts, searchTerm, filter, sortOrder);
     }
-  }, [searchTerm, filter, posts]);
+  }, [searchTerm, filter, sortOrder, posts]);
 
   // Mostrar notificación
   const showNotification = (message, type = 'success') => {
     setNotification({ show: true, message, type });
     setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 3000);
   };
-
-  // Ocultar notificación después de 3 segundos
-  useEffect(() => {
-    if (notification.show) {
-      const timer = setTimeout(() => {
-        setNotification({ ...notification, show: false });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification.show]);
 
   // Manejar eliminación de publicación
   const handleDeletePost = async (postId) => {
@@ -179,6 +171,7 @@ const AdminPanel = () => {
     } catch (error) {
       console.error('Error al eliminar publicación:', error);
       toast.error('Error al eliminar la publicación');
+      showNotification('Error al eliminar la publicación', 'error');
     }
   };
 
@@ -190,24 +183,14 @@ const AdminPanel = () => {
 
   // Manejar visualización de publicación
   const handleViewPost = (postId) => {
-    navigate(`/blog/post/${postId}`);
+    navigate(`/blog/${postId}`);
   };
 
   // Recargar publicaciones
   const refreshPosts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const allPosts = await getAllPublicaciones(100, 0, null);
-      setPosts(allPosts);
-      applyFilters(allPosts, searchTerm, filter);
-      showNotification('Publicaciones actualizadas correctamente');
-    } catch (error) {
-      console.error('Error al recargar publicaciones:', error);
-      setError('Error al recargar las publicaciones');
-    } finally {
-      setLoading(false);
-    }
+    showNotification('Actualizando publicaciones...', 'info');
+    await fetchAllPosts();
+    showNotification('Publicaciones actualizadas correctamente');
   };
 
   // Formatear fecha
@@ -219,32 +202,55 @@ const AdminPanel = () => {
   // Obtener color según estado
   const getStatusColor = (status) => {
     switch (status) {
-      case 'publicado': return { bg: isDarkMode ? '#1b4d3e' : '#e6f7ef', text: isDarkMode ? '#4ade80' : '#166534' };
-      case 'borrador': return { bg: isDarkMode ? '#3b3054' : '#f3e8ff', text: isDarkMode ? '#c084fc' : '#7e22ce' };
-      default: return { bg: isDarkMode ? '#374151' : '#f3f4f6', text: isDarkMode ? '#9ca3af' : '#4b5563' };
+      case 'publicado': 
+        return { 
+          bg: isDarkMode ? '#1b4d3e' : '#e6f7ef', 
+          text: isDarkMode ? '#4ade80' : '#166534' 
+        };
+      case 'borrador': 
+        return { 
+          bg: isDarkMode ? '#3b3054' : '#f3e8ff', 
+          text: isDarkMode ? '#c084fc' : '#7e22ce' 
+        };
+      default: 
+        return { 
+          bg: isDarkMode ? '#374151' : '#f3f4f6', 
+          text: isDarkMode ? '#9ca3af' : '#4b5563' 
+        };
     }
   };
 
   // Procesar imagen de portada
   const getImageUrl = (imageData) => {
-    if (!imageData) return '/assets/images/placeholder.jpg';
+    if (!imageData) return '/assets/images/logoBN.png';
     
-    // Si ya es una URL o un string de base64, devolverlo tal cual
     if (typeof imageData === 'string') {
-      return imageData.startsWith('data:') ? imageData : `data:image/jpeg;base64,${imageData}`;
-    }
-    
-    // Si es un objeto, intentar convertirlo a string
-    try {
-      if (typeof imageData === 'object') {
-        const imgString = JSON.stringify(imageData);
-        console.warn('Imagen en formato objeto:', imgString);
+      // Si ya es una URL completa (http/https)
+      if (imageData.startsWith('http')) {
+        return imageData;
       }
-    } catch (e) {
-      console.error('Error al procesar imagen:', e);
+      // Si es una ruta de assets
+      if (imageData.startsWith('/assets')) {
+        return imageData;
+      }
+      // Si ya es una imagen base64 completa
+      if (imageData.startsWith('data:image')) {
+        return imageData;
+      }
+      // Si es solo el contenido base64 sin el prefijo
+      if (imageData.length > 100 && !imageData.includes('<')) {
+        return `data:image/jpeg;base64,${imageData}`;
+      }
+      // Si es una etiqueta HTML img, extraer el src
+      if (imageData.includes('<img') && imageData.includes('src=')) {
+        const srcMatch = imageData.match(/src="([^"]+)"/);
+        if (srcMatch && srcMatch[1]) {
+          return srcMatch[1];
+        }
+      }
     }
     
-    return '/assets/images/placeholder.jpg';
+    return '/assets/images/logoBN.png';
   };
 
   // Estilos
@@ -262,6 +268,15 @@ const AdminPanel = () => {
       padding: `${spacing.xl} ${spacing.md}`,
       width: '100%'
     },
+    pageTitle: {
+      fontSize: typography.fontSize.xxxl,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.white : colors.primary,
+      margin: `${spacing.xl} 0`,
+      textAlign: 'center',
+      borderBottom: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.primary}`,
+      paddingBottom: spacing.md
+    },
     header: {
       display: 'flex',
       justifyContent: 'space-between',
@@ -276,15 +291,6 @@ const AdminPanel = () => {
       color: isDarkMode ? colors.white : colors.primary,
       margin: 0
     },
-    pageTitle: {
-      fontSize: typography.fontSize.xxxl,
-      fontWeight: typography.fontWeight.bold,
-      color: isDarkMode ? colors.white : colors.primary,
-      margin: `${spacing.xl} 0`,
-      textAlign: 'center',
-      borderBottom: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.primary}`,
-      paddingBottom: spacing.md
-    },
     createButton: {
       backgroundColor: isDarkMode ? colors.primaryDark : colors.primary,
       color: colors.white,
@@ -298,198 +304,254 @@ const AdminPanel = () => {
       gap: spacing.sm,
       cursor: 'pointer',
       transition: 'all 0.3s ease',
-      textDecoration: 'none',
-      boxShadow: shadows.sm
+      textDecoration: 'none'
     },
-    filtersContainer: {
-      display: 'flex',
-      gap: spacing.md,
-      marginBottom: spacing.xl,
-      flexWrap: 'wrap',
-      alignItems: 'center',
-      backgroundColor: isDarkMode ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.9)',
-      padding: spacing.md,
+    refreshButton: {
+      backgroundColor: isDarkMode ? '#4a5568' : '#718096',
+      color: colors.white,
+      border: 'none',
       borderRadius: borderRadius.md,
-      boxShadow: shadows.sm
-    },
-    searchInput: {
-      flex: 1,
-      minWidth: '250px',
       padding: `${spacing.sm} ${spacing.md}`,
-      borderRadius: borderRadius.md,
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
-      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-      color: isDarkMode ? colors.white : colors.textPrimary,
-      fontSize: typography.fontSize.md
-    },
-    select: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      borderRadius: borderRadius.md,
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
-      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-      color: isDarkMode ? colors.white : colors.textPrimary,
       fontSize: typography.fontSize.md,
-      cursor: 'pointer'
-    },
-    filterLabel: {
+      fontWeight: typography.fontWeight.semiBold,
       display: 'flex',
       alignItems: 'center',
       gap: spacing.sm,
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
-      fontSize: typography.fontSize.md
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      marginLeft: spacing.sm
     },
-    postsContainer: {
+    filtersContainer: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.xl,
+      boxShadow: shadows.sm,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)'
+    },
+    filtersRow: {
       display: 'flex',
-      flexDirection: 'column',
-      gap: spacing.md
+      gap: spacing.md,
+      alignItems: 'center',
+      flexWrap: 'wrap'
+    },
+    searchContainer: {
+      position: 'relative',
+      flex: '1',
+      minWidth: '250px'
+    },
+    searchInput: {
+      width: '100%',
+      padding: `${spacing.sm} ${spacing.md} ${spacing.sm} 40px`,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(0, 0, 0, 0.2)',
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.md,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      color: isDarkMode ? colors.white : colors.textPrimary,
+      outline: 'none',
+      transition: 'all 0.3s ease'
+    },
+    searchIcon: {
+      position: 'absolute',
+      left: '12px',
+      top: '50%',
+      transform: 'translateY(-50%)',
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : colors.textSecondary,
+      fontSize: '16px'
+    },
+    select: {
+      padding: `${spacing.sm} ${spacing.md}`,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.2)' : '1px solid rgba(0, 0, 0, 0.2)',
+      borderRadius: borderRadius.md,
+      fontSize: typography.fontSize.md,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      color: isDarkMode ? colors.white : colors.textPrimary,
+      outline: 'none',
+      cursor: 'pointer',
+      minWidth: '120px'
+    },
+    statsContainer: {
+      display: 'flex',
+      gap: spacing.md,
+      marginBottom: spacing.xl,
+      flexWrap: 'wrap'
+    },
+    statCard: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      boxShadow: shadows.sm,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
+      flex: '1',
+      minWidth: '150px',
+      textAlign: 'center'
+    },
+    statNumber: {
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.white : colors.primary,
+      marginBottom: spacing.xs
+    },
+    statLabel: {
+      fontSize: typography.fontSize.sm,
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
+      textTransform: 'uppercase',
+      letterSpacing: '0.5px'
+    },
+    postsGrid: {
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+      gap: spacing.lg,
+      marginBottom: spacing.xl
     },
     postCard: {
-      backgroundColor: isDarkMode ? '#0a1919' : colors.white,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
       borderRadius: borderRadius.lg,
-      boxShadow: shadows.sm,
       overflow: 'hidden',
+      boxShadow: shadows.md,
       transition: 'all 0.3s ease',
-      border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.gray200}`,
-      '&:hover': {
-        boxShadow: shadows.md,
-        transform: 'translateY(-2px)'
-      }
-    },
-    postHeader: {
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
       display: 'flex',
-      padding: spacing.md,
-      borderBottom: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.gray200}`,
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(31, 78, 78, 0.02)'
-    },
-    postImageContainer: {
-      width: '120px',
-      height: '80px',
-      borderRadius: borderRadius.md,
-      overflow: 'hidden',
-      backgroundColor: isDarkMode ? '#121212' : colors.gray100,
-      flexShrink: 0
+      flexDirection: 'column',
+      height: '100%'
     },
     postImage: {
       width: '100%',
-      height: '100%',
-      objectFit: 'cover'
+      height: '200px',
+      objectFit: 'cover',
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.backgroundLight
     },
-    postInfo: {
+    postContent: {
+      padding: spacing.lg,
       flex: 1,
-      marginLeft: spacing.md,
       display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between'
+      flexDirection: 'column'
     },
     postTitle: {
       fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.bold,
+      marginBottom: spacing.sm,
       color: isDarkMode ? colors.white : colors.textPrimary,
-      marginBottom: spacing.xs
-    },
-    postMeta: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.md,
-      fontSize: typography.fontSize.sm,
-      color: isDarkMode ? colors.gray300 : colors.textSecondary
-    },
-    postDate: {
-      display: 'flex',
-      alignItems: 'center'
-    },
-    postStatus: (status) => ({
-      padding: `${spacing.xs} ${spacing.sm}`,
-      borderRadius: borderRadius.sm,
-      backgroundColor: getStatusColor(status).bg,
-      color: getStatusColor(status).text,
-      fontSize: typography.fontSize.xs,
-      fontWeight: typography.fontWeight.semiBold
-    }),
-    postContent: {
-      padding: spacing.md
-    },
-    postExcerpt: {
-      fontSize: typography.fontSize.md,
-      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
-      marginBottom: spacing.md,
       display: '-webkit-box',
       WebkitLineClamp: 2,
       WebkitBoxOrient: 'vertical',
       overflow: 'hidden',
       textOverflow: 'ellipsis'
     },
-    postActions: {
-      display: 'flex',
-      justifyContent: 'flex-end',
-      gap: spacing.sm
+    postExcerpt: {
+      fontSize: typography.fontSize.md,
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
+      marginBottom: spacing.md,
+      display: '-webkit-box',
+      WebkitLineClamp: 3,
+      WebkitBoxOrient: 'vertical',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      flex: 1
     },
-    actionButton: (type) => {
-      let bgColor, hoverBgColor, color;
-      
-      switch (type) {
-        case 'edit':
-          bgColor = isDarkMode ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.1)';
-          hoverBgColor = isDarkMode ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)';
-          color = isDarkMode ? '#60a5fa' : '#2563eb';
-          break;
-        case 'delete':
-          bgColor = isDarkMode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.1)';
-          hoverBgColor = isDarkMode ? 'rgba(239, 68, 68, 0.3)' : 'rgba(239, 68, 68, 0.2)';
-          color = isDarkMode ? '#f87171' : '#dc2626';
-          break;
-        case 'view':
-          bgColor = isDarkMode ? 'rgba(16, 185, 129, 0.2)' : 'rgba(16, 185, 129, 0.1)';
-          hoverBgColor = isDarkMode ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)';
-          color = isDarkMode ? '#34d399' : '#059669';
-          break;
-        default:
-          bgColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
-          hoverBgColor = isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)';
-          color = isDarkMode ? colors.white : colors.textPrimary;
-      }
-      
-      return {
-        padding: spacing.sm,
-        borderRadius: borderRadius.md,
-        backgroundColor: bgColor,
-        color: color,
-        border: 'none',
-        cursor: 'pointer',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        transition: 'all 0.2s ease',
-        '&:hover': {
-          backgroundColor: hoverBgColor,
-          color: type === 'edit' ? '#4CAF50' : type === 'delete' ? '#F44336' : color,
-          transform: 'translateY(-2px)',
-          boxShadow: type === 'edit' ? '0 4px 8px rgba(76, 175, 80, 0.3)' : 
-                    type === 'delete' ? '0 4px 8px rgba(244, 67, 54, 0.3)' : 'none'
-        }
-      };
+    postMeta: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.md,
+      paddingTop: spacing.md,
+      borderTop: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)'
+    },
+    postDate: {
+      fontSize: typography.fontSize.sm,
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.6)' : colors.textSecondary
+    },
+    postStatus: {
+      display: 'inline-block',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      fontSize: typography.fontSize.sm,
+      fontWeight: typography.fontWeight.medium
+    },
+    actionsContainer: {
+      display: 'flex',
+      gap: spacing.sm,
+      justifyContent: 'flex-end'
+    },
+    actionButton: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '36px',
+      height: '36px',
+      borderRadius: '50%',
+      border: 'none',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease',
+      fontSize: '14px'
+    },
+    viewButton: {
+      backgroundColor: isDarkMode ? '#2563eb' : '#3b82f6',
+      color: colors.white
+    },
+    editButton: {
+      backgroundColor: isDarkMode ? '#d97706' : '#f59e0b',
+      color: colors.white
+    },
+    deleteButton: {
+      backgroundColor: isDarkMode ? '#dc2626' : '#ef4444',
+      color: colors.white
     },
     emptyState: {
       textAlign: 'center',
-      padding: `${spacing.xl} ${spacing.md}`,
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.gray100,
+      padding: `${spacing.xxl} ${spacing.lg}`,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
       borderRadius: borderRadius.lg,
-      color: isDarkMode ? colors.gray300 : colors.textSecondary
+      boxShadow: shadows.sm,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)'
     },
-    loadingState: {
+    emptyStateTitle: {
+      fontSize: typography.fontSize.xl,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.white : colors.textPrimary,
+      marginBottom: spacing.md
+    },
+    emptyStateText: {
+      fontSize: typography.fontSize.md,
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
+      marginBottom: spacing.lg,
+      lineHeight: 1.6
+    },
+    loadingSpinner: {
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: `${spacing.xl} ${spacing.md}`,
-      color: isDarkMode ? colors.white : colors.primary
+      height: '300px',
+      fontSize: typography.fontSize.lg,
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary
     },
-    loadingSpinner: {
-      width: '40px',
-      height: '40px',
-      border: `4px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(31, 78, 78, 0.1)'}`,
-      borderRadius: '50%',
-      borderTop: `4px solid ${isDarkMode ? colors.white : colors.primary}`,
-      animation: 'spin 1s linear infinite'
+    errorMessage: {
+      backgroundColor: isDarkMode ? '#7f1d1d' : '#fef2f2',
+      color: isDarkMode ? '#fca5a5' : '#dc2626',
+      padding: spacing.lg,
+      borderRadius: borderRadius.md,
+      textAlign: 'center',
+      marginBottom: spacing.xl,
+      border: isDarkMode ? '1px solid #991b1b' : '1px solid #fecaca'
+    },
+    notification: {
+      position: 'fixed',
+      bottom: '30px',
+      right: '30px',
+      minWidth: '300px',
+      maxWidth: '500px',
+      backgroundColor: notification.type === 'success' 
+        ? (isDarkMode ? '#065f46' : '#10b981') 
+        : notification.type === 'error' 
+        ? (isDarkMode ? '#7f1d1d' : '#ef4444')
+        : (isDarkMode ? '#1e40af' : '#3b82f6'),
+      color: colors.white,
+      padding: `${spacing.md} ${spacing.lg}`,
+      borderRadius: borderRadius.md,
+      boxShadow: shadows.lg,
+      zIndex: 9999,
+      display: notification.show ? 'block' : 'none',
+      animation: notification.show ? 'slideInRight 0.3s ease' : 'none'
     },
     modalOverlay: {
       position: 'fixed',
@@ -498,228 +560,261 @@ const AdminPanel = () => {
       right: 0,
       bottom: 0,
       backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: confirmDelete ? 'flex' : 'none',
+      display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      zIndex: 1000
+      zIndex: 10000
     },
-    modalContent: {
-      backgroundColor: isDarkMode ? '#0a1919' : colors.white,
+    modal: {
+      backgroundColor: isDarkMode ? '#1f2937' : colors.white,
       borderRadius: borderRadius.lg,
       padding: spacing.xl,
-      maxWidth: '500px',
+      maxWidth: '400px',
       width: '90%',
-      boxShadow: shadows.lg
+      boxShadow: shadows.xl
     },
     modalTitle: {
-      fontSize: typography.fontSize.xl,
+      fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.bold,
       color: isDarkMode ? colors.white : colors.textPrimary,
       marginBottom: spacing.md
     },
     modalText: {
       fontSize: typography.fontSize.md,
-      color: isDarkMode ? colors.gray300 : colors.textSecondary,
-      marginBottom: spacing.xl
+      color: isDarkMode ? 'rgba(255, 255, 255, 0.8)' : colors.textSecondary,
+      marginBottom: spacing.lg,
+      lineHeight: 1.5
     },
     modalActions: {
       display: 'flex',
-      justifyContent: 'flex-end',
-      gap: spacing.md
+      gap: spacing.md,
+      justifyContent: 'flex-end'
     },
-    cancelButton: {
-      padding: `${spacing.sm} ${spacing.lg}`,
+    modalButton: {
+      padding: `${spacing.sm} ${spacing.md}`,
       borderRadius: borderRadius.md,
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.gray200,
-      color: isDarkMode ? colors.white : colors.textPrimary,
       border: 'none',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease'
-    },
-    deleteButton: {
-      padding: `${spacing.sm} ${spacing.lg}`,
-      borderRadius: borderRadius.md,
-      backgroundColor: colors.error,
-      color: colors.white,
-      border: 'none',
-      cursor: 'pointer',
-      transition: 'all 0.3s ease'
-    },
-    notification: {
-      position: 'fixed',
-      bottom: '30px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      minWidth: '300px',
-      maxWidth: '90%',
-      backgroundColor: notification.type === 'success' 
-        ? 'rgba(76, 175, 80, 0.9)' 
-        : (notification.type === 'error' ? 'rgba(244, 67, 54, 0.9)' : 'rgba(33, 150, 243, 0.9)'),
-      color: colors.white,
-      padding: `${spacing.md} ${spacing.xl}`,
-      borderRadius: '12px',
-      boxShadow: '0 8px 30px rgba(0, 0, 0, 0.2)',
-      zIndex: 9999,
-      textAlign: 'center',
       fontSize: typography.fontSize.md,
       fontWeight: typography.fontWeight.medium,
-      display: notification.show ? 'flex' : 'none',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
-      animation: notification.show ? 'fadeInUp 0.3s forwards' : 'none',
+      cursor: 'pointer',
+      transition: 'all 0.2s ease'
+    },
+    cancelButton: {
+      backgroundColor: isDarkMode ? '#374151' : '#e5e7eb',
+      color: isDarkMode ? colors.white : colors.textPrimary
+    },
+    confirmButton: {
+      backgroundColor: '#ef4444',
+      color: colors.white
     }
   };
+
+  // Calcular estadísticas
+  const totalPosts = posts.length;
+  const publishedPosts = posts.filter(post => post.Estado === 'publicado').length;
+  const draftPosts = posts.filter(post => post.Estado === 'borrador').length;
+  const filteredCount = filteredPosts.length;
 
   return (
     <div style={styles.container}>
       <Header />
+      
       <div style={styles.content}>
         <h1 style={styles.pageTitle}>Panel de Administración</h1>
-        <div style={styles.header} className="header">
+        
+        {/* Estadísticas */}
+        <div style={styles.statsContainer}>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{totalPosts}</div>
+            <div style={styles.statLabel}>Total</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{publishedPosts}</div>
+            <div style={styles.statLabel}>Publicadas</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{draftPosts}</div>
+            <div style={styles.statLabel}>Borradores</div>
+          </div>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{filteredCount}</div>
+            <div style={styles.statLabel}>Filtradas</div>
+          </div>
+        </div>
+
+        {/* Header con título y botón de crear */}
+        <div style={styles.header}>
           <h2 style={styles.title}>Publicaciones</h2>
-          <Link to="/admin/post/new" style={styles.createButton} className="createButton">
-            + Nueva Publicación
-          </Link>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button
+              style={styles.refreshButton}
+              onClick={refreshPosts}
+              disabled={loading}
+            >
+              <FaSync />
+              Actualizar
+            </button>
+            <Link to="/admin/post/new" style={styles.createButton}>
+              <FaPlus />
+              Nueva Publicación
+            </Link>
+          </div>
         </div>
 
+        {/* Filtros */}
         <div style={styles.filtersContainer}>
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-            <FaSearch color={isDarkMode ? colors.textLight : colors.textSecondary} />
-            <input
-              type="text"
-              placeholder="Buscar publicaciones..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={styles.searchInput}
-            />
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-            <label style={styles.filterLabel}>
-              <FaFilter />
-              <select
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-                style={styles.select}
-              >
-                <option value="all">Todos</option>
-                <option value="published">Publicados</option>
-                <option value="draft">Borradores</option>
-              </select>
-            </label>
-          </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: spacing.sm }}>
-            <label style={styles.filterLabel}>
-              <FaSort />
-              <select
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
-                style={styles.select}
-              >
-                <option value="recientes">Más recientes</option>
-                <option value="antiguos">Más antiguos</option>
-                <option value="alfabetico">Alfabéticamente</option>
-              </select>
-            </label>
+          <div style={styles.filtersRow}>
+            <div style={styles.searchContainer}>
+              <FaSearch style={styles.searchIcon} />
+              <input
+                type="text"
+                placeholder="Buscar publicaciones..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={styles.searchInput}
+              />
+            </div>
+            
+            <select
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              style={styles.select}
+            >
+              <option value="all">Todos los estados</option>
+              <option value="published">Publicadas</option>
+              <option value="draft">Borradores</option>
+            </select>
+            
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              style={styles.select}
+            >
+              <option value="recientes">Más recientes</option>
+              <option value="antiguos">Más antiguos</option>
+              <option value="alfabetico">Alfabético</option>
+            </select>
           </div>
         </div>
 
-        {loading ? (
-          <div style={styles.loadingState}>
-            <div style={styles.loadingSpinner}></div>
+        {/* Mensaje de error */}
+        {error && (
+          <div style={styles.errorMessage}>
+            {error}
           </div>
-        ) : filteredPosts.length > 0 ? (
-          <div style={styles.postsContainer}>
-            <AdminPostList 
-              adminId={user?.id}
-              searchTerm={searchTerm}
-              filter={filter}
-              sortOrder={sortOrder}
-              onDelete={(postId) => setConfirmDelete(postId)}
-            />
+        )}
+
+        {/* Loading */}
+        {loading && (
+          <div style={styles.loadingSpinner}>
+            Cargando publicaciones...
           </div>
-        ) : (
-          <div style={styles.emptyState}>
-            <h3>No se encontraron publicaciones</h3>
-            <p>No hay publicaciones que coincidan con los criterios de búsqueda.</p>
-            <p>Esto puede deberse a una de las siguientes razones:</p>
-            <ul style={{ textAlign: 'left', maxWidth: '500px', margin: '0 auto', paddingLeft: '20px' }}>
-              <li>No hay publicaciones en la base de datos</li>
-              <li>El filtro aplicado no muestra resultados</li>
-              <li>Hay un problema de conexión con el servidor</li>
-            </ul>
-            <div style={{ marginTop: '20px', backgroundColor: isDarkMode ? '#1a2e2d' : '#f0f7f7', padding: '15px', borderRadius: '8px', maxWidth: '600px', margin: '0 auto' }}>
-              <h4 style={{ margin: '0 0 10px 0' }}>Información de depuración:</h4>
-              <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
-                Filtro actual: {filter}
-              </p>
-              <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
-                Término de búsqueda: {searchTerm || 'Ninguno'}
-              </p>
-              <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px' }}>
-                Total de publicaciones sin filtrar: {posts.length}
-              </p>
-              {error && (
-                <p style={{ margin: '5px 0', fontFamily: 'monospace', fontSize: '14px', color: 'red' }}>
-                  Error: {error}
+        )}
+
+        {/* Lista de publicaciones */}
+        {!loading && !error && (
+          <>
+            {filteredPosts.length === 0 ? (
+              <div style={styles.emptyState}>
+                <h3 style={styles.emptyStateTitle}>No se encontraron publicaciones</h3>
+                <p style={styles.emptyStateText}>
+                  {searchTerm || filter !== 'all' 
+                    ? 'No hay publicaciones que coincidan con los criterios de búsqueda. Intenta ajustar los filtros.'
+                    : 'No hay publicaciones en el sistema. ¡Crea tu primera publicación!'}
                 </p>
-              )}
-            </div>
-            <p style={{ marginTop: '20px' }}>Puedes intentar:</p>
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '10px' }}>
-              <button 
-                onClick={() => refreshPosts()} 
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f0f0f0',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Recargar publicaciones
-              </button>
-              <Link 
-                to="/admin/post"
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: isDarkMode ? colors.primaryDark : colors.primary,
-                  color: 'white',
-                  textDecoration: 'none',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
-              >
-                Crear una publicación
-              </Link>
-            </div>
-          </div>
+                {(!searchTerm && filter === 'all') && (
+                  <Link to="/admin/post/new" style={styles.createButton}>
+                    <FaPlus />
+                    Crear Primera Publicación
+                  </Link>
+                )}
+              </div>
+            ) : (
+              <div style={styles.postsGrid}>
+                {filteredPosts.map((post) => {
+                  const statusColors = getStatusColor(post.Estado);
+                  return (
+                    <div key={post.ID_publicaciones} style={styles.postCard}>
+                      <img
+                        src={getImageUrl(post.Imagen_portada)}
+                        alt={post.Titulo}
+                        style={styles.postImage}
+                        onError={(e) => {
+                          e.target.src = '/assets/images/logoBN.png';
+                        }}
+                      />
+                      
+                      <div style={styles.postContent}>
+                        <h3 style={styles.postTitle}>{post.Titulo}</h3>
+                        <p style={styles.postExcerpt}>{post.Resumen}</p>
+                        
+                        <div style={styles.postMeta}>
+                          <span style={styles.postDate}>
+                            {formatDate(post.Fecha_modificacion || post.Fecha_creacion)}
+                          </span>
+                          <span
+                            style={{
+                              ...styles.postStatus,
+                              backgroundColor: statusColors.bg,
+                              color: statusColors.text
+                            }}
+                          >
+                            {post.Estado}
+                          </span>
+                        </div>
+                        
+                        <div style={styles.actionsContainer}>
+                          <button
+                            style={{...styles.actionButton, ...styles.viewButton}}
+                            onClick={() => handleViewPost(post.ID_publicaciones)}
+                            title="Ver publicación"
+                          >
+                            <FaEye />
+                          </button>
+                          <button
+                            style={{...styles.actionButton, ...styles.editButton}}
+                            onClick={() => handleEditPost(post.ID_publicaciones)}
+                            title="Editar publicación"
+                          >
+                            <FaEdit />
+                          </button>
+                          <button
+                            style={{...styles.actionButton, ...styles.deleteButton}}
+                            onClick={() => setConfirmDelete(post)}
+                            title="Eliminar publicación"
+                          >
+                            <FaTrash />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
         )}
       </div>
 
-      {/* Modal de confirmación para eliminar */}
+      {/* Modal de confirmación de eliminación */}
       {confirmDelete && (
-        <div style={styles.modalOverlay} onClick={() => setConfirmDelete(null)}>
-          <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
             <h3 style={styles.modalTitle}>Confirmar eliminación</h3>
             <p style={styles.modalText}>
-              ¿Estás seguro de que deseas eliminar esta publicación? Esta acción no se puede deshacer.
+              ¿Estás seguro de que deseas eliminar la publicación "{confirmDelete.Titulo}"? 
+              Esta acción no se puede deshacer.
             </p>
             <div style={styles.modalActions}>
               <button
-                style={styles.cancelButton}
+                style={{...styles.modalButton, ...styles.cancelButton}}
                 onClick={() => setConfirmDelete(null)}
               >
                 Cancelar
               </button>
               <button
-                style={styles.deleteButton}
-                onClick={() => handleDeletePost(confirmDelete)}
+                style={{...styles.modalButton, ...styles.confirmButton}}
+                onClick={() => handleDeletePost(confirmDelete.ID_publicaciones)}
               >
                 Eliminar
               </button>
@@ -728,72 +823,30 @@ const AdminPanel = () => {
         </div>
       )}
 
-      <Footer />
-      <style>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translate(-50%, 20px);
-          }
-          to {
-            opacity: 1;
-            transform: translate(-50%, 0);
-          }
-        }
-        
-        /* Media queries para responsividad */
-        @media (max-width: 768px) {
-          .postCard {
-            flex-direction: column;
-          }
-          .postImageContainer {
-            width: 100% !important;
-            height: 120px !important;
-            margin-bottom: 10px;
-          }
-          .postInfo {
-            margin-left: 0 !important;
-            margin-top: 10px;
-          }
-          .postHeader {
-            flex-direction: column;
-          }
-          .filtersContainer {
-            flex-direction: column;
-            align-items: stretch !important;
-          }
-          .searchInput {
-            max-width: 100% !important;
-            margin-bottom: 10px;
-          }
-          .filterButtons {
-            justify-content: space-between;
-          }
-          .header {
-            flex-direction: column;
-            align-items: stretch !important;
-          }
-          .createButton {
-            width: 100%;
-            justify-content: center;
-            margin-top: 10px;
-          }
-          .pageTitle {
-            font-size: 1.8rem !important;
-          }
-        }
-      `}</style>
-      
       {/* Notificación */}
       {notification.show && (
         <div style={styles.notification}>
           {notification.message}
         </div>
       )}
+
+      <Footer />
+      
+      {/* CSS para animaciones */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          @keyframes slideInRight {
+            from {
+              transform: translateX(100%);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+        `
+      }} />
     </div>
   );
 };
