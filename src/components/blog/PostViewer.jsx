@@ -52,7 +52,7 @@ const PostViewer = () => {
     }
   }, [postId]);
 
-  // Estilos modificados para corregir la alineación
+  // Estilos modificados para eliminar completamente cualquier restricción de ancho
   const styles = {
     pageWrapper: {
       width: "100%",
@@ -64,27 +64,27 @@ const PostViewer = () => {
     },
     mainContainer: {
       width: "100%",
-      margin: "0 auto",
+      margin: "0",
+      padding: "0",
       boxSizing: "border-box",
       flex: "1 0 auto",
-      // Remover restricciones de ancho máximo para permitir que el HTML use su propio layout
     },
     contentContainer: {
-      padding: `100px 0 ${spacing.xxl}`,
+      padding: "100px 0 0",
       position: "relative",
       width: "100%",
+      margin: "0",
     },
     postContainer: {
-      // Remover estilos restrictivos del contenedor del post
       width: "100%",
+      margin: "0",
+      padding: "0",
       boxSizing: "border-box",
-      // Permitir que el contenido HTML use su propio background y padding
       backgroundColor: "transparent",
       border: "none",
       boxShadow: "none",
       borderRadius: "0",
-      padding: "0",
-      marginBottom: spacing.xl,
+      marginBottom: "0",
     },
     commentsContainer: {
       backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
@@ -166,9 +166,10 @@ const PostViewer = () => {
       }
     },
     container: {
-      // Permitir que el contenido HTML use su propio layout
       width: "100%",
-      // Remover restricciones de fontSize y lineHeight
+      margin: "0",
+      padding: "0",
+      boxSizing: "border-box",
     },
     sectionTitle: {
       fontSize: typography.fontSize.xl,
@@ -181,7 +182,6 @@ const PostViewer = () => {
       margin: `0 auto ${spacing.lg} auto`,
       padding: `0 ${spacing.md} ${spacing.sm} ${spacing.md}`,
     },
-    // Nuevo estilo para el separador
     separator: {
       borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
       margin: '2.5rem auto',
@@ -190,67 +190,118 @@ const PostViewer = () => {
     }
   };
 
-  // Función para crear un componente con el contenido HTML
+  // Función completamente rediseñada para crear el componente HTML
   const createPostComponent = () => {
-    // Preservar los estilos originales del HTML y corregir problemas de layout
+    if (!postContent) return { __html: '' };
+    
     let processedContent = postContent;
     
-    // Asegurar que el contenedor principal mantenga su ancho y no se vea restringido
+    // PASO 1: Inyectar CSS para sobrescribir COMPLETAMENTE cualquier restricción de ancho
+    const overrideCss = `
+      <style>
+        /* Sobrescribir TODOS los posibles estilos que limiten el ancho */
+        * {
+          max-width: none !important;
+        }
+        
+        body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          max-width: none !important;
+        }
+        
+        .post-container {
+          max-width: none !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 20px !important;
+          box-sizing: border-box !important;
+        }
+        
+        /* Asegurar que todos los contenedores principales no tengan restricciones */
+        div, article, section, main {
+          max-width: none !important;
+        }
+        
+        /* Corregir imágenes específicamente */
+        img {
+          max-width: 100% !important;
+          height: auto !important;
+          object-fit: contain !important;
+        }
+        
+        /* Contenedores de imágenes */
+        div[style*="text-align"] {
+          width: 100% !important;
+        }
+        
+        /* Contenedores flex */
+        div[style*="display: flex"] {
+          width: 100% !important;
+          max-width: none !important;
+          flex-wrap: wrap !important;
+        }
+      </style>
+    `;
+    
+    // PASO 2: Inyectar el CSS al principio del contenido HTML
+    if (processedContent.includes('<head>')) {
+      processedContent = processedContent.replace('</head>', overrideCss + '</head>');
+    } else if (processedContent.includes('<body>')) {
+      processedContent = processedContent.replace('<body>', '<body>' + overrideCss);
+    } else {
+      processedContent = overrideCss + processedContent;
+    }
+    
+    // PASO 3: Eliminar elementos HTML, HEAD y BODY ya que React los manejará
+    processedContent = processedContent.replace(/<\/?html[^>]*>/gi, '');
+    processedContent = processedContent.replace(/<\/?head[^>]*>/gi, '');
+    processedContent = processedContent.replace(/<\/?body[^>]*>/gi, '');
+    
+    // PASO 4: Procesar contenedores principales
     processedContent = processedContent.replace(
       /<div class="post-container"([^>]*)>/g,
-      '<div class="post-container"$1 style="max-width: none !important; width: 100% !important; margin: 0 auto !important; box-sizing: border-box !important;">'
+      '<div class="post-container"$1 style="max-width: none !important; width: 100% !important; margin: 0 !important; padding: 20px !important; box-sizing: border-box !important;">'
     );
     
-    // Mejorar el manejo de imágenes para preservar su tamaño original
+    // PASO 5: Procesar imágenes
     processedContent = processedContent.replace(
       /<img([^>]*?)>/g,
       (match, attributes) => {
-        // Preservar los estilos existentes y añadir protecciones adicionales
-        const hasStyle = attributes.includes('style=');
-        const hasMaxWidth = attributes.includes('max-width');
-        
-        if (hasStyle) {
-          // Si ya tiene atributo style, modificarlo preservando los estilos originales
+        // Agregar o modificar estilos para imágenes
+        if (attributes.includes('style=')) {
           const styleMatch = attributes.match(/style="([^"]*)"/);
           if (styleMatch) {
             let existingStyle = styleMatch[1];
-            
-            // Solo agregar max-width si no está presente
-            if (!hasMaxWidth) {
-              existingStyle = existingStyle.endsWith(';') ? existingStyle : existingStyle + ';';
-              existingStyle += ' max-width: 100%; height: auto; display: block; margin: 0 auto;';
-            }
-            
-            // Asegurar que las imágenes mantengan su calidad y no se pixelen
-            existingStyle += ' image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;';
-            
+            existingStyle = existingStyle.replace(/max-width:[^;]*;?/gi, '');
+            existingStyle = existingStyle.replace(/width:[^;]*;?/gi, '');
+            existingStyle += '; max-width: 100% !important; height: auto !important; object-fit: contain !important;';
             return match.replace(styleMatch[0], `style="${existingStyle}"`);
           }
         } else {
-          // Si no tiene estilo, agregar uno básico que preserve la calidad
-          return `<img${attributes} style="max-width: 100%; height: auto; display: block; margin: 0 auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges;">`;
+          return `<img${attributes} style="max-width: 100% !important; height: auto !important; object-fit: contain !important;">`;
         }
-        
         return match;
       }
     );
     
-    // Asegurar que los contenedores de imagen mantengan su estructura
+    // PASO 6: Procesar contenedores de contenido
     processedContent = processedContent.replace(
-      /<div([^>]*?)style="([^"]*?text-align:\s*center[^"]*?)"([^>]*)>/g,
-      '<div$1style="$2; width: 100%; box-sizing: border-box; margin: 25px auto; clear: both;"$3>'
-    );
-    
-    // Mejorar contenedores flex para imágenes múltiples
-    processedContent = processedContent.replace(
-      /<div([^>]*?)style="([^"]*?display:\s*flex[^"]*?)"([^>]*)>/g,
-      '<div$1style="$2; width: 100% !important; max-width: none !important; box-sizing: border-box !important; margin: 30px auto !important;"$3>'
-    );
-    
-    // Corregir elementos con ancho específico que pueden causar problemas
-    processedContent = processedContent.replace(
-      /style="([^"]*?)width:\s*48%([^"]*?)"/g,
-      'style="$1width: 48%; min-width: 250px; flex: 0 0 48%; box-sizing: border-box;$2"'
+      /<div([^>]*?)style="([^"]*?)"([^>]*)>/g,
+      (match, before, styleContent, after) => {
+        // Remover restricciones de ancho de todos los divs
+        let newStyle = styleContent
+          .replace(/max-width:[^;]*;?/gi, '')
+          .replace(/width:\s*\d+px[^;]*;?/gi, '');
+        
+        // Si el div tenía display: flex, asegurar que use todo el ancho
+        if (newStyle.includes('display: flex') || newStyle.includes('display:flex')) {
+          newStyle += '; width: 100% !important; max-width: none !important;';
+        }
+        
+        return `<div${before}style="${newStyle}"${after}>`;
+      }
     );
     
     return {

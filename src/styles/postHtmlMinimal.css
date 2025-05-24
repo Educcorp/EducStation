@@ -1,61 +1,77 @@
-/* postHtmlMinimal.css - Estilos mejorados para posts HTML */
+/* postHtmlMinimal.css - CSS agresivo para eliminar TODAS las restricciones de ancho en posts HTML */
 
-/* Contenedor principal del post */
+/* Reset completo para el contenedor del post */
 .post-content {
-  width: 100%;
-  overflow: visible;
-  /* Asegurar que no haya restricciones de ancho */
+  width: 100% !important;
   max-width: none !important;
-  box-sizing: border-box;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  box-sizing: border-box !important;
 }
 
-/* Contenedor del post - preservar estructura original */
-.post-content .post-container {
-  margin: 0 auto !important;
+/* Sobrescribir CUALQUIER contenedor interno */
+.post-content * {
   max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Contenedor principal del post - sin restricciones */
+.post-content .post-container {
   width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 20px !important;
   background-color: inherit !important;
-  padding: inherit !important;
   box-shadow: inherit !important;
   border-radius: inherit !important;
   box-sizing: border-box !important;
-  /* Prevenir colapso de márgenes */
-  overflow: hidden;
+  overflow: visible !important;
 }
 
-/* Mejorar el manejo de imágenes */
+/* Asegurar que TODOS los divs usen el ancho completo */
+.post-content div {
+  max-width: none !important;
+}
+
+/* Eliminar restricciones específicas de contenedores comunes */
+.post-content article,
+.post-content section,
+.post-content main,
+.post-content header,
+.post-content .post-header,
+.post-content .post-content {
+  width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Manejo de imágenes - sin restricciones pero responsivas */
 .post-content img {
   max-width: 100% !important;
+  width: auto !important;
   height: auto !important;
   display: block;
   margin: 0 auto;
-  /* Preservar calidad de imagen */
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-  /* Asegurar que las imágenes no se encojan más de lo necesario */
-  min-height: auto;
-  object-fit: contain;
-  /* Prevenir problemas de layout */
+  object-fit: contain !important;
   vertical-align: middle;
 }
 
-/* Contenedores de imágenes centradas */
+/* Contenedores de imágenes - sin restricciones */
 .post-content div[style*="text-align: center"],
 .post-content div[style*="text-align:center"] {
   width: 100% !important;
-  box-sizing: border-box !important;
-  margin: 25px auto !important;
+  max-width: none !important;
+  margin: 25px 0 !important;
   clear: both !important;
 }
 
-/* Contenedores flex para múltiples imágenes */
+/* Contenedores flex - usar todo el ancho */
 .post-content div[style*="display: flex"],
 .post-content div[style*="display:flex"] {
   width: 100% !important;
   max-width: none !important;
-  box-sizing: border-box !important;
-  margin: 30px auto !important;
-  /* Asegurar que el flex funcione correctamente */
+  margin: 30px 0 !important;
   flex-wrap: wrap !important;
   gap: 20px !important;
 }
@@ -65,24 +81,34 @@
 .post-content div[style*="display:flex"] > div {
   flex: 0 0 calc(48% - 10px) !important;
   min-width: 250px !important;
-  box-sizing: border-box !important;
+  max-width: none !important;
 }
 
-/* Corregir problemas específicos con anchura del 48% */
+/* Sobrescribir elementos con ancho específico */
 .post-content div[style*="width: 48%"],
 .post-content div[style*="width:48%"] {
   flex: 0 0 calc(48% - 10px) !important;
+  width: calc(48% - 10px) !important;
   min-width: 250px !important;
-  box-sizing: border-box !important;
+  max-width: none !important;
 }
 
-/* Asegurar separación adecuada del footer */
+/* Elementos específicos del diseño de posts */
+.post-content .stat-box,
+.post-content .highlight-box,
+.post-content .news-card {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 20px 0 !important;
+}
+
+/* Asegurar separación del footer */
 .post-content + * {
   clear: both;
   margin-top: 2rem;
 }
 
-/* Prevenir problemas con elementos flotantes */
+/* Limpiar elementos flotantes */
 .post-content::after {
   content: "";
   display: table;
@@ -94,15 +120,21 @@
   color: inherit;
 }
 
-/* Responsive mejorado */
+/* Responsive - eliminar restricciones también en móviles */
 @media (max-width: 768px) {
-  .post-content .post-container {
-    max-width: 100vw !important;
+  .post-content {
+    width: 100% !important;
+    max-width: none !important;
     overflow-x: hidden !important;
-    padding: 20px !important;
   }
   
-  /* En móviles, hacer que las imágenes ocupen todo el ancho disponible */
+  .post-content .post-container {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 15px !important;
+  }
+  
+  /* En móviles, hacer que las imágenes dobles ocupen todo el ancho */
   .post-content div[style*="width: 48%"],
   .post-content div[style*="width:48%"] {
     flex: 0 0 100% !important;
@@ -116,17 +148,14 @@
   }
 }
 
-/* Correcciones adicionales para problemas de layout específicos */
-.post-content .stat-box,
-.post-content .highlight-box,
-.post-content .news-card {
+/* Sobrescribir cualquier estilo inline que pueda limitar el ancho */
+.post-content [style*="max-width"] {
   max-width: none !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
 }
 
-/* Asegurar que los contenedores con posición relativa no causen problemas */
-.post-content div[style*="position: relative"] {
+.post-content [style*="width: 800px"],
+.post-content [style*="width:800px"],
+.post-content [style*="width: 600px"],
+.post-content [style*="width:600px"] {
   width: 100% !important;
-  box-sizing: border-box !important;
 } 
