@@ -1,6 +1,6 @@
 // src/components/layout/Footer.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, transitions } from '../../styles/theme';
 import { FaHome, FaInfo, FaEnvelope, FaQuestionCircle, FaPenSquare, FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaList, FaTags, FaGlobe, FaGithub, FaLinkedin } from 'react-icons/fa';
@@ -8,6 +8,7 @@ import { SiX } from 'react-icons/si';
 
 const Footer = () => {
   const { isDarkMode, colors } = useTheme(); // Obtener colores actualizados del contexto
+  const location = useLocation(); // Para detectar la página actual
   const [emailValue, setEmailValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -51,6 +52,19 @@ const Footer = () => {
     e.target.style.background = `linear-gradient(90deg, ${colors.secondary} 60%, ${colors.primaryLight} 100%)`;
     e.target.style.boxShadow = `0 0 8px 0 ${colors.secondary}33`;
     e.target.style.color = isDarkMode ? '#fff' : colors.primary;
+  };
+
+  // Función para manejar navegación con recarga instantánea
+  const handleInstantNavigation = (path, e) => {
+    e.preventDefault();
+    
+    // Si ya estamos en la página, recargar inmediatamente
+    if(location.pathname === path) {
+      window.location.reload();
+    } else {
+      // Si estamos en otra página, navegar directamente con recarga instantánea
+      window.location.href = path;
+    }
   };
 
   // --- ANIMACIONES Y EFECTOS GLOW ---
@@ -413,7 +427,7 @@ const Footer = () => {
               <ul style={styles.links}>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaHome size={18} /></span>
-                  <Link to="/" style={styles.linkAnchor}>Inicio</Link>
+                  <a href="/" style={styles.linkAnchor} onClick={(e) => handleInstantNavigation('/', e)}>Inicio</a>
                 </li>
                 <li style={styles.link} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave}>
                   <span style={styles.linkIcon}><FaInfo size={18} /></span>
