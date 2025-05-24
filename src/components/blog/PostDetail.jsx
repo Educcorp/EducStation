@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
 import ComentariosList from '../comentarios/ComentariosList';
+import '../../styles/postStyles.css';
 
 const PostDetail = ({ post }) => {
   const { colors, isDarkMode } = useTheme();
@@ -56,10 +57,13 @@ const PostDetail = ({ post }) => {
         );
       } else if (post.Imagen_portada.includes('<img')) {
         // Si es etiqueta HTML img, renderizarla como tal
+        // Modificar el HTML para aplicar el estilo a la imagen
+        const modifiedHTML = post.Imagen_portada.replace('<img', `<img style="width:100%;height:100%;object-fit:cover;"`);
+        
         return (
           <div 
             style={styles.featuredImageContainer}
-            dangerouslySetInnerHTML={{ __html: post.Imagen_portada }}
+            dangerouslySetInnerHTML={{ __html: modifiedHTML }}
           />
         );
       } else {
@@ -139,15 +143,23 @@ const PostDetail = ({ post }) => {
       overflow: 'hidden',
       borderRadius: borderRadius.md,
       marginBottom: spacing.lg,
-      '& img': {
-        width: '100%',
-        objectFit: 'cover',
-      }
+    },
+    featuredImageContainerImg: {
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',
     },
     content: {
       fontSize: typography.fontSize.md,
       lineHeight: '1.7',
       color: isDarkMode ? colors.textLight : colors.textPrimary,
+      '& img': {
+        maxWidth: '100%',
+        height: 'auto',
+        display: 'block',
+        margin: '1rem auto',
+        borderRadius: borderRadius.md,
+      }
     },
     categories: {
       display: 'flex',
@@ -192,6 +204,7 @@ const PostDetail = ({ post }) => {
       
       <div 
         style={styles.content}
+        className={`post-content ${isDarkMode ? 'dark-mode' : 'light-mode'}`}
         dangerouslySetInnerHTML={{ __html: post.Contenido }}
       />
       

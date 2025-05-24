@@ -1,0 +1,62 @@
+/* Post Content Styles */
+.post-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem auto;
+  border-radius: 8px;
+}
+
+.post-content figure {
+  margin: 1.5rem auto;
+  text-align: center;
+}
+
+.post-content figure img {
+  max-width: 100%;
+  height: auto;
+}
+
+.post-content figure figcaption {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+}
+
+/* Fix for HTML content in posts */
+.post-content div[data-oembed] iframe,
+.post-content iframe {
+  max-width: 100%;
+  margin: 1rem auto;
+  display: block;
+}
+
+/* Ensure proper spacing for HTML elements */
+.post-content h1, 
+.post-content h2, 
+.post-content h3, 
+.post-content h4, 
+.post-content h5, 
+.post-content h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.post-content p {
+  margin-bottom: 1rem;
+}
+
+.post-content ul, 
+.post-content ol {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+/* Dark mode adjustments */
+.dark-mode.post-content {
+  color: #e1e1e1;
+}
+
+.dark-mode.post-content figure figcaption {
+  color: #aaa;
+} 
