@@ -6,7 +6,7 @@ import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
-import { getAllPublicaciones, deletePublicacion } from '../services/publicacionesService';
+import { getAllPublicaciones, deletePublicacion, getAdminPublicaciones } from '../services/publicacionesService';
 import { toast } from 'react-toastify';
 
 const AdminPanel = () => {
@@ -55,12 +55,21 @@ const AdminPanel = () => {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        // Cargar todas las publicaciones sin filtro de estado para que el admin vea todo
-        const allPosts = await getAllPublicaciones(100, 0);
-        setPosts(allPosts);
+        // Cargar las publicaciones del administrador actual
+        const adminPosts = await getAdminPublicaciones(100, 0);
+        
+        if (adminPosts && adminPosts.length > 0) {
+          setPosts(adminPosts);
+          console.log(`Cargadas ${adminPosts.length} publicaciones del administrador`);
+        } else {
+          console.log('No se encontraron publicaciones para este administrador');
+          setPosts([]);
+          showNotification('No se encontraron publicaciones para tu cuenta de administrador', 'info');
+        }
       } catch (error) {
         console.error('Error al cargar publicaciones:', error);
         toast.error('Error al cargar las publicaciones');
+        showNotification('Error al cargar las publicaciones del administrador', 'error');
       } finally {
         setIsLoading(false);
       }
@@ -577,6 +586,7 @@ const AdminPanel = () => {
         ) : (
           <div style={styles.emptyState}>
             <h3>No se encontraron publicaciones</h3>
+            <p>No hay publicaciones asociadas a tu cuenta de administrador (ID: {user?.id || 'desconocido'}).</p>
             <p>Crea una nueva publicación o ajusta tus filtros de búsqueda.</p>
           </div>
         )}
