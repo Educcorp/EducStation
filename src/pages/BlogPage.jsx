@@ -114,11 +114,20 @@ const BlogPage = () => {
   const handleCategoryChange = (e) => {
     const selectedValue = e.target.value;
     if (selectedValue === 'explore') {
-      // Navigate to categories page
-      navigate('/categorias');
+      // Navigate to categories page with instant reload
+      if(location.pathname === '/categorias') {
+        window.location.reload();
+      } else {
+        window.location.href = '/categorias';
+      }
     } else if (selectedValue !== '') {
-      // Navigate to specific category page
-      navigate(`/categoria/${selectedValue}`);
+      // Navigate to specific category page with instant reload
+      const targetPath = `/categoria/${selectedValue}`;
+      if(location.pathname === targetPath) {
+        window.location.reload();
+      } else {
+        window.location.href = targetPath;
+      }
     }
   };
 
@@ -591,11 +600,27 @@ const BlogPage = () => {
 
     const handleCategorySelect = (categoryId) => {
       if (categoryId === 'explore') {
-        navigate('/categorias');
+        // Navigate to categories page with instant reload
+        if(location.pathname === '/categorias') {
+          window.location.reload();
+        } else {
+          window.location.href = '/categorias';
+        }
       } else if (categoryId === '') {
-        navigate('/blog');
+        // Navigate to blog page with instant reload
+        if(location.pathname === '/blog') {
+          window.location.reload();
+        } else {
+          window.location.href = '/blog';
+        }
       } else if (categoryId !== '') {
-        navigate(`/categoria/${categoryId}`);
+        // Navigate to specific category page with instant reload
+        const targetPath = `/categoria/${categoryId}`;
+        if(location.pathname === targetPath) {
+          window.location.reload();
+        } else {
+          window.location.href = targetPath;
+        }
       }
       setCategoryDropdownOpen(false);
     };

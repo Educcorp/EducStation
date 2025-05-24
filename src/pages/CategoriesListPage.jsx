@@ -122,9 +122,17 @@ const CategoriesListPage = () => {
     setIsSearching(false);
   };
   
-  // Navegar a una categoría
+  // Navegar a una categoría con recarga instantánea
   const navigateToCategory = (categoryId) => {
-    navigate(`/categoria/${categoryId}`);
+    const targetPath = `/categoria/${categoryId}`;
+    
+    // Si ya estamos en la página de esta categoría, recargar inmediatamente
+    if(location.pathname === targetPath) {
+      window.location.reload();
+    } else {
+      // Si estamos en otra página, navegar directamente con recarga instantánea
+      window.location.href = targetPath;
+    }
   };
   
   // Efectos para tarjetas
