@@ -20,22 +20,22 @@ const BlogDetailPage = () => {
 
   console.log('BlogDetailPage - ID del post en parámetros:', id);
 
-  // Recarga forzada al entrar (solo una vez por sesión)
+  // Recarga forzada al entrar (solo una vez por sesión) - OPTIMIZADA
   useEffect(() => {
     const reloadKey = `blogdetail-${id}-reloaded`;
     
     if (location.state && location.state.forceReload) {
-      // Verificar si ya se realizó la recarga en esta sesión de navegación
       if (!sessionStorage.getItem(reloadKey)) {
-        // Marcar que se va a realizar la recarga
+        // Establecer marcadores INMEDIATAMENTE antes de recargar
+        sessionStorage.setItem('viewing-post', id);
+        sessionStorage.setItem('came-from-blog', 'true');
         sessionStorage.setItem(reloadKey, 'true');
-        // Limpiar el estado para evitar bucles infinitos
+        // Recarga inmediata sin delay
         window.history.replaceState(null, '', window.location.pathname);
-        // Realizar la recarga
         window.location.reload();
       }
     } else {
-      // Limpiar todas las marcas de recarga de blog detail si no hay forceReload
+      // Limpiar marcas de recarga de otros posts
       Object.keys(sessionStorage).forEach(key => {
         if (key.startsWith('blogdetail-') && key.endsWith('-reloaded')) {
           sessionStorage.removeItem(key);
@@ -57,9 +57,11 @@ const BlogDetailPage = () => {
           postData: data
         });
         
-        // Marcar que estamos viendo un post (para detectar navegación hacia atrás)
-        sessionStorage.setItem('viewing-post', id);
-        sessionStorage.setItem('came-from-blog', 'true');
+        // Establecer marcadores solo si no se recargó (para evitar duplicación)
+        if (!sessionStorage.getItem(`blogdetail-${id}-reloaded`)) {
+          sessionStorage.setItem('viewing-post', id);
+          sessionStorage.setItem('came-from-blog', 'true');
+        }
         
         // Actualizar título de la página
         document.title = `${data.Titulo} | EducStation`;
@@ -80,12 +82,15 @@ const BlogDetailPage = () => {
     }
   }, [id]);
 
-  // Limpiar marcadores al desmontar el componente
+  // Limpiar marcadores al desmontar el componente - OPTIMIZADO
   useEffect(() => {
     return () => {
-      // Marcar que salimos del post para detectar navegación hacia atrás
-      sessionStorage.setItem('left-post', sessionStorage.getItem('viewing-post') || '');
-      sessionStorage.removeItem('viewing-post');
+      // Solo establecer marcador de salida si estamos viendo un post
+      const viewingPost = sessionStorage.getItem('viewing-post');
+      if (viewingPost) {
+        sessionStorage.setItem('left-post', viewingPost);
+        sessionStorage.removeItem('viewing-post');
+      }
     };
   }, []);
 
