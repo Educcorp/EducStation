@@ -1,7 +1,7 @@
 /* Modificación para el componente PostViewer.jsx */
 // Actualiza el componente para usar los estilos corregidos
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useParams, useNavigate } from 'react-router-dom';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
@@ -13,8 +13,9 @@ import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicional
 import ComentariosList from '../comentarios/ComentariosList';
 
 const PostViewer = () => {
-  const { postId } = useParams(); // Obtiene el ID del post de la URL
   const location = useLocation();
+  const { id: postId } = useParams();
+  const navigate = useNavigate();
   const [postContent, setPostContent] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -177,6 +178,11 @@ const PostViewer = () => {
     };
   };
 
+  // Función para navegar de vuelta al blog con recarga
+  const navigateToBlог = () => {
+    navigate('/blog', { state: { forceReload: true } });
+  };
+
   if (!postContent) {
     return null;
   }
@@ -197,14 +203,7 @@ const PostViewer = () => {
             >Inicio</Link>
             <span style={{color: isDarkMode ? 'rgba(255,255,255,0.3)' : colors.gray300, fontSize: '10px'}}>►</span>
             <button 
-              onClick={() => {
-                // Navigate to blog page with instant reload
-                if(location.pathname === '/blog') {
-                  window.location.reload();
-                } else {
-                  window.location.href = '/blog';
-                }
-              }}
+              onClick={navigateToBlог}
               style={{
                 ...styles.breadcrumbLink,
                 background: 'none',

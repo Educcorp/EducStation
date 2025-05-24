@@ -1,11 +1,12 @@
 import React from 'react';
-import { Link, useParams, useLocation } from 'react-router-dom';
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
 import ComentariosList from '../comentarios/ComentariosList';
 
 const PostDetail = ({ post }) => {
   const { colors, isDarkMode } = useTheme();
+  const navigate = useNavigate();
   const location = useLocation();
   // Extraer el ID del post directamente de los parámetros de la URL
   const { id: urlId } = useParams();
@@ -90,6 +91,11 @@ const PostDetail = ({ post }) => {
     
     // Si no hay imagen, no mostrar nada
     return null;
+  };
+
+  // Función para navegar de vuelta al blog con recarga
+  const navigateToBlог = () => {
+    navigate('/blog', { state: { forceReload: true } });
   };
 
   // Estilos para el componente
@@ -214,14 +220,7 @@ const PostDetail = ({ post }) => {
       <ComentariosList postId={postId} />
       
       <button 
-        onClick={() => {
-          // Navigate to blog page with instant reload
-          if(location.pathname === '/blog') {
-            window.location.reload();
-          } else {
-            window.location.href = '/blog';
-          }
-        }}
+        onClick={navigateToBlог}
         style={{
           ...styles.backLink,
           background: 'none',

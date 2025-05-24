@@ -114,20 +114,11 @@ const BlogPage = () => {
   const handleCategoryChange = (e) => {
     const selectedValue = e.target.value;
     if (selectedValue === 'explore') {
-      // Navigate to categories page with instant reload
-      if(location.pathname === '/categorias') {
-        window.location.reload();
-      } else {
-        window.location.href = '/categorias';
-      }
+      // Navigate to categories page with force reload
+      navigate('/categorias', { state: { forceReload: true } });
     } else if (selectedValue !== '') {
-      // Navigate to specific category page with instant reload
-      const targetPath = `/categoria/${selectedValue}`;
-      if(location.pathname === targetPath) {
-        window.location.reload();
-      } else {
-        window.location.href = targetPath;
-      }
+      // Navigate to specific category page with force reload
+      navigate(`/categoria/${selectedValue}`, { state: { forceReload: true } });
     }
   };
 
@@ -502,12 +493,8 @@ const BlogPage = () => {
         onMouseEnter={() => setHoveredPromo(true)}
         onMouseLeave={() => setHoveredPromo(false)}
         onClick={() => {
-          // Navigate to categories page with instant reload
-          if(location.pathname === '/categorias') {
-            window.location.reload();
-          } else {
-            window.location.href = '/categorias';
-          }
+          // Navigate to categories page with force reload
+          navigate('/categorias', { state: { forceReload: true } });
         }}
       >
         <div>
@@ -607,27 +594,14 @@ const BlogPage = () => {
 
     const handleCategorySelect = (categoryId) => {
       if (categoryId === 'explore') {
-        // Navigate to categories page with instant reload
-        if(location.pathname === '/categorias') {
-          window.location.reload();
-        } else {
-          window.location.href = '/categorias';
-        }
+        // Navigate to categories page with force reload
+        navigate('/categorias', { state: { forceReload: true } });
       } else if (categoryId === '') {
-        // Navigate to blog page with instant reload
-        if(location.pathname === '/blog') {
-          window.location.reload();
-        } else {
-          window.location.href = '/blog';
-        }
+        // Just reload current page since we're already on blog
+        window.location.reload();
       } else if (categoryId !== '') {
-        // Navigate to specific category page with instant reload
-        const targetPath = `/categoria/${categoryId}`;
-        if(location.pathname === targetPath) {
-          window.location.reload();
-        } else {
-          window.location.href = targetPath;
-        }
+        // Navigate to specific category page with force reload
+        navigate(`/categoria/${categoryId}`, { state: { forceReload: true } });
       }
       setCategoryDropdownOpen(false);
     };

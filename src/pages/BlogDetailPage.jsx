@@ -1,6 +1,6 @@
 // src/pages/BlogDetailPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { getPublicacionById } from '../services/publicacionesService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -12,6 +12,7 @@ import { spacing, typography, borderRadius } from '../styles/theme';
 const BlogDetailPage = () => {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,21 +22,27 @@ const BlogDetailPage = () => {
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
+    const reloadKey = `blogdetail-${id}-reloaded`;
+    
     if (location.state && location.state.forceReload) {
       // Verificar si ya se realizó la recarga en esta sesión de navegación
-      if (!sessionStorage.getItem('blogdetailpage-reloaded')) {
+      if (!sessionStorage.getItem(reloadKey)) {
         // Marcar que se va a realizar la recarga
-        sessionStorage.setItem('blogdetailpage-reloaded', 'true');
+        sessionStorage.setItem(reloadKey, 'true');
         // Limpiar el estado para evitar bucles infinitos
         window.history.replaceState(null, '', window.location.pathname);
         // Realizar la recarga
         window.location.reload();
       }
     } else {
-      // Limpiar la marca de recarga si no hay forceReload
-      sessionStorage.removeItem('blogdetailpage-reloaded');
+      // Limpiar todas las marcas de recarga de blog detail si no hay forceReload
+      Object.keys(sessionStorage).forEach(key => {
+        if (key.startsWith('blogdetail-') && key.endsWith('-reloaded')) {
+          sessionStorage.removeItem(key);
+        }
+      });
     }
-  }, [location]);
+  }, [location, id]);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -73,6 +80,11 @@ const BlogDetailPage = () => {
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('es-ES', options);
+  };
+
+  // Función para navegar de vuelta al blog con recarga
+  const navigateToBlог = () => {
+    navigate('/blog', { state: { forceReload: true } });
   };
 
   // Estilos para la página de detalles
@@ -253,14 +265,7 @@ const BlogDetailPage = () => {
             <div style={styles.errorContainer}>
               <p>{error}</p>
               <button 
-                onClick={() => {
-                  // Navigate to blog page with instant reload
-                  if(location.pathname === '/blog') {
-                    window.location.reload();
-                  } else {
-                    window.location.href = '/blog';
-                  }
-                }}
+                onClick={navigateToBlог}
                 style={{
                   ...styles.backLink,
                   background: 'none',
@@ -281,14 +286,7 @@ const BlogDetailPage = () => {
             <div style={styles.errorContainer}>
               <p>No se encontró la publicación solicitada.</p>
               <button 
-                onClick={() => {
-                  // Navigate to blog page with instant reload
-                  if(location.pathname === '/blog') {
-                    window.location.reload();
-                  } else {
-                    window.location.href = '/blog';
-                  }
-                }}
+                onClick={navigateToBlог}
                 style={{
                   ...styles.backLink,
                   background: 'none',
