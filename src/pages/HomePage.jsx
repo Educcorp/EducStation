@@ -7,6 +7,7 @@ import PostCard from '../components/blog/PostCard';
 import { spacing, typography, transitions, applyHoverStyles } from '../styles/theme';
 // Importamos el hook useTheme
 import { useTheme } from '../context/ThemeContext';
+import { useLocation } from 'react-router-dom';
 
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
@@ -247,6 +248,8 @@ const HomePage = () => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   // Estado para el valor de búsqueda
   const [searchValue, setSearchValue] = useState('');
+
+  const location = useLocation();
 
   // Categorías de los artículos
   const categories = [
@@ -567,10 +570,11 @@ const HomePage = () => {
     }
   };
 
-  // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    window.location.reload();
-  }, []);
+    if (location.state && location.state.forceReload) {
+      window.location.reload();
+    }
+  }, [location]);
 
   return (
     <div style={styles.app}>

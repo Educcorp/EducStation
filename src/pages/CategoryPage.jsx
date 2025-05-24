@@ -1,6 +1,6 @@
 // src/pages/CategoryPage.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostCard from '../components/blog/PostCard';
@@ -19,6 +19,7 @@ const CategoryPage = () => {
   const [categoryColor, setCategoryColor] = useState('#0b4444');
   const [isHovering, setIsHovering] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Obtenemos el parámetro de categoría de la URL
   const { id } = useParams();
@@ -74,8 +75,10 @@ const CategoryPage = () => {
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    window.location.reload();
-  }, []);
+    if (location.state && location.state.forceReload) {
+      window.location.reload();
+    }
+  }, [location]);
 
   // Activar animación al montar el componente
   useEffect(() => {

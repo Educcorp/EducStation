@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostList from '../components/blog/PostList';
@@ -23,11 +23,14 @@ const BlogPage = () => {
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const categoryDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
+  const location = useLocation();
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    window.location.reload();
-  }, []);
+    if (location.state && location.state.forceReload) {
+      window.location.reload();
+    }
+  }, [location]);
 
   // Animación de entrada
   useEffect(() => {

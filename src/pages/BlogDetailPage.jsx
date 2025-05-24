@@ -1,6 +1,6 @@
 // src/pages/BlogDetailPage.jsx
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { getPublicacionById } from '../services/publicacionesService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
@@ -11,6 +11,7 @@ import { spacing, typography, borderRadius } from '../styles/theme';
 
 const BlogDetailPage = () => {
   const { id } = useParams();
+  const location = useLocation();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,8 +20,10 @@ const BlogDetailPage = () => {
   console.log('BlogDetailPage - ID del post en parámetros:', id);
 
   useEffect(() => {
-    window.location.reload();
-  }, []);
+    if (location.state && location.state.forceReload) {
+      window.location.reload();
+    }
+  }, [location]);
 
   useEffect(() => {
     const fetchPost = async () => {

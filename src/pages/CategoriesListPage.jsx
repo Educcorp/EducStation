@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useTheme } from '../context/ThemeContext';
@@ -17,6 +17,7 @@ const CategoriesListPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredCategories, setFilteredCategories] = useState([]);
   const navigate = useNavigate();
+  const location = useLocation();
   
   const featuredSectionRef = useRef(null);
   const gridRef = useRef(null);
@@ -33,8 +34,10 @@ const CategoriesListPage = () => {
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
-    window.location.reload();
-  }, []);
+    if (location.state && location.state.forceReload) {
+      window.location.reload();
+    }
+  }, [location]);
 
   // Animación de entrada para el título y subtítulo
   useEffect(() => {
