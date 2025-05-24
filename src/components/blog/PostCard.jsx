@@ -85,6 +85,28 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
     return post.categoria || 'Sin categoría';
   };
   
+  // Función para obtener resumen limpio
+  const getCleanSummary = (post) => {
+    // Prioridad 1: Usar el campo Resumen si existe y no está vacío
+    if (post.Resumen && post.Resumen.trim() !== '') {
+      // Si el resumen contiene HTML, extraer solo el texto
+      if (post.Resumen.includes('<') && post.Resumen.includes('>')) {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = post.Resumen;
+        const cleanText = tempDiv.textContent || tempDiv.innerText || '';
+        return cleanText.trim() || 'Sin resumen disponible';
+      }
+      return post.Resumen;
+    }
+    
+    // Prioridad 2: Si no hay resumen, usar extractSummary del contenido
+    if (post.contenido || post.Contenido) {
+      return extractSummary(post.contenido || post.Contenido, 120);
+    }
+    
+    return 'Sin resumen disponible';
+  };
+
   // Función para renderizar la imagen de portada
   const renderPortadaImage = () => {
     if (!post.Imagen_portada) {
@@ -341,7 +363,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           </h3>
           
           <p style={styles.postSummary}>
-            {extractSummary(post.contenido || post.Contenido, 120).replace(/<[^>]*>?/gm, '')}
+            {getCleanSummary(post)}
           </p>
 
           {/* Botón Leer más con animación */}
