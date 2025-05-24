@@ -9,9 +9,11 @@ import ReactionSection from './ReactionSection';
 // Importamos el archivo CSS específico para posts
 import '../../styles/posts.css';
 import '../../styles/postStyles.css'; // Importamos los nuevos estilos para posts
+import '../../styles/postHtmlFix.css'; // Importamos los estilos de corrección para posts HTML
 import { useTheme } from '../../context/ThemeContext';
 import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicionales
 import ComentariosList from '../comentarios/ComentariosList';
+import { processPostHTML } from './utils/postHelpers';
 
 const PostViewer = () => {
   const location = useLocation();
@@ -174,8 +176,11 @@ const PostViewer = () => {
 
   // Función para crear un componente con el contenido HTML
   const createPostComponent = () => {
+    // Usar la función processPostHTML para procesar el contenido
+    const processedContent = processPostHTML(postContent);
+    
     return {
-      __html: postContent
+      __html: processedContent
     };
   };
 

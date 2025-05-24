@@ -1,20 +1,30 @@
 /* Post Content Styles */
 .post-content img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 1rem auto;
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  display: block !important;
+  margin: 1rem auto !important;
   border-radius: 8px;
+  box-sizing: border-box !important;
+  /* Prevenir que las imágenes se encojan */
+  min-width: 0 !important;
+  flex-shrink: 0 !important;
 }
 
 .post-content figure {
   margin: 1.5rem auto;
   text-align: center;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 .post-content figure img {
-  max-width: 100%;
-  height: auto;
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  display: block !important;
 }
 
 .post-content figure figcaption {
@@ -26,9 +36,11 @@
 /* Fix for HTML content in posts */
 .post-content div[data-oembed] iframe,
 .post-content iframe {
-  max-width: 100%;
+  max-width: 100% !important;
+  width: 100% !important;
   margin: 1rem auto;
   display: block;
+  box-sizing: border-box !important;
 }
 
 /* Ensure proper spacing for HTML elements */
@@ -40,16 +52,61 @@
 .post-content h6 {
   margin-top: 1.5rem;
   margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .post-content p {
   margin-bottom: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .post-content ul, 
 .post-content ol {
   margin-bottom: 1rem;
   padding-left: 2rem;
+  width: calc(100% - 2rem);
+  box-sizing: border-box;
+}
+
+/* Estilos específicos para contenedores flexibles en posts HTML */
+.post-content div[style*="display: flex"],
+.post-content div[style*="display:flex"] {
+  flex-wrap: wrap !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  justify-content: space-between !important;
+}
+
+.post-content div[style*="display: flex"] > div,
+.post-content div[style*="display:flex"] > div {
+  flex: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Estilos para elementos con ancho específico en posts HTML */
+.post-content div[style*="width: 48%"],
+.post-content div[style*="width:48%"] {
+  width: 48% !important;
+  min-width: 250px !important;
+  margin-bottom: 20px !important;
+  box-sizing: border-box !important;
+}
+
+/* Responsive para contenedores de imágenes */
+@media (max-width: 768px) {
+  .post-content div[style*="width: 48%"],
+  .post-content div[style*="width:48%"] {
+    width: 100% !important;
+    min-width: auto !important;
+  }
+}
+
+/* Asegurar que todos los elementos del post respeten el ancho del contenedor */
+.post-content * {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Dark mode adjustments */

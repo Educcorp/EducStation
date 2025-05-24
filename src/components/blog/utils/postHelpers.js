@@ -44,11 +44,24 @@ export const formatDateTime = (dateString) => {
 export const extractSummary = (content, maxLength = 150) => {
   if (!content) return '';
   
-  // Eliminar etiquetas HTML
-  const plainText = content.replace(/<[^>]+>/g, '');
+  // Crear un elemento temporal para decodificar HTML
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = content;
   
-  // Eliminar espacios extra y saltos de línea
-  const cleanText = plainText.replace(/\s+/g, ' ').trim();
+  // Obtener el texto plano
+  const plainText = tempDiv.textContent || tempDiv.innerText || '';
+  
+  // Eliminar espacios extra, saltos de línea y caracteres especiales
+  const cleanText = plainText
+    .replace(/\s+/g, ' ') // Reemplazar múltiples espacios con uno solo
+    .replace(/[\r\n\t]/g, ' ') // Reemplazar saltos de línea y tabs
+    .replace(/&nbsp;/g, ' ') // Reemplazar entidades HTML de espacio
+    .replace(/&amp;/g, '&') // Reemplazar entidades HTML de ampersand
+    .replace(/&lt;/g, '<') // Reemplazar entidades HTML de menor que
+    .replace(/&gt;/g, '>') // Reemplazar entidades HTML de mayor que
+    .replace(/&quot;/g, '"') // Reemplazar entidades HTML de comillas
+    .replace(/&#39;/g, "'") // Reemplazar entidades HTML de apostrofe
+    .trim();
   
   return cleanText.length > maxLength
     ? cleanText.substring(0, maxLength) + '...'
@@ -193,4 +206,57 @@ export const calculateReadingTime = (content, wordsPerMinute = 200) => {
   const minutes = Math.ceil(wordCount / wordsPerMinute);
   
   return minutes === 1 ? '1 min' : `${minutes} min`;
+};
+
+/**
+ * Procesa el contenido HTML para corregir problemas de layout y imágenes
+ * @param {string} htmlContent - Contenido HTML del post
+ * @returns {string} Contenido HTML procesado y corregido
+ */
+export const processPostHTML = (htmlContent) => {
+  if (!htmlContent) return '';
+  
+  let processedContent = htmlContent;
+  
+  // Asegurar que el contenedor principal del post tenga los estilos correctos
+  processedContent = processedContent.replace(
+    /<div class="post-container"[^>]*>/g,
+    '<div class="post-container" style="max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-sizing: border-box !important; overflow-x: hidden !important; background-color: transparent !important;">'
+  );
+  
+  // Asegurar que las imágenes mantengan su tamaño correcto
+  processedContent = processedContent.replace(
+    /<img([^>]*?)style="([^"]*?)"([^>]*?)>/g,
+    (match, before, style, after) => {
+      // Mantener estilos existentes pero asegurar que no se encojan
+      const newStyle = style + '; max-width: 100% !important; width: auto !important; height: auto !important; display: block !important; margin: 1rem auto !important; box-sizing: border-box !important; min-width: 0 !important; flex-shrink: 0 !important; object-fit: contain !important;';
+      return `<img${before}style="${newStyle}"${after}>`;
+    }
+  );
+  
+  // Para imágenes sin estilo inline
+  processedContent = processedContent.replace(
+    /<img(?![^>]*style=)([^>]*?)>/g,
+    '<img$1 style="max-width: 100% !important; width: auto !important; height: auto !important; display: block !important; margin: 1rem auto !important; box-sizing: border-box !important; min-width: 0 !important; flex-shrink: 0 !important; object-fit: contain !important;">'
+  );
+  
+  // Asegurar que los contenedores flexibles no afecten las imágenes
+  processedContent = processedContent.replace(
+    /<div([^>]*?)style="([^"]*?display:\s*flex[^"]*?)"([^>]*?)>/g,
+    (match, before, style, after) => {
+      const newStyle = style + '; flex-wrap: wrap !important; width: 100% !important; box-sizing: border-box !important; justify-content: space-between !important;';
+      return `<div${before}style="${newStyle}"${after}>`;
+    }
+  );
+  
+  // Corregir contenedores con ancho específico
+  processedContent = processedContent.replace(
+    /<div([^>]*?)style="([^"]*?width:\s*48%[^"]*?)"([^>]*?)>/g,
+    (match, before, style, after) => {
+      const newStyle = style + '; min-width: 250px !important; box-sizing: border-box !important;';
+      return `<div${before}style="${newStyle}"${after}>`;
+    }
+  );
+  
+  return processedContent;
 }; 
