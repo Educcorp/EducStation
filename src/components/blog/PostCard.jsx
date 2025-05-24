@@ -15,10 +15,40 @@ import {
   isHTMLImage
 } from './utils/postHelpers';
 
+// Estilo keyframes para la animación de brillo
+const shineAnimation = `
+  @keyframes shine {
+    0% {
+      left: -100%;
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.5;
+    }
+    100% {
+      left: 200%;
+      opacity: 0;
+    }
+  }
+`;
+
+// Añadir los estilos keyframes al documento
+const addKeyframeStyles = () => {
+  const styleSheet = document.createElement("style");
+  styleSheet.type = "text/css";
+  styleSheet.innerText = shineAnimation;
+  document.head.appendChild(styleSheet);
+};
+
 const PostCard = ({ post, showCategory = true, showViews = true }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { colors, isDarkMode } = useTheme();
   
+  // Añadir los keyframes al montar el componente
+  React.useEffect(() => {
+    addKeyframeStyles();
+  }, []);
+
   // Función para obtener color de categoría
   const getCategoryColor = (post) => {
     // Mapeo de IDs de categoría a colores
@@ -124,24 +154,27 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       flexDirection: "column",
       borderRadius: borderRadius.lg,
       overflow: "hidden",
-      transition: `${transitions.default}, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease`,
+      transition: `${transitions.default}, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s ease, border-color 0.3s ease`,
       backgroundColor: isDarkMode ? "#1a1e23" : colors.white,
       boxShadow: isDarkMode 
         ? `0 8px 20px rgba(0, 0, 0, 0.3)` 
         : isHovered 
-          ? '0 15px 30px rgba(0, 0, 0, 0.15)' 
+          ? '0 20px 30px rgba(0, 0, 0, 0.18)' 
           : shadows.md,
-      transform: isHovered ? "translateY(-10px)" : "translateY(0)",
+      transform: isHovered ? "translateY(-12px)" : "translateY(0)",
       marginBottom: spacing.lg,
       width: "100%",
       maxWidth: "400px",
       height: "100%",
-      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'}`,
+      border: `1px solid ${isDarkMode 
+        ? isHovered ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)' 
+        : isHovered ? 'rgba(8, 44, 44, 0.15)' : 'rgba(0,0,0,0.03)'}`,
+      position: "relative",
     },
     imageContainer: {
       position: "relative",
       width: "100%",
-      height: "200px",
+      height: "220px",
       overflow: "hidden",
     },
     htmlImageContainer: {
@@ -158,7 +191,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       right: spacing.sm,
       backgroundColor: 'rgba(0,0,0,0.7)',
       color: '#fff',
-      padding: `${spacing.xs} ${spacing.sm}`,
+      padding: `${spacing.xs} ${spacing.md}`,
       borderRadius: borderRadius.round,
       fontSize: typography.fontSize.xs,
       fontWeight: typography.fontWeight.medium,
@@ -169,14 +202,16 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       opacity: isHovered ? 1 : 0.8,
       display: 'flex',
       alignItems: 'center',
-      gap: spacing.xs
+      gap: spacing.xs,
+      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     },
     cardImage: {
       width: "100%",
       height: "100%",
       objectFit: "cover",
-      transition: "transform 0.5s ease",
-      transform: isHovered ? "scale(1.05)" : "scale(1)",
+      transition: "transform 0.5s ease, filter 0.5s ease",
+      transform: isHovered ? "scale(1.08)" : "scale(1)",
+      filter: isHovered ? "brightness(1.05) contrast(1.05)" : "brightness(1) contrast(1)",
     },
     noImage: {
       width: "100%",
@@ -196,6 +231,8 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       flexDirection: "column",
       justifyContent: "space-between",
       backgroundColor: isDarkMode ? "#1a1e23" : colors.white,
+      position: "relative",
+      zIndex: 1,
     },
     postTitle: {
       fontSize: typography.fontSize.lg,
@@ -244,11 +281,38 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
     authorName: {
       fontWeight: typography.fontWeight.medium,
       color: isDarkMode ? colors.textLight : colors.textDark,
-    }
+    },
+    overlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      height: "220px",
+      background: isHovered 
+        ? `linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%)`
+        : `linear-gradient(to bottom, rgba(0,0,0,0) 70%, rgba(0,0,0,0.4) 100%)`,
+      zIndex: 1,
+      opacity: 1,
+      transition: "opacity 0.3s ease",
+      pointerEvents: "none",
+    },
+    shineEffect: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      width: "80px",
+      height: "100%",
+      background: "linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 50%, rgba(255,255,255,0) 100%)",
+      zIndex: 2,
+      transform: "skewX(-25deg)",
+      pointerEvents: "none",
+      animation: isHovered ? "shine 2s ease-in-out infinite" : "none",
+    },
   };
 
   return (
-    <div
+    <Link
+      to={`/blog/${post.ID_publicaciones}`}
       style={{ textDecoration: 'none', color: 'inherit' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -257,6 +321,8 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
         {/* Contenedor de imagen */}
         <div style={styles.imageContainer}>
           {renderPortadaImage()}
+          <div style={styles.overlay}></div>
+          {isHovered && <div style={styles.shineEffect}></div>}
           
           {/* Badge de categoría */}
           {showCategory && (
@@ -285,6 +351,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
               hoverBackgroundColor="#082c2c"
               padding="8px 16px"
               borderRadius="6px"
+              onClick={(e) => e.stopPropagation()}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span>Leer más</span>
@@ -321,7 +388,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           </div>
         </div>
       </article>
-    </div>
+    </Link>
   );
 };
 

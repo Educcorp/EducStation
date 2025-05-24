@@ -498,4 +498,65 @@
   --error: #ff5722;
   --error-rgb: 255, 87, 34;
   --bg-avatar: #5d8a88;
+}
+
+.comentario-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  background-color: transparent;
+  color: var(--text-primary);
+}
+
+.comentario-btn svg {
+  font-size: 1rem;
+}
+
+.comentario-btn-edit {
+  color: #082c2c;
+  margin-right: 10px;
+}
+
+.comentario-btn-edit:hover {
+  background-color: rgba(8, 44, 44, 0.1);
+}
+
+.comentario-btn-delete {
+  color: #dc3545;
+}
+
+.comentario-btn-delete:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.comentario-btn-like {
+  color: #082c2c;
+}
+
+.comentario-btn-like:hover {
+  background-color: rgba(8, 44, 44, 0.1);
+}
+
+.comentario-btn-refresh {
+  color: #082c2c;
+  margin-left: auto;
+}
+
+.comentario-btn-refresh:hover {
+  background-color: rgba(8, 44, 44, 0.1);
+}
+
+.comentario-btn-refresh svg {
+  transition: transform 0.4s ease;
+}
+
+.comentario-btn-refresh:hover svg {
+  transform: rotate(180deg);
 } 

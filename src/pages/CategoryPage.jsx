@@ -646,9 +646,22 @@ const CategoryPage = () => {
     },
     postsGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-      gap: spacing.lg,
-      marginBottom: spacing.xl
+      gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+      gap: spacing.xl,
+      marginTop: spacing.xxl,
+      marginBottom: spacing.xxl
+    },
+    postCard: {
+      backgroundColor: "#ffffff",
+      borderRadius: borderRadius.lg,
+      overflow: "hidden",
+      boxShadow: shadows.md,
+      transition: transitions.default,
+      height: "100%",
+      '&:hover': {
+        transform: "translateY(-5px)",
+        boxShadow: shadows.lg
+      }
     },
     pagination: {
       display: "flex",

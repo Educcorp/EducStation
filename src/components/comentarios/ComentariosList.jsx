@@ -206,22 +206,12 @@ const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId 
             <option value="antiguo">Más antiguos</option>
           </select>
           
-          <AnimatedButton
+          <button
             onClick={cargarComentarios}
-            backgroundColor="transparent"
-            hoverBackgroundColor="rgba(8, 44, 44, 0.2)"
-            padding="6px 12px"
-            borderRadius="6px"
-            style={{
-              color: '#082c2c',
-              marginLeft: 'auto'
-            }}
+            className="comentario-btn comentario-btn-refresh"
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <FaSync />
-              <span>Actualizar</span>
-            </div>
-          </AnimatedButton>
+            <FaSync /> Actualizar
+          </button>
         </div>
       )}
       

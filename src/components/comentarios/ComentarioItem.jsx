@@ -157,45 +157,26 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
           <div className="comentario-actions">
             {isCurrentUser ? (
               <>
-                <AnimatedButton
+                <button
                   onClick={handleEdit}
-                  backgroundColor="rgba(8, 44, 44, 0.6)"
-                  hoverBackgroundColor="#082c2c"
-                  padding="6px 12px"
-                  borderRadius="6px"
-                  style={{ marginRight: '10px' }}
+                  className="comentario-btn comentario-btn-edit"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FaEdit />
-                    <span>Editar</span>
-                  </div>
-                </AnimatedButton>
-                <AnimatedButton
+                  <FaEdit /> Editar
+                </button>
+                <button
                   onClick={handleDelete}
-                  backgroundColor="rgba(220, 53, 69, 0.6)"
-                  hoverBackgroundColor="#dc3545"
-                  padding="6px 12px"
-                  borderRadius="6px"
+                  className="comentario-btn comentario-btn-delete"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <FaTrash />
-                    <span>Eliminar</span>
-                  </div>
-                </AnimatedButton>
+                  <FaTrash /> Eliminar
+                </button>
               </>
             ) : (
-              <AnimatedButton
+              <button
                 onClick={() => {}}
-                backgroundColor="rgba(8, 44, 44, 0.6)"
-                hoverBackgroundColor="#082c2c"
-                padding="6px 12px"
-                borderRadius="6px"
+                className="comentario-btn comentario-btn-like"
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <FaThumbsUp />
-                  <span>Me gusta</span>
-                </div>
-              </AnimatedButton>
+                <FaThumbsUp /> Me gusta
+              </button>
             )}
           </div>
         </>
