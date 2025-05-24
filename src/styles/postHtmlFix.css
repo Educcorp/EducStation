@@ -1,0 +1,150 @@
+/* postHtmlFix.css - Estilos específicos para corregir problemas en posts HTML */
+
+/* Asegurar que el contenedor principal del post no cause problemas de layout */
+.post-content .post-container {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* Corregir problemas específicos con imágenes en posts HTML */
+.post-content img,
+.post-content .post-container img {
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  display: block !important;
+  margin: 1rem auto !important;
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  flex-shrink: 0 !important;
+  object-fit: contain !important;
+}
+
+/* Corregir contenedores de imágenes centradas */
+.post-content div[style*="text-align: center"],
+.post-content div[style*="text-align:center"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 25px 0 !important;
+  text-align: center !important;
+}
+
+.post-content div[style*="text-align: center"] img,
+.post-content div[style*="text-align:center"] img {
+  max-width: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 auto !important;
+  display: block !important;
+}
+
+/* Corregir contenedores flexibles que pueden afectar las imágenes */
+.post-content div[style*="display: flex"],
+.post-content div[style*="display:flex"] {
+  flex-wrap: wrap !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+  justify-content: space-between !important;
+  margin: 30px 0 !important;
+}
+
+.post-content div[style*="display: flex"] > div,
+.post-content div[style*="display:flex"] > div {
+  flex: none !important;
+  box-sizing: border-box !important;
+}
+
+/* Corregir elementos con ancho específico */
+.post-content div[style*="width: 48%"],
+.post-content div[style*="width:48%"] {
+  width: 48% !important;
+  min-width: 250px !important;
+  margin-bottom: 20px !important;
+  box-sizing: border-box !important;
+}
+
+/* Responsive para contenedores de imágenes */
+@media (max-width: 768px) {
+  .post-content div[style*="width: 48%"],
+  .post-content div[style*="width:48%"] {
+    width: 100% !important;
+    min-width: auto !important;
+  }
+}
+
+/* Corregir cajas especiales (news-card, highlight-box, stat-box) */
+.post-content .news-card,
+.post-content .highlight-box,
+.post-content .stat-box,
+.post-content .author-section,
+.post-content .tags-section {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Asegurar que todos los elementos respeten el ancho del contenedor */
+.post-content *,
+.post-content .post-container * {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Corregir problemas específicos con elementos que pueden causar desbordamiento */
+.post-content table {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  table-layout: fixed !important;
+}
+
+.post-content pre {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow-x: auto !important;
+}
+
+.post-content blockquote {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  margin: 20px 0 !important;
+}
+
+/* Asegurar que el footer no se vea afectado por el contenido del post */
+.post-content + * {
+  clear: both !important;
+  margin-top: 40px !important;
+}
+
+/* Estilos específicos para iconos e imágenes pequeñas */
+.post-content .ods-icon,
+.post-content img[class*="icon"] {
+  max-width: 80px !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 auto 15px !important;
+  display: block !important;
+}
+
+/* Corregir problemas con elementos posicionados absolutamente */
+.post-content div[style*="position: absolute"],
+.post-content div[style*="position:absolute"] {
+  position: relative !important;
+}
+
+/* Asegurar que no haya desbordamiento horizontal */
+.post-content,
+.post-content * {
+  overflow-x: hidden !important;
+} 
