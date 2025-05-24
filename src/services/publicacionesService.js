@@ -273,6 +273,32 @@ export const getUserPublicaciones = async (limite = 5, offset = 0) => {
   }
 };
 
+// Obtener publicaciones del administrador autenticado
+export const getAdminPublicaciones = async (limite = 100, offset = 0) => {
+  try {
+    const token = localStorage.getItem('userToken');
+    
+    if (!token) {
+      throw new Error('Usuario no autenticado');
+    }
+    
+    const response = await fetch(`${API_URL}/api/publicaciones/admin/me?limite=${limite}&offset=${offset}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Error al obtener las publicaciones del administrador');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error en getAdminPublicaciones:', error);
+    return []; // Devolver array vacío en caso de error
+  }
+};
+
 export default {
     getAllPublicaciones,
     getPublicacionById,
@@ -280,5 +306,6 @@ export default {
     createPublicacionFromHTML,
     updatePublicacion,
     deletePublicacion,
-    getUserPublicaciones
+    getUserPublicaciones,
+    getAdminPublicaciones
 }; 
