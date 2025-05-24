@@ -6,10 +6,8 @@ import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import ReactionSection from './ReactionSection';
-// Importamos el archivo CSS específico para posts
-import '../../styles/posts.css';
-import '../../styles/postStyles.css'; // Importamos los nuevos estilos para posts
-import '../../styles/postHtmlFix.css'; // Importamos los estilos de corrección para posts HTML
+// Usar solo el CSS minimalista que no interfiere con el layout del HTML
+import '../../styles/postHtmlMinimal.css';
 import { useTheme } from '../../context/ThemeContext';
 import './PostViewer.css'; // Importaremos un archivo CSS para estilos adicionales
 import ComentariosList from '../comentarios/ComentariosList';
@@ -63,15 +61,14 @@ const PostViewer = () => {
       backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
       display: "flex",
       flexDirection: "column",
-      minHeight: "100vh", // Asegura que la página ocupe al menos la altura de la ventana
+      minHeight: "100vh",
     },
     mainContainer: {
       width: "100%",
-      maxWidth: "1200px", // Este ancho máximo se aplicará a todo
-      margin: "0 auto", // Centrado horizontal
-      padding: `0 ${spacing.md}`, // Padding horizontal consistente
+      margin: "0 auto",
       boxSizing: "border-box",
-      flex: "1 0 auto", // Hace que el contenedor principal ocupe el espacio disponible
+      flex: "1 0 auto",
+      // Remover restricciones de ancho máximo para permitir que el HTML use su propio layout
     },
     contentContainer: {
       padding: `100px 0 ${spacing.xxl}`,
@@ -79,14 +76,16 @@ const PostViewer = () => {
       width: "100%",
     },
     postContainer: {
-      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-      borderRadius: borderRadius.lg,
-      padding: spacing.xl,
-      boxShadow: shadows.md,
-      marginBottom: spacing.xl,
+      // Remover estilos restrictivos del contenedor del post
       width: "100%",
       boxSizing: "border-box",
-      border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
+      // Permitir que el contenido HTML use su propio background y padding
+      backgroundColor: "transparent",
+      border: "none",
+      boxShadow: "none",
+      borderRadius: "0",
+      padding: "0",
+      marginBottom: spacing.xl,
     },
     commentsContainer: {
       backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
@@ -94,6 +93,8 @@ const PostViewer = () => {
       padding: spacing.xl,
       boxShadow: shadows.md,
       width: "100%",
+      maxWidth: "1200px",
+      margin: "0 auto",
       boxSizing: "border-box",
       border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
     },
@@ -101,7 +102,9 @@ const PostViewer = () => {
       textAlign: "center",
       padding: `${spacing.xxl} 0`,
       color: isDarkMode ? colors.textLight : colors.primary,
-      fontSize: typography.fontSize.lg
+      fontSize: typography.fontSize.lg,
+      maxWidth: "1200px",
+      margin: "0 auto",
     },
     errorMessage: {
       textAlign: "center",
@@ -110,7 +113,8 @@ const PostViewer = () => {
       fontSize: typography.fontSize.md,
       backgroundColor: isDarkMode ? 'rgba(181, 61, 0, 0.2)' : 'rgba(181, 61, 0, 0.1)',
       borderRadius: borderRadius.md,
-      margin: `${spacing.xl} 0`
+      margin: `${spacing.xl} auto`,
+      maxWidth: "1200px",
     },
     errorDetails: {
       marginTop: spacing.md,
@@ -132,7 +136,10 @@ const PostViewer = () => {
       fontSize: typography.fontSize.sm,
       display: "flex",
       alignItems: "center",
-      gap: spacing.sm
+      gap: spacing.sm,
+      maxWidth: "1200px",
+      margin: `${spacing.lg} auto`,
+      padding: `0 ${spacing.md}`,
     },
     breadcrumbLink: {
       color: isDarkMode ? colors.textLight : colors.textSecondary,
@@ -160,9 +167,9 @@ const PostViewer = () => {
       }
     },
     container: {
-      fontSize: typography.fontSize.md,
-      lineHeight: '1.7',
-      color: isDarkMode ? colors.textLight : colors.textPrimary,
+      // Permitir que el contenido HTML use su propio layout
+      width: "100%",
+      // Remover restricciones de fontSize y lineHeight
     },
     sectionTitle: {
       fontSize: typography.fontSize.xl,
@@ -171,6 +178,16 @@ const PostViewer = () => {
       marginBottom: spacing.lg,
       paddingBottom: spacing.sm,
       borderBottom: `2px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+      maxWidth: "1200px",
+      margin: `0 auto ${spacing.lg} auto`,
+      padding: `0 ${spacing.md} ${spacing.sm} ${spacing.md}`,
+    },
+    // Nuevo estilo para el separador
+    separator: {
+      borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
+      margin: '2.5rem auto',
+      width: '100%',
+      maxWidth: "1200px",
     }
   };
 
@@ -266,23 +283,10 @@ const PostViewer = () => {
           </div>
 
           {/* Separador visual */}
-          <div style={{
-            borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
-            margin: '2.5rem 0',
-            width: '100%'
-          }} />
+          <div style={styles.separator} />
 
           {/* Sección de Comentarios */}
-          <div style={{
-            backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-            borderRadius: borderRadius.lg,
-            padding: spacing.xl,
-            boxShadow: shadows.md,
-            width: '100%',
-            boxSizing: 'border-box',
-            border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
-            marginBottom: spacing.xl
-          }}>
+          <div style={styles.commentsContainer}>
             <ComentariosList postId={postId} />
           </div>
 
