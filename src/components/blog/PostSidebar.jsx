@@ -10,7 +10,7 @@ const PostSidebar = ({ currentPost }) => {
     const [relatedPosts, setRelatedPosts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
-
+ 
     // Colores específicos para cada categoría (igual que CategoryPage)
     const categoryColors = {
         1: '#FF6B6B', // Noticias
@@ -197,6 +197,15 @@ const PostSidebar = ({ currentPost }) => {
             display: 'flex',
             flexDirection: 'column',
             gap: spacing.lg,
+            // Removidas todas las propiedades sticky y scroll:
+            // position: 'sticky',
+            // top: '20px',
+            // maxHeight: 'calc(100vh - 40px)',
+            // overflowY: 'auto',
+            // overflowX: 'hidden',
+            // scrollbarWidth: 'thin',
+            // scrollbarColor: `${colors.secondary} transparent`,
+            // '&::-webkit-scrollbar': {...},
         },
         section: {
             backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
