@@ -24,7 +24,7 @@ const Chatbot = () => {
 
   // Mostrar mensaje promocional después de unos segundos si el chat está cerrado
   useEffect(() => {
-    if (!open) {
+    if (!open && !sessionStorage.getItem('chatbotHelpDismissed')) {
       // Mostrar mensaje promocional después de un tiempo
       promoTimeoutRef.current = setTimeout(() => {
         setShowPromo(true);
@@ -52,6 +52,7 @@ const Chatbot = () => {
 
   // Cerrar el mensaje promocional con animación
   const handleClosePromo = () => {
+    sessionStorage.setItem('chatbotHelpDismissed', 'true');
     setPromoAnimation('slideOut');
     setTimeout(() => {
       setShowPromo(false);
@@ -61,6 +62,7 @@ const Chatbot = () => {
 
   // Abrir el chat desde el mensaje promocional
   const handleOpenChatFromPromo = () => {
+    sessionStorage.setItem('chatbotHelpDismissed', 'true');
     handleClosePromo();
     setOpen(true);
   };
