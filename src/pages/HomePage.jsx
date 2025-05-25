@@ -8,6 +8,10 @@ import { spacing, typography, transitions, applyHoverStyles } from '../styles/th
 // Importamos el hook useTheme
 import { useTheme } from '../context/ThemeContext';
 import { useLocation } from 'react-router-dom';
+import { getAllPublicaciones } from '../services/publicacionesService';
+import { getAllCategorias } from '../services/categoriasServices';
+// Añadimos íconos
+import { FaBookmark, FaLightbulb, FaGraduationCap, FaChalkboardTeacher, FaArrowRight } from 'react-icons/fa';
 
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
@@ -16,18 +20,21 @@ const NewsCarousel = ({ notes }) => {
   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredElement, setHoveredElement] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
   const carouselRef = useRef(null); 
   const autoPlayRef = useRef(null);
 
   // Efecto para el carrusel automático
   useEffect(() => {
     const playCarousel = () => {
-      setCurrentSlide((prevSlide) =>
-        prevSlide === notes.length - 1 ? 0 : prevSlide + 1
-      );
+      if (!isPaused) {
+        setCurrentSlide((prevSlide) =>
+          prevSlide === notes.length - 1 ? 0 : prevSlide + 1
+        );
+      }
     };
     autoPlayRef.current = playCarousel;
-  }, [notes.length]);
+  }, [notes.length, isPaused]);
 
   // Efecto para controlar el intervalo del carrusel
   useEffect(() => {
@@ -64,17 +71,22 @@ const NewsCarousel = ({ notes }) => {
     carousel: {
       position: "relative",
       width: "100%",
-      height: "400px",
+      height: "500px",
       overflow: "hidden",
-      borderRadius: "16px",
+      borderRadius: "20px",
       marginTop: spacing.xl,
       marginBottom: spacing.xxl,
-      boxShadow: `0 10px 30px ${lightColors.primary}33`, // Usamos lightColors
+      boxShadow: `0 15px 40px ${lightColors.primary}40`, 
       cursor: "pointer",
+      transition: "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.5s ease",
+      "&:hover": {
+        transform: "translateY(-8px)",
+        boxShadow: `0 20px 50px ${lightColors.primary}60`,
+      }
     },
     carouselInner: {
       whiteSpace: "nowrap",
-      transition: "transform 0.5s ease-in-out",
+      transition: "transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1)",
       height: "100%",
       transform: `translateX(-${currentSlide * 100}%)`,
     },
@@ -90,6 +102,10 @@ const NewsCarousel = ({ notes }) => {
       width: "100%",
       height: "100%",
       objectFit: "cover",
+      transition: "transform 8s ease",
+      "&:hover": {
+        transform: "scale(1.05)",
+      }
     },
     carouselContent: {
       position: "absolute",
@@ -97,26 +113,36 @@ const NewsCarousel = ({ notes }) => {
       left: 0,
       width: "100%",
       padding: spacing.xl,
-      background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
-      color: "#fff", // Color blanco fijo para el texto
+      background: "linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7) 50%, transparent)",
+      color: "#fff", 
       whiteSpace: "normal",
+      transform: "translateY(0)",
+      transition: "transform 0.5s ease, opacity 0.5s ease",
+      opacity: 1,
     },
     carouselTitle: {
       fontSize: typography.fontSize.xxl,
       fontWeight: typography.fontWeight.bold,
       marginBottom: spacing.sm,
-      textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-      color: "#fff", // Color blanco fijo para el título
+      textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+      color: "#fff", 
+      transition: "transform 0.5s ease",
+      transform: "translateY(0)",
+      "&:hover": {
+        transform: "translateY(-5px)",
+      }
     },
     carouselExcerpt: {
       fontSize: typography.fontSize.md,
       marginBottom: 0,
       opacity: "0.9",
-      color: "#f0f8f7", // Color claro fijo para el extracto
+      color: "#f0f8f7", 
+      maxWidth: "80%",
+      lineHeight: "1.6",
     },
     carouselCategory: {
-      backgroundColor: lightColors.primary, // Usamos lightColors para la categoría
-      color: "#fff", // Color blanco fijo
+      backgroundColor: lightColors.primary, 
+      color: "#fff", 
       padding: `${spacing.xs} ${spacing.md}`,
       borderRadius: "16px",
       fontSize: typography.fontSize.xs,
@@ -124,6 +150,8 @@ const NewsCarousel = ({ notes }) => {
       textTransform: "uppercase",
       display: "inline-block",
       marginBottom: spacing.md,
+      boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+      animation: "slideInUp 0.5s ease forwards",
     },
     carouselControls: {
       position: "absolute",
@@ -136,22 +164,25 @@ const NewsCarousel = ({ notes }) => {
       padding: `0 ${spacing.lg}`,
     },
     carouselButton: {
-      backgroundColor: "rgba(255,255,255,0.3)",
+      backgroundColor: "rgba(255,255,255,0.15)",
       borderRadius: "50%",
-      width: "44px",
-      height: "44px",
+      width: "50px",
+      height: "50px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       cursor: "pointer",
       border: "none",
       fontSize: "24px",
-      color: "#fff", // Color blanco fijo
-      backdropFilter: "blur(3px)",
-      transition: transitions.default,
+      color: "#fff", 
+      backdropFilter: "blur(5px)",
+      transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+      opacity: 0.7,
       '&:hover': {
-        backgroundColor: "rgba(255,255,255,0.5)",
-        transform: "scale(1.1)",
+        backgroundColor: "rgba(255,255,255,0.3)",
+        transform: "scale(1.15)",
+        opacity: 1,
+        boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
       }
     },
     carouselDots: {
@@ -167,17 +198,45 @@ const NewsCarousel = ({ notes }) => {
       width: isActive ? "30px" : "12px",
       height: "12px",
       borderRadius: isActive ? "6px" : "50%",
-      backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.5)", // Usamos lightColors
+      backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.5)", 
       cursor: "pointer",
-      transition: transitions.default,
+      transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       '&:hover': {
         backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.8)", 
+        transform: "scale(1.2)",
       }
-    })
+    }),
+    pausePlayButton: {
+      position: "absolute",
+      bottom: spacing.lg,
+      right: spacing.lg,
+      zIndex: 3,
+      backgroundColor: "rgba(255,255,255,0.2)",
+      borderRadius: "50%",
+      width: "36px",
+      height: "36px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      border: "none",
+      color: "#fff",
+      backdropFilter: "blur(5px)",
+      transition: "all 0.3s ease",
+      '&:hover': {
+        backgroundColor: "rgba(255,255,255,0.3)",
+        transform: "scale(1.1)",
+      }
+    }
   };
 
   return (
-    <div style={styles.carousel} ref={carouselRef}>
+    <div 
+      style={styles.carousel} 
+      ref={carouselRef}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div style={styles.carouselInner}>
         {notes.map((slide, index) => (
           <div key={slide.id} style={styles.carouselItem}>
@@ -186,11 +245,14 @@ const NewsCarousel = ({ notes }) => {
               alt={slide.title}
               style={styles.carouselImage}
             />
-            <div style={styles.carouselContent}>
+            <div style={{
+              ...styles.carouselContent,
+              opacity: currentSlide === index ? 1 : 0,
+              transform: currentSlide === index ? 'translateY(0)' : 'translateY(20px)'
+            }}>
               <div style={styles.carouselCategory}>{slide.category}</div>
               <h2 style={styles.carouselTitle}>{slide.title}</h2>
               <p style={styles.carouselExcerpt}>{slide.excerpt}</p>
-              {/* El botón "Leer más" ha sido eliminado */}
             </div>
           </div>
         ))}
@@ -200,7 +262,7 @@ const NewsCarousel = ({ notes }) => {
       <div style={styles.carouselControls}>
         <button
           style={hoveredElement === 'prev-btn'
-            ? applyHoverStyles(styles.carouselButton)
+            ? { ...styles.carouselButton, ...styles.carouselButton['&:hover'] }
             : styles.carouselButton}
           onClick={prevSlide}
           onMouseEnter={() => setHoveredElement('prev-btn')}
@@ -210,7 +272,7 @@ const NewsCarousel = ({ notes }) => {
         </button>
         <button
           style={hoveredElement === 'next-btn'
-            ? applyHoverStyles(styles.carouselButton)
+            ? { ...styles.carouselButton, ...styles.carouselButton['&:hover'] }
             : styles.carouselButton}
           onClick={nextSlide}
           onMouseEnter={() => setHoveredElement('next-btn')}
@@ -226,7 +288,7 @@ const NewsCarousel = ({ notes }) => {
           <span
             key={index}
             style={hoveredElement === `dot-${index}`
-              ? applyHoverStyles(styles.carouselDot(currentSlide === index))
+              ? { ...styles.carouselDot(currentSlide === index), ...styles.carouselDot(currentSlide === index)['&:hover'] }
               : styles.carouselDot(currentSlide === index)}
             onClick={() => goToSlide(index)}
             onMouseEnter={() => setHoveredElement(`dot-${index}`)}
@@ -234,13 +296,25 @@ const NewsCarousel = ({ notes }) => {
           ></span>
         ))}
       </div>
+      
+      {/* Botón de pausa/reproducción */}
+      <button
+        style={hoveredElement === 'pause-play'
+          ? { ...styles.pausePlayButton, ...styles.pausePlayButton['&:hover'] }
+          : styles.pausePlayButton}
+        onClick={() => setIsPaused(!isPaused)}
+        onMouseEnter={() => setHoveredElement('pause-play')}
+        onMouseLeave={() => setHoveredElement(null)}
+      >
+        {isPaused ? '▶' : '❚❚'}
+      </button>
     </div>
   );
 };
 
 const HomePage = () => {
   // Añadimos el hook useTheme en el componente principal
-  const { colors } = useTheme();
+  const { colors, lightColors } = useTheme();
   
   // Estado para la categoría activa
   const [activeCategory, setActiveCategory] = useState('Todos');
@@ -248,89 +322,146 @@ const HomePage = () => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   // Estado para el valor de búsqueda
   const [searchValue, setSearchValue] = useState('');
+  // Estado para almacenar las publicaciones reales del backend
+  const [posts, setPosts] = useState([]);
+  // Estado para almacenar las categorías reales
+  const [categories, setCategories] = useState(['Todos']);
+  // Estado para el post destacado
+  const [featuredPost, setFeaturedPost] = useState(null);
+  // Estado para indicar si está cargando
+  const [loading, setLoading] = useState(true);
 
   const location = useLocation();
 
-  // Categorías de los artículos
-  const categories = [
-    'Todos',
-    'Noticias',
-    'Técnicas de Estudio',
-    'Problemáticas',
-    'Educación de Calidad',
-    'Herramientas',
-    'Desarrollo Docente'
-  ];
-
-  // Artículo destacado
-  const featuredPost = {
-    id: 'featured', // Agregamos el ID para el enlace
-    title: 'Herramientas Tecnológicas para la Educación',
-    image: '/assets/images/tecnologia.jpg',
-    category: 'desarrollo docente',
-    time: '2 horas atrás',
-    excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
-  };
-
-  // Lista de artículos
-  const posts = [
-    {
-      id: 1,
-      title: 'Herramientas Tecnológicas para la Educación',
-      image: '/assets/images/tecnologia.jpg',
-      category: 'herramientas',
-      time: '4 horas atrás',
-      likes: 124
-    },
-    {
-      id: 2,
-      title: 'Comunidad y Colaboración en la Educación',
-      image: '/assets/images/humanos.jpg',
-      category: 'técnicas de estudio',
-      time: '4 horas atrás',
-      likes: 89
-    },
-    {
-      id: 3,
-      title: 'Problemas a enfrentar en la actualidad',
-      image: '/assets/images/desafio.jpg',
-      category: 'problemáticas',
-      time: '4 horas atrás',
-      likes: 76
-    }
-  ];
-
-  // NUEVO: Notas para el carrusel
+  // Carrusel de noticias estático
   const carouselNotes = [
     {
       id: 1,
       title: "Prohibición de bebidas azucaradas en comedores escolares",
-      excerpt: "El gobierno español está trabajando en un decreto para prohibir el consumo de bebidas azucaradas en comedores escolares, donde se busca promover hábitos mas saludables y combatir la obesidad infantil.",
-      image: "/assets/images/humanos.jpg", // Cambiado para usar la misma imagen
+      excerpt: "El gobierno español está trabajando en un decreto para prohibir el consumo de bebidas azucaradas en comedores escolares, donde se busca promover hábitos más saludables y combatir la obesidad infantil.",
+      image: "/assets/images/humanos.jpg",
       category: "Ultima Noticia"
     },
     {
       id: 2,
       title: "Aprendizaje colaborativo: La clave del éxito académico",
-      excerpt: "Estudios demuestran que el trabajo en equipo mejora la retención y comprensión de conceptos complejos.",
-      image: "/assets/images/desafio.jpg", // Cambiado para usar la misma imagen
+      excerpt: "Estudios demuestran que el trabajo en equipo mejora la retención y comprensión de conceptos complejos. Las técnicas de enseñanza cooperativa están revolucionando el aula.",
+      image: "/assets/images/desafio.jpg",
       category: "Técnicas de Estudio"
     },
     {
       id: 3,
       title: "Mindfulness en la educación: Mejorando la concentración",
-      excerpt: "Implementar prácticas de atención plena puede reducir el estrés y mejorar el rendimiento académico.",
-      image: "/assets/images/maestro.jpg", // Cambiado para usar la misma imagen
+      excerpt: "Implementar prácticas de atención plena puede reducir el estrés y mejorar el rendimiento académico. Descubre cómo integrar estas técnicas en el aula moderna.",
+      image: "/assets/images/maestro.jpg",
       category: "Bienestar"
     },
     {
       id: 4,
       title: "La gamificación como estrategia pedagógica efectiva",
-      excerpt: "El uso de elementos de juego en el aula aumenta la motivación y el compromiso de los estudiantes.",
-      image: "/assets/images/tecnologia.jpg", // Cambiado para usar la misma imagen
+      excerpt: "El uso de elementos de juego en el aula aumenta la motivación y el compromiso de los estudiantes. Transformando la educación tradicional a través de experiencias interactivas.",
+      image: "/assets/images/tecnologia.jpg",
       category: "Innovación"
     }
   ];
+
+  // Función para obtener publicaciones y categorías del backend
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Obtener publicaciones
+        const publicaciones = await getAllPublicaciones(20, 0);
+        
+        // Si hay publicaciones, procesarlas
+        if (publicaciones && publicaciones.length > 0) {
+          // Crear una copia y mezclarla aleatoriamente
+          const randomizedPosts = [...publicaciones].sort(() => Math.random() - 0.5);
+          
+          // Extraer publicación destacada (la primera después de mezclar)
+          const featured = randomizedPosts[0];
+          
+          // Formatear el post destacado según el formato requerido
+          const formattedFeatured = {
+            id: featured.ID_publicacion,
+            title: featured.Titulo,
+            image: featured.Imagen_portada || '/assets/images/tecnologia.jpg',
+            category: featured.categorias && featured.categorias.length > 0 
+              ? featured.categorias[0].Nombre_categoria 
+              : 'Sin categoría',
+            time: '2 horas atrás',
+            excerpt: featured.Resumen || 'Sin resumen disponible'
+          };
+          
+          // Formatear el resto de publicaciones
+          const formattedPosts = randomizedPosts.slice(1, 10).map(post => ({
+            id: post.ID_publicacion,
+            title: post.Titulo,
+            image: post.Imagen_portada || '/assets/images/tecnologia.jpg',
+            category: post.categorias && post.categorias.length > 0 
+              ? post.categorias[0].Nombre_categoria.toLowerCase() 
+              : 'sin categoría',
+            time: '4 horas atrás',
+            likes: Math.floor(Math.random() * 200)
+          }));
+          
+          setFeaturedPost(formattedFeatured);
+          setPosts(formattedPosts);
+        } else {
+          // Si no hay publicaciones, usar los datos de ejemplo
+          setFeaturedPost({
+            id: 'featured',
+            title: 'Herramientas Tecnológicas para la Educación',
+            image: '/assets/images/tecnologia.jpg',
+            category: 'desarrollo docente',
+            time: '2 horas atrás',
+            excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
+          });
+          
+          setPosts([
+            {
+              id: 1,
+              title: 'Herramientas Tecnológicas para la Educación',
+              image: '/assets/images/tecnologia.jpg',
+              category: 'herramientas',
+              time: '4 horas atrás',
+              likes: 124
+            },
+            {
+              id: 2,
+              title: 'Comunidad y Colaboración en la Educación',
+              image: '/assets/images/humanos.jpg',
+              category: 'técnicas de estudio',
+              time: '4 horas atrás',
+              likes: 89
+            },
+            {
+              id: 3,
+              title: 'Problemas a enfrentar en la actualidad',
+              image: '/assets/images/desafio.jpg',
+              category: 'problemáticas',
+              time: '4 horas atrás',
+              likes: 76
+            }
+          ]);
+        }
+        
+        // Obtener categorías
+        const categoriasData = await getAllCategorias();
+        if (categoriasData && categoriasData.length > 0) {
+          // Añadir 'Todos' al principio
+          const formattedCategories = ['Todos', ...categoriasData.map(cat => cat.Nombre_categoria)];
+          setCategories(formattedCategories);
+        }
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
   // Filtrar posts por categoría activa
   const filteredPosts = activeCategory === 'Todos'
@@ -371,15 +502,35 @@ const HomePage = () => {
     hero: {
       margin: `${spacing.xl} 0 ${spacing.xxl}`,
       position: "relative",
-      background: `linear-gradient(100deg, ${colors.white}99 100%, ${colors.secondary}99 100%)`,
-      padding: `${spacing.xl} ${spacing.md}`,
-      borderRadius: '12px'
+      background: `linear-gradient(120deg, ${colors.white}99 0%, ${colors.secondary}40 100%)`,
+      padding: `${spacing.xxl} ${spacing.xl}`,
+      borderRadius: '24px',
+      boxShadow: '0 20px 50px rgba(11, 68, 68, 0.1)',
+      overflow: 'hidden',
+      transition: 'transform 0.5s ease, box-shadow 0.5s ease',
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: '0 25px 60px rgba(11, 68, 68, 0.15)'
+      }
+    },
+    heroDecoration: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      width: '300px',
+      height: '300px',
+      borderRadius: '50%',
+      background: `radial-gradient(circle, ${colors.secondary}30, ${colors.primary}30)`,
+      transform: 'translate(30%, -30%)',
+      zIndex: 0
     },
     heroTitle: {
       fontSize: typography.fontSize.xxxl,
       color: colors.primary,
       marginBottom: spacing.md,
       lineHeight: "1.2",
+      position: 'relative',
+      zIndex: 1,
       animation: "fadeInUp 0.8s ease-out"
     },
     heroText: {
@@ -388,7 +539,27 @@ const HomePage = () => {
       marginBottom: spacing.xl,
       maxWidth: "700px",
       lineHeight: "1.6",
+      position: 'relative',
+      zIndex: 1,
       animation: "fadeInUp 1s ease-out"
+    },
+    heroIconsContainer: {
+      display: 'flex',
+      gap: spacing.lg,
+      marginBottom: spacing.xl,
+      animation: "fadeInUp 1.2s ease-out"
+    },
+    heroIcon: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.sm,
+      color: colors.textSecondary,
+      fontSize: typography.fontSize.sm,
+      '&:hover': {
+        color: colors.primary,
+        transform: 'translateY(-3px)'
+      },
+      transition: 'all 0.3s ease'
     },
     circleLink: {
       position: "relative",
@@ -406,6 +577,7 @@ const HomePage = () => {
       boxShadow: "0 6px 20px rgba(11, 68, 68, 0.3)",
       cursor: "pointer",
       transition: transitions.default,
+      zIndex: 2,
       '&:hover': {
         transform: "scale(1.05) rotate(5deg)",
         boxShadow: "0 8px 25px rgba(11, 68, 68, 0.4)"
@@ -422,6 +594,24 @@ const HomePage = () => {
       fontSize: "28px",
       animation: "pulse 2s infinite"
     },
+    sectionTitle: {
+      fontSize: typography.fontSize.xxl,
+      color: colors.primary,
+      marginBottom: spacing.lg,
+      position: 'relative',
+      display: 'inline-block',
+      paddingBottom: spacing.sm,
+      '&:after': {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: '60px',
+        height: '4px',
+        background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`,
+        borderRadius: '2px'
+      }
+    },
     featuredSection: {
       marginBottom: spacing.xxl
     },
@@ -432,7 +622,7 @@ const HomePage = () => {
       background: colors.white,
       padding: `${spacing.md} ${spacing.xl}`,
       borderRadius: "50px",
-      boxShadow: "0 4px 15px rgba(11, 68, 68, 0.08)",
+      boxShadow: "0 4px 20px rgba(11, 68, 68, 0.1)",
       marginBottom: spacing.xxl,
       position: "relative",
       zIndex: 1,
@@ -449,39 +639,10 @@ const HomePage = () => {
       fontSize: typography.fontSize.sm,
       fontWeight: typography.fontWeight.medium,
       color: isActive ? colors.white : isHovered ? colors.primary : colors.textPrimary,
-      transition: transitions.default,
+      transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
       boxShadow: isActive ? "0 4px 12px rgba(11, 68, 68, 0.15)" : "none",
       transform: isHovered && !isActive ? "translateY(-2px)" : "translateY(0)"
     }),
-    searchBox: {
-      flex: "1",
-      maxWidth: "300px",
-      position: "relative",
-      marginLeft: "auto"
-    },
-    searchInput: {
-      width: "100%",
-      padding: `${spacing.sm} ${spacing.md} ${spacing.sm} ${spacing.xxl}`,
-      border: "none",
-      borderRadius: "24px",
-      backgroundColor: "rgba(11, 68, 68, 0.05)",
-      fontSize: typography.fontSize.sm,
-      transition: transitions.default,
-      boxShadow: "inset 0 2px 5px rgba(11, 68, 68, 0.05)",
-      '&:focus': {
-        backgroundColor: colors.white,
-        boxShadow: `0 0 0 2px rgba(11, 68, 68, 0.1), inset 0 2px 5px rgba(11, 68, 68, 0.05)`,
-        outline: "none"
-      }
-    },
-    searchIcon: {
-      position: "absolute",
-      left: spacing.md,
-      top: "50%",
-      transform: "translateY(-50%)",
-      color: colors.textSecondary,
-      fontSize: "18px"
-    },
     contentWrapper: {
       display: "flex",
       flexDirection: "column",
@@ -498,22 +659,104 @@ const HomePage = () => {
       width: "100%",
       position: "relative",
       marginBottom: spacing.xl,
-      maxWidth: "800px",
+      maxWidth: "900px",
       margin: "0 auto",
-      transform: "none",
-      transition: "transform 0.3s ease",
+      transform: "translateY(0)",
+      transition: "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       "&:hover": {
-        transform: "none",
+        transform: "translateY(-10px)",
       }
     },
     postsGridWrapper: {
       width: "100%",
-      minWidth: "300px"
+      minWidth: "300px",
     },
     postsGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
       gap: spacing.xl,
+    },
+    exploreBanner: {
+      marginTop: spacing.xxl,
+      marginBottom: spacing.xxl,
+      position: 'relative',
+      borderRadius: '24px',
+      overflow: 'hidden',
+      padding: `${spacing.xxl} ${spacing.xl}`,
+      background: `linear-gradient(120deg, ${colors.primary}99, ${colors.secondary}99)`,
+      color: colors.white,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
+      boxShadow: '0 15px 40px rgba(11, 68, 68, 0.2)',
+      transition: 'transform 0.5s ease, box-shadow 0.5s ease',
+      '&:hover': {
+        transform: 'translateY(-8px)',
+        boxShadow: '0 20px 50px rgba(11, 68, 68, 0.3)'
+      }
+    },
+    exploreBannerTitle: {
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.bold,
+      marginBottom: spacing.md,
+      position: 'relative',
+      zIndex: 1
+    },
+    exploreBannerText: {
+      fontSize: typography.fontSize.lg,
+      marginBottom: spacing.xl,
+      maxWidth: '600px',
+      lineHeight: '1.8',
+      position: 'relative',
+      zIndex: 1
+    },
+    exploreBannerBtn: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.sm,
+      padding: `${spacing.md} ${spacing.xl}`,
+      backgroundColor: colors.white,
+      color: colors.primary,
+      borderRadius: '50px',
+      textDecoration: 'none',
+      fontWeight: typography.fontWeight.medium,
+      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
+      transition: 'all 0.3s ease',
+      position: 'relative',
+      zIndex: 1,
+      '&:hover': {
+        transform: 'translateY(-3px)',
+        boxShadow: '0 12px 25px rgba(0, 0, 0, 0.2)'
+      }
+    },
+    exploreBannerDecoration1: {
+      position: 'absolute',
+      top: '20%',
+      left: '10%',
+      width: '150px',
+      height: '150px',
+      borderRadius: '50%',
+      background: 'rgba(255, 255, 255, 0.1)',
+      zIndex: 0
+    },
+    exploreBannerDecoration2: {
+      position: 'absolute',
+      bottom: '10%',
+      right: '15%',
+      width: '100px',
+      height: '100px',
+      borderRadius: '50%',
+      background: 'rgba(255, 255, 255, 0.15)',
+      zIndex: 0
+    },
+    loading: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '200px',
+      fontSize: typography.fontSize.lg,
+      color: colors.primary
     },
     animationStyles: `
       @keyframes spin {
@@ -534,7 +777,7 @@ const HomePage = () => {
       @keyframes fadeInUp {
         from { 
           opacity: 0;
-          transform: translateY(20px);
+          transform: translateY(30px);
         }
         to { 
           opacity: 1;
@@ -544,7 +787,7 @@ const HomePage = () => {
       
       @keyframes slideInUp {
         from {
-          transform: translateY(30px);
+          transform: translateY(50px);
           opacity: 0;
         }
         to {
@@ -556,12 +799,23 @@ const HomePage = () => {
       @keyframes fadeInRight {
         from {
           opacity: 0;
-          transform: translateX(20px);
+          transform: translateX(30px);
         }
         to {
           opacity: 1;
           transform: translateX(0);
         }
+      }
+      
+      @keyframes floatingAnimation {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+      }
+      
+      @keyframes gradientAnimation {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
       }
     `,
     // Nueva propiedad para mostrar inmediatamente el contenido sin minimizarlo
@@ -610,18 +864,48 @@ const HomePage = () => {
         </div>
 
         {/* Hero Section */}
-        <div style={styles.hero}>
+        <div 
+          style={hoveredCategory === 'hero' ? 
+            { ...styles.hero, ...styles.hero['&:hover'] } : 
+            styles.hero
+          }
+          onMouseEnter={() => setHoveredCategory('hero')}
+          onMouseLeave={() => setHoveredCategory(null)}
+        >
+          <div style={styles.heroDecoration}></div>
           <h1 style={styles.heroTitle}>Tu Destino para Educación, Innovación y Crecimiento</h1>
           <p style={styles.heroText}>Descubre consejos, tendencias y técnicas para mejorar tu experiencia educativa y desarrollo profesional. Únete a nuestra comunidad de aprendices y educadores comprometidos.</p>
+          
+          <div style={styles.heroIconsContainer}>
+            <div style={styles.heroIcon}>
+              <FaBookmark size={16} color={colors.primary} />
+              <span>Artículos de calidad</span>
+            </div>
+            <div style={styles.heroIcon}>
+              <FaLightbulb size={16} color={colors.primary} />
+              <span>Ideas innovadoras</span>
+            </div>
+            <div style={styles.heroIcon}>
+              <FaGraduationCap size={16} color={colors.primary} />
+              <span>Recursos educativos</span>
+            </div>
+            <div style={styles.heroIcon}>
+              <FaChalkboardTeacher size={16} color={colors.primary} />
+              <span>Desarrollo profesional</span>
+            </div>
+          </div>
 
           <div
-            style={hoveredCategory === 'circle' ? applyHoverStyles(styles.circleLink) : styles.circleLink}
+            style={hoveredCategory === 'circle' ? 
+              { ...styles.circleLink, ...styles.circleLink['&:hover'] } : 
+              styles.circleLink
+            }
             onMouseEnter={() => setHoveredCategory('circle')}
             onMouseLeave={() => setHoveredCategory(null)}
           >
             <div style={{
               ...styles.circleText,
-              animation: 'spin 1s linear infinite',
+              animation: 'spin 20s linear infinite',
               transform: hoveredCategory === 'circle' ? 'rotate(-5deg)' : 'rotate(0deg)',
             }}>
               <img
@@ -640,6 +924,164 @@ const HomePage = () => {
         {/* NUEVO: Carrusel de Noticias */}
         <NewsCarousel notes={carouselNotes} />
 
+        {/* Sección de categorías destacadas */}
+        <div style={{
+          marginTop: spacing.xxl,
+          marginBottom: spacing.xxl,
+          textAlign: 'center'
+        }}>
+          <h2 style={styles.sectionTitle}>Categorías Destacadas</h2>
+          <p style={{
+            color: colors.textSecondary,
+            maxWidth: '700px',
+            margin: '0 auto',
+            marginBottom: spacing.xl,
+            fontSize: typography.fontSize.md,
+            lineHeight: '1.6'
+          }}>
+            Explora nuestras áreas temáticas principales y encuentra contenido que te inspire, motive y ayude en tu desarrollo educativo.
+          </p>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: spacing.xl,
+            marginTop: spacing.xl
+          }}>
+            {/* Categoría 1 */}
+            <div style={{
+              background: colors.white,
+              borderRadius: '16px',
+              padding: spacing.lg,
+              boxShadow: '0 10px 30px rgba(11, 68, 68, 0.08)',
+              transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredCategory === 'cat-1' ? 'translateY(-10px)' : 'translateY(0)',
+              cursor: 'pointer'
+            }}
+              onMouseEnter={() => setHoveredCategory('cat-1')}
+              onMouseLeave={() => setHoveredCategory(null)}
+              onClick={() => setActiveCategory('Técnicas de Estudio')}
+            >
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${colors.primary}30, ${colors.primary}20)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                animation: hoveredCategory === 'cat-1' ? 'pulse 1.5s infinite' : 'none'
+              }}>
+                <FaLightbulb size={30} color={colors.primary} />
+              </div>
+              <h3 style={{
+                fontSize: typography.fontSize.lg,
+                color: colors.primary,
+                marginBottom: spacing.sm
+              }}>
+                Técnicas de Estudio
+              </h3>
+              <p style={{
+                fontSize: typography.fontSize.sm,
+                color: colors.textSecondary,
+                lineHeight: '1.6'
+              }}>
+                Metodologías y estrategias efectivas para optimizar el aprendizaje y mejorar el rendimiento académico.
+              </p>
+            </div>
+
+            {/* Categoría 2 */}
+            <div style={{
+              background: colors.white,
+              borderRadius: '16px',
+              padding: spacing.lg,
+              boxShadow: '0 10px 30px rgba(11, 68, 68, 0.08)',
+              transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredCategory === 'cat-2' ? 'translateY(-10px)' : 'translateY(0)',
+              cursor: 'pointer'
+            }}
+              onMouseEnter={() => setHoveredCategory('cat-2')}
+              onMouseLeave={() => setHoveredCategory(null)}
+              onClick={() => setActiveCategory('Herramientas')}
+            >
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${colors.secondary}30, ${colors.secondary}20)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                animation: hoveredCategory === 'cat-2' ? 'pulse 1.5s infinite' : 'none'
+              }}>
+                <FaGraduationCap size={30} color={colors.secondary} />
+              </div>
+              <h3 style={{
+                fontSize: typography.fontSize.lg,
+                color: colors.secondary,
+                marginBottom: spacing.sm
+              }}>
+                Herramientas Educativas
+              </h3>
+              <p style={{
+                fontSize: typography.fontSize.sm,
+                color: colors.textSecondary,
+                lineHeight: '1.6'
+              }}>
+                Recursos y aplicaciones que facilitan la enseñanza y el aprendizaje en entornos digitales.
+              </p>
+            </div>
+
+            {/* Categoría 3 */}
+            <div style={{
+              background: colors.white,
+              borderRadius: '16px',
+              padding: spacing.lg,
+              boxShadow: '0 10px 30px rgba(11, 68, 68, 0.08)',
+              transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredCategory === 'cat-3' ? 'translateY(-10px)' : 'translateY(0)',
+              cursor: 'pointer'
+            }}
+              onMouseEnter={() => setHoveredCategory('cat-3')}
+              onMouseLeave={() => setHoveredCategory(null)}
+              onClick={() => setActiveCategory('Educación de Calidad')}
+            >
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '50%',
+                background: `linear-gradient(135deg, ${colors.primary}30, ${colors.secondary}20)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                animation: hoveredCategory === 'cat-3' ? 'pulse 1.5s infinite' : 'none'
+              }}>
+                <FaChalkboardTeacher size={30} color={colors.primary} />
+              </div>
+              <h3 style={{
+                fontSize: typography.fontSize.lg,
+                color: colors.primary,
+                marginBottom: spacing.sm
+              }}>
+                Educación de Calidad
+              </h3>
+              <p style={{
+                fontSize: typography.fontSize.sm,
+                color: colors.textSecondary,
+                lineHeight: '1.6'
+              }}>
+                Estándares y prácticas para asegurar una experiencia educativa de excelencia.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Categories */}
         <div style={styles.categories}>
           {categories.map(category => (
@@ -656,36 +1098,86 @@ const HomePage = () => {
               {category}
             </button>
           ))}
-
-          {/* <div style={styles.searchBox}>
-            <span style={styles.searchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder="Buscar un artículo..."
-              style={searchValue !== '' ? applyHoverStyles(styles.searchInput) : styles.searchInput}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px rgba(11, 68, 68, 0.1), inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
-              onBlur={(e) => e.target.style.boxShadow = 'inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
-            />
-          </div> */}
         </div>
 
-        {/* Featured Post and Posts Grid - CORREGIDO */}
+        {/* Sección de posts */}
         <div style={styles.contentWrapper}>
-          {/* Featured Post - Ahora a todo lo ancho */}
-          <div style={styles.featuredPostWrapper}>
-            <FeaturedPost post={featuredPost} />
-          </div>
-
-          {/* Posts Grid - Ahora debajo del post destacado */}
-          <div style={styles.postsGridWrapper}>
-            <div style={styles.postsGrid}>
-              {filteredPosts.map((post, index) => (
-                <PostCard key={post.id} post={post} />
-              ))}
+          {loading ? (
+            <div style={styles.loading}>
+              <div style={{textAlign: 'center'}}>
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  margin: '0 auto',
+                  border: `4px solid ${colors.primaryLight}`,
+                  borderRadius: '50%',
+                  borderTopColor: colors.primary,
+                  animation: 'spin 1s linear infinite',
+                  marginBottom: spacing.md
+                }}></div>
+                <p>Cargando contenido...</p>
+              </div>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Título sección destacada */}
+              <h2 style={styles.sectionTitle}>Artículo destacado</h2>
+              
+              {/* Featured Post - Ahora a todo lo ancho */}
+              <div style={styles.featuredPostWrapper}>
+                {featuredPost && <FeaturedPost post={featuredPost} />}
+              </div>
+              
+              {/* Título sección artículos */}
+              <h2 style={styles.sectionTitle}>Explora nuestros artículos</h2>
+
+              {/* Posts Grid - Ahora debajo del post destacado */}
+              <div style={styles.postsGridWrapper}>
+                <div style={styles.postsGrid}>
+                  {filteredPosts.length > 0 ? (
+                    filteredPosts.map((post) => (
+                      <PostCard key={post.id} post={post} />
+                    ))
+                  ) : (
+                    <p style={{gridColumn: '1 / -1', textAlign: 'center', color: colors.textSecondary}}>
+                      No hay artículos disponibles en esta categoría.
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Banner de exploración */}
+              <div 
+                style={hoveredCategory === 'explore-banner' ? 
+                  { ...styles.exploreBanner, ...styles.exploreBanner['&:hover'] } : 
+                  styles.exploreBanner
+                }
+                onMouseEnter={() => setHoveredCategory('explore-banner')}
+                onMouseLeave={() => setHoveredCategory(null)}
+              >
+                <div style={styles.exploreBannerDecoration1}></div>
+                <div style={styles.exploreBannerDecoration2}></div>
+                <h2 style={styles.exploreBannerTitle}>Descubre todas nuestras categorías</h2>
+                <p style={styles.exploreBannerText}>
+                  Explora nuestra biblioteca completa de artículos educativos, recursos didácticos, 
+                  técnicas innovadoras y mucho más. Encuentra soluciones a problemas comunes y 
+                  herramientas para mejorar tu experiencia educativa.
+                </p>
+                <a 
+                  href="/categories" 
+                  style={hoveredCategory === 'explore-btn' ? 
+                    { ...styles.exploreBannerBtn, ...styles.exploreBannerBtn['&:hover'] } : 
+                    styles.exploreBannerBtn
+                  }
+                  onMouseEnter={() => setHoveredCategory('explore-btn')}
+                  onMouseLeave={() => setHoveredCategory('explore-banner')}
+                >
+                  <span>Explorar categorías</span>
+                  <FaArrowRight size={12} />
+                </a>
+              </div>
+            </>
+          )}
         </div>
       </main>
 
