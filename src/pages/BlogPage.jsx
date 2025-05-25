@@ -603,7 +603,7 @@ const BlogPage = () => {
               gap: spacing.sm
             }}
           >
-            <FaTags /> Explora Nuestras Categorías
+            <FaTags /> Descubre todas nuestras categorías
           </h3>
           <p
             style={{
@@ -1058,6 +1058,8 @@ const BlogPage = () => {
           </div>
         </div>
 
+        <CategoryPromo />
+
         <div ref={postListRef}>
           <PostList
             limit={12}
@@ -1067,8 +1069,6 @@ const BlogPage = () => {
             sortOrder={sortOrder}
           />
         </div>
-
-        <CategoryPromo />
       </div>
     </main>
     <Footer />
