@@ -17,7 +17,7 @@ import { FaBookmark, FaLightbulb, FaGraduationCap, FaChalkboardTeacher, FaArrowR
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
   // Usamos useTheme para obtener los colores según el tema actual
-  const { lightColors, colors } = useTheme(); // Importamos los colores del modo claro
+  const { lightColors, colors } = useTheme();
   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredElement, setHoveredElement] = useState(null);
@@ -25,28 +25,58 @@ const NewsCarousel = ({ notes }) => {
   const carouselRef = useRef(null); 
   const autoPlayRef = useRef(null);
 
-  // Efecto para el carrusel automático
+  // Efecto para el carrusel automático - MOVER ANTES DEL RETURN
   useEffect(() => {
-    const playCarousel = () => {
-      if (!isPaused) {
-      setCurrentSlide((prevSlide) =>
-        prevSlide === notes.length - 1 ? 0 : prevSlide + 1
-      );
-      }
-    };
-    autoPlayRef.current = playCarousel;
-  }, [notes.length, isPaused]);
+    if (notes && notes.length > 0) {
+      const playCarousel = () => {
+        if (!isPaused) {
+          setCurrentSlide((prevSlide) =>
+            prevSlide === notes.length - 1 ? 0 : prevSlide + 1
+          );
+        }
+      };
+      autoPlayRef.current = playCarousel;
+    }
+  }, [notes?.length, isPaused]);
 
-  // Efecto para controlar el intervalo del carrusel
+  // Efecto para controlar el intervalo del carrusel - MOVER ANTES DEL RETURN
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (autoPlayRef.current) {
-        autoPlayRef.current();
-      }
-    }, 5000); // Cambiar slide cada 5 segundos
+    if (notes && notes.length > 0) {
+      const interval = setInterval(() => {
+        if (autoPlayRef.current) {
+          autoPlayRef.current();
+        }
+      }, 5000);
 
-    return () => clearInterval(interval);
-  }, []);
+      return () => clearInterval(interval);
+    }
+  }, [notes?.length]);
+
+  // Verificar si hay notas para mostrar
+  if (!notes || notes.length === 0) {
+    return (
+      <div style={{
+        width: "100%",
+        height: "500px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.gray100,
+        borderRadius: "20px",
+        marginTop: spacing.xl,
+        marginBottom: spacing.xxl,
+        border: `2px dashed ${colors.gray300}`
+      }}>
+        <div style={{
+          textAlign: 'center',
+          color: colors.textSecondary
+        }}>
+          <h3>Carrusel de Noticias</h3>
+          <p>Cargando contenido destacado...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Función para cambiar manualmente al slide anterior
   const prevSlide = () => {
@@ -245,6 +275,9 @@ const NewsCarousel = ({ notes }) => {
               src={slide.image}
               alt={slide.title}
               style={styles.carouselImage}
+              onError={(e) => {
+                e.target.src = '/assets/images/tecnologia.jpg'; // Imagen de fallback
+              }}
             />
             <div style={{
               ...styles.carouselContent,
@@ -263,7 +296,7 @@ const NewsCarousel = ({ notes }) => {
       <div style={styles.carouselControls}>
         <button
           style={hoveredElement === 'prev-btn'
-            ? { ...styles.carouselButton, ...styles.carouselButton['&:hover'] }
+            ? { ...styles.carouselButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.15)", opacity: 1 }
             : styles.carouselButton}
           onClick={prevSlide}
           onMouseEnter={() => setHoveredElement('prev-btn')}
@@ -273,7 +306,7 @@ const NewsCarousel = ({ notes }) => {
         </button>
         <button
           style={hoveredElement === 'next-btn'
-            ? { ...styles.carouselButton, ...styles.carouselButton['&:hover'] }
+            ? { ...styles.carouselButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.15)", opacity: 1 }
             : styles.carouselButton}
           onClick={nextSlide}
           onMouseEnter={() => setHoveredElement('next-btn')}
@@ -288,9 +321,13 @@ const NewsCarousel = ({ notes }) => {
         {notes.map((_, index) => (
           <span
             key={index}
-            style={hoveredElement === `dot-${index}`
-              ? { ...styles.carouselDot(currentSlide === index), ...styles.carouselDot(currentSlide === index)['&:hover'] }
-              : styles.carouselDot(currentSlide === index)}
+            style={{
+              ...styles.carouselDot(currentSlide === index),
+              ...(hoveredElement === `dot-${index}` ? { 
+                backgroundColor: currentSlide === index ? lightColors.primary : "rgba(255,255,255,0.8)",
+                transform: "scale(1.2)"
+              } : {})
+            }}
             onClick={() => goToSlide(index)}
             onMouseEnter={() => setHoveredElement(`dot-${index}`)}
             onMouseLeave={() => setHoveredElement(null)}
@@ -301,7 +338,7 @@ const NewsCarousel = ({ notes }) => {
       {/* Botón de pausa/reproducción */}
       <button
         style={hoveredElement === 'pause-play'
-          ? { ...styles.pausePlayButton, ...styles.pausePlayButton['&:hover'] }
+          ? { ...styles.pausePlayButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.1)" }
           : styles.pausePlayButton}
         onClick={() => setIsPaused(!isPaused)}
         onMouseEnter={() => setHoveredElement('pause-play')}
@@ -318,9 +355,9 @@ const HomePage = () => {
   const location = useLocation();
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [categories, setCategories] = useState(['Todos']);
-  const [notes, setNotes] = useState([]);
+  const [notes, setNotes] = useState([]); // Para el carrusel
   const [featuredPost, setFeaturedPost] = useState(null);
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState([]); // Mantenemos este estado para filtrar
   const [loading, setLoading] = useState(true);
   const [hoveredElement, setHoveredElement] = useState(null);
   const [activeFact, setActiveFact] = useState(0);
@@ -339,7 +376,7 @@ const HomePage = () => {
     categoryFilter: '', 
     searchTerm: '', 
     sortOrder: 'recientes',
-    initialDisplayCount: 6
+    initialDisplayCount: 12 // Aumentamos para tener más posts para filtrar
   });
 
   useEffect(() => {
@@ -348,6 +385,22 @@ const HomePage = () => {
       try {
         // Utilizamos los posts cargados desde el hook usePosts
         if (blogPosts && blogPosts.length > 0) {
+          console.log('HomePage: Posts disponibles:', blogPosts.length);
+          
+          // NUEVO: Crear datos para el carrusel con los posts más destacados
+          const carouselPosts = blogPosts.slice(0, 5).map(post => ({
+            id: post.ID_publicaciones,
+            title: post.Titulo,
+            image: post.Imagen_portada || '/assets/images/tecnologia.jpg',
+            category: post.categorias && post.categorias.length > 0 
+              ? post.categorias[0].Nombre_categoria 
+              : 'Sin categoría',
+            excerpt: post.Resumen || post.Titulo.substring(0, 150) + '...'
+          }));
+          
+          console.log('HomePage: Datos del carrusel creados:', carouselPosts);
+          setNotes(carouselPosts);
+
           // Establecer publicación destacada específica (ID 63)
           const featuredPostData = blogPosts.find(post => post.ID_publicaciones === 63);
           
@@ -360,7 +413,7 @@ const HomePage = () => {
               category: featuredPostData.categorias && featuredPostData.categorias.length > 0 
                 ? featuredPostData.categorias[0].Nombre_categoria 
                 : 'Sin categoría',
-    time: '2 horas atrás',
+              time: '2 horas atrás',
               excerpt: "Cuando mi compañero de universidad Gregorio llegó a mi cuarto de estudio el semestre pasado, me dijo algo que me resonó profundamente: \"Damian, tengo mil ideas rondando en mi cabeza, pero cuando me siento a estudiar, no consigo concentrarme ni cinco minutos seguidos\"..."
             };
             setFeaturedPost(formattedFeatured);
@@ -380,26 +433,58 @@ const HomePage = () => {
             setFeaturedPost(formattedFeatured);
           }
           
-          // Crear una copia y mezclarla aleatoriamente para los 6 posts
-          const shuffledPosts = [...blogPosts]
-            .filter(post => post.ID_publicaciones !== (featuredPostData ? featuredPostData.ID_publicaciones : null))
-            .sort(() => Math.random() - 0.5)
-            .slice(0, 6);
-          
-          // Formatear los posts
-          const formattedPosts = shuffledPosts.map(post => ({
+          // CORREGIR: Formatear TODOS los posts para que se puedan filtrar
+          const allFormattedPosts = blogPosts.map(post => ({
             id: post.ID_publicaciones,
             title: post.Titulo,
             image: post.Imagen_portada || '/assets/images/tecnologia.jpg',
             category: post.categorias && post.categorias.length > 0 
-              ? post.categorias[0].Nombre_categoria.toLowerCase() 
-              : 'sin categoría',
+              ? post.categorias[0].Nombre_categoria 
+              : 'Sin categoría',
             time: '4 horas atrás',
-            likes: Math.floor(Math.random() * 200)
+            likes: Math.floor(Math.random() * 200),
+            // Agregamos el post original para usar en PostCard
+            originalPost: post
           }));
           
-          setPosts(formattedPosts);
+          setPosts(allFormattedPosts);
         } else {
+          console.log('HomePage: No hay posts, usando datos de ejemplo');
+          // Si no hay publicaciones, usar datos de ejemplo para el carrusel también
+          const exampleNotes = [
+            {
+              id: 1,
+              title: 'Herramientas Tecnológicas para la Educación',
+              image: '/assets/images/tecnologia.jpg',
+              category: 'Herramientas',
+              excerpt: 'Descubre las mejores herramientas digitales que están transformando la educación moderna y cómo implementarlas en tu aula.'
+            },
+            {
+              id: 2,
+              title: 'Técnicas de Estudio Efectivas',
+              image: '/assets/images/humanos.jpg',
+              category: 'Técnicas de Estudio',
+              excerpt: 'Aprende métodos científicamente probados para mejorar tu concentración y retención de información.'
+            },
+            {
+              id: 3,
+              title: 'El Futuro de la Educación Digital',
+              image: '/assets/images/desafio.jpg',
+              category: 'Noticias',
+              excerpt: 'Exploramos las tendencias emergentes en educación digital y su impacto en el aprendizaje del siglo XXI.'
+            },
+            {
+              id: 4,
+              title: 'Desarrollo Profesional Docente',
+              image: '/assets/images/maestro.jpg',
+              category: 'Desarrollo Docente',
+              excerpt: 'Estrategias y recursos para el crecimiento profesional continuo de educadores y formadores.'
+            }
+          ];
+          
+          console.log('HomePage: Usando datos de ejemplo para carrusel:', exampleNotes);
+          setNotes(exampleNotes);
+
           // Si no hay publicaciones, usar los datos de ejemplo
           setFeaturedPost({
             id: 63,
@@ -407,39 +492,46 @@ const HomePage = () => {
             image: '/assets/images/tecnologia.jpg',
             category: 'técnicas de estudio',
             time: '2 horas atrás',
-            excerpt: 'Cuando mi compañero de universidad Gregorio llegó a mi cuarto de estudio el semestre pasado, me dijo algo que me resonó profundamente: "Damian, tengo mil ideas rondando en mi cabeza, pero cuando me siento a estudiar, no consigo concentrarme ni cinco minutos seguidos"...'
+            excerpt: 'Cuando mi compañero de universidad Gregorio llegó a mi cuarto de estudio el semestre pasado, me dijo algo que me resonó profundamente: "Damian, tengo mil ideas rondando en mi cabeza, pero cuando me siento a estudiar, no consigo concentrarme ni cinco minutos seguidos"...',
+            // Agregamos propiedades para indicar que es destacado
+            isFeatured: true,
+            featuredBadge: '⭐ POST DESTACADO',
+            author: 'Equipo EducStation',
+            readTime: '5 min de lectura',
+            views: '2.5K',
+            rating: '98% útil'
           });
           
           setPosts([
-    {
-      id: 1,
-      title: 'Herramientas Tecnológicas para la Educación',
-      image: '/assets/images/tecnologia.jpg',
-      category: 'herramientas',
-      time: '4 horas atrás',
-      likes: 124
-    },
-    {
-      id: 2,
-      title: 'Comunidad y Colaboración en la Educación',
-      image: '/assets/images/humanos.jpg',
-      category: 'técnicas de estudio',
-      time: '4 horas atrás',
-      likes: 89
-    },
-    {
-      id: 3,
-      title: 'Problemas a enfrentar en la actualidad',
-      image: '/assets/images/desafio.jpg',
-      category: 'problemáticas',
-      time: '4 horas atrás',
-      likes: 76
+            {
+              id: 1,
+              title: 'Herramientas Tecnológicas para la Educación',
+              image: '/assets/images/tecnologia.jpg',
+              category: 'Herramientas Tecnológicas',
+              time: '4 horas atrás',
+              likes: 124
+            },
+            {
+              id: 2,
+              title: 'Comunidad y Colaboración en la Educación',
+              image: '/assets/images/humanos.jpg',
+              category: 'Técnicas de Estudio',
+              time: '4 horas atrás',
+              likes: 89
+            },
+            {
+              id: 3,
+              title: 'Problemas a enfrentar en la actualidad',
+              image: '/assets/images/desafio.jpg',
+              category: 'Problemáticas en el Estudio',
+              time: '4 horas atrás',
+              likes: 76
             },
             {
               id: 4,
               title: 'La gamificación en el aula moderna',
               image: '/assets/images/tecnologia.jpg',
-              category: 'innovación',
+              category: 'Herramientas Tecnológicas',
               time: '5 horas atrás',
               likes: 105
             },
@@ -447,7 +539,7 @@ const HomePage = () => {
               id: 5,
               title: 'Educación inclusiva: Estrategias prácticas',
               image: '/assets/images/humanos.jpg',
-              category: 'inclusión',
+              category: 'Educación de Calidad',
               time: '6 horas atrás',
               likes: 92
             },
@@ -455,7 +547,7 @@ const HomePage = () => {
               id: 6,
               title: 'Evaluación formativa vs sumativa',
               image: '/assets/images/maestro.jpg',
-              category: 'evaluación',
+              category: 'Técnicas de Estudio',
               time: '8 horas atrás',
               likes: 67
             }
@@ -479,10 +571,17 @@ const HomePage = () => {
     fetchData();
   }, [blogPosts]);
 
+  // Cleanup effect para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      // Cleanup any ongoing operations when component unmounts
+    };
+  }, []);
+
   // Filtrar posts por categoría activa
   const filteredPosts = activeCategory === 'Todos'
     ? posts
-    : posts.filter(post => post.category.toLowerCase() === activeCategory.toLowerCase());
+    : posts.filter(post => post.category === activeCategory);
 
   // Estilos CSS 
   const styles = {
@@ -666,17 +765,14 @@ const HomePage = () => {
       marginBottom: spacing.xxl,
       animation: "fadeIn 1s ease-out",
       position: "relative",
-      width: "100%",
-      '@media (max-width: 768px)': {
-        gridTemplateColumns: "1fr",
-      }
+      width: "100%"
     },
     featuredPostWrapper: {
       width: "100%",
       position: "relative",
-      marginBottom: spacing.xl,
-      maxWidth: "900px",
-      margin: "0 auto",
+      marginBottom: 0, // Cambiar de spacing.xl a 0
+      maxWidth: "100%",
+      margin: "0", // Ya está bien
       transform: "translateY(0)",
       transition: "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       "&:hover": {
@@ -782,8 +878,13 @@ const HomePage = () => {
       
       @keyframes pulse {
         0% { transform: scale(1); }
-        50% { transform: scale(1.1); }
+        50% { transform: scale(1.05); }
         100% { transform: scale(1); }
+      }
+      
+      @keyframes shine {
+        0% { left: -100%; }
+        100% { left: 100%; }
       }
       
       @keyframes fadeIn {
@@ -792,11 +893,11 @@ const HomePage = () => {
       }
       
       @keyframes fadeInUp {
-        from { 
+        from {
           opacity: 0;
           transform: translateY(20px);
         }
-        to { 
+        to {
           opacity: 1;
           transform: translateY(0);
         }
@@ -996,13 +1097,44 @@ const HomePage = () => {
             margin: '0 auto',
             marginBottom: spacing.xl,
             fontSize: typography.fontSize.md,
-            lineHeight: '1.6',
+            lineHeight: "1.6",
             animation: 'fadeInUp 0.8s ease-out',
             position: 'relative',
             zIndex: 1
           }}>
             Explora nuestras áreas temáticas principales y encuentra contenido que te inspire, motive y ayude en tu desarrollo educativo.
           </p>
+
+          {/* Banner de exploración */}
+          <div 
+            style={hoveredElement === 'explore-banner' ? 
+              { ...styles.exploreBanner, ...styles.exploreBanner['&:hover'] } : 
+              styles.exploreBanner
+            }
+            onMouseEnter={() => setHoveredElement('explore-banner')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
+            <div style={styles.exploreBannerDecoration1}></div>
+            <div style={styles.exploreBannerDecoration2}></div>
+            <h2 style={styles.exploreBannerTitle}>Descubre todas nuestras categorías</h2>
+            <p style={styles.exploreBannerText}>
+              Explora nuestra biblioteca completa de artículos educativos, recursos didácticos, 
+              técnicas innovadoras y mucho más. Encuentra soluciones a problemas comunes y 
+              herramientas para mejorar tu experiencia educativa.
+            </p>
+            <a 
+              href="/categories" 
+              style={hoveredElement === 'explore-btn' ? 
+                { ...styles.exploreBannerBtn, ...styles.exploreBannerBtn['&:hover'] } : 
+                styles.exploreBannerBtn
+              }
+              onMouseEnter={() => setHoveredElement('explore-btn')}
+              onMouseLeave={() => setHoveredElement('explore-banner')}
+            >
+              <span>Explorar categorías</span>
+              <FaArrowRight size={12} />
+            </a>
+          </div>
 
           <div style={{
             display: 'grid',
@@ -1224,6 +1356,8 @@ const HomePage = () => {
                 Estándares y prácticas para asegurar una experiencia educativa de excelencia.
               </p>
             </div>
+
+            
           </div>
         </div>
 
@@ -1270,19 +1404,31 @@ const HomePage = () => {
                 gap: spacing.lg,
                 marginBottom: spacing.xl
               }}>
-                {/* Usar directamente los posts del hook usePosts */}
-                {blogPosts.slice(0, 6).map((post, index) => (
+                {/* Usar los posts filtrados */}
+                {filteredPosts.slice(0, 6).map((post, index) => (
                   <div 
-                    key={post.ID_publicaciones} 
+                    key={post.id} 
                     className="post-card-animation" 
                     style={{
                       "--animation-order": index,
                       background: "transparent"
                     }}
                   >
-                    <PostCard post={post} />
+                    {/* Si existe originalPost (posts reales), usarlo; si no, usar el post formateado */}
+                    <PostCard post={post.originalPost || post} />
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Mostrar mensaje si no hay posts en la categoría seleccionada */}
+            {!loading && !postsError && filteredPosts.length === 0 && (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: spacing.xl,
+                color: colors.textSecondary 
+              }}>
+                <p>No hay publicaciones disponibles para la categoría "{activeCategory}".</p>
               </div>
             )}
 
@@ -1316,58 +1462,84 @@ const HomePage = () => {
             </div>
           </section>
 
-          {/* Featured Post - Ahora a todo lo ancho */}
-          <div style={styles.featuredPostWrapper}>
-            {featuredPost && <FeaturedPost post={featuredPost} />}
-          </div>
-          
-          {/* Título sección artículos */}
-          <h2 style={styles.sectionTitle}>Explora nuestros artículos</h2>
-
-          {/* Posts Grid - Ahora debajo del post destacado */}
-          <div style={styles.postsGridWrapper}>
-            <div style={styles.postsGrid}>
-              {filteredPosts.length > 0 ? (
-                filteredPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
-                ))
-              ) : (
-                <p style={{gridColumn: '1 / -1', textAlign: 'center', color: colors.textSecondary}}>
-                  No hay artículos disponibles en esta categoría.
-                </p>
-              )}
-            </div>
-          </div>
-          
-          {/* Banner de exploración */}
-          <div 
-            style={hoveredElement === 'explore-banner' ? 
-              { ...styles.exploreBanner, ...styles.exploreBanner['&:hover'] } : 
-              styles.exploreBanner
-            }
-            onMouseEnter={() => setHoveredElement('explore-banner')}
+          {/* Featured Post - Ahora a todo lo ancho con diseño premium */}
+          <div style={{
+            ...styles.featuredPostWrapper,
+            position: 'relative',
+            background: `linear-gradient(135deg, ${colors.white}, ${colors.gray50})`,
+            borderRadius: '24px',
+            padding: 0, // Cambiar de spacing.lg a 0
+            boxShadow: `0 25px 60px ${colors.primary}20, 0 0 0 3px ${colors.primary}15`,
+            border: `2px solid ${colors.primary}30`,
+            overflow: 'hidden',
+            transform: hoveredElement === 'featured-post' ? 'translateY(-12px)' : 'translateY(0)',
+            transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          }}
+            onMouseEnter={() => setHoveredElement('featured-post')}
             onMouseLeave={() => setHoveredElement(null)}
           >
-            <div style={styles.exploreBannerDecoration1}></div>
-            <div style={styles.exploreBannerDecoration2}></div>
-            <h2 style={styles.exploreBannerTitle}>Descubre todas nuestras categorías</h2>
-            <p style={styles.exploreBannerText}>
-              Explora nuestra biblioteca completa de artículos educativos, recursos didácticos, 
-              técnicas innovadoras y mucho más. Encuentra soluciones a problemas comunes y 
-              herramientas para mejorar tu experiencia educativa.
-            </p>
-            <a 
-              href="/categories" 
-              style={hoveredElement === 'explore-btn' ? 
-                { ...styles.exploreBannerBtn, ...styles.exploreBannerBtn['&:hover'] } : 
-                styles.exploreBannerBtn
-              }
-              onMouseEnter={() => setHoveredElement('explore-btn')}
-              onMouseLeave={() => setHoveredElement('explore-banner')}
-            >
-              <span>Explorar categorías</span>
-              <FaArrowRight size={12} />
-            </a>
+            {/* Efecto de brillo animado */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+              animation: 'shine 3s ease-in-out infinite',
+              zIndex: 1,
+              pointerEvents: 'none'
+            }}></div>
+            
+            {/* Badge "POST DESTACADO" */}
+            <div style={{
+              position: 'absolute',
+              top: spacing.lg,
+              right: spacing.lg,
+              zIndex: 2,
+              background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+              color: colors.white,
+              padding: `${spacing.xs} ${spacing.md}`,
+              borderRadius: '50px',
+              fontSize: typography.fontSize.xs,
+              fontWeight: typography.fontWeight.bold,
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: spacing.xs,
+              animation: 'pulse 2s infinite'
+            }}>
+              <span style={{ fontSize: '14px' }}>⭐</span>
+              <span>POST DESTACADO</span>
+            </div>
+
+            {/* Decoración superior izquierda */}
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              left: '-20px',
+              width: '80px',
+              height: '80px',
+              background: `radial-gradient(circle, ${colors.primary}15, transparent)`,
+              borderRadius: '50%',
+              zIndex: 0
+            }}></div>
+
+            {/* Decoración inferior derecha */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-30px',
+              right: '-30px',
+              width: '100px',
+              height: '100px',
+              background: `radial-gradient(circle, ${colors.secondary}10, transparent)`,
+              borderRadius: '50%',
+              zIndex: 0
+            }}></div>
+
+            {featuredPost && <FeaturedPost post={featuredPost} />}
           </div>
         </div>
       </main>

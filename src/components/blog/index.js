@@ -5,6 +5,7 @@ export { default as PostList } from './PostList';
 export { default as PostCard } from './PostCard';
 export { default as PostDetail } from './PostDetail';
 export { default as PostViewer } from './PostViewer';
+export { default as PostSidebar } from './PostSidebar';
 export { default as FeaturedPost } from './FeaturedPost';
 export { default as CommentSection } from './CommentSection';
 export { default as ReactionSection } from './ReactionSection';
