@@ -73,17 +73,6 @@ const Header = () => {
             contextSuperUser: isSuperUser,
             serverSuperUser: serverIsSuperUser
           });
-
-          // Si hay discrepancia, mostrar una notificación
-          if (isSuperUser !== serverIsSuperUser) {
-            console.log('Corrigiendo discrepancia en estado de superusuario');
-            showNotification(
-              serverIsSuperUser
-                ? '¡Bienvenido Administrador! Tus privilegios han sido activados.'
-                : 'Tu sesión ha sido actualizada con tus permisos correctos.',
-              'info'
-            );
-          }
         })
         .catch(error => {
           console.error('Error al actualizar estado de superusuario:', error);
