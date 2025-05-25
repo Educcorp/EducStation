@@ -273,19 +273,19 @@ const BlogDetailPage = () => {
       <Header />
       <main style={styles.main}>
         <div style={styles.contentWrapper}>
-          {loading ? (
-            <div style={styles.loadingContainer}>
-              <div style={styles.loadingSpinner}></div>
-              <style>{`
-                @keyframes spin {
-                  0% { transform: rotate(0deg); }
-                  100% { transform: rotate(360deg); }
-                }
-              `}</style>
-            </div>
-          ) : error ? (
-            <div style={styles.errorContainer}>
-              <p>{error}</p>
+        {loading ? (
+          <div style={styles.loadingContainer}>
+            <div style={styles.loadingSpinner}></div>
+            <style>{`
+              @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+              }
+            `}</style>
+          </div>
+        ) : error ? (
+          <div style={styles.errorContainer}>
+            <p>{error}</p>
               <button 
                 onClick={navigateToBlог}
                 style={{
@@ -301,12 +301,12 @@ const BlogDetailPage = () => {
               >
                 Volver al blog
               </button>
-            </div>
-          ) : post ? (
-            <PostDetail post={post} />
-          ) : (
-            <div style={styles.errorContainer}>
-              <p>No se encontró la publicación solicitada.</p>
+          </div>
+        ) : post ? (
+          <PostDetail post={post} />
+        ) : (
+          <div style={styles.errorContainer}>
+            <p>No se encontró la publicación solicitada.</p>
               <button 
                 onClick={navigateToBlог}
                 style={{
@@ -322,8 +322,8 @@ const BlogDetailPage = () => {
               >
                 Volver al blog
               </button>
-            </div>
-          )}
+          </div>
+        )}
         </div>
       </main>
       <Footer />

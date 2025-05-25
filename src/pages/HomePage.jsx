@@ -29,9 +29,9 @@ const NewsCarousel = ({ notes }) => {
   useEffect(() => {
     const playCarousel = () => {
       if (!isPaused) {
-        setCurrentSlide((prevSlide) =>
-          prevSlide === notes.length - 1 ? 0 : prevSlide + 1
-        );
+      setCurrentSlide((prevSlide) =>
+        prevSlide === notes.length - 1 ? 0 : prevSlide + 1
+      );
       }
     };
     autoPlayRef.current = playCarousel;
@@ -360,7 +360,7 @@ const HomePage = () => {
               category: featuredPostData.categorias && featuredPostData.categorias.length > 0 
                 ? featuredPostData.categorias[0].Nombre_categoria 
                 : 'Sin categoría',
-              time: '2 horas atrás',
+    time: '2 horas atrás',
               excerpt: "Cuando mi compañero de universidad Gregorio llegó a mi cuarto de estudio el semestre pasado, me dijo algo que me resonó profundamente: \"Damian, tengo mil ideas rondando en mi cabeza, pero cuando me siento a estudiar, no consigo concentrarme ni cinco minutos seguidos\"..."
             };
             setFeaturedPost(formattedFeatured);
@@ -411,29 +411,29 @@ const HomePage = () => {
           });
           
           setPosts([
-            {
-              id: 1,
-              title: 'Herramientas Tecnológicas para la Educación',
-              image: '/assets/images/tecnologia.jpg',
-              category: 'herramientas',
-              time: '4 horas atrás',
-              likes: 124
-            },
-            {
-              id: 2,
-              title: 'Comunidad y Colaboración en la Educación',
-              image: '/assets/images/humanos.jpg',
-              category: 'técnicas de estudio',
-              time: '4 horas atrás',
-              likes: 89
-            },
-            {
-              id: 3,
-              title: 'Problemas a enfrentar en la actualidad',
-              image: '/assets/images/desafio.jpg',
-              category: 'problemáticas',
-              time: '4 horas atrás',
-              likes: 76
+    {
+      id: 1,
+      title: 'Herramientas Tecnológicas para la Educación',
+      image: '/assets/images/tecnologia.jpg',
+      category: 'herramientas',
+      time: '4 horas atrás',
+      likes: 124
+    },
+    {
+      id: 2,
+      title: 'Comunidad y Colaboración en la Educación',
+      image: '/assets/images/humanos.jpg',
+      category: 'técnicas de estudio',
+      time: '4 horas atrás',
+      likes: 89
+    },
+    {
+      id: 3,
+      title: 'Problemas a enfrentar en la actualidad',
+      image: '/assets/images/desafio.jpg',
+      category: 'problemáticas',
+      time: '4 horas atrás',
+      likes: 76
             },
             {
               id: 4,
@@ -792,11 +792,11 @@ const HomePage = () => {
       }
       
       @keyframes fadeInUp {
-        from {
+        from { 
           opacity: 0;
           transform: translateY(20px);
         }
-        to {
+        to { 
           opacity: 1;
           transform: translateY(0);
         }
@@ -1329,7 +1329,7 @@ const HomePage = () => {
             <div style={styles.postsGrid}>
               {filteredPosts.length > 0 ? (
                 filteredPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                <PostCard key={post.id} post={post} />
                 ))
               ) : (
                 <p style={{gridColumn: '1 / -1', textAlign: 'center', color: colors.textSecondary}}>

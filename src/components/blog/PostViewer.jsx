@@ -531,17 +531,17 @@ const PostViewer = () => {
           
           {/* Post Content */}
           <div style={styles.postWrapper}>
-            <div style={styles.postContainer}>
-              {loading ? (
-                <div style={styles.loadingMessage}>
-                  Cargando contenido del post...
-                </div>
-              ) : error ? (
-                <div style={styles.errorMessage}>
+          <div style={styles.postContainer}>
+            {loading ? (
+              <div style={styles.loadingMessage}>
+                Cargando contenido del post...
+              </div>
+            ) : error ? (
+              <div style={styles.errorMessage}>
                   Error: {error}
-                </div>
-              ) : (
-                <>
+              </div>
+            ) : (
+              <>
                   {/* Contenido del post en un iframe para aislamiento total */}
                   <iframe 
                     key={iframeKey}
@@ -555,10 +555,10 @@ const PostViewer = () => {
                   
                   {/* Sección de reacciones */}
                   <div style={styles.reactionWrapper}>
-                    <ReactionSection postId={postId} />
+                <ReactionSection postId={postId} />
                   </div>
-                </>
-              )}
+              </>
+            )}
             </div>
           </div>
 
@@ -568,7 +568,7 @@ const PostViewer = () => {
           {/* Comentarios */}
           <div style={styles.commentsWrapper}>
             <div style={styles.commentsContainer}>
-              <ComentariosList postId={postId} />
+            <ComentariosList postId={postId} />
             </div>
           </div>
         </main>
@@ -579,4 +579,4 @@ const PostViewer = () => {
   );
 };
 
-export default PostViewer; 
+export default PostViewer;

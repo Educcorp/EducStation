@@ -238,6 +238,14 @@ const ProfilePage = () => {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  // Función robusta para obtener el avatar o el placeholder
+  const getAvatarSrc = (avatar) => {
+    if (!avatar || avatar === "" || avatar === "null" || avatar.length < 30) {
+      return '/assets/images/logoBN.png';
+    }
+    return avatar.startsWith('data:image') ? avatar : `data:image/jpeg;base64,${avatar}`;
+  };
+
   // Estilos
   const styles = {
     container: {
@@ -531,7 +539,7 @@ const ProfilePage = () => {
             >
               <div style={styles.avatar}>
                 <img 
-                  src={userProfile?.avatar || '/assets/images/logoBN.png'} 
+                  src={getAvatarSrc(userProfile?.avatar)} 
                   alt="Avatar" 
                   style={styles.avatarImg} 
                 />

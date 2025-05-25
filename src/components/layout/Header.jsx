@@ -233,7 +233,10 @@ const Header = () => {
 
   // Función para obtener el avatar con prefijo base64 si es necesario
   const getAvatarSrc = (avatar) => {
-    if (!avatar) return '/assets/images/logoBN.png';
+    if (!avatar || avatar === "" || avatar === "null" || avatar.length < 30) {
+      // Si es vacío, null, o demasiado corto para ser base64, usar placeholder
+      return '/assets/images/logoBN.png';
+    }
     return avatar.startsWith('data:image') ? avatar : `data:image/jpeg;base64,${avatar}`;
   };
 

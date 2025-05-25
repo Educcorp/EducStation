@@ -222,12 +222,12 @@ const SimpleEditor = ({ content, onChange }) => {
     }
     
     // Forzar actualización del contenido
-    handleContentChange();
-    
+          handleContentChange();
+          
     // Verificar estados activos después de un pequeño delay
-    setTimeout(() => {
+        setTimeout(() => {
       checkActiveFormats();
-    }, 10);
+          }, 10);
   };
 
   const handlePaste = (e) => {
@@ -303,9 +303,9 @@ const SimpleEditor = ({ content, onChange }) => {
       // Si hay archivos de texto, podrían procesarse aquí
       // Por ahora, simplemente ignoramos todos los archivos
       console.log('Archivos ignorados (no se permiten imágenes):', dataTransfer.files.length);
-      return;
-    }
-    
+          return;
+        }
+        
     // Intentar obtener contenido de texto del drop
     const htmlContent = dataTransfer.getData('text/html');
     const textContent = dataTransfer.getData('text/plain');
@@ -358,9 +358,9 @@ const SimpleEditor = ({ content, onChange }) => {
     }
     // Ctrl+I para cursiva
     else if (e.ctrlKey && e.key === 'i') {
-      e.preventDefault();
+        e.preventDefault();
       applyFormat('italic');
-    }
+      }
     // Ctrl+U para subrayado
     else if (e.ctrlKey && e.key === 'u') {
       e.preventDefault();
@@ -485,15 +485,15 @@ const SimpleEditor = ({ content, onChange }) => {
   return (
     <div style={styles.container}>
       {/* Barra de herramientas flotante */}
-      <FloatingToolbar 
-        onFormatText={applyFormat}
-        activeFormats={activeFormats}
-        editorRef={editorRef}
-        fontSize={currentFontSize}
-        setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
-        // Pasamos los colores claros forzados
-        forceLightMode={true}
-      />
+        <FloatingToolbar 
+          onFormatText={applyFormat}
+          activeFormats={activeFormats}
+          editorRef={editorRef}
+          fontSize={currentFontSize}
+          setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
+          // Pasamos los colores claros forzados
+          forceLightMode={true}
+        />
       
       {/* Placeholder text when editor is empty */}
       {(!internalContent || internalContent === '<p><br></p>' || internalContent === '<br>') && (
