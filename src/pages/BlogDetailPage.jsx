@@ -23,7 +23,7 @@ const BlogDetailPage = () => {
   // Recarga forzada al entrar (solo una vez por sesión) - OPTIMIZADA
   useEffect(() => {
     const reloadKey = `blogdetail-${id}-reloaded`;
-    
+
     if (location.state && location.state.forceReload) {
       if (!sessionStorage.getItem(reloadKey)) {
         // Establecer marcadores INMEDIATAMENTE antes de recargar
@@ -51,18 +51,18 @@ const BlogDetailPage = () => {
         const data = await getPublicacionById(id);
         setPost(data);
         setError(null);
-        
+
         console.log('BlogDetailPage - Datos del post recibidos:', {
           id: id,
           postData: data
         });
-        
+
         // Establecer marcadores solo si no se recargó (para evitar duplicación)
         if (!sessionStorage.getItem(`blogdetail-${id}-reloaded`)) {
           sessionStorage.setItem('viewing-post', id);
           sessionStorage.setItem('came-from-blog', 'true');
         }
-        
+
         // Actualizar título de la página
         document.title = `${data.Titulo} | EducStation`;
       } catch (error) {
@@ -126,7 +126,7 @@ const BlogDetailPage = () => {
     },
     contentWrapper: {
       width: '100%',
-      maxWidth: '800px',
+      maxWidth: '1200px',
       padding: `0 ${spacing.md}`,
     },
     article: {
@@ -286,7 +286,7 @@ const BlogDetailPage = () => {
           ) : error ? (
             <div style={styles.errorContainer}>
               <p>{error}</p>
-              <button 
+              <button
                 onClick={navigateToBlог}
                 style={{
                   ...styles.backLink,
@@ -307,7 +307,7 @@ const BlogDetailPage = () => {
           ) : (
             <div style={styles.errorContainer}>
               <p>No se encontró la publicación solicitada.</p>
-              <button 
+              <button
                 onClick={navigateToBlог}
                 style={{
                   ...styles.backLink,
