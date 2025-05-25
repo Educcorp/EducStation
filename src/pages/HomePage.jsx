@@ -891,7 +891,7 @@ const HomePage = () => {
             </div>
             <div style={styles.heroIcon}>
               <FaChalkboardTeacher size={16} color={colors.primary} />
-              <span>Desarrollo profesional</span>
+              
             </div>
           </div>
 
@@ -928,65 +928,139 @@ const HomePage = () => {
         <div style={{
           marginTop: spacing.xxl,
           marginBottom: spacing.xxl,
-          textAlign: 'center'
+          textAlign: 'center',
+          position: 'relative',
+          padding: `${spacing.xl} 0`,
+          overflow: 'hidden'
         }}>
-          <h2 style={styles.sectionTitle}>Categorías Destacadas</h2>
+          <div style={{
+            position: 'absolute',
+            top: '10%',
+            left: '-5%',
+            width: '200px',
+            height: '200px',
+            background: `radial-gradient(circle, ${colors.primary}15, ${colors.primary}05)`,
+            borderRadius: '50%',
+            zIndex: 0,
+            animation: 'floatingAnimation 8s ease-in-out infinite'
+          }}></div>
+          
+          <div style={{
+            position: 'absolute',
+            bottom: '15%',
+            right: '-3%',
+            width: '150px',
+            height: '150px',
+            background: `radial-gradient(circle, ${colors.secondary}20, ${colors.secondary}05)`,
+            borderRadius: '50%',
+            zIndex: 0,
+            animation: 'floatingAnimation 6s ease-in-out infinite reverse'
+          }}></div>
+          
+          <h2 style={{
+            ...styles.sectionTitle,
+            textAlign: 'center',
+            fontSize: typography.fontSize.xxl,
+            marginBottom: spacing.xl,
+            position: 'relative',
+            display: 'inline-block',
+            paddingBottom: spacing.md,
+            '&:after': {
+              ...styles.sectionTitle['&:after'],
+              left: '50%',
+              transform: 'translateX(-50%)'
+            },
+            animation: 'fadeInUp 0.6s ease-out'
+          }}>Categorías Destacadas</h2>
+          
           <p style={{
             color: colors.textSecondary,
             maxWidth: '700px',
             margin: '0 auto',
             marginBottom: spacing.xl,
             fontSize: typography.fontSize.md,
-            lineHeight: '1.6'
+            lineHeight: '1.6',
+            animation: 'fadeInUp 0.8s ease-out',
+            position: 'relative',
+            zIndex: 1
           }}>
             Explora nuestras áreas temáticas principales y encuentra contenido que te inspire, motive y ayude en tu desarrollo educativo.
           </p>
 
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
             gap: spacing.xl,
-            marginTop: spacing.xl
+            marginTop: spacing.xl,
+            position: 'relative',
+            zIndex: 1
           }}>
             {/* Categoría 1 */}
             <div style={{
-              background: colors.white,
-              borderRadius: '16px',
-              padding: spacing.lg,
-              boxShadow: '0 10px 30px rgba(11, 68, 68, 0.08)',
-              transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              transform: hoveredCategory === 'cat-1' ? 'translateY(-10px)' : 'translateY(0)',
-              cursor: 'pointer'
+              background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
+              borderRadius: '20px',
+              padding: spacing.xl,
+              boxShadow: hoveredCategory === 'cat-1' 
+                ? '0 20px 40px rgba(11, 68, 68, 0.15)' 
+                : '0 10px 30px rgba(11, 68, 68, 0.08)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredCategory === 'cat-1' ? 'translateY(-15px)' : 'translateY(0)',
+              cursor: 'pointer',
+              border: hoveredCategory === 'cat-1' ? `2px solid ${colors.primary}15` : '2px solid transparent',
+              animation: 'fadeInUp 0.6s ease-out'
             }}
               onMouseEnter={() => setHoveredCategory('cat-1')}
               onMouseLeave={() => setHoveredCategory(null)}
               onClick={() => setActiveCategory('Técnicas de Estudio')}
             >
               <div style={{
-                width: '70px',
-                height: '70px',
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${colors.primary}30, ${colors.primary}20)`,
+                width: '80px',
+                height: '80px',
+                borderRadius: '20px',
+                background: hoveredCategory === 'cat-1'
+                  ? `linear-gradient(135deg, ${colors.primary}, ${colors.primary}90)`
+                  : `linear-gradient(135deg, ${colors.primary}80, ${colors.primary}60)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto',
-                marginBottom: spacing.md,
-                animation: hoveredCategory === 'cat-1' ? 'pulse 1.5s infinite' : 'none'
+                marginBottom: spacing.lg,
+                boxShadow: hoveredCategory === 'cat-1' 
+                  ? '0 10px 25px rgba(11, 68, 68, 0.2)' 
+                  : '0 8px 15px rgba(11, 68, 68, 0.1)',
+                transition: 'all 0.3s ease',
+                transform: hoveredCategory === 'cat-1' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
               }}>
-                <FaLightbulb size={30} color={colors.primary} />
+                <FaLightbulb size={36} color="#fff" style={{
+                  animation: hoveredCategory === 'cat-1' ? 'pulse 1.5s infinite' : 'none'
+                }} />
               </div>
               <h3 style={{
-                fontSize: typography.fontSize.lg,
-                color: colors.primary,
-                marginBottom: spacing.sm
+                fontSize: typography.fontSize.xl,
+                color: hoveredCategory === 'cat-1' ? colors.primary : colors.textPrimary,
+                marginBottom: spacing.md,
+                transition: 'color 0.3s ease',
+                fontWeight: typography.fontWeight.semiBold
               }}>
                 Técnicas de Estudio
               </h3>
+              <div style={{
+                width: '60px',
+                height: '4px',
+                background: hoveredCategory === 'cat-1'
+                  ? `linear-gradient(90deg, ${colors.primary}, ${colors.primary}60)`
+                  : `linear-gradient(90deg, ${colors.primary}60, ${colors.primary}30)`,
+                borderRadius: '2px',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                transition: 'all 0.3s ease',
+                transform: hoveredCategory === 'cat-1' ? 'scaleX(1.5)' : 'scaleX(1)',
+              }}></div>
               <p style={{
-                fontSize: typography.fontSize.sm,
+                fontSize: typography.fontSize.md,
                 color: colors.textSecondary,
-                lineHeight: '1.6'
+                lineHeight: '1.8',
+                transition: 'color 0.3s ease'
               }}>
                 Metodologías y estrategias efectivas para optimizar el aprendizaje y mejorar el rendimiento académico.
               </p>
@@ -994,43 +1068,70 @@ const HomePage = () => {
 
             {/* Categoría 2 */}
             <div style={{
-              background: colors.white,
-              borderRadius: '16px',
-              padding: spacing.lg,
-              boxShadow: '0 10px 30px rgba(11, 68, 68, 0.08)',
-              transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              transform: hoveredCategory === 'cat-2' ? 'translateY(-10px)' : 'translateY(0)',
-              cursor: 'pointer'
+              background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
+              borderRadius: '20px',
+              padding: spacing.xl,
+              boxShadow: hoveredCategory === 'cat-2' 
+                ? '0 20px 40px rgba(11, 68, 68, 0.15)' 
+                : '0 10px 30px rgba(11, 68, 68, 0.08)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredCategory === 'cat-2' ? 'translateY(-15px)' : 'translateY(0)',
+              cursor: 'pointer',
+              border: hoveredCategory === 'cat-2' ? `2px solid ${colors.secondary}15` : '2px solid transparent',
+              animation: 'fadeInUp 0.8s ease-out'
             }}
               onMouseEnter={() => setHoveredCategory('cat-2')}
               onMouseLeave={() => setHoveredCategory(null)}
               onClick={() => setActiveCategory('Herramientas')}
             >
               <div style={{
-                width: '70px',
-                height: '70px',
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${colors.secondary}30, ${colors.secondary}20)`,
+                width: '80px',
+                height: '80px',
+                borderRadius: '20px',
+                background: hoveredCategory === 'cat-2'
+                  ? `linear-gradient(135deg, ${colors.secondary}, ${colors.secondary}90)`
+                  : `linear-gradient(135deg, ${colors.secondary}80, ${colors.secondary}60)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto',
-                marginBottom: spacing.md,
-                animation: hoveredCategory === 'cat-2' ? 'pulse 1.5s infinite' : 'none'
+                marginBottom: spacing.lg,
+                boxShadow: hoveredCategory === 'cat-2' 
+                  ? '0 10px 25px rgba(11, 68, 68, 0.2)' 
+                  : '0 8px 15px rgba(11, 68, 68, 0.1)',
+                transition: 'all 0.3s ease',
+                transform: hoveredCategory === 'cat-2' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
               }}>
-                <FaGraduationCap size={30} color={colors.secondary} />
+                <FaGraduationCap size={36} color="#fff" style={{
+                  animation: hoveredCategory === 'cat-2' ? 'pulse 1.5s infinite' : 'none'
+                }} />
               </div>
               <h3 style={{
-                fontSize: typography.fontSize.lg,
-                color: colors.secondary,
-                marginBottom: spacing.sm
+                fontSize: typography.fontSize.xl,
+                color: hoveredCategory === 'cat-2' ? colors.secondary : colors.textPrimary,
+                marginBottom: spacing.md,
+                transition: 'color 0.3s ease',
+                fontWeight: typography.fontWeight.semiBold
               }}>
                 Herramientas Educativas
               </h3>
+              <div style={{
+                width: '60px',
+                height: '4px',
+                background: hoveredCategory === 'cat-2'
+                  ? `linear-gradient(90deg, ${colors.secondary}, ${colors.secondary}60)`
+                  : `linear-gradient(90deg, ${colors.secondary}60, ${colors.secondary}30)`,
+                borderRadius: '2px',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                transition: 'all 0.3s ease',
+                transform: hoveredCategory === 'cat-2' ? 'scaleX(1.5)' : 'scaleX(1)',
+              }}></div>
               <p style={{
-                fontSize: typography.fontSize.sm,
+                fontSize: typography.fontSize.md,
                 color: colors.textSecondary,
-                lineHeight: '1.6'
+                lineHeight: '1.8',
+                transition: 'color 0.3s ease'
               }}>
                 Recursos y aplicaciones que facilitan la enseñanza y el aprendizaje en entornos digitales.
               </p>
@@ -1038,43 +1139,70 @@ const HomePage = () => {
 
             {/* Categoría 3 */}
             <div style={{
-              background: colors.white,
-              borderRadius: '16px',
-              padding: spacing.lg,
-              boxShadow: '0 10px 30px rgba(11, 68, 68, 0.08)',
-              transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              transform: hoveredCategory === 'cat-3' ? 'translateY(-10px)' : 'translateY(0)',
-              cursor: 'pointer'
+              background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
+              borderRadius: '20px',
+              padding: spacing.xl,
+              boxShadow: hoveredCategory === 'cat-3' 
+                ? '0 20px 40px rgba(11, 68, 68, 0.15)' 
+                : '0 10px 30px rgba(11, 68, 68, 0.08)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredCategory === 'cat-3' ? 'translateY(-15px)' : 'translateY(0)',
+              cursor: 'pointer',
+              border: hoveredCategory === 'cat-3' ? `2px solid ${colors.primary}15` : '2px solid transparent',
+              animation: 'fadeInUp 1s ease-out'
             }}
               onMouseEnter={() => setHoveredCategory('cat-3')}
               onMouseLeave={() => setHoveredCategory(null)}
               onClick={() => setActiveCategory('Educación de Calidad')}
             >
               <div style={{
-                width: '70px',
-                height: '70px',
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${colors.primary}30, ${colors.secondary}20)`,
+                width: '80px',
+                height: '80px',
+                borderRadius: '20px',
+                background: hoveredCategory === 'cat-3'
+                  ? `linear-gradient(135deg, ${colors.primary}90, ${colors.secondary}90)`
+                  : `linear-gradient(135deg, ${colors.primary}70, ${colors.secondary}70)`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 margin: '0 auto',
-                marginBottom: spacing.md,
-                animation: hoveredCategory === 'cat-3' ? 'pulse 1.5s infinite' : 'none'
+                marginBottom: spacing.lg,
+                boxShadow: hoveredCategory === 'cat-3' 
+                  ? '0 10px 25px rgba(11, 68, 68, 0.2)' 
+                  : '0 8px 15px rgba(11, 68, 68, 0.1)',
+                transition: 'all 0.3s ease',
+                transform: hoveredCategory === 'cat-3' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
               }}>
-                <FaChalkboardTeacher size={30} color={colors.primary} />
+                <FaChalkboardTeacher size={36} color="#fff" style={{
+                  animation: hoveredCategory === 'cat-3' ? 'pulse 1.5s infinite' : 'none'
+                }} />
               </div>
               <h3 style={{
-                fontSize: typography.fontSize.lg,
-                color: colors.primary,
-                marginBottom: spacing.sm
+                fontSize: typography.fontSize.xl,
+                color: hoveredCategory === 'cat-3' ? colors.primary : colors.textPrimary,
+                marginBottom: spacing.md,
+                transition: 'color 0.3s ease',
+                fontWeight: typography.fontWeight.semiBold
               }}>
                 Educación de Calidad
               </h3>
+              <div style={{
+                width: '60px',
+                height: '4px',
+                background: hoveredCategory === 'cat-3'
+                  ? `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`
+                  : `linear-gradient(90deg, ${colors.primary}60, ${colors.secondary}60)`,
+                borderRadius: '2px',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                transition: 'all 0.3s ease',
+                transform: hoveredCategory === 'cat-3' ? 'scaleX(1.5)' : 'scaleX(1)',
+              }}></div>
               <p style={{
-                fontSize: typography.fontSize.sm,
+                fontSize: typography.fontSize.md,
                 color: colors.textSecondary,
-                lineHeight: '1.6'
+                lineHeight: '1.8',
+                transition: 'color 0.3s ease'
               }}>
                 Estándares y prácticas para asegurar una experiencia educativa de excelencia.
               </p>
