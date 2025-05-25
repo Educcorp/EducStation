@@ -225,12 +225,9 @@ const ContactPage = () => {
     },
     contentWrapper: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr",
+      gridTemplateColumns: "1fr", // Cambiado de "1fr 1fr" a "1fr"
       gap: spacing.xxl,
-      marginBottom: spacing.xxl,
-      '@media (max-width: 768px)': {
-        gridTemplateColumns: "1fr"
-      }
+      marginBottom: spacing.xxl
     },
     contactInfoSection: {
       padding: spacing.xl,
@@ -529,149 +526,8 @@ const ContactPage = () => {
               </div>
             </div>
 
-            {/* Contact Form Section */}
-            <div id="contact-from" style={styles.formSection}> {/* Añadir id="middle" para enlazar con el botón de scroll */}
-              <h2 style={{ ...styles.sectionTitle, '&:after': { ...styles.sectionTitle['&:after'], content: '""' } }}>
-                Envíanos un Mensaje
-                <span style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  width: "60px",
-                  height: "3px",
-                  backgroundColor: colors.secondary
-                }}></span>
-              </h2>
-
-              <form style={styles.form} onSubmit={handleSubmit}>
-                <div style={styles.formRow}>
-                  <div style={styles.formGroup}>
-                    <label style={styles.label} htmlFor="name">
-                      Nombre <span style={styles.required}>*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      style={{
-                        ...styles.input,
-                        backgroundColor: isDarkMode ? '#333' : colors.white,
-                        color: isDarkMode ? '#fff' : colors.textPrimary,
-                        border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`
-                      }}
-                      placeholder="Tu nombre"
-                      required
-                    />
-                  </div>
-
-                  <div style={styles.formGroup}>
-                    <label style={styles.label} htmlFor="email">
-                      Email <span style={styles.required}>*</span>
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      style={{
-                        ...styles.input,
-                        backgroundColor: isDarkMode ? '#333' : colors.white,
-                        color: isDarkMode ? '#fff' : colors.textPrimary,
-                        border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`
-                      }}
-                      placeholder="tu@email.com"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label} htmlFor="subject">
-                    Asunto<span style={styles.required}>*</span>
-                  </label>
-                  <select
-                    id="subject"
-                    name="subject"
-                    value={formData.subject}
-                    onChange={handleChange}
-                    style={{
-                      ...styles.select,
-                      backgroundColor: isDarkMode ? '#333' : colors.white,
-                      color: isDarkMode ? '#fff' : colors.textPrimary,
-                      border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`
-                    }}
-                    required
-                  >
-                    <option value="">Selecciona un asunto</option>
-                    <option value="Información general">Información general</option>
-                    <option value="Soporte técnico">Soporte técnico</option>
-                    <option value="Colaboración">Colaboración</option>
-                    <option value="Sugerencias">Sugerencias</option>
-                    <option value="Otro">Otro</option>
-                  </select>
-                </div>
-
-                <div style={styles.formGroup}>
-                  <label style={styles.label} htmlFor="message">
-                    Mensaje <span style={styles.required}>*</span>
-                  </label>
-                  <textarea
-                    id="message"
-                    name="message"
-                    value={formData.message}
-                    onChange={handleChange}
-                    style={{
-                      ...styles.textarea,
-                      backgroundColor: isDarkMode ? '#333' : colors.white,
-                      color: isDarkMode ? '#fff' : colors.textPrimary,
-                      border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`
-                    }}
-                    placeholder="¿Cómo podemos ayudarte?"
-                    required
-                  ></textarea>
-                </div>
-
-                <button
-                  type="submit"
-                  style={{
-                    ...styles.submitButton,
-                    // Hacer el texto más oscuro en modo oscuro para que resalte mejor
-                    color: isDarkMode ? '#0a1919' : colors.primary
-                  }}
-                  disabled={formStatus.submitting}
-                  onMouseEnter={(e) => {
-                    if (!formStatus.submitting) {
-                      e.currentTarget.style.backgroundColor = colors.primary;
-                      e.currentTarget.style.color = colors.white;
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!formStatus.submitting) {
-                      e.currentTarget.style.backgroundColor = colors.secondary;
-                      // Restaurar al color original según el modo
-                      e.currentTarget.style.color = isDarkMode ? '#0a1919' : colors.primary;
-                    }
-                  }}
-                >
-                  {formStatus.submitting ? 'Enviando...' : 'Enviar Mensaje'}
-                </button>
-
-                {formStatus.success && (
-                  <div style={styles.successMessage}>
-                    {formStatus.message}
-                  </div>
-                )}
-
-                {formStatus.error && (
-                  <div style={styles.errorMessage}>
-                    {formStatus.message}
-                  </div>
-                )}
-              </form>
-            </div>
+            {/* La sección del formulario de contacto ha sido eliminada */}
+            
           </div>
 
           {/* FAQ Section */}
