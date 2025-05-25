@@ -38,13 +38,17 @@ const ImportExportActions = ({ onExport, onImport, isHtmlMode }) => {
       transition: "all 0.3s ease",
       fontSize: typography.fontSize.sm,
       border: "none",
-      backgroundColor: colors.white,
-      color: colors.primary,
-      border: `1px solid ${colors.primary}`,
+      backgroundColor: colors.primary,
+      color: colors.white,
       display: 'flex',
       alignItems: 'center',
       gap: spacing.xs,
       textAlign: 'center'
+    },
+    importButton: {
+      backgroundColor: colors.white,
+      color: colors.primary,
+      border: `1px solid ${colors.primary}`,
     },
     helperText: {
       fontSize: typography.fontSize.xs,
@@ -57,14 +61,16 @@ const ImportExportActions = ({ onExport, onImport, isHtmlMode }) => {
       <div style={styles.actionColumn}>
         <label 
           htmlFor="importFile" 
-          style={styles.button}
+          style={{...styles.button, ...styles.importButton}}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
             e.currentTarget.style.boxShadow = shadows.md;
+            e.currentTarget.style.backgroundColor = `${colors.gray100}`;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow = 'none';
+            e.currentTarget.style.backgroundColor = colors.white;
           }}
         >
           <span>📤</span> Importar HTML
@@ -72,11 +78,11 @@ const ImportExportActions = ({ onExport, onImport, isHtmlMode }) => {
         <input
           id="importFile"
           type="file"
-          accept=".html,.htm"
+          accept=".html,.htm,.json"
           style={{ display: 'none' }}
           onChange={onImport}
         />
-        <p style={styles.helperText}>Importar desde archivo</p>
+        <p style={styles.helperText}>Importar desde archivo HTML o JSON</p>
       </div>
       
       <div style={styles.actionColumnEnd}>
@@ -86,10 +92,12 @@ const ImportExportActions = ({ onExport, onImport, isHtmlMode }) => {
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'translateY(-2px)';
             e.currentTarget.style.boxShadow = shadows.md;
+            e.currentTarget.style.backgroundColor = `${colors.primary}dd`;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateY(0)';
             e.currentTarget.style.boxShadow = 'none';
+            e.currentTarget.style.backgroundColor = colors.primary;
           }}
         >
           <span>📥</span> Exportar HTML
