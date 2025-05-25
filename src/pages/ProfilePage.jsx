@@ -287,7 +287,7 @@ const ProfilePage = () => {
       width: '120px',
       height: '120px',
       borderRadius: '50%',
-      border: `4px solid ${colors.white}`,
+      border: `4px solid ${colors.primary}`,
       backgroundColor: colors.white,
       boxShadow: shadows.md,
       overflow: 'hidden',
