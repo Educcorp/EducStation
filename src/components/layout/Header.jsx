@@ -647,6 +647,18 @@ const Header = () => {
       icon: <FaTags size={20} />
     },
     {
+      path: '/about',
+      label: 'Acerca de',
+      icon: <FaInfo size={20} />,
+      hideForSuperUser: true
+    },
+    {
+      path: '/contact',
+      label: 'Contacto',
+      icon: <FaEnvelope size={20} />,
+      hideForSuperUser: true
+    },
+    {
       path: 'https://www.educstation.com/admin/panel',
       label: 'Admin',
       superuser: true,
@@ -759,7 +771,9 @@ const Header = () => {
 
           <nav style={styles.navLinks}>
             {menuItems.map((item, index) => (
-              (!item.superuser || isSuperUser) && (
+              // Mostrar elemento si no requiere ser superusuario o el usuario es superusuario
+              // Y ocultar si hideForSuperUser es true y el usuario es superusuario
+              ((!item.superuser || isSuperUser) && !(item.hideForSuperUser && isSuperUser)) && (
                 <a
                   key={index}
                   href={item.path}
@@ -923,56 +937,59 @@ const Header = () => {
 
                 <div style={styles.menuSeparator}></div>
 
-                {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
-                <Link
-                  to="/about"
-                  style={getMenuItemStyle(2)}
-                  onMouseEnter={() => setHoveredItem('menu-2')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMenuOpen(false);
-                    // Si ya estamos en about, recargar inmediatamente
-                    if(location.pathname === '/about') {
-                      window.location.reload();
-                    } else {
-                      // Si estamos en otra página, navegar directamente con recarga instantánea
-                      window.location.href = '/about';
-                    }
-                  }}
-                >
-                  <span style={styles.menuItemIcon}>
-                    <FaInfo size={24} />
-                  </span> Acerca de
-                </Link>
-                <Link
-                  to="/contact"
-                  style={getMenuItemStyle(3)}
-                  onMouseEnter={() => setHoveredItem('menu-3')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMenuOpen(false);
-                    // Si ya estamos en contact, recargar inmediatamente
-                    if(location.pathname === '/contact') {
-                      window.location.reload();
-                    } else {
-                      // Si estamos en otra página, navegar directamente con recarga instantánea
-                      window.location.href = '/contact';
-                    }
-                  }}
-                >
-                  <span style={styles.menuItemIcon}>
-                    <FaEnvelope size={24} />
-                  </span> Contacto
-                </Link>
-
-                <div style={styles.menuSeparator}></div>
+                {/* Enlaces de Acerca de y Contacto (eliminados del menú desplegable para usuarios normales) */}
+                {isSuperUser && (
+                  <>
+                    <Link
+                      to="/about"
+                      style={getMenuItemStyle(2)}
+                      onMouseEnter={() => setHoveredItem('menu-2')}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsMenuOpen(false);
+                        // Si ya estamos en about, recargar inmediatamente
+                        if(location.pathname === '/about') {
+                          window.location.reload();
+                        } else {
+                          // Si estamos en otra página, navegar directamente con recarga instantánea
+                          window.location.href = '/about';
+                        }
+                      }}
+                    >
+                      <span style={styles.menuItemIcon}>
+                        <FaInfo size={24} />
+                      </span> Acerca de
+                    </Link>
+                    <Link
+                      to="/contact"
+                      style={getMenuItemStyle(3)}
+                      onMouseEnter={() => setHoveredItem('menu-3')}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsMenuOpen(false);
+                        // Si ya estamos en contact, recargar inmediatamente
+                        if(location.pathname === '/contact') {
+                          window.location.reload();
+                        } else {
+                          // Si estamos en otra página, navegar directamente con recarga instantánea
+                          window.location.href = '/contact';
+                        }
+                      }}
+                    >
+                      <span style={styles.menuItemIcon}>
+                        <FaEnvelope size={24} />
+                      </span> Contacto
+                    </Link>
+                    <div style={styles.menuSeparator}></div>
+                  </>
+                )}
 
                 <a
                   href="#"
-                  style={getMenuItemStyle(4)}
-                  onMouseEnter={() => setHoveredItem('menu-4')}
+                  style={getMenuItemStyle(isSuperUser ? 4 : 2)}
+                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-4' : 'menu-2')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
