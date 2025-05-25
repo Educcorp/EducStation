@@ -52,9 +52,11 @@ const Footer = () => {
       // Aplicar un fondo sólido base antes de la imagen de onda
       footerRef.current.style.backgroundColor = "#082c2c"; // Color base sólido
       
-      // Aplicar la imagen de onda encima del fondo sólido
-      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling')";
-      footerRef.current.style.backgroundSize = "100% auto";
+      // Aplicar la imagen de onda animada encima del fondo sólido
+      // Usar una URL con timestamp para forzar la recarga y asegurar la animación
+      const waveImageUrl = `https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling&t=${Date.now()}`;
+      footerRef.current.style.backgroundImage = `url('${waveImageUrl}')`;
+      footerRef.current.style.backgroundSize = "100% 240px"; // Tamaño específico para la onda
       footerRef.current.style.backgroundPosition = "center bottom";
       footerRef.current.style.backgroundRepeat = "no-repeat";
       footerRef.current.style.color = isDarkMode ? '#ccc' : colors.white;
@@ -70,8 +72,33 @@ const Footer = () => {
       // Asegurar que el footer tenga su propio contexto de apilamiento
       footerRef.current.style.zIndex = "10";
       footerRef.current.style.isolation = "isolate"; // Crear un nuevo contexto de apilamiento
+      
+      // Forzar el repaint para asegurar que la animación se cargue
+      footerRef.current.style.transform = "translateZ(0)";
+      footerRef.current.style.willChange = "background-image";
     }
   }, [isDarkMode, colors]);
+
+  // useEffect específico para mantener la animación de onda activa
+  useEffect(() => {
+    if (!footerRef.current) return;
+
+    // Función para refrescar la animación de onda
+    const refreshWaveAnimation = () => {
+      if (footerRef.current) {
+        const waveImageUrl = `https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling&t=${Date.now()}`;
+        footerRef.current.style.backgroundImage = `url('${waveImageUrl}')`;
+      }
+    };
+
+    // Refrescar la animación cada 30 segundos para mantenerla activa
+    const intervalId = setInterval(refreshWaveAnimation, 30000);
+
+    // Limpiar el intervalo cuando se desmonte el componente
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
   // Crear un estilo global para el body para asegurar que no haya fondo verde
   useEffect(() => {
