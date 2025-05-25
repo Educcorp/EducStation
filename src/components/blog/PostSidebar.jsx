@@ -85,6 +85,48 @@ const PostSidebar = ({ currentPost }) => {
         return 'https://via.placeholder.com/60x60?text=Post';
     };
 
+    // Función para manejar el clic en post relacionado con scroll hacia arriba
+    const handlePostClick = (postId) => {
+        // Hacer scroll hacia arriba inmediatamente
+        window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'smooth'
+        });
+
+        // Fallback para asegurar que funcione
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            if (document.body) {
+                document.body.scrollTop = 0;
+            }
+            if (document.documentElement) {
+                document.documentElement.scrollTop = 0;
+            }
+        }, 100);
+    };
+
+    // Función para manejar el clic en categoría con scroll hacia arriba
+    const handleCategoryClick = (categoryId) => {
+        // Hacer scroll hacia arriba inmediatamente
+        window.scrollTo({
+            top: 0,
+            left: 0,
+            behavior: 'smooth'
+        });
+
+        // Fallback para asegurar que funcione
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+            if (document.body) {
+                document.body.scrollTop = 0;
+            }
+            if (document.documentElement) {
+                document.documentElement.scrollTop = 0;
+            }
+        }, 100);
+    };
+
     const styles = {
         sidebar: {
             width: '100%',
@@ -223,6 +265,7 @@ const PostSidebar = ({ currentPost }) => {
                             onMouseLeave={(e) => {
                                 e.currentTarget.style.backgroundColor = 'transparent';
                             }}
+                            onClick={() => handlePostClick(post.ID_publicaciones)}
                         >
                             <img
                                 src={getPostImage(post)}
@@ -268,6 +311,7 @@ const PostSidebar = ({ currentPost }) => {
                                 e.currentTarget.style.color = isDarkMode ? colors.textLight : colors.textPrimary;
                                 e.currentTarget.style.transform = 'translateX(0)';
                             }}
+                            onClick={() => handleCategoryClick(category.ID_categoria)}
                         >
                             <div className="category-name" style={styles.categoryName}>
                                 {category.Nombre_categoria}
