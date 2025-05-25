@@ -282,6 +282,13 @@ const AdminPanel = () => {
 
   // Manejar edición de publicación
   const handleEditPost = (postId) => {
+    if (!postId) {
+      console.error('Error: No se proporcionó un ID de publicación válido para editar');
+      showNotification('Error al preparar la publicación para editar', 'error');
+      return;
+    }
+
+    console.log(`Redirigiendo al editor para editar publicación con ID: ${postId}`);
     showNotification('Preparando publicación para editar...', 'info');
     navigate(`/admin/post/edit/${postId}`);
   };

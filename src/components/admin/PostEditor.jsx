@@ -14,6 +14,15 @@ import CoverImageUploader from './CoverImageUploader';
 import StatusMessage from './StatusMessage';
 import ImportExportActions from './ImportExportActions';
 
+// Función para detectar si el contenido es HTML completo
+const isFullHTML = (content) => {
+  if (!content) return false;
+  // Verifica si el contenido comienza con DOCTYPE html
+  return content.trim().startsWith('<!DOCTYPE html>') || 
+         content.trim().startsWith('<!doctype html>') ||
+         content.trim().startsWith('<html');
+};
+
 // Componente para la etiqueta de Contenido animada
 const ContentLabel = ({ isVisible = false }) => {
   const [isAnimated, setIsAnimated] = useState(false);
@@ -252,6 +261,18 @@ const PostEditor = () => {
         
         const categoria = categoriaObj ? categoriaObj.Nombre_categoria : '';
         
+        // Determinar si el contenido es HTML completo o tiene marcado HTML
+        const contentHasHTML = postData.contenido && (
+          postData.contenido.includes('<') || 
+          postData.contenido.includes('&lt;')
+        );
+        
+        // Verificar si es HTML completo (con DOCTYPE o tag html)
+        const isHTMLDocument = isFullHTML(postData.contenido);
+        
+        console.log('¿El contenido tiene HTML?', contentHasHTML);
+        console.log('¿Es un documento HTML completo?', isHTMLDocument);
+        
         setPost({
           title: postData.titulo || '',
           content: postData.contenido || '',
@@ -260,7 +281,7 @@ const PostEditor = () => {
           coverImagePreview: postData.imagen_url || null,
           status: postData.estado || 'draft',
           publishDate: postData.fecha_publicacion ? new Date(postData.fecha_publicacion).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
-          editorMode: postData.contenido && (postData.contenido.includes('<') || postData.contenido.includes('&lt;')) ? 'html' : 'simple',
+          editorMode: isHTMLDocument ? 'html' : (contentHasHTML ? 'html' : 'simple'),
           resumen: postData.resumen || ''
         });
         

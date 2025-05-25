@@ -114,6 +114,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
 
   // Inicializar el modo según initialMode cuando cambie
   useEffect(() => {
+    console.log('DualModeEditor - InitialMode cambiado a:', initialMode);
     if (initialMode === 'html' && mode !== 'developer') {
       console.log('DualModeEditor - Inicializando en modo HTML desde props');
       setMode('developer');
@@ -125,8 +126,11 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
 
   // Actualizar contenido cuando cambia externamente
   useEffect(() => {
-    setInternalContent(content || '');
-    setSimpleContent(content || '');
+    console.log('DualModeEditor - Contenido externo actualizado:', content ? content.substring(0, 50) + '...' : 'vacío');
+    if (content !== undefined && content !== null) {
+      setInternalContent(content);
+      setSimpleContent(content);
+    }
   }, [content]);
 
   // Manejar acciones de la barra de herramientas para el modo desarrollador
