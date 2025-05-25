@@ -10,25 +10,14 @@ import ComentariosList from '../comentarios/ComentariosList';
  */
 const PostDetail = ({ post }) => {
   const { colors, isDarkMode } = useTheme();
-  const [iframeHeight, setIframeHeight] = useState(600);
-  const [iframeKey, setIframeKey] = useState(0);
   const navigate = useNavigate();
-  const { postId } = useParams();
+  const location = useLocation();
+  const { id: urlId } = useParams();
+  const [iframeHeight, setIframeHeight] = useState(500);
+  const [iframeKey, setIframeKey] = useState(Date.now());
   
-  // Nuevo estado para controlar el método de renderizado
-  const [useDirectRender, setUseDirectRender] = useState(false);
-  
-  // Función para alternar el método de renderizado
-  const toggleRenderMethod = () => {
-    setUseDirectRender(!useDirectRender);
-    if (!useDirectRender) {
-      // Si cambiamos a renderizado directo, forzamos un re-render
-      setIframeKey(prev => prev + 1);
-    }
-  };
-
   // Asegurarse de que tenemos un ID válido, sea del objeto post o de la URL
-  const postIdValid = post?.ID_publicaciones || postId;
+  const postId = post?.ID_publicaciones || urlId;
   
   // Escuchar mensajes desde el iframe
   useEffect(() => {
@@ -415,75 +404,6 @@ const PostDetail = ({ post }) => {
     `;
   };
 
-  // Función para renderizar contenido directamente (sin iframe)
-  const renderDirectContent = () => {
-    if (!post || !post.Contenido) return null;
-    
-    return (
-      <div 
-        style={{
-          width: '100%',
-          fontFamily: typography.fontFamily,
-          fontSize: '16px',
-          lineHeight: '1.6',
-          color: isDarkMode ? '#e1e1e1' : '#333',
-          wordWrap: 'break-word',
-          overflowWrap: 'break-word',
-          backgroundColor: 'transparent',
-          padding: spacing.md,
-          borderRadius: borderRadius.md,
-          border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        }}
-        dangerouslySetInnerHTML={{
-          __html: `
-            <style>
-              /* Estilos específicos para el contenido renderizado directamente */
-              img {
-                max-width: 100% !important;
-                height: auto !important;
-                display: block !important;
-                margin: 1.5em auto !important;
-                border-radius: 8px !important;
-                object-fit: contain !important;
-                border: 1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'} !important;
-              }
-              
-              p {
-                margin-bottom: 1.2em !important;
-                width: 100% !important;
-              }
-              
-              h1, h2, h3, h4, h5, h6 {
-                margin: 1.5em 0 0.5em !important;
-                line-height: 1.3 !important;
-                color: ${isDarkMode ? '#f1f1f1' : colors.primary} !important;
-                font-weight: 700 !important;
-                width: 100% !important;
-              }
-              
-              a {
-                color: ${colors.secondary} !important;
-                text-decoration: none !important;
-              }
-              
-              a:hover {
-                text-decoration: underline !important;
-              }
-              
-              pre, code {
-                background-color: ${isDarkMode ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.05)'} !important;
-                border-radius: 4px !important;
-                padding: 0.5em !important;
-                font-family: monospace !important;
-              }
-            </style>
-            ${post.Contenido}
-          `
-        }}
-      />
-    );
-  };
-
   // Función para navegar de vuelta al blog con recarga
   const navigateToBlог = () => {
     navigate('/blog', { state: { forceReload: true } });
@@ -582,55 +502,17 @@ const PostDetail = ({ post }) => {
         {renderFeaturedImage()}
       </header>
       
-      {/* Contenido del post - Renderizado condicional */}
+      {/* Contenido del post en un iframe para aislamiento total */}
       <div style={{ marginBottom: spacing.lg }}>
-        {/* Botón para alternar método de renderizado */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'flex-end', 
-          marginBottom: spacing.sm,
-          gap: spacing.sm,
-          alignItems: 'center'
-        }}>
-          <span style={{ 
-            fontSize: typography.fontSize.xs, 
-            color: colors.textSecondary 
-          }}>
-            {useDirectRender ? 'Renderizado directo' : 'Renderizado en iframe'}
-          </span>
-          <button
-            onClick={toggleRenderMethod}
-            style={{
-              padding: `${spacing.xs} ${spacing.sm}`,
-              backgroundColor: colors.secondary,
-              color: colors.white,
-              border: 'none',
-              borderRadius: borderRadius.sm,
-              fontSize: typography.fontSize.xs,
-              cursor: 'pointer',
-              transition: 'background-color 0.3s ease'
-            }}
-            onMouseOver={(e) => e.target.style.backgroundColor = colors.primaryLight}
-            onMouseOut={(e) => e.target.style.backgroundColor = colors.secondary}
-          >
-            {useDirectRender ? '🔄 Usar iframe' : '🔄 Renderizado directo'}
-          </button>
-        </div>
-        
-        {/* Renderizado condicional del contenido */}
-        {useDirectRender ? (
-          renderDirectContent()
-        ) : (
-          <iframe 
-            key={iframeKey}
-            title={post.Titulo || 'Post'}
-            style={styles.iframeContainer}
-            srcDoc={generateIframeContent()}
-            sandbox="allow-same-origin allow-scripts allow-top-navigation-by-user-activation"
-            frameBorder="0"
-            scrolling="no"
-          />
-        )}
+        <iframe 
+          key={iframeKey}
+          title={post.Titulo || 'Post'}
+          style={styles.iframeContainer}
+          srcDoc={generateIframeContent()}
+          sandbox="allow-same-origin allow-scripts"
+          frameBorder="0"
+          scrolling="no"
+        />
       </div>
       
       {post.categorias && post.categorias.length > 0 && (
@@ -656,7 +538,7 @@ const PostDetail = ({ post }) => {
       }}></div>
       
       {/* Sección de comentarios */}
-      <ComentariosList postId={postIdValid} />
+      <ComentariosList postId={postId} />
       
       <button 
         onClick={navigateToBlог}

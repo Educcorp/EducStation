@@ -49,21 +49,27 @@ const Footer = () => {
   useEffect(() => {
     // Aplicar directamente los estilos al elemento del footer
     if (footerRef.current) {
-      // Restaurar la animación original con la imagen de onda
+      // Aplicar un fondo sólido base antes de la imagen de onda
+      footerRef.current.style.backgroundColor = "#082c2c"; // Color base sólido
+      
+      // Aplicar la imagen de onda encima del fondo sólido
       footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling')";
       footerRef.current.style.backgroundSize = "100% auto";
       footerRef.current.style.backgroundPosition = "center bottom";
       footerRef.current.style.backgroundRepeat = "no-repeat";
-      footerRef.current.style.backgroundColor = "transparent"; // Fondo transparente
       footerRef.current.style.color = isDarkMode ? '#ccc' : colors.white;
       
-      // Ajustar propiedades para evitar el rectángulo verde
+      // Ajustar propiedades para evitar interferencias del fondo padre
       footerRef.current.style.border = "none";
       footerRef.current.style.boxShadow = "none";
       footerRef.current.style.minHeight = "240px"; // Asegurar altura suficiente para la onda
       footerRef.current.style.marginTop = "40px"; // Espaciado superior
       footerRef.current.style.position = "relative";
       footerRef.current.style.overflow = "hidden";
+      
+      // Asegurar que el footer tenga su propio contexto de apilamiento
+      footerRef.current.style.zIndex = "10";
+      footerRef.current.style.isolation = "isolate"; // Crear un nuevo contexto de apilamiento
     }
   }, [isDarkMode, colors]);
 
@@ -142,8 +148,7 @@ const Footer = () => {
   // La animación de glow se aplicará directamente en el estilo inline si se requiere, no como keyframes en JS
 
   const styles = {
-    // Quitamos backgroundColor y color del objeto de estilo
-    // porque ahora lo aplicamos directamente al elemento con useEffect
+    // Footer con fondo sólido para evitar interferencias
     footer: {
       padding: 0,
       margin: 0,
@@ -151,7 +156,9 @@ const Footer = () => {
       position: 'relative',
       width: '100%',
       overflow: 'hidden',
-      zIndex: 1
+      zIndex: 10,
+      backgroundColor: '#082c2c', // Fondo sólido base
+      isolation: 'isolate' // Crear contexto de apilamiento independiente
     },
     container: {
       maxWidth: '1900px',

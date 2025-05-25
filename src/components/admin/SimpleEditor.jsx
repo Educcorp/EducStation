@@ -5,10 +5,6 @@ import { spacing, typography, shadows, borderRadius, transitions } from '../../s
 import FloatingToolbar from './FloatingToolbar';
 import { lightColors } from '../../styles/theme'; // Importamos específicamente los colores claros
 
-// Constantes para el tamaño máximo de imagen
-const MAX_IMAGE_SIZE = 4 * 1024 * 1024; // 4MB
-const ABSOLUTE_MAX_SIZE = 15 * 1024 * 1024; // 15MB
-
 const SimpleEditor = ({ content, onChange }) => {
   const editorRef = useRef(null);
   const [internalContent, setInternalContent] = useState(content || '');
@@ -126,17 +122,6 @@ const SimpleEditor = ({ content, onChange }) => {
 
   // Apply formatting commands
   const applyFormat = (format, value) => {
-    // Si estamos aplicando formato a una imagen seleccionada, no hacemos nada
-    if (document.querySelector('.selected-image')) {
-      return;
-    }
-    
-    // Si el formato es insertar imagen, manejarlo de forma especial
-    if (format === 'image') {
-      handleImageInsert();
-      return;
-    }
-    
     // Si el formato es un enlace, manejarlo de forma especial
     if (format === 'link') {
       const selection = window.getSelection();
@@ -218,1126 +203,168 @@ const SimpleEditor = ({ content, onChange }) => {
 
   // Special handling for heading formats
   const applyHeadingFormat = (headingType) => {
+    // Guardar la selección antes de aplicar formato
     const selection = window.getSelection();
-    if (!selection.rangeCount) return;
-    
-    // Get the current selection
     const range = selection.getRangeAt(0);
-    const selectedElement = range.commonAncestorContainer;
     
-    // Find the block element that contains the selection
-    let blockElement = selectedElement;
-    if (blockElement.nodeType === 3) { // Text node
-      blockElement = blockElement.parentNode;
+    // Obtener el nodo contenedor
+    let container = range.commonAncestorContainer;
+    if (container.nodeType === 3) {
+      container = container.parentNode;
     }
     
-    // Find the highest block-level element within the editor
-    while (blockElement !== null && 
-           blockElement.parentNode !== editorRef.current && 
-           blockElement !== editorRef.current) {
-      blockElement = blockElement.parentNode;
-    }
-    
-    // Save the selection content
-    const content = range.cloneContents();
-    
-    // Create the new heading element
-    const newHeading = document.createElement(headingType);
-    
-    // If we have an empty selection, preserve the block element's content
-    if (range.collapsed) {
-      newHeading.innerHTML = blockElement.innerHTML;
+    // Si ya estamos en un heading, cambiarlo
+    if (container.tagName && container.tagName.match(/^H[1-6]$/)) {
+      document.execCommand('formatBlock', false, `<${headingType}>`);
     } else {
-      // Otherwise use the selected content
-      newHeading.appendChild(content);
+      // Si no, aplicar formato de heading
+      document.execCommand('formatBlock', false, `<${headingType}>`);
     }
     
-    // Replace the block element with our new heading
-    if (blockElement !== editorRef.current) {
-      blockElement.parentNode.replaceChild(newHeading, blockElement);
-    } else {
-      // If the blockElement is the editor itself, just insert at selection
-      range.deleteContents();
-      range.insertNode(newHeading);
-    }
-  };
-
-  // Función para comprimir imagen
-  const compressImage = (file, imgSrc) => {
-    return new Promise((resolve, reject) => {
-      // Verificar si la imagen es demasiado grande
-      if (file.size > ABSOLUTE_MAX_SIZE) {
-        reject(new Error(`La imagen es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es ${ABSOLUTE_MAX_SIZE / 1024 / 1024}MB.`));
-        return;
-      }
-      
-      // Si la imagen es suficientemente pequeña, no comprimir
-      if (file.size <= MAX_IMAGE_SIZE) {
-        resolve(imgSrc);
-        return;
-      }
-      
-      // Crear un objeto de imagen para obtener dimensiones
-      const img = new Image();
-      img.onload = () => {
-        try {
-          // Calcular ratio de compresión
-          let compressionRatio;
-          
-          if (file.size > 10 * 1024 * 1024) { // Más de 10MB
-            compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size) * 0.7;
-          } else if (file.size > 5 * 1024 * 1024) { // Entre 5MB y 10MB
-            compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size) * 0.8;
-          } else {
-            compressionRatio = Math.sqrt(MAX_IMAGE_SIZE / file.size);
-          }
-          
-          // Reducir tamaño proporcionalmente
-          const newWidth = Math.floor(img.width * compressionRatio);
-          const newHeight = Math.floor(img.height * compressionRatio);
-          
-          // Crear canvas para compresión
-          const canvas = document.createElement('canvas');
-          canvas.width = newWidth;
-          canvas.height = newHeight;
-          
-          // Dibujar imagen en canvas
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, newWidth, newHeight);
-          
-          // Calcular calidad JPEG según tamaño
-          let jpegQuality = 0.7; // 70% por defecto
-          
-          if (file.size > 10 * 1024 * 1024) {
-            jpegQuality = 0.5; // 50% para imágenes muy grandes
-          } else if (file.size > 5 * 1024 * 1024) {
-            jpegQuality = 0.6; // 60% para imágenes grandes
-          }
-          
-          // Convertir a data URL con la calidad especificada
-          const compressedDataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
-          
-          // Verificar tamaño después de compresión (aproximado)
-          const base64Length = compressedDataUrl.length - 'data:image/jpeg;base64,'.length;
-          const compressedSize = (base64Length * 0.75); // aproximación del tamaño en bytes
-          
-          // Si sigue siendo demasiado grande, comprimir más agresivamente
-          if (compressedSize > MAX_IMAGE_SIZE * 1.2) {
-            const secondCanvas = document.createElement('canvas');
-            const reducedWidth = Math.floor(newWidth * 0.8);
-            const reducedHeight = Math.floor(newHeight * 0.8);
-            
-            secondCanvas.width = reducedWidth;
-            secondCanvas.height = reducedHeight;
-            
-            const ctx2 = secondCanvas.getContext('2d');
-            ctx2.drawImage(img, 0, 0, reducedWidth, reducedHeight);
-            
-            const finalDataUrl = secondCanvas.toDataURL('image/jpeg', 0.45);
-            resolve(finalDataUrl);
-          } else {
-            resolve(compressedDataUrl);
-          }
-        } catch (error) {
-          console.error("Error al comprimir imagen:", error);
-          reject(error);
-        }
-      };
-      
-      img.onerror = () => {
-        reject(new Error("Error al cargar la imagen para compresión"));
-      };
-      
-      img.src = imgSrc;
-    });
-  };
-
-  // Actualizar handleImageInsert para usar la compresión
-  const handleImageInsert = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    // Forzar actualización del contenido
+    handleContentChange();
     
-      input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      try {
-        // Leer el archivo como Data URL
-        const readFileAsDataURL = new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = (event) => resolve(event.target.result);
-          reader.onerror = (error) => reject(error);
-          reader.readAsDataURL(file);
-        });
-        
-        // Obtener la imagen como Data URL
-        const imgSrc = await readFileAsDataURL;
-        
-        // Comprimir la imagen si es necesario
-        const processedImgSrc = await compressImage(file, imgSrc);
-        
-        // Verificar el tamaño de la cadena base64 resultante
-        const base64Length = processedImgSrc.length - processedImgSrc.indexOf('base64,') - 7;
-        const base64Size = (base64Length * 0.75);
-        
-        if (base64Size > 45 * 1024 * 1024) { // Limitar a 45MB (por debajo del max_allowed_packet)
-          throw new Error(`La imagen procesada sigue siendo demasiado grande (${(base64Size / 1024 / 1024).toFixed(2)} MB). Por favor, utiliza una imagen más pequeña.`);
-        }
-        
-        // Creamos HTML personalizado para la imagen con estilos básicos
-        const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-          <img src="${processedImgSrc}" alt="Imagen insertada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
-        </div>`;
-        
-        // Insertamos el HTML personalizado
-        document.execCommand('insertHTML', false, imgHtml);
-            
-        // Después de insertar, agregamos event listeners para manipulación
-        setTimeout(() => {
-          addImageEventListeners();
-          handleContentChange();
-          
-          // Posicionar el cursor después de la imagen insertada
-          const imageContainers = editorRef.current.querySelectorAll('.image-container');
-          if (imageContainers.length > 0) {
-            const lastImageContainer = imageContainers[imageContainers.length - 1];
-            
-            // Crear un espacio después de la imagen para facilitar la escritura
-            const spaceElement = document.createElement('span');
-            spaceElement.innerHTML = '&nbsp;';
-            lastImageContainer.parentNode.insertBefore(spaceElement, lastImageContainer.nextSibling);
-            
-            // Posicionar el cursor después del espacio
-            const newRange = document.createRange();
-            newRange.setStartAfter(spaceElement);
-            newRange.collapse(true);
-            
-            const newSelection = window.getSelection();
-            newSelection.removeAllRanges();
-            newSelection.addRange(newRange);
-            
-            // Enfocar el editor
-            editorRef.current.focus();
-          }
-        }, 10);
-      } catch (error) {
-        console.error("Error al insertar imagen:", error);
-        
-        // Notificar al usuario del error de forma amistosa
-        const errorNode = document.createElement('span');
-        errorNode.style.color = 'red';
-        errorNode.style.fontWeight = 'bold';
-        errorNode.textContent = `Error: ${error.message || 'No se pudo procesar la imagen'}`;
-        
-        // Insertar mensaje de error en el editor
-        document.execCommand('insertHTML', false, errorNode.outerHTML);
-        
-        // Eliminar el mensaje después de unos segundos
-        setTimeout(() => {
-          const errorElements = editorRef.current.querySelectorAll('span');
-          errorElements.forEach(el => {
-            if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
-              el.remove();
-            }
-          });
-        }, 5000);
-        
-        // Intentar restaurar el estado del editor
-        if (editorRef.current) {
-          editorRef.current.focus();
-        }
-      }
-      }
-    };
-    
-    input.click();
-  };
-
-  const addImageEventListeners = () => {
-    if (!editorRef.current) return;
-    
-    // Seleccionamos todos los contenedores de imagen
-    const imageContainers = editorRef.current.querySelectorAll('.image-container');
-    
-    imageContainers.forEach(container => {
-      if (container.getAttribute('data-handlers-added')) return;
-      
-      const img = container.querySelector('img');
-      
-      // Detectar y establecer el tamaño real de la imagen
-      if (img) {
-        // Crear una imagen temporal para obtener las dimensiones reales
-        const tempImg = new Image();
-        tempImg.onload = function() {
-          // Establecer dimensiones basadas en la imagen real
-          const aspectRatio = tempImg.width / tempImg.height;
-          
-          // Establecer un ancho inicial razonable basado en el contenedor
-          const initialWidth = Math.min(tempImg.width, 300);
-          const initialHeight = initialWidth / aspectRatio;
-          
-          img.style.width = `${initialWidth}px`;
-          img.style.height = `${initialHeight}px`;
-          
-          // Guardar el aspect ratio para futuras operaciones de redimensionamiento
-          img.setAttribute('data-aspect-ratio', aspectRatio);
-          
-          handleContentChange();
-        };
-        tempImg.src = img.src;
-      }
-      
-      // Asegurar que se añadan los controles de text-wrap si no existen
-      if (!container.querySelector('.text-wrap-controls')) {
-        // Crear el botón para abrir el menú de opciones de wrapping
-        const wrapControlButton = document.createElement('div');
-        wrapControlButton.className = 'wrap-control-button';
-        wrapControlButton.innerHTML = '≡'; // Icono simple para representar opciones de texto
-        wrapControlButton.title = 'Opciones de texto';
-        wrapControlButton.style.cssText = 'position: absolute; top: -30px; right: 0; background-color: white; border: 1px solid #ddd; border-radius: 4px; width: 25px; height: 25px; display: none; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 2; user-select: none; pointer-events: auto;';
-        
-        // Crear el círculo de redimensionamiento
-        const resizeHandle = document.createElement('div');
-        resizeHandle.className = 'resize-handle';
-        resizeHandle.title = 'Redimensionar imagen';
-        resizeHandle.style.cssText = 'position: absolute; bottom: -10px; right: -10px; width: 20px; height: 20px; background-color: #1b4fd9; border: 2px solid white; border-radius: 50%; cursor: nw-resize; display: none; z-index: 3; user-select: none; pointer-events: auto; box-shadow: 0 2px 5px rgba(0,0,0,0.3);';
-        
-        // Crear el menú de opciones para el wrapping de texto
-        const wrapControls = document.createElement('div');
-        wrapControls.className = 'text-wrap-controls';
-        wrapControls.style.cssText = 'position: absolute; top: -30px; right: 30px; background-color: white; border: 1px solid #ddd; border-radius: 4px; padding: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); display: none; z-index: 2; user-select: none; pointer-events: auto;';
-        
-        // Opciones de wrapping
-        const wrapOptions = [
-          { class: 'wrap-inline', title: 'En línea con el texto', icon: '─' },
-          { class: 'wrap-square', title: 'Cuadrado', icon: '□' },
-          { class: 'wrap-tight', title: 'Ajustado', icon: '▢' }
-        ];
-        
-        wrapOptions.forEach(option => {
-          const button = document.createElement('button');
-          button.className = option.class;
-          button.title = option.title;
-          button.innerHTML = option.icon;
-          button.style.cssText = 'margin-right: 4px; cursor: pointer; background: none; border: 1px solid #ddd; border-radius: 2px; padding: 2px 5px; width: 28px; text-align: center; user-select: none;';
-          
-          button.addEventListener('click', (e) => {
-            // Remover todas las clases de wrapping previas
-            wrapOptions.forEach(opt => container.classList.remove(opt.class));
-            
-            // Añadir la clase seleccionada
-            container.classList.add(option.class);
-            
-            // Aplicar estilos específicos para cada tipo de wrapping
-            switch(option.class) {
-              case 'wrap-inline':
-                container.style.float = 'none';
-                container.style.display = 'inline-block';
-                container.style.verticalAlign = 'middle';
-                container.style.margin = '0 10px';
-                container.style.position = 'relative';
-                container.style.zIndex = '0'; // Aseguramos que no esté encima del texto
-                // Eliminar cualquier propiedad shape-outside que pudiera estar establecida
-                container.style.shapeOutside = 'none';
-                // Preservar tamaño de la imagen
-                const inlineWidth = img.style.width;
-                const inlineHeight = img.style.height;
-                if (inlineWidth && inlineHeight) {
-                  // Asegurar que no se pierda la dimensión al cambiar el estilo
-                  setTimeout(() => {
-                    img.style.width = inlineWidth;
-                    img.style.height = inlineHeight;
-                  }, 0);
-                }
-                break;
-              case 'wrap-square':
-                // Guardar dimensiones actuales antes de cambiar estilos
-                const squareWidth = img.style.width;
-                const squareHeight = img.style.height;
-                
-                container.style.float = 'left';
-                container.style.margin = '0 15px 10px 0';
-                container.style.position = 'relative';
-                container.style.zIndex = '0'; // Aseguramos que no esté encima del texto
-                container.style.shapeOutside = 'content-box';
-                container.style.shapeMargin = '10px'; // Añadimos margen para el texto
-                // Aseguramos que el flujo de texto respete la imagen
-                container.style.overflow = 'visible';
-                
-                // Restaurar dimensiones
-                if (squareWidth && squareHeight) {
-                  setTimeout(() => {
-                    img.style.width = squareWidth;
-                    img.style.height = squareHeight;
-                  }, 0);
-                }
-                break;
-              case 'wrap-tight':
-                // Guardar dimensiones actuales
-                const tightWidth = img.style.width;
-                const tightHeight = img.style.height;
-                
-                container.style.float = 'left';
-                container.style.margin = '0 15px 10px 0';
-                container.style.position = 'relative';
-                container.style.zIndex = '0'; // Aseguramos que no esté encima del texto
-                container.style.shapeOutside = 'margin-box';
-                container.style.shapeMargin = '10px'; // Aumentamos el margen para mayor espacio
-                // Aseguramos que el flujo de texto respete la imagen
-                container.style.overflow = 'visible';
-                
-                // Restaurar dimensiones
-                if (tightWidth && tightHeight) {
-                  setTimeout(() => {
-                    img.style.width = tightWidth;
-                    img.style.height = tightHeight;
-                  }, 0);
-                }
-                break;
-            }
-            
-            // Notificar cambios
-            handleContentChange();
-            e.stopPropagation();
-            e.preventDefault(); // Prevenir que se posicione el cursor
-            
-            // Ocultar los controles después de seleccionar
-            wrapControls.style.display = 'none';
-            // Actualizar estado para mostrar la barra flotante nuevamente
-            setIsImageMenuOpen(false);
-          });
-          
-          wrapControls.appendChild(button);
-        });
-        
-        // Mostrar/ocultar el menú al hacer clic en el botón
-        wrapControlButton.addEventListener('click', (e) => {
-          const isVisible = wrapControls.style.display === 'none';
-          wrapControls.style.display = isVisible ? 'block' : 'none';
-          // Actualizar el estado para ocultar la barra flotante
-          setIsImageMenuOpen(isVisible);
-          e.stopPropagation();
-          e.preventDefault(); // Prevenir que se posicione el cursor
-        });
-        
-        // Prevenir la interacción con el cursor en estos elementos
-        wrapControlButton.addEventListener('mousedown', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        });
-        
-        wrapControls.addEventListener('mousedown', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        });
-        
-        // Variables para el movimiento
-        let isDragging = false;
-        let startX, startY, startLeft, startTop;
-        
-        // Variables para el redimensionamiento
-        let isResizing = false;
-        let startWidth, startHeight, startMouseX, startMouseY;
-        
-        // Indica si la imagen está seleccionada
-        let isSelected = false;
-        
-        // Mostrar controles al hacer clic en la imagen
-        container.addEventListener('click', (e) => {
-          e.stopPropagation(); // Evitar que el evento llegue al editor
-          
-          // Marcar esta imagen como seleccionada
-          isSelected = true;
-          container.classList.add('selected-image');
-          
-          // Mostrar el botón de control para esta imagen
-          const wrapControlButton = container.querySelector('.wrap-control-button');
-          const resizeHandle = container.querySelector('.resize-handle');
-          if (wrapControlButton) {
-            wrapControlButton.style.display = 'flex';
-          }
-          if (resizeHandle) {
-            resizeHandle.style.display = 'block';
-          }
-          
-          // Desmarcar otras imágenes como seleccionadas
-          document.querySelectorAll('.image-container').forEach(otherContainer => {
-            if (otherContainer !== container) {
-              otherContainer.classList.remove('selected-image');
-              
-              // Ocultar controles de otras imágenes
-              const otherWrapControls = otherContainer.querySelector('.text-wrap-controls');
-              const otherWrapControlButton = otherContainer.querySelector('.wrap-control-button');
-              const otherResizeHandle = otherContainer.querySelector('.resize-handle');
-              if (otherWrapControls) {
-                otherWrapControls.style.display = 'none';
-              }
-              if (otherWrapControlButton) {
-                otherWrapControlButton.style.display = 'none';
-              }
-              if (otherResizeHandle) {
-                otherResizeHandle.style.display = 'none';
-              }
-            }
-          });
-          
-          // Actualizar el estado de imagen seleccionada
-          checkForSelectedImage();
-          
-          // Si no estamos arrastrando, mantener el foco en el editor
-          if (!isDragging) {
-            editorRef.current.focus();
-          }
-        });
-        
-        // Ocultar controles al hacer clic fuera de la imagen
-        document.addEventListener('click', (e) => {
-          if (!container.contains(e.target)) {
-            isSelected = false;
-            container.classList.remove('selected-image');
-            
-            // Ocultar controles de wrapping
-            const wrapControls = container.querySelector('.text-wrap-controls');
-            const wrapControlButton = container.querySelector('.wrap-control-button');
-            const resizeHandle = container.querySelector('.resize-handle');
-            if (wrapControls) {
-              wrapControls.style.display = 'none';
-              // Actualizar el estado para mostrar la barra flotante de nuevo
-              setIsImageMenuOpen(false);
-            }
-            if (wrapControlButton) {
-              wrapControlButton.style.display = 'none';
-            }
-            if (resizeHandle) {
-              resizeHandle.style.display = 'none';
-            }
-            
-            // Verificar si hay alguna otra imagen seleccionada
-            checkForSelectedImage();
-          }
-        });
-        
-        // Evento para comenzar a mover
-        container.addEventListener('mousedown', (e) => {
-          // Verificar que no haga clic en los controles
-          const wrapControls = container.querySelector('.text-wrap-controls');
-          const wrapControlButton = container.querySelector('.wrap-control-button');
-          const resizeHandle = container.querySelector('.resize-handle');
-          
-          if (e.target !== wrapControlButton && 
-              !(wrapControls && wrapControls.contains(e.target)) && 
-              e.target !== wrapControlButton &&
-              e.target !== resizeHandle) {
-            isDragging = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            
-            // Asegurar que el contenedor tenga posición relativa
-            const computedStyle = window.getComputedStyle(container);
-            if (computedStyle.position !== 'relative') {
-              container.style.position = 'relative';
-            }
-            
-            startLeft = parseInt(computedStyle.left) || 0;
-            startTop = parseInt(computedStyle.top) || 0;
-            
-            e.preventDefault();
-            e.stopPropagation(); // Evitar que el evento llegue al editor
-          }
-        });
-        
-        // Eventos para el documento (para capturar fuera del editor)
-        document.addEventListener('mousemove', (e) => {
-          if (isDragging) {
-            const deltaX = e.clientX - startX;
-            const deltaY = e.clientY - startY;
-            
-            // Guardar tamaño actual antes de mover
-            const currentWidth = img.style.width;
-            const currentHeight = img.style.height;
-            
-            container.style.left = `${startLeft + deltaX}px`;
-            container.style.top = `${startTop + deltaY}px`;
-            
-            // Restaurar tamaño después de mover para evitar cambios
-            if (currentWidth && currentHeight) {
-              img.style.width = currentWidth;
-              img.style.height = currentHeight;
-            }
-            
-            e.preventDefault();
-          }
-        });
-        
-        document.addEventListener('mouseup', (e) => {
-          if (isDragging) {
-            isDragging = false;
-            handleContentChange();
-            
-            // Restaurar el foco al editor después de manipular una imagen
-            // Se hace con un pequeño retraso para permitir que el evento de clic se procese
-            setTimeout(() => {
-              if (!editorRef.current.contains(document.activeElement)) {
-                editorRef.current.focus();
-                
-                // Si hay una selección guardada, intentar restaurarla
-                if (window.getSelection && window.getSelection().rangeCount === 0) {
-                  // Crear un nuevo rango al final de la imagen
-                  const range = document.createRange();
-                  range.setStartAfter(container);
-                  range.collapse(true);
-                  
-                  // Aplicar la selección
-                  const selection = window.getSelection();
-                  selection.removeAllRanges();
-                  selection.addRange(range);
-                }
-              }
-            }, 10);
-          }
-        });
-        
-        // Evento de doble clic para posicionar el cursor después de la imagen
-        container.addEventListener('dblclick', (e) => {
-          // Verificar que no hicimos doble clic en los controles
-          const wrapControls = container.querySelector('.text-wrap-controls');
-          const wrapControlButton = container.querySelector('.wrap-control-button');
-          const resizeHandle = container.querySelector('.resize-handle');
-          
-          if (e.target !== wrapControlButton && 
-              !(wrapControls && wrapControls.contains(e.target)) && 
-              e.target !== wrapControlButton &&
-              e.target !== resizeHandle) {
-            // Posicionar el cursor después de la imagen
-            const range = document.createRange();
-            range.setStartAfter(container);
-            range.collapse(true);
-            
-            const selection = window.getSelection();
-            selection.removeAllRanges();
-            selection.addRange(range);
-            
-            // Enfocar el editor
-            editorRef.current.focus();
-            
-            e.preventDefault();
-          }
-        });
-        
-        // Agregar los elementos al contenedor
-        container.appendChild(wrapControlButton);
-        container.appendChild(resizeHandle);
-        container.appendChild(wrapControls);
-        
-        // Event listener para el redimensionamiento
-        resizeHandle.addEventListener('mousedown', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          
-          isResizing = true;
-          startMouseX = e.clientX;
-          startMouseY = e.clientY;
-          
-          // Obtener dimensiones actuales de la imagen
-          const computedStyle = window.getComputedStyle(img);
-          startWidth = parseInt(computedStyle.width) || img.offsetWidth;
-          startHeight = parseInt(computedStyle.height) || img.offsetHeight;
-          
-          // Obtener el aspect ratio de la imagen
-          let aspectRatio = img.getAttribute('data-aspect-ratio');
-          if (!aspectRatio) {
-            aspectRatio = startWidth / startHeight;
-            img.setAttribute('data-aspect-ratio', aspectRatio);
-          } else {
-            aspectRatio = parseFloat(aspectRatio);
-          }
-          
-          // Event listeners para el documento durante el redimensionamiento
-          const handleMouseMove = (e) => {
-            if (!isResizing) return;
-            
-            e.preventDefault();
-            
-            // Calcular el cambio en la posición del mouse
-            const deltaX = e.clientX - startMouseX;
-            const deltaY = e.clientY - startMouseY;
-            
-            // Usar la mayor distancia para mantener proporciones
-            const delta = Math.max(deltaX, deltaY);
-            
-            // Calcular nuevas dimensiones manteniendo el aspect ratio
-            let newWidth = Math.max(50, startWidth + delta); // Mínimo 50px
-            let newHeight = newWidth / aspectRatio;
-            
-            // Aplicar las nuevas dimensiones
-            img.style.width = `${newWidth}px`;
-            img.style.height = `${newHeight}px`;
-          };
-          
-          const handleMouseUp = () => {
-            if (isResizing) {
-              isResizing = false;
-              handleContentChange();
-              
-              // Restaurar el foco al editor
-              setTimeout(() => {
-                if (editorRef.current && !editorRef.current.contains(document.activeElement)) {
-                  editorRef.current.focus();
-                }
-              }, 10);
-            }
-            
-            // Remover event listeners
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-          };
-          
-          // Agregar event listeners al documento
-          document.addEventListener('mousemove', handleMouseMove);
-          document.addEventListener('mouseup', handleMouseUp);
-        });
-        
-        // Marcar que ya se agregaron los manejadores
-        container.setAttribute('data-handlers-added', 'true');
-      }
-    });
-  };
-
-  // Función para eliminar la imagen seleccionada
-  const deleteSelectedImage = () => {
-    const selectedImage = editorRef.current.querySelector('.selected-image');
-    
-    if (selectedImage) {
-      // Guardamos la posición para posicionar el cursor después
-      const parent = selectedImage.parentNode;
-      const nextSibling = selectedImage.nextSibling;
-      
-      // Eliminamos la imagen
-      selectedImage.remove();
-      
-      // Posicionamos el cursor donde estaba la imagen
-      const range = document.createRange();
-      if (nextSibling) {
-        range.setStartBefore(nextSibling);
-      } else {
-        range.setEndOfNode(parent);
-      }
-      range.collapse(true);
-      
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
-      
-      // Notificamos el cambio
-      handleContentChange();
-      
-      return true;
-    }
-    
-    return false;
-  };
-
-  // Función para convertir URL de imagen a base64
-  const convertImageUrlToBase64 = async (imageUrl) => {
-    try {
-      // Crear una imagen temporal para cargar la URL
-      const img = new Image();
-      img.crossOrigin = 'anonymous'; // Intentar evitar problemas de CORS
-      
-      return new Promise((resolve, reject) => {
-        img.onload = () => {
-          try {
-            // Crear un canvas para convertir la imagen a base64
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            
-            canvas.width = img.naturalWidth;
-            canvas.height = img.naturalHeight;
-            
-            ctx.drawImage(img, 0, 0);
-            
-            // Convertir a base64 con compresión
-            const base64 = canvas.toDataURL('image/jpeg', 0.8);
-            resolve(base64);
-          } catch (error) {
-            reject(new Error('No se pudo convertir la imagen a base64'));
-          }
-        };
-        
-        img.onerror = () => {
-          reject(new Error('No se pudo cargar la imagen desde la URL'));
-        };
-        
-        img.src = imageUrl;
-      });
-    } catch (error) {
-      throw new Error(`Error al procesar imagen: ${error.message}`);
-    }
-  };
-
-  // Función para procesar URLs de imágenes en el contenido pegado
-  const processImageUrls = async (htmlContent) => {
-    // Buscar todas las etiquetas <img> con src de URL
-    const imgRegex = /<img[^>]*src="(https?:\/\/[^"]*)"[^>]*>/gi;
-    const matches = [];
-    let match;
-    
-    while ((match = imgRegex.exec(htmlContent)) !== null) {
-      matches.push({
-        fullMatch: match[0],
-        url: match[1]
-      });
-    }
-    
-    if (matches.length === 0) {
-      return htmlContent;
-    }
-    
-    console.log(`Convirtiendo ${matches.length} imagen(es) de URL a base64...`);
-    
-    let processedContent = htmlContent;
-    
-    for (const imageMatch of matches) {
-      try {
-        // Convertir la URL a base64
-        const base64 = await convertImageUrlToBase64(imageMatch.url);
-        
-        // Reemplazar la URL original con el base64
-        const newImgTag = imageMatch.fullMatch.replace(
-          `src="${imageMatch.url}"`,
-          `src="${base64}"`
-        );
-        
-        processedContent = processedContent.replace(imageMatch.fullMatch, newImgTag);
-        
-        console.log(`✅ Imagen convertida: ${imageMatch.url.substring(0, 50)}...`);
-        
-      } catch (error) {
-        console.warn(`⚠️ No se pudo convertir imagen: ${imageMatch.url}`, error);
-        // Mantener la imagen original si no se puede convertir
-      }
-    }
-    
-    return processedContent;
+    // Verificar estados activos después de un pequeño delay
+    setTimeout(() => {
+      checkActiveFormats();
+    }, 10);
   };
 
   const handlePaste = (e) => {
-    // Check for images in clipboard
-    const items = e.clipboardData?.items;
+    e.preventDefault(); // Prevenir el pegado por defecto
     
-    if (items) {
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          e.preventDefault();
-          
-          // Get image from clipboard
-          const blob = items[i].getAsFile();
-          
-          // Verificar tamaño antes de procesar
-          if (blob.size > ABSOLUTE_MAX_SIZE) {
-            const errorMsg = `La imagen es demasiado grande (${(blob.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es ${ABSOLUTE_MAX_SIZE / 1024 / 1024}MB.`;
-            const errorNode = document.createElement('span');
-            errorNode.style.color = 'red';
-            errorNode.style.fontWeight = 'bold';
-            errorNode.textContent = `Error: ${errorMsg}`;
-            document.execCommand('insertHTML', false, errorNode.outerHTML);
-            
-            // Eliminar mensaje de error después de unos segundos
-            setTimeout(() => {
-              const errorElements = editorRef.current.querySelectorAll('span');
-              errorElements.forEach(el => {
-                if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
-                  el.remove();
-                }
-              });
-            }, 5000);
-            
-            return;
-          }
-          
-          // Mostrar indicador de carga
-          const reader = new FileReader();
-          
-          reader.onload = async (event) => {
-            try {
-              // Comprimir la imagen pegada
-              const imgSrc = event.target.result;
-              const processedImgSrc = await compressImage(blob, imgSrc);
-              
-              // Creamos HTML personalizado para la imagen
-              const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-                <img src="${processedImgSrc}" alt="Imagen pegada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
-              </div>`;
-              
-              document.execCommand('insertHTML', false, imgHtml);
-              
-              // Añadir event listeners
-              setTimeout(() => {
-                addImageEventListeners();
-                handleContentChange();
-                
-                // Posicionar el cursor después de la imagen pegada
-                const imageContainers = editorRef.current.querySelectorAll('.image-container');
-                if (imageContainers.length > 0) {
-                  const lastImageContainer = imageContainers[imageContainers.length - 1];
-                  
-                  // Crear un espacio después de la imagen para facilitar la escritura
-                  const spaceElement = document.createElement('span');
-                  spaceElement.innerHTML = '&nbsp;';
-                  lastImageContainer.parentNode.insertBefore(spaceElement, lastImageContainer.nextSibling);
-                  
-                  // Posicionar el cursor después del espacio
-                  const newRange = document.createRange();
-                  newRange.setStartAfter(spaceElement);
-                  newRange.collapse(true);
-                  
-                  const newSelection = window.getSelection();
-                  newSelection.removeAllRanges();
-                  newSelection.addRange(newRange);
-                  
-                  // Enfocar el editor
-                  editorRef.current.focus();
-                }
-              }, 10);
-            } catch (error) {
-              console.error("Error al procesar imagen pegada:", error);
-              
-              // Notificar al usuario del error
-              const errorNode = document.createElement('span');
-              errorNode.style.color = 'red';
-              errorNode.style.fontWeight = 'bold';
-              errorNode.textContent = `Error: ${error.message || 'No se pudo procesar la imagen'}`;
-              document.execCommand('insertHTML', false, errorNode.outerHTML);
-              
-              // Eliminar mensaje después de unos segundos
-              setTimeout(() => {
-                const errorElements = editorRef.current.querySelectorAll('span');
-                errorElements.forEach(el => {
-                  if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
-                    el.remove();
-                  }
-                });
-              }, 5000);
-            }
-          };
-          
-          reader.onerror = (error) => {
-            console.error("Error al leer imagen del portapapeles:", error);
-            
-            // Mostrar error
-            const errorNode = document.createElement('span');
-            errorNode.style.color = 'red';
-            errorNode.style.fontWeight = 'bold';
-            errorNode.textContent = "Error: No se pudo leer la imagen del portapapeles";
-            document.execCommand('insertHTML', false, errorNode.outerHTML);
-          };
-          
-          reader.readAsDataURL(blob);
-          return;
-        }
-      }
-    }
-    
-    // Si no hay imágenes de archivo, verificar si hay contenido HTML con URLs de imágenes
+    // Obtener los datos del portapapeles
     const clipboardData = e.clipboardData || window.clipboardData;
-    const htmlData = clipboardData.getData('text/html');
-    const textData = clipboardData.getData('text/plain');
     
-    if (htmlData && htmlData.includes('<img')) {
-      e.preventDefault();
-      
-      // Procesar URLs de imágenes de forma asíncrona
-      processImageUrls(htmlData)
-        .then(processedHtml => {
-          // Insertar el HTML procesado
-          document.execCommand('insertHTML', false, processedHtml);
-          
-          // Añadir event listeners para las nuevas imágenes
-          setTimeout(() => {
-            addImageEventListeners();
-            handleContentChange();
-          }, 100);
-        })
-        .catch(error => {
-          console.error('Error al procesar contenido pegado:', error);
-          // Si falla el procesamiento, insertar el HTML original
-          document.execCommand('insertHTML', false, htmlData);
-          handleContentChange();
-        });
-      
-      return;
-    }
+    // Intentar obtener el contenido como HTML primero
+    let htmlContent = clipboardData.getData('text/html');
+    let textContent = clipboardData.getData('text/plain');
     
-    // Si es solo texto que contiene URLs de imágenes, intentar convertirlas
-    if (textData && (textData.includes('http') && (textData.includes('.jpg') || textData.includes('.jpeg') || textData.includes('.png') || textData.includes('.gif') || textData.includes('.webp')))) {
-      e.preventDefault();
+    if (htmlContent) {
+      // Filtrar todas las imágenes del HTML
+      // Crear un elemento temporal para manipular el HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
       
-      // Convertir URLs de texto simple a etiquetas img y luego a base64
-      const urlRegex = /(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/gi;
-      const imageUrls = textData.match(urlRegex);
+      // Eliminar todas las imágenes
+      const images = tempDiv.querySelectorAll('img');
+      images.forEach(img => img.remove());
       
-      if (imageUrls && imageUrls.length > 0) {
-        // Crear HTML básico con las imágenes
-        const imagePromises = imageUrls.map(async (url) => {
-          try {
-            const base64 = await convertImageUrlToBase64(url);
-            return `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-              <img src="${base64}" alt="Imagen desde URL" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
-            </div>`;
-          } catch (error) {
-            console.warn(`No se pudo convertir: ${url}`, error);
-            return `<p>⚠️ No se pudo cargar imagen: ${url}</p>`;
+      // Eliminar cualquier atributo style que contenga background-image
+      const elementsWithBg = tempDiv.querySelectorAll('[style*="background-image"]');
+      elementsWithBg.forEach(el => {
+        const style = el.getAttribute('style');
+        if (style) {
+          // Eliminar propiedades background-image del style
+          const newStyle = style.replace(/background-image[^;]*;?/gi, '');
+          if (newStyle.trim()) {
+            el.setAttribute('style', newStyle);
+          } else {
+            el.removeAttribute('style');
           }
-        });
-        
-        Promise.all(imagePromises)
-          .then(imageHtmls => {
-            const finalHtml = imageHtmls.join('<br>');
-            document.execCommand('insertHTML', false, finalHtml);
-            
-            // Añadir event listeners
-            setTimeout(() => {
-              addImageEventListeners();
-              handleContentChange();
-            }, 100);
-          })
-          .catch(error => {
-            console.error('Error al procesar URLs de imágenes:', error);
-            // Insertar texto original si falla
-            document.execCommand('insertHTML', false, textData);
-            handleContentChange();
-          });
-        
-        return;
+        }
+      });
+      
+      // Obtener el HTML limpio
+      const cleanHTML = tempDiv.innerHTML;
+      
+      // Si queda contenido después de filtrar las imágenes, insertarlo
+      if (cleanHTML.trim()) {
+        document.execCommand('insertHTML', false, cleanHTML);
+      } else if (textContent) {
+        // Si no hay HTML válido, usar el texto plano
+        document.execCommand('insertText', false, textContent);
       }
+    } else if (textContent) {
+      // Si solo hay texto plano, insertarlo
+      document.execCommand('insertText', false, textContent);
     }
+    
+    // Actualizar el contenido después del pegado
+    handleContentChange();
   };
 
-  // Handle drag and drop with improved image handling
+  // Handle drag and drop - simplified without image handling
   const handleDrop = (e) => {
     e.preventDefault();
     
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const file = e.dataTransfer.files[0];
+    // Obtener los datos del drop
+    const dataTransfer = e.dataTransfer;
+    
+    // Verificar si hay archivos (que podrían ser imágenes)
+    if (dataTransfer.files && dataTransfer.files.length > 0) {
+      // Filtrar solo archivos de texto si los hay
+      const textFiles = Array.from(dataTransfer.files).filter(file => 
+        file.type.startsWith('text/') || 
+        file.name.endsWith('.txt') || 
+        file.name.endsWith('.md')
+      );
       
-      if (file.type.startsWith('image/')) {
-        // Verificar tamaño antes de procesar
-        if (file.size > ABSOLUTE_MAX_SIZE) {
-          const errorMsg = `La imagen es demasiado grande (${(file.size / 1024 / 1024).toFixed(2)} MB). El tamaño máximo permitido es ${ABSOLUTE_MAX_SIZE / 1024 / 1024}MB.`;
-          const errorNode = document.createElement('span');
-          errorNode.style.color = 'red';
-          errorNode.style.fontWeight = 'bold';
-          errorNode.textContent = `Error: ${errorMsg}`;
-          document.execCommand('insertHTML', false, errorNode.outerHTML);
-          
-          // Eliminar mensaje de error después de unos segundos
-          setTimeout(() => {
-            const errorElements = editorRef.current.querySelectorAll('span');
-            errorElements.forEach(el => {
-              if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
-                el.remove();
-              }
-            });
-          }, 5000);
-          
-          return;
-        }
-        
-        // Mostrar indicador de carga
-        const reader = new FileReader();
-        
-        reader.onload = async (event) => {
-          try {
-            // Comprimir la imagen arrastrada
-            const imgSrc = event.target.result;
-            const processedImgSrc = await compressImage(file, imgSrc);
-            
-            // Creamos HTML personalizado para la imagen
-            const imgHtml = `<div class="image-container wrap-inline" style="position: relative; display: inline-block; margin: 10px; cursor: move; z-index: 0; overflow: visible;">
-              <img src="${processedImgSrc}" alt="Imagen arrastrada" style="max-width: 100%; height: auto; border: 1px solid #ddd; display: block;" data-image-type="html-encoded" />
-            </div>`;
-            
-            document.execCommand('insertHTML', false, imgHtml);
-            
-            // Añadir event listeners
-            setTimeout(() => {
-              addImageEventListeners();
-              handleContentChange();
-              
-              // Posicionar el cursor después de la imagen arrastrada
-              const imageContainers = editorRef.current.querySelectorAll('.image-container');
-              if (imageContainers.length > 0) {
-                const lastImageContainer = imageContainers[imageContainers.length - 1];
-                
-                // Crear un espacio después de la imagen para facilitar la escritura
-                const spaceElement = document.createElement('span');
-                spaceElement.innerHTML = '&nbsp;';
-                lastImageContainer.parentNode.insertBefore(spaceElement, lastImageContainer.nextSibling);
-                
-                // Posicionar el cursor después del espacio
-                const newRange = document.createRange();
-                newRange.setStartAfter(spaceElement);
-                newRange.collapse(true);
-                
-                const newSelection = window.getSelection();
-                newSelection.removeAllRanges();
-                newSelection.addRange(newRange);
-                
-                // Enfocar el editor
-                editorRef.current.focus();
-              }
-            }, 10);
-          } catch (error) {
-            console.error("Error al procesar imagen arrastrada:", error);
-            
-            // Notificar al usuario del error
-            const errorNode = document.createElement('span');
-            errorNode.style.color = 'red';
-            errorNode.style.fontWeight = 'bold';
-            errorNode.textContent = `Error: ${error.message || 'No se pudo procesar la imagen'}`;
-            document.execCommand('insertHTML', false, errorNode.outerHTML);
-            
-            // Eliminar mensaje después de unos segundos
-            setTimeout(() => {
-              const errorElements = editorRef.current.querySelectorAll('span');
-              errorElements.forEach(el => {
-                if (el.style.color === 'red' && el.textContent.startsWith('Error:')) {
-                  el.remove();
-                }
-              });
-            }, 5000);
-          }
-        };
-        
-        reader.readAsDataURL(file);
-      }
-    }
-  };
-
-  // Verificamos si hay imágenes ya insertadas que necesiten los controladores
-  useEffect(() => {
-    if (editorRef.current && internalContent) {
-      // Después de que el contenido esté cargado, agregamos los manejadores a las imágenes
-      setTimeout(() => {
-        addImageEventListeners();
-      }, 100);
-    }
-  }, [internalContent]);
-
-  // Handle key commands
-  const handleKeyDown = (e) => {
-    // Support for tab
-    if (e.key === 'Tab') {
-      e.preventDefault();
-      document.execCommand('insertHTML', false, '&nbsp;&nbsp;&nbsp;&nbsp;');
+      // Si hay archivos de texto, podrían procesarse aquí
+      // Por ahora, simplemente ignoramos todos los archivos
+      console.log('Archivos ignorados (no se permiten imágenes):', dataTransfer.files.length);
       return;
     }
     
-    // Eliminar imagen seleccionada con Delete o Backspace
-    if ((e.key === 'Delete' || e.key === 'Backspace') && editorRef.current) {
-      if (deleteSelectedImage()) {
-        e.preventDefault();
+    // Intentar obtener contenido de texto del drop
+    const htmlContent = dataTransfer.getData('text/html');
+    const textContent = dataTransfer.getData('text/plain');
+    
+    if (htmlContent) {
+      // Filtrar imágenes del HTML igual que en handlePaste
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      
+      // Eliminar todas las imágenes
+      const images = tempDiv.querySelectorAll('img');
+      images.forEach(img => img.remove());
+      
+      // Eliminar background-images
+      const elementsWithBg = tempDiv.querySelectorAll('[style*="background-image"]');
+      elementsWithBg.forEach(el => {
+        const style = el.getAttribute('style');
+        if (style) {
+          const newStyle = style.replace(/background-image[^;]*;?/gi, '');
+          if (newStyle.trim()) {
+            el.setAttribute('style', newStyle);
+          } else {
+            el.removeAttribute('style');
+          }
+        }
+      });
+      
+      const cleanHTML = tempDiv.innerHTML;
+      
+      if (cleanHTML.trim()) {
+        document.execCommand('insertHTML', false, cleanHTML);
+      } else if (textContent) {
+        document.execCommand('insertText', false, textContent);
       }
+    } else if (textContent) {
+      // Solo insertar texto plano
+      document.execCommand('insertText', false, textContent);
+    }
+    
+    // Actualizar el contenido
+    handleContentChange();
+  };
+
+  // Handle keyboard shortcuts
+  const handleKeyDown = (e) => {
+    // Ctrl+B para negrita
+    if (e.ctrlKey && e.key === 'b') {
+      e.preventDefault();
+      applyFormat('bold');
+    }
+    // Ctrl+I para cursiva
+    else if (e.ctrlKey && e.key === 'i') {
+      e.preventDefault();
+      applyFormat('italic');
+    }
+    // Ctrl+U para subrayado
+    else if (e.ctrlKey && e.key === 'u') {
+      e.preventDefault();
+      applyFormat('underline');
     }
   };
 
@@ -1410,33 +437,6 @@ const SimpleEditor = ({ content, onChange }) => {
     checkActiveFormats();
   };
 
-  // Variable para saber si hay una imagen seleccionada
-  const [hasSelectedImage, setHasSelectedImage] = useState(false);
-  // Variable para saber si el menú de opciones de la imagen está abierto
-  const [isImageMenuOpen, setIsImageMenuOpen] = useState(false);
-
-  // Función para verificar si hay una imagen seleccionada
-  const checkForSelectedImage = () => {
-    const selectedImage = editorRef.current?.querySelector('.selected-image');
-    setHasSelectedImage(!!selectedImage);
-    
-    // Verificar si algún menú de opciones está visible
-    const visibleMenu = editorRef.current?.querySelector('.text-wrap-controls[style*="display: block"]');
-    setIsImageMenuOpen(!!visibleMenu);
-  };
-
-  // Agregar listener para detectar clics en el documento
-  useEffect(() => {
-    const handleDocumentClick = () => {
-      checkForSelectedImage();
-    };
-
-    document.addEventListener('click', handleDocumentClick);
-    return () => {
-      document.removeEventListener('click', handleDocumentClick);
-    };
-  }, []);
-
   // Estilos para el editor - siempre usando colores claros
   const styles = {
     container: {
@@ -1485,17 +485,15 @@ const SimpleEditor = ({ content, onChange }) => {
   return (
     <div style={styles.container}>
       {/* Barra de herramientas flotante */}
-      {!hasSelectedImage && !isImageMenuOpen && (
-        <FloatingToolbar 
-          onFormatText={applyFormat}
-          activeFormats={activeFormats}
-          editorRef={editorRef}
-          fontSize={currentFontSize}
-          setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
-          // Pasamos los colores claros forzados
-          forceLightMode={true}
-        />
-      )}
+      <FloatingToolbar 
+        onFormatText={applyFormat}
+        activeFormats={activeFormats}
+        editorRef={editorRef}
+        fontSize={currentFontSize}
+        setFontSize={(size) => applyFormat('fontSize', `${size}px`)}
+        // Pasamos los colores claros forzados
+        forceLightMode={true}
+      />
       
       {/* Placeholder text when editor is empty */}
       {(!internalContent || internalContent === '<p><br></p>' || internalContent === '<br>') && (
