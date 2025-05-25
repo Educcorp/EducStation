@@ -48,13 +48,16 @@ const BlogPage = () => {
       const previousUrl = document.referrer;
       const currentUrl = window.location.href;
 
+      // MODIFICADO: Solo recargar si viene de un post individual, NO de categorías
       const comesFromPost = previousUrl &&
         previousUrl.includes('/blog/') &&
         /\/blog\/\d+/.test(previousUrl) &&
         currentUrl.includes('/blog') &&
-        !currentUrl.includes('/blog/');
+        !currentUrl.includes('/blog/') &&
+        !previousUrl.includes('/categoria/') && // NO recargar si viene de categoría
+        !previousUrl.includes('/categorias'); // NO recargar si viene de página de categorías
 
-      return isBackNavigation || comesFromPost;
+      return (isBackNavigation && comesFromPost) || (leftPost && cameFromBlog);
     };
 
     if (shouldForceReload()) {
@@ -86,7 +89,12 @@ const BlogPage = () => {
         const leftPost = sessionStorage.getItem('left-post');
         const cameFromBlog = sessionStorage.getItem('came-from-blog');
 
-        if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded')) {
+        // MODIFICADO: Verificar que no viene de categorías
+        const previousUrl = document.referrer;
+        const comesFromCategory = previousUrl &&
+          (previousUrl.includes('/categoria/') || previousUrl.includes('/categorias'));
+
+        if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded') && !comesFromCategory) {
           // Limpiar marcadores inmediatamente
           sessionStorage.removeItem('left-post');
           sessionStorage.removeItem('came-from-blog');
@@ -195,7 +203,12 @@ const BlogPage = () => {
       const leftPost = sessionStorage.getItem('left-post');
       const cameFromBlog = sessionStorage.getItem('came-from-blog');
 
-      if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded')) {
+      // MODIFICADO: Verificar que no viene de categorías
+      const previousUrl = document.referrer;
+      const comesFromCategory = previousUrl &&
+        (previousUrl.includes('/categoria/') || previousUrl.includes('/categorias'));
+
+      if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded') && !comesFromCategory) {
         // Limpiar marcadores y recargar inmediatamente
         sessionStorage.removeItem('left-post');
         sessionStorage.removeItem('came-from-blog');
