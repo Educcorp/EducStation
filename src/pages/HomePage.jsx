@@ -8,8 +8,9 @@ import { spacing, typography, transitions, applyHoverStyles } from '../styles/th
 // Importamos el hook useTheme
 import { useTheme } from '../context/ThemeContext';
 import { useLocation } from 'react-router-dom';
-import { getAllPublicaciones } from '../services/publicacionesService';
 import { getAllCategorias } from '../services/categoriasServices';
+// Importamos el hook usePosts
+import { usePosts } from '../components/blog/hooks/usePosts';
 // Añadimos íconos
 import { FaBookmark, FaLightbulb, FaGraduationCap, FaChalkboardTeacher, FaArrowRight } from 'react-icons/fa';
 
@@ -313,75 +314,47 @@ const NewsCarousel = ({ notes }) => {
 };
 
 const HomePage = () => {
-  // Añadimos el hook useTheme en el componente principal
-  const { colors, lightColors } = useTheme();
-  
-  // Estado para la categoría activa
-  const [activeCategory, setActiveCategory] = useState('Todos');
-  // Estado para la categoría sobre la que se está haciendo hover
-  const [hoveredCategory, setHoveredCategory] = useState(null);
-  // Estado para el valor de búsqueda
-  const [searchValue, setSearchValue] = useState('');
-  // Estado para almacenar las publicaciones reales del backend
-  const [posts, setPosts] = useState([]);
-  // Estado para almacenar las categorías reales
-  const [categories, setCategories] = useState(['Todos']);
-  // Estado para el post destacado
-  const [featuredPost, setFeaturedPost] = useState(null);
-  // Estado para indicar si está cargando
-  const [loading, setLoading] = useState(true);
-
+  const { isDarkMode, colors, lightColors } = useTheme();
   const location = useLocation();
+  const [activeCategory, setActiveCategory] = useState('Todos');
+  const [categories, setCategories] = useState(['Todos']);
+  const [notes, setNotes] = useState([]);
+  const [featuredPost, setFeaturedPost] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [hoveredElement, setHoveredElement] = useState(null);
+  const [activeFact, setActiveFact] = useState(0);
+  const factsRef = useRef(null);
+  const heroBgRef = useRef(null);
+  const heroTitleRef = useRef(null);
+  const heroSubtitleRef = useRef(null);
+  
+  // Utilizamos el hook usePosts para cargar los posts
+  const {
+    posts: blogPosts,
+    loading: postsLoading,
+    error: postsError
+  } = usePosts({ 
+    limit: 20, 
+    categoryFilter: '', 
+    searchTerm: '', 
+    sortOrder: 'recientes',
+    initialDisplayCount: 6
+  });
 
-  // Carrusel de noticias estático
-  const carouselNotes = [
-    {
-      id: 1,
-      title: "Prohibición de bebidas azucaradas en comedores escolares",
-      excerpt: "El gobierno español está trabajando en un decreto para prohibir el consumo de bebidas azucaradas en comedores escolares, donde se busca promover hábitos más saludables y combatir la obesidad infantil.",
-      image: "/assets/images/humanos.jpg",
-      category: "Ultima Noticia"
-    },
-    {
-      id: 2,
-      title: "Aprendizaje colaborativo: La clave del éxito académico",
-      excerpt: "Estudios demuestran que el trabajo en equipo mejora la retención y comprensión de conceptos complejos. Las técnicas de enseñanza cooperativa están revolucionando el aula.",
-      image: "/assets/images/desafio.jpg",
-      category: "Técnicas de Estudio"
-    },
-    {
-      id: 3,
-      title: "Mindfulness en la educación: Mejorando la concentración",
-      excerpt: "Implementar prácticas de atención plena puede reducir el estrés y mejorar el rendimiento académico. Descubre cómo integrar estas técnicas en el aula moderna.",
-      image: "/assets/images/maestro.jpg",
-      category: "Bienestar"
-    },
-    {
-      id: 4,
-      title: "La gamificación como estrategia pedagógica efectiva",
-      excerpt: "El uso de elementos de juego en el aula aumenta la motivación y el compromiso de los estudiantes. Transformando la educación tradicional a través de experiencias interactivas.",
-      image: "/assets/images/tecnologia.jpg",
-      category: "Innovación"
-    }
-  ];
-
-  // Función para obtener publicaciones y categorías del backend
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Obtener publicaciones
-        const publicaciones = await getAllPublicaciones(20, 0);
-        
-        // Si hay publicaciones, procesarlas
-        if (publicaciones && publicaciones.length > 0) {
+        // Utilizamos los posts cargados desde el hook usePosts
+        if (blogPosts && blogPosts.length > 0) {
           // Establecer publicación destacada específica (ID 63)
-          const featuredPostData = publicaciones.find(post => post.ID_publicacion === 63);
+          const featuredPostData = blogPosts.find(post => post.ID_publicaciones === 63);
           
           if (featuredPostData) {
             // Formatear el post destacado según el formato requerido
             const formattedFeatured = {
-              id: featuredPostData.ID_publicacion,
+              id: featuredPostData.ID_publicaciones,
               title: "El pequeño tomate que revolucionó mi forma de estudiar (y puede transformar la tuya también)",
               image: featuredPostData.Imagen_portada || '/assets/images/tecnologia.jpg',
               category: featuredPostData.categorias && featuredPostData.categorias.length > 0 
@@ -393,9 +366,9 @@ const HomePage = () => {
             setFeaturedPost(formattedFeatured);
           } else {
             // Si no se encuentra el post con ID 63, usar el primero disponible
-            const featured = publicaciones[0];
+            const featured = blogPosts[0];
             const formattedFeatured = {
-              id: featured.ID_publicacion,
+              id: featured.ID_publicaciones,
               title: featured.Titulo,
               image: featured.Imagen_portada || '/assets/images/tecnologia.jpg',
               category: featured.categorias && featured.categorias.length > 0 
@@ -408,14 +381,14 @@ const HomePage = () => {
           }
           
           // Crear una copia y mezclarla aleatoriamente para los 6 posts
-          const shuffledPosts = [...publicaciones]
-            .filter(post => post.ID_publicacion !== (featuredPostData ? featuredPostData.ID_publicacion : null))
+          const shuffledPosts = [...blogPosts]
+            .filter(post => post.ID_publicaciones !== (featuredPostData ? featuredPostData.ID_publicaciones : null))
             .sort(() => Math.random() - 0.5)
             .slice(0, 6);
           
           // Formatear los posts
           const formattedPosts = shuffledPosts.map(post => ({
-            id: post.ID_publicacion,
+            id: post.ID_publicaciones,
             title: post.Titulo,
             image: post.Imagen_portada || '/assets/images/tecnologia.jpg',
             category: post.categorias && post.categorias.length > 0 
@@ -504,7 +477,7 @@ const HomePage = () => {
     };
     
     fetchData();
-  }, []);
+  }, [blogPosts]);
 
   // Filtrar posts por categoría activa
   const filteredPosts = activeCategory === 'Todos'
@@ -808,8 +781,9 @@ const HomePage = () => {
       }
       
       @keyframes pulse {
-        0%, 100% { transform: scale(1); }
+        0% { transform: scale(1); }
         50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
       }
       
       @keyframes fadeIn {
@@ -818,11 +792,11 @@ const HomePage = () => {
       }
       
       @keyframes fadeInUp {
-        from { 
+        from {
           opacity: 0;
-          transform: translateY(30px);
+          transform: translateY(20px);
         }
-        to { 
+        to {
           opacity: 1;
           transform: translateY(0);
         }
@@ -830,12 +804,12 @@ const HomePage = () => {
       
       @keyframes slideInUp {
         from {
-          transform: translateY(50px);
           opacity: 0;
+          transform: translateY(20px);
         }
         to {
-          transform: translateY(0);
           opacity: 1;
+          transform: translateY(0);
         }
       }
       
@@ -908,12 +882,12 @@ const HomePage = () => {
 
         {/* Hero Section */}
         <div 
-          style={hoveredCategory === 'hero' ? 
+          style={hoveredElement === 'hero' ? 
             { ...styles.hero, ...styles.hero['&:hover'] } : 
             styles.hero
           }
-          onMouseEnter={() => setHoveredCategory('hero')}
-          onMouseLeave={() => setHoveredCategory(null)}
+          onMouseEnter={() => setHoveredElement('hero')}
+          onMouseLeave={() => setHoveredElement(null)}
         >
           <div style={styles.heroDecoration}></div>
           <h1 style={styles.heroTitle}>Tu Destino para Educación, Innovación y Crecimiento</h1>
@@ -939,17 +913,17 @@ const HomePage = () => {
           </div>
 
           <div
-            style={hoveredCategory === 'circle' ? 
+            style={hoveredElement === 'circle' ? 
               { ...styles.circleLink, ...styles.circleLink['&:hover'] } : 
               styles.circleLink
             }
-            onMouseEnter={() => setHoveredCategory('circle')}
-            onMouseLeave={() => setHoveredCategory(null)}
+            onMouseEnter={() => setHoveredElement('circle')}
+            onMouseLeave={() => setHoveredElement(null)}
           >
             <div style={{
               ...styles.circleText,
               animation: 'spin 20s linear infinite',
-              transform: hoveredCategory === 'circle' ? 'rotate(-5deg)' : 'rotate(0deg)',
+              transform: hoveredElement === 'circle' ? 'rotate(-5deg)' : 'rotate(0deg)',
             }}>
               <img
                 src="/assets/images/educstation-logo.png"
@@ -965,7 +939,7 @@ const HomePage = () => {
         </div>
 
         {/* NUEVO: Carrusel de Noticias */}
-        <NewsCarousel notes={carouselNotes} />
+        <NewsCarousel notes={notes} />
 
         {/* Sección de categorías destacadas */}
         <div style={{
@@ -1043,24 +1017,24 @@ const HomePage = () => {
               background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
               borderRadius: '20px',
               padding: spacing.xl,
-              boxShadow: hoveredCategory === 'cat-1' 
+              boxShadow: hoveredElement === 'cat-1' 
                 ? '0 20px 40px rgba(11, 68, 68, 0.15)' 
                 : '0 10px 30px rgba(11, 68, 68, 0.08)',
               transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              transform: hoveredCategory === 'cat-1' ? 'translateY(-15px)' : 'translateY(0)',
+              transform: hoveredElement === 'cat-1' ? 'translateY(-15px)' : 'translateY(0)',
               cursor: 'pointer',
-              border: hoveredCategory === 'cat-1' ? `2px solid ${colors.primary}15` : '2px solid transparent',
+              border: hoveredElement === 'cat-1' ? `2px solid ${colors.primary}15` : '2px solid transparent',
               animation: 'fadeInUp 0.6s ease-out'
             }}
-              onMouseEnter={() => setHoveredCategory('cat-1')}
-              onMouseLeave={() => setHoveredCategory(null)}
+              onMouseEnter={() => setHoveredElement('cat-1')}
+              onMouseLeave={() => setHoveredElement(null)}
               onClick={() => setActiveCategory('Técnicas de Estudio')}
             >
               <div style={{
                 width: '80px',
                 height: '80px',
                 borderRadius: '20px',
-                background: hoveredCategory === 'cat-1'
+                background: hoveredElement === 'cat-1'
                   ? `linear-gradient(135deg, ${colors.primary}, ${colors.primary}90)`
                   : `linear-gradient(135deg, ${colors.primary}80, ${colors.primary}60)`,
                 display: 'flex',
@@ -1068,19 +1042,19 @@ const HomePage = () => {
                 justifyContent: 'center',
                 margin: '0 auto',
                 marginBottom: spacing.lg,
-                boxShadow: hoveredCategory === 'cat-1' 
+                boxShadow: hoveredElement === 'cat-1' 
                   ? '0 10px 25px rgba(11, 68, 68, 0.2)' 
                   : '0 8px 15px rgba(11, 68, 68, 0.1)',
                 transition: 'all 0.3s ease',
-                transform: hoveredCategory === 'cat-1' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
+                transform: hoveredElement === 'cat-1' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
               }}>
                 <FaLightbulb size={36} color="#fff" style={{
-                  animation: hoveredCategory === 'cat-1' ? 'pulse 1.5s infinite' : 'none'
+                  animation: hoveredElement === 'cat-1' ? 'pulse 1.5s infinite' : 'none'
                 }} />
               </div>
               <h3 style={{
                 fontSize: typography.fontSize.xl,
-                color: hoveredCategory === 'cat-1' ? colors.primary : colors.textPrimary,
+                color: hoveredElement === 'cat-1' ? colors.primary : colors.textPrimary,
                 marginBottom: spacing.md,
                 transition: 'color 0.3s ease',
                 fontWeight: typography.fontWeight.semiBold
@@ -1090,14 +1064,14 @@ const HomePage = () => {
               <div style={{
                 width: '60px',
                 height: '4px',
-                background: hoveredCategory === 'cat-1'
+                background: hoveredElement === 'cat-1'
                   ? `linear-gradient(90deg, ${colors.primary}, ${colors.primary}60)`
                   : `linear-gradient(90deg, ${colors.primary}60, ${colors.primary}30)`,
                 borderRadius: '2px',
                 margin: '0 auto',
                 marginBottom: spacing.md,
                 transition: 'all 0.3s ease',
-                transform: hoveredCategory === 'cat-1' ? 'scaleX(1.5)' : 'scaleX(1)',
+                transform: hoveredElement === 'cat-1' ? 'scaleX(1.5)' : 'scaleX(1)',
               }}></div>
               <p style={{
                 fontSize: typography.fontSize.md,
@@ -1114,24 +1088,24 @@ const HomePage = () => {
               background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
               borderRadius: '20px',
               padding: spacing.xl,
-              boxShadow: hoveredCategory === 'cat-2' 
+              boxShadow: hoveredElement === 'cat-2' 
                 ? '0 20px 40px rgba(11, 68, 68, 0.15)' 
                 : '0 10px 30px rgba(11, 68, 68, 0.08)',
               transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              transform: hoveredCategory === 'cat-2' ? 'translateY(-15px)' : 'translateY(0)',
+              transform: hoveredElement === 'cat-2' ? 'translateY(-15px)' : 'translateY(0)',
               cursor: 'pointer',
-              border: hoveredCategory === 'cat-2' ? `2px solid ${colors.secondary}15` : '2px solid transparent',
+              border: hoveredElement === 'cat-2' ? `2px solid ${colors.secondary}15` : '2px solid transparent',
               animation: 'fadeInUp 0.8s ease-out'
             }}
-              onMouseEnter={() => setHoveredCategory('cat-2')}
-              onMouseLeave={() => setHoveredCategory(null)}
+              onMouseEnter={() => setHoveredElement('cat-2')}
+              onMouseLeave={() => setHoveredElement(null)}
               onClick={() => setActiveCategory('Herramientas')}
             >
               <div style={{
                 width: '80px',
                 height: '80px',
                 borderRadius: '20px',
-                background: hoveredCategory === 'cat-2'
+                background: hoveredElement === 'cat-2'
                   ? `linear-gradient(135deg, ${colors.secondary}, ${colors.secondary}90)`
                   : `linear-gradient(135deg, ${colors.secondary}80, ${colors.secondary}60)`,
                 display: 'flex',
@@ -1139,19 +1113,19 @@ const HomePage = () => {
                 justifyContent: 'center',
                 margin: '0 auto',
                 marginBottom: spacing.lg,
-                boxShadow: hoveredCategory === 'cat-2' 
+                boxShadow: hoveredElement === 'cat-2' 
                   ? '0 10px 25px rgba(11, 68, 68, 0.2)' 
                   : '0 8px 15px rgba(11, 68, 68, 0.1)',
                 transition: 'all 0.3s ease',
-                transform: hoveredCategory === 'cat-2' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
+                transform: hoveredElement === 'cat-2' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
               }}>
                 <FaGraduationCap size={36} color="#fff" style={{
-                  animation: hoveredCategory === 'cat-2' ? 'pulse 1.5s infinite' : 'none'
+                  animation: hoveredElement === 'cat-2' ? 'pulse 1.5s infinite' : 'none'
                 }} />
               </div>
               <h3 style={{
                 fontSize: typography.fontSize.xl,
-                color: hoveredCategory === 'cat-2' ? colors.secondary : colors.textPrimary,
+                color: hoveredElement === 'cat-2' ? colors.secondary : colors.textPrimary,
                 marginBottom: spacing.md,
                 transition: 'color 0.3s ease',
                 fontWeight: typography.fontWeight.semiBold
@@ -1161,14 +1135,14 @@ const HomePage = () => {
               <div style={{
                 width: '60px',
                 height: '4px',
-                background: hoveredCategory === 'cat-2'
+                background: hoveredElement === 'cat-2'
                   ? `linear-gradient(90deg, ${colors.secondary}, ${colors.secondary}60)`
                   : `linear-gradient(90deg, ${colors.secondary}60, ${colors.secondary}30)`,
                 borderRadius: '2px',
                 margin: '0 auto',
                 marginBottom: spacing.md,
                 transition: 'all 0.3s ease',
-                transform: hoveredCategory === 'cat-2' ? 'scaleX(1.5)' : 'scaleX(1)',
+                transform: hoveredElement === 'cat-2' ? 'scaleX(1.5)' : 'scaleX(1)',
               }}></div>
               <p style={{
                 fontSize: typography.fontSize.md,
@@ -1185,24 +1159,24 @@ const HomePage = () => {
               background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
               borderRadius: '20px',
               padding: spacing.xl,
-              boxShadow: hoveredCategory === 'cat-3' 
+              boxShadow: hoveredElement === 'cat-3' 
                 ? '0 20px 40px rgba(11, 68, 68, 0.15)' 
                 : '0 10px 30px rgba(11, 68, 68, 0.08)',
               transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-              transform: hoveredCategory === 'cat-3' ? 'translateY(-15px)' : 'translateY(0)',
+              transform: hoveredElement === 'cat-3' ? 'translateY(-15px)' : 'translateY(0)',
               cursor: 'pointer',
-              border: hoveredCategory === 'cat-3' ? `2px solid ${colors.primary}15` : '2px solid transparent',
+              border: hoveredElement === 'cat-3' ? `2px solid ${colors.primary}15` : '2px solid transparent',
               animation: 'fadeInUp 1s ease-out'
             }}
-              onMouseEnter={() => setHoveredCategory('cat-3')}
-              onMouseLeave={() => setHoveredCategory(null)}
+              onMouseEnter={() => setHoveredElement('cat-3')}
+              onMouseLeave={() => setHoveredElement(null)}
               onClick={() => setActiveCategory('Educación de Calidad')}
             >
               <div style={{
                 width: '80px',
                 height: '80px',
                 borderRadius: '20px',
-                background: hoveredCategory === 'cat-3'
+                background: hoveredElement === 'cat-3'
                   ? `linear-gradient(135deg, ${colors.primary}90, ${colors.secondary}90)`
                   : `linear-gradient(135deg, ${colors.primary}70, ${colors.secondary}70)`,
                 display: 'flex',
@@ -1210,19 +1184,19 @@ const HomePage = () => {
                 justifyContent: 'center',
                 margin: '0 auto',
                 marginBottom: spacing.lg,
-                boxShadow: hoveredCategory === 'cat-3' 
+                boxShadow: hoveredElement === 'cat-3' 
                   ? '0 10px 25px rgba(11, 68, 68, 0.2)' 
                   : '0 8px 15px rgba(11, 68, 68, 0.1)',
                 transition: 'all 0.3s ease',
-                transform: hoveredCategory === 'cat-3' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
+                transform: hoveredElement === 'cat-3' ? 'scale(1.1) rotate(5deg)' : 'scale(1) rotate(0)',
               }}>
                 <FaChalkboardTeacher size={36} color="#fff" style={{
-                  animation: hoveredCategory === 'cat-3' ? 'pulse 1.5s infinite' : 'none'
+                  animation: hoveredElement === 'cat-3' ? 'pulse 1.5s infinite' : 'none'
                 }} />
               </div>
               <h3 style={{
                 fontSize: typography.fontSize.xl,
-                color: hoveredCategory === 'cat-3' ? colors.primary : colors.textPrimary,
+                color: hoveredElement === 'cat-3' ? colors.primary : colors.textPrimary,
                 marginBottom: spacing.md,
                 transition: 'color 0.3s ease',
                 fontWeight: typography.fontWeight.semiBold
@@ -1232,14 +1206,14 @@ const HomePage = () => {
               <div style={{
                 width: '60px',
                 height: '4px',
-                background: hoveredCategory === 'cat-3'
+                background: hoveredElement === 'cat-3'
                   ? `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`
                   : `linear-gradient(90deg, ${colors.primary}60, ${colors.secondary}60)`,
                 borderRadius: '2px',
                 margin: '0 auto',
                 marginBottom: spacing.md,
                 transition: 'all 0.3s ease',
-                transform: hoveredCategory === 'cat-3' ? 'scaleX(1.5)' : 'scaleX(1)',
+                transform: hoveredElement === 'cat-3' ? 'scaleX(1.5)' : 'scaleX(1)',
               }}></div>
               <p style={{
                 fontSize: typography.fontSize.md,
@@ -1260,11 +1234,11 @@ const HomePage = () => {
               key={category}
               style={styles.category(
                 activeCategory === category,
-                hoveredCategory === category
+                hoveredElement === category
               )}
               onClick={() => setActiveCategory(category)}
-              onMouseEnter={() => setHoveredCategory(category)}
-              onMouseLeave={() => setHoveredCategory(null)}
+              onMouseEnter={() => setHoveredElement(category)}
+              onMouseLeave={() => setHoveredElement(null)}
             >
               {category}
             </button>
@@ -1273,117 +1247,128 @@ const HomePage = () => {
 
         {/* Sección de posts */}
         <div style={styles.contentWrapper}>
-          {loading ? (
-            <div style={styles.loading}>
-              <div style={{textAlign: 'center'}}>
-                <div style={{
-                  width: '50px',
-                  height: '50px',
-                  margin: '0 auto',
-                  border: `4px solid ${colors.primaryLight}`,
-                  borderRadius: '50%',
-                  borderTopColor: colors.primary,
-                  animation: 'spin 1s linear infinite',
-                  marginBottom: spacing.md
-                }}></div>
-                <p>Cargando contenido...</p>
-              </div>
+          {/* Publicaciones recientes */}
+          <section style={{ marginTop: spacing.xxl, marginBottom: spacing.xxl }}>
+            <div style={styles.sectionHeader}>
+              <h2 style={styles.sectionTitle}>Publicaciones recientes</h2>
+              <div style={styles.titleUnderline}></div>
             </div>
-          ) : (
-            <>
-              {/* Título sección destacada */}
-              <h2 style={styles.sectionTitle}>Artículo destacado</h2>
-              
-              {/* Featured Post - Ahora a todo lo ancho */}
-              <div style={styles.featuredPostWrapper}>
-                {featuredPost && <FeaturedPost post={featuredPost} />}
-              </div>
-              
-              {/* Título sección artículos */}
-              <h2 style={styles.sectionTitle}>Explora nuestros artículos</h2>
 
-              {/* Posts Grid - Ahora debajo del post destacado */}
-              <div style={styles.postsGridWrapper}>
-                <div style={styles.postsGrid}>
-                  {filteredPosts.length > 0 ? (
-                    filteredPosts.map((post) => (
-                      <PostCard key={post.id} post={post} />
-                    ))
-                  ) : (
-                    <p style={{gridColumn: '1 / -1', textAlign: 'center', color: colors.textSecondary}}>
-                      No hay artículos disponibles en esta categoría.
-                    </p>
-                  )}
-                </div>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: spacing.xl }}>
+                <div style={{ width: '40px', height: '40px', margin: '0 auto', border: '4px solid rgba(11, 68, 68, 0.1)', borderTopColor: colors.primary, borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                <p style={{ marginTop: spacing.md, color: colors.textSecondary }}>Cargando publicaciones...</p>
               </div>
-              
-              {/* Banner de exploración */}
-              <div 
-                style={hoveredCategory === 'explore-banner' ? 
-                  { ...styles.exploreBanner, ...styles.exploreBanner['&:hover'] } : 
-                  styles.exploreBanner
-                }
-                onMouseEnter={() => setHoveredCategory('explore-banner')}
-                onMouseLeave={() => setHoveredCategory(null)}
-              >
-                <div style={styles.exploreBannerDecoration1}></div>
-                <div style={styles.exploreBannerDecoration2}></div>
-                <h2 style={styles.exploreBannerTitle}>Descubre todas nuestras categorías</h2>
-                <p style={styles.exploreBannerText}>
-                  Explora nuestra biblioteca completa de artículos educativos, recursos didácticos, 
-                  técnicas innovadoras y mucho más. Encuentra soluciones a problemas comunes y 
-                  herramientas para mejorar tu experiencia educativa.
-                </p>
-                <a 
-                  href="/categories" 
-                  style={hoveredCategory === 'explore-btn' ? 
-                    { ...styles.exploreBannerBtn, ...styles.exploreBannerBtn['&:hover'] } : 
-                    styles.exploreBannerBtn
-                  }
-                  onMouseEnter={() => setHoveredCategory('explore-btn')}
-                  onMouseLeave={() => setHoveredCategory('explore-banner')}
-                >
-                  <span>Explorar categorías</span>
-                  <FaArrowRight size={12} />
-                </a>
+            ) : postsError ? (
+              <div style={{ textAlign: 'center', padding: spacing.xl, color: colors.error }}>
+                <p>Error al cargar publicaciones. Por favor, intenta de nuevo más tarde.</p>
               </div>
-              
-              {/* Botón de Explorar el Blog */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                marginTop: spacing.xxl,
-                marginBottom: spacing.xxl
+            ) : (
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
+                gap: spacing.lg,
+                marginBottom: spacing.xl
               }}>
-                <a 
-                  href="/blog" 
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: spacing.sm,
-                    padding: `${spacing.md} ${spacing.xxl}`,
-                    backgroundColor: colors.primary,
-                    color: colors.white,
-                    borderRadius: '50px',
-                    textDecoration: 'none',
-                    fontWeight: typography.fontWeight.semiBold,
-                    fontSize: typography.fontSize.md,
-                    boxShadow: '0 8px 20px rgba(11, 68, 68, 0.25)',
-                    transition: 'all 0.3s ease',
-                    ...(hoveredCategory === 'blog-btn' ? {
-                      transform: 'translateY(-5px)',
-                      boxShadow: '0 12px 25px rgba(11, 68, 68, 0.35)'
-                    } : {})
-                  }}
-                  onMouseEnter={() => setHoveredCategory('blog-btn')}
-                  onMouseLeave={() => setHoveredCategory(null)}
-                >
-                  <span>Explora el blog</span>
-                  <FaArrowRight size={14} />
-                </a>
+                {/* Usar directamente los posts del hook usePosts */}
+                {blogPosts.slice(0, 6).map((post, index) => (
+                  <div 
+                    key={post.ID_publicaciones} 
+                    className="post-card-animation" 
+                    style={{
+                      "--animation-order": index,
+                      background: "transparent"
+                    }}
+                  >
+                    <PostCard post={post} />
+                  </div>
+                ))}
               </div>
-            </>
-          )}
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: spacing.xl }}>
+              <a 
+                href="/blog" 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: colors.primary,
+                  color: '#fff',
+                  padding: `${spacing.md} ${spacing.xl}`,
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontSize: typography.fontSize.md,
+                  fontWeight: typography.fontWeight.medium,
+                  boxShadow: '0 8px 20px rgba(11, 68, 68, 0.25)',
+                  transition: 'all 0.3s ease',
+                  ...(hoveredElement === 'blog-btn' ? {
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 12px 25px rgba(11, 68, 68, 0.35)'
+                  } : {})
+                }}
+                onMouseEnter={() => setHoveredElement('blog-btn')}
+                onMouseLeave={() => setHoveredElement(null)}
+              >
+                <span>Explora el blog</span>
+                <FaArrowRight />
+              </a>
+            </div>
+          </section>
+
+          {/* Featured Post - Ahora a todo lo ancho */}
+          <div style={styles.featuredPostWrapper}>
+            {featuredPost && <FeaturedPost post={featuredPost} />}
+          </div>
+          
+          {/* Título sección artículos */}
+          <h2 style={styles.sectionTitle}>Explora nuestros artículos</h2>
+
+          {/* Posts Grid - Ahora debajo del post destacado */}
+          <div style={styles.postsGridWrapper}>
+            <div style={styles.postsGrid}>
+              {filteredPosts.length > 0 ? (
+                filteredPosts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))
+              ) : (
+                <p style={{gridColumn: '1 / -1', textAlign: 'center', color: colors.textSecondary}}>
+                  No hay artículos disponibles en esta categoría.
+                </p>
+              )}
+            </div>
+          </div>
+          
+          {/* Banner de exploración */}
+          <div 
+            style={hoveredElement === 'explore-banner' ? 
+              { ...styles.exploreBanner, ...styles.exploreBanner['&:hover'] } : 
+              styles.exploreBanner
+            }
+            onMouseEnter={() => setHoveredElement('explore-banner')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
+            <div style={styles.exploreBannerDecoration1}></div>
+            <div style={styles.exploreBannerDecoration2}></div>
+            <h2 style={styles.exploreBannerTitle}>Descubre todas nuestras categorías</h2>
+            <p style={styles.exploreBannerText}>
+              Explora nuestra biblioteca completa de artículos educativos, recursos didácticos, 
+              técnicas innovadoras y mucho más. Encuentra soluciones a problemas comunes y 
+              herramientas para mejorar tu experiencia educativa.
+            </p>
+            <a 
+              href="/categories" 
+              style={hoveredElement === 'explore-btn' ? 
+                { ...styles.exploreBannerBtn, ...styles.exploreBannerBtn['&:hover'] } : 
+                styles.exploreBannerBtn
+              }
+              onMouseEnter={() => setHoveredElement('explore-btn')}
+              onMouseLeave={() => setHoveredElement('explore-banner')}
+            >
+              <span>Explorar categorías</span>
+              <FaArrowRight size={12} />
+            </a>
+          </div>
         </div>
       </main>
 
