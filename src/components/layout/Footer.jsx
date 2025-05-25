@@ -49,56 +49,23 @@ const Footer = () => {
   useEffect(() => {
     // Aplicar directamente los estilos al elemento del footer
     if (footerRef.current) {
-      // Aplicar un fondo sólido base antes de la imagen de onda
-      footerRef.current.style.backgroundColor = "#082c2c"; // Color base sólido
-      
-      // Aplicar la imagen de onda animada encima del fondo sólido
-      // Usar una URL con timestamp para forzar la recarga y asegurar la animación
-      const waveImageUrl = `https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling&t=${Date.now()}`;
-      footerRef.current.style.backgroundImage = `url('${waveImageUrl}')`;
-      footerRef.current.style.backgroundSize = "100% 240px"; // Tamaño específico para la onda
+      // Restaurar la animación original con la imagen de onda
+      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling')";
+      footerRef.current.style.backgroundSize = "100% auto";
       footerRef.current.style.backgroundPosition = "center bottom";
       footerRef.current.style.backgroundRepeat = "no-repeat";
+      footerRef.current.style.backgroundColor = "transparent"; // Fondo transparente
       footerRef.current.style.color = isDarkMode ? '#ccc' : colors.white;
       
-      // Ajustar propiedades para evitar interferencias del fondo padre
+      // Ajustar propiedades para evitar el rectángulo verde
       footerRef.current.style.border = "none";
       footerRef.current.style.boxShadow = "none";
       footerRef.current.style.minHeight = "240px"; // Asegurar altura suficiente para la onda
       footerRef.current.style.marginTop = "40px"; // Espaciado superior
       footerRef.current.style.position = "relative";
       footerRef.current.style.overflow = "hidden";
-      
-      // Asegurar que el footer tenga su propio contexto de apilamiento
-      footerRef.current.style.zIndex = "10";
-      footerRef.current.style.isolation = "isolate"; // Crear un nuevo contexto de apilamiento
-      
-      // Forzar el repaint para asegurar que la animación se cargue
-      footerRef.current.style.transform = "translateZ(0)";
-      footerRef.current.style.willChange = "background-image";
     }
   }, [isDarkMode, colors]);
-
-  // useEffect específico para mantener la animación de onda activa
-  useEffect(() => {
-    if (!footerRef.current) return;
-
-    // Función para refrescar la animación de onda
-    const refreshWaveAnimation = () => {
-      if (footerRef.current) {
-        const waveImageUrl = `https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling&t=${Date.now()}`;
-        footerRef.current.style.backgroundImage = `url('${waveImageUrl}')`;
-      }
-    };
-
-    // Refrescar la animación cada 30 segundos para mantenerla activa
-    const intervalId = setInterval(refreshWaveAnimation, 30000);
-
-    // Limpiar el intervalo cuando se desmonte el componente
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
 
   // Crear un estilo global para el body para asegurar que no haya fondo verde
   useEffect(() => {
@@ -175,7 +142,8 @@ const Footer = () => {
   // La animación de glow se aplicará directamente en el estilo inline si se requiere, no como keyframes en JS
 
   const styles = {
-    // Footer sin backgroundColor para evitar conflictos con la imagen de onda
+    // Quitamos backgroundColor y color del objeto de estilo
+    // porque ahora lo aplicamos directamente al elemento con useEffect
     footer: {
       padding: 0,
       margin: 0,
@@ -183,9 +151,7 @@ const Footer = () => {
       position: 'relative',
       width: '100%',
       overflow: 'hidden',
-      zIndex: 10,
-      // backgroundColor removido para evitar conflicto con la imagen de onda
-      isolation: 'isolate' // Crear contexto de apilamiento independiente
+      zIndex: 1
     },
     container: {
       maxWidth: '1900px',
