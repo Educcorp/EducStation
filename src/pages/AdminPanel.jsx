@@ -1,13 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort, FaSync } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort, FaSync, FaFolder } from 'react-icons/fa';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
 import { deletePublicacion, getAllPublicaciones } from '../services/publicacionesService';
+import { getAllCategorias, getPublicacionesByCategoria } from '../services/categoriasServices';
 import { toast } from 'react-toastify';
+import AnimatedButton from '../components/utils/AnimatedButton';
+
+// Estilo keyframes para la animación de brillo
+const shineAnimation = `
+  @keyframes shine {
+    from {
+      opacity: 0;
+      left: 0%;
+    }
+    50% {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      left: 100%;
+    }
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+`;
+
+// Añadir los estilos keyframes al documento
+const addKeyframeStyles = () => {
+  const existingStyle = document.getElementById('admin-animation-style');
+  if (!existingStyle) {
+    const styleSheet = document.createElement("style");
+    styleSheet.id = 'admin-animation-style';
+    styleSheet.type = "text/css";
+    styleSheet.innerText = shineAnimation;
+    document.head.appendChild(styleSheet);
+  }
+};
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -29,6 +66,16 @@ const AdminPanel = () => {
   // Estados para UI
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  
+  // Estado para categorías
+  const [categories, setCategories] = useState([]);
+  const [categoryPostCounts, setCategoryPostCounts] = useState({});
+  const [loadingCategories, setLoadingCategories] = useState(true);
+
+  // Añadir los keyframes al montar el componente
+  useEffect(() => {
+    addKeyframeStyles();
+  }, []);
 
   // Verificación inmediata al montar el componente
   useEffect(() => {
@@ -95,10 +142,55 @@ const AdminPanel = () => {
     }
   };
 
-  // Cargar publicaciones al montar el componente
+  // Cargar publicaciones y categorías al montar el componente
   useEffect(() => {
     fetchAllPosts();
+    fetchCategories();
   }, []);
+
+  // Función para cargar categorías y contar posts por categoría
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const categoriesData = await getAllCategorias();
+      
+      if (categoriesData && categoriesData.length > 0) {
+        setCategories(categoriesData);
+        
+        // Obtener el recuento de posts por categoría
+        const countPromises = categoriesData.map(async (category) => {
+          try {
+            const posts = await getPublicacionesByCategoria(category.ID_categoria);
+            return { 
+              id: category.ID_categoria, 
+              name: category.Nombre_categoria, 
+              count: posts ? posts.length : 0 
+            };
+          } catch (error) {
+            console.error(`Error al obtener posts para categoría ${category.Nombre_categoria}:`, error);
+            return { id: category.ID_categoria, name: category.Nombre_categoria, count: 0 };
+          }
+        });
+        
+        const categoryCounts = await Promise.all(countPromises);
+        
+        // Convertir a objeto para fácil acceso
+        const countsObj = {};
+        categoryCounts.forEach(item => {
+          countsObj[item.id] = {
+            name: item.name,
+            count: item.count
+          };
+        });
+        
+        setCategoryPostCounts(countsObj);
+      }
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   // Función para aplicar filtros
   const applyFilters = (postsToFilter, term, statusFilter, order) => {
@@ -414,7 +506,13 @@ const AdminPanel = () => {
       border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
       flex: '1',
       minWidth: '150px',
-      textAlign: 'center'
+      textAlign: 'center',
+      transition: 'all 0.3s ease',
+      cursor: 'pointer',
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: shadows.md
+      }
     },
     statNumber: {
       fontSize: typography.fontSize.xxl,
@@ -427,6 +525,46 @@ const AdminPanel = () => {
       color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
       textTransform: 'uppercase',
       letterSpacing: '0.5px'
+    },
+    categoriesContainer: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      boxShadow: shadows.sm,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
+      flex: '1',
+      minWidth: '300px',
+      position: 'relative',
+      overflow: 'hidden'
+    },
+    categoryTitle: {
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.white : colors.primary,
+      marginBottom: spacing.md,
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs
+    },
+    categoryList: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: spacing.xs,
+      maxHeight: '150px',
+      overflowY: 'auto'
+    },
+    categoryItem: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      fontSize: typography.fontSize.sm,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.03)',
+      color: isDarkMode ? colors.white : colors.textPrimary
+    },
+    categoryCount: {
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.secondary : colors.secondary
     },
     postsGrid: {
       display: 'grid',
@@ -512,8 +650,13 @@ const AdminPanel = () => {
       borderRadius: '50%',
       border: 'none',
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      fontSize: '14px'
+      transition: 'all 0.3s ease',
+      position: 'relative',
+      overflow: 'hidden',
+      '&:hover': {
+        transform: 'translateY(-3px) scale(1.1)',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
+      }
     },
     viewButton: {
       backgroundColor: isDarkMode ? '#2563eb' : '#3b82f6',
@@ -574,7 +717,7 @@ const AdminPanel = () => {
         ? (isDarkMode ? '#065f46' : '#10b981') 
         : notification.type === 'error' 
         ? (isDarkMode ? '#7f1d1d' : '#ef4444')
-        : (isDarkMode ? '#1e40af' : '#3b82f6'),
+        : notification.type === 'info' ? '#3b82f6' : '#f59e0b',
       color: colors.white,
       padding: `${spacing.md} ${spacing.lg}`,
       borderRadius: borderRadius.md,
@@ -642,8 +785,25 @@ const AdminPanel = () => {
   // Calcular estadísticas
   const totalPosts = posts.length;
   const publishedPosts = posts.filter(post => post.Estado === 'publicado').length;
-  const draftPosts = posts.filter(post => post.Estado === 'borrador').length;
-  const filteredCount = filteredPosts.length;
+
+  // Obtener la categoría con más posts
+  const getMostPopularCategory = () => {
+    if (!categories || categories.length === 0) return { name: 'Ninguna', count: 0 };
+    
+    let maxCount = 0;
+    let popularCategory = { name: 'Ninguna', count: 0 };
+    
+    Object.values(categoryPostCounts).forEach(category => {
+      if (category.count > maxCount) {
+        maxCount = category.count;
+        popularCategory = category;
+      }
+    });
+    
+    return popularCategory;
+  };
+
+  const popularCategory = getMostPopularCategory();
 
   return (
     <div style={styles.container}>
@@ -662,12 +822,30 @@ const AdminPanel = () => {
             <div style={styles.statNumber}>{publishedPosts}</div>
             <div style={styles.statLabel}>Publicadas</div>
           </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{draftPosts}</div>
-            <div style={styles.statLabel}>Borradores</div>
+          
+          {/* Reemplazamos el contador de borradores por el panel de categorías */}
+          <div style={styles.categoriesContainer}>
+            <div style={styles.categoryTitle}>
+              <FaFolder style={{ color: colors.secondary }} /> Posts por Categoría
+            </div>
+            <div style={styles.categoryList}>
+              {loadingCategories ? (
+                <div>Cargando categorías...</div>
+              ) : (
+                categories.map(category => (
+                  <div key={category.ID_categoria} style={styles.categoryItem}>
+                    <span>{category.Nombre_categoria}</span>
+                    <span style={styles.categoryCount}>
+                      {categoryPostCounts[category.ID_categoria]?.count || 0}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
+          
           <div style={styles.statCard}>
-            <div style={styles.statNumber}>{filteredCount}</div>
+            <div style={styles.statNumber}>{filteredPosts.length}</div>
             <div style={styles.statLabel}>Filtradas</div>
           </div>
         </div>
@@ -676,18 +854,39 @@ const AdminPanel = () => {
         <div style={styles.header}>
           <h2 style={styles.title}>Publicaciones</h2>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button
-              style={styles.refreshButton}
+            <AnimatedButton
               onClick={refreshPosts}
-              disabled={loading}
+              backgroundColor={isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f8f9fa'}
+              hoverBackgroundColor={isDarkMode ? 'rgba(255, 255, 255, 0.2)' : '#e9ecef'}
+              textColor={isDarkMode ? '#fff' : colors.primary}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginRight: '10px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
             >
-              <FaSync />
-              Actualizar
-            </button>
-            <Link to="/admin/post/new" style={styles.createButton}>
-              <FaPlus />
-              Nueva Publicación
-            </Link>
+              <FaSync /> Actualizar
+            </AnimatedButton>
+            
+            <AnimatedButton
+              to="/admin/post/new"
+              backgroundColor={colors.secondary}
+              hoverBackgroundColor="#0d5353"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 12px rgba(11, 68, 68, 0.2)'
+              }}
+            >
+              <FaPlus /> Nueva Publicación
+            </AnimatedButton>
           </div>
         </div>
 
@@ -753,10 +952,23 @@ const AdminPanel = () => {
                     : 'No hay publicaciones en el sistema. ¡Crea tu primera publicación!'}
                 </p>
                 {(!searchTerm && filter === 'all') && (
-                  <Link to="/admin/post/new" style={styles.createButton}>
-                    <FaPlus />
-                    Crear Primera Publicación
-                  </Link>
+                  <AnimatedButton
+                    to="/admin/post/new"
+                    backgroundColor={colors.secondary}
+                    hoverBackgroundColor="#0d5353"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      margin: '0 auto',
+                      marginTop: spacing.md,
+                      boxShadow: '0 2px 12px rgba(11, 68, 68, 0.2)'
+                    }}
+                  >
+                    <FaPlus /> Crear Primera Publicación
+                  </AnimatedButton>
                 )}
               </div>
             ) : (
@@ -794,27 +1006,61 @@ const AdminPanel = () => {
                         </div>
                         
                         <div style={styles.actionsContainer}>
-                          <button
-                            style={{...styles.actionButton, ...styles.viewButton}}
+                          <AnimatedButton
                             onClick={() => handleViewPost(post.ID_publicaciones)}
+                            backgroundColor={isDarkMode ? colors.infoDark : colors.info}
+                            hoverBackgroundColor={isDarkMode ? '#1a7fa1' : '#38bdf8'}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              padding: '0'
+                            }}
                             title="Ver publicación"
                           >
                             <FaEye />
-                          </button>
-                          <button
-                            style={{...styles.actionButton, ...styles.editButton}}
+                          </AnimatedButton>
+                          
+                          <AnimatedButton
                             onClick={() => handleEditPost(post.ID_publicaciones)}
+                            backgroundColor={isDarkMode ? colors.warningDark : colors.warning}
+                            hoverBackgroundColor={isDarkMode ? '#996614' : '#fbbf24'}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              padding: '0',
+                              marginLeft: '8px'
+                            }}
                             title="Editar publicación"
                           >
                             <FaEdit />
-                          </button>
-                          <button
-                            style={{...styles.actionButton, ...styles.deleteButton}}
+                          </AnimatedButton>
+                          
+                          <AnimatedButton
                             onClick={() => setConfirmDelete(post)}
+                            backgroundColor={isDarkMode ? colors.errorDark : colors.error}
+                            hoverBackgroundColor={isDarkMode ? '#b91c1c' : '#f87171'}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              padding: '0',
+                              marginLeft: '8px'
+                            }}
                             title="Eliminar publicación"
                           >
                             <FaTrash />
-                          </button>
+                          </AnimatedButton>
                         </div>
                       </div>
                     </div>
@@ -836,47 +1082,53 @@ const AdminPanel = () => {
               Esta acción no se puede deshacer.
             </p>
             <div style={styles.modalActions}>
-              <button
-                style={{...styles.modalButton, ...styles.cancelButton}}
+              <AnimatedButton
                 onClick={() => setConfirmDelete(null)}
+                backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
+                hoverBackgroundColor={isDarkMode ? '#4b5563' : '#d1d5db'}
+                textColor={isDarkMode ? colors.white : colors.textPrimary}
+                style={{
+                  padding: `${spacing.sm} ${spacing.md}`,
+                  borderRadius: borderRadius.md,
+                  fontWeight: typography.fontWeight.medium,
+                  marginRight: spacing.md
+                }}
               >
                 Cancelar
-              </button>
-              <button
-                style={{...styles.modalButton, ...styles.confirmButton}}
+              </AnimatedButton>
+              
+              <AnimatedButton
                 onClick={() => handleDeletePost(confirmDelete.ID_publicaciones)}
+                backgroundColor='#ef4444'
+                hoverBackgroundColor='#dc2626'
+                style={{
+                  padding: `${spacing.sm} ${spacing.md}`,
+                  borderRadius: borderRadius.md,
+                  fontWeight: typography.fontWeight.medium
+                }}
               >
                 Eliminar
-              </button>
+              </AnimatedButton>
             </div>
           </div>
         </div>
       )}
-
+      
       {/* Notificación */}
       {notification.show && (
-        <div style={styles.notification}>
+        <div 
+          style={{
+            ...styles.notification,
+            backgroundColor: notification.type === 'success' ? '#10b981' : 
+                            notification.type === 'error' ? '#ef4444' : 
+                            notification.type === 'info' ? '#3b82f6' : '#f59e0b'
+          }}
+        >
           {notification.message}
         </div>
       )}
-
-      <Footer />
       
-      {/* CSS para animaciones */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes slideInRight {
-            from {
-              transform: translateX(100%);
-              opacity: 0;
-            }
-            to {
-              transform: translateX(0);
-              opacity: 1;
-            }
-          }
-        `
-      }} />
+      <Footer />
     </div>
   );
 };
