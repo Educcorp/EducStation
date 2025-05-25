@@ -560,25 +560,35 @@ const AdminPanel = () => {
     },
     chartCanvas: {
       width: '100%',
-      height: '200px'
+      aspectRatio: '1/1', // Asegurar relación de aspecto 1:1
+      maxWidth: '400px',
+      margin: '0 auto',
+      display: 'block'
     },
     categoryLegend: {
       display: 'flex',
       flexWrap: 'wrap',
       gap: spacing.sm,
-      marginTop: spacing.md
+      marginTop: spacing.md,
+      justifyContent: 'center'
     },
     legendItem: {
       display: 'flex',
       alignItems: 'center',
       gap: spacing.xs,
       fontSize: typography.fontSize.sm,
-      color: isDarkMode ? colors.white : colors.textPrimary
+      color: isDarkMode ? colors.white : colors.textPrimary,
+      margin: `${spacing.xs} ${spacing.sm}`,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.md,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+      transition: 'all 0.2s ease'
     },
     legendColor: {
       width: '12px',
       height: '12px',
-      borderRadius: '50%'
+      borderRadius: '50%',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
     },
     categoriesContainer: {
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
@@ -865,9 +875,26 @@ const AdminPanel = () => {
 
     const canvas = chartRef.current;
     const ctx = canvas.getContext('2d');
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const radius = Math.min(centerX, centerY) - 10;
+    
+    // Mejora la calidad para pantallas de alta resolución
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Ajustar el tamaño del canvas para mantener aspecto cuadrado
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.width * dpr; // Usar width para ambos para hacerlo cuadrado
+    
+    // Escalar el contexto según el DPR para mejor calidad
+    ctx.scale(dpr, dpr);
+    
+    // Asegurar que el canvas mantiene su aspecto visual correcto
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.width + 'px';
+    
+    const size = Math.min(rect.width, rect.width);
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const radius = (size / 2) * 0.8; // Reducir ligeramente para dejar margen
     
     // Calcular el total de posts en todas las categorías
     let totalCategoryPosts = 0;
@@ -877,24 +904,48 @@ const AdminPanel = () => {
     
     // Si no hay posts, mostrar un círculo gris
     if (totalCategoryPosts === 0) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, size, size);
+      
+      // Fondo circular con gradiente
+      const bgGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+      bgGradient.addColorStop(0, isDarkMode ? '#2d3748' : '#f7fafc');
+      bgGradient.addColorStop(1, isDarkMode ? '#1a202c' : '#e2e8f0');
+      
       ctx.beginPath();
       ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-      ctx.fillStyle = '#e5e7eb';
+      ctx.fillStyle = bgGradient;
       ctx.fill();
       
-      // Texto de "No hay datos"
-      ctx.font = '14px Arial';
-      ctx.fillStyle = '#6b7280';
+      // Sombra sutil
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2;
+      
+      // Texto de "No hay datos" con mejor estilo
+      ctx.font = 'bold 16px Arial, sans-serif';
+      ctx.fillStyle = isDarkMode ? '#a0aec0' : '#4a5568';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('No hay datos', centerX, centerY);
       
+      // Resetear sombra
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      
       return;
     }
     
-    // Dibujar el gráfico de pastel
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Limpiar el canvas
+    ctx.clearRect(0, 0, size, size);
+    
+    // Dibujar el gráfico de pastel con sombra
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 5;
     
     let startAngle = 0;
     categories.forEach(category => {
@@ -908,18 +959,54 @@ const AdminPanel = () => {
         ctx.closePath();
         
         // Usar el color correspondiente a la categoría
-        ctx.fillStyle = categoryColors[category.ID_categoria] || categoryColors.default;
+        const color = categoryColors[category.ID_categoria] || categoryColors.default;
+        ctx.fillStyle = color;
         ctx.fill();
+        
+        // Dibujar un borde sutil entre secciones
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.7)';
+        ctx.stroke();
         
         startAngle += sliceAngle;
       }
     });
     
-    // Círculo blanco en el centro para efecto donut
+    // Resetear sombra
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    
+    // Círculo blanco en el centro para efecto donut con gradiente
+    const innerRadius = radius * 0.6;
+    const gradient = ctx.createRadialGradient(centerX, centerY, innerRadius * 0.7, centerX, centerY, innerRadius);
+    
+    if (isDarkMode) {
+      gradient.addColorStop(0, '#1a2e2d');
+      gradient.addColorStop(1, '#1a2e2d');
+    } else {
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(1, '#f8fafc');
+    }
+    
+    // Sombra interna para profundidad
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius * 0.6, 0, 2 * Math.PI);
-    ctx.fillStyle = isDarkMode ? '#1a2e2d' : '#ffffff';
+    ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = gradient;
     ctx.fill();
+    
+    // Borde sutil para el círculo interno
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+    ctx.stroke();
+    
+    // Resetear sombra
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
   };
   
   // Dibujar el gráfico cuando cambian las categorías o los conteos
@@ -968,8 +1055,8 @@ const AdminPanel = () => {
                 <canvas 
                   ref={chartRef} 
                   style={styles.chartCanvas}
-                  width="350"
-                  height="200"
+                  width="400"
+                  height="400"
                 ></canvas>
                 
                 <div style={styles.categoryLegend}>
