@@ -375,26 +375,46 @@ const HomePage = () => {
         
         // Si hay publicaciones, procesarlas
         if (publicaciones && publicaciones.length > 0) {
-          // Crear una copia y mezclarla aleatoriamente
-          const randomizedPosts = [...publicaciones].sort(() => Math.random() - 0.5);
+          // Establecer publicación destacada específica (ID 63)
+          const featuredPostData = publicaciones.find(post => post.ID_publicacion === 63);
           
-          // Extraer publicación destacada (la primera después de mezclar)
-          const featured = randomizedPosts[0];
+          if (featuredPostData) {
+            // Formatear el post destacado según el formato requerido
+            const formattedFeatured = {
+              id: featuredPostData.ID_publicacion,
+              title: "El pequeño tomate que revolucionó mi forma de estudiar (y puede transformar la tuya también)",
+              image: featuredPostData.Imagen_portada || '/assets/images/tecnologia.jpg',
+              category: featuredPostData.categorias && featuredPostData.categorias.length > 0 
+                ? featuredPostData.categorias[0].Nombre_categoria 
+                : 'Sin categoría',
+              time: '2 horas atrás',
+              excerpt: "Cuando mi compañero de universidad Gregorio llegó a mi cuarto de estudio el semestre pasado, me dijo algo que me resonó profundamente: \"Damian, tengo mil ideas rondando en mi cabeza, pero cuando me siento a estudiar, no consigo concentrarme ni cinco minutos seguidos\"..."
+            };
+            setFeaturedPost(formattedFeatured);
+          } else {
+            // Si no se encuentra el post con ID 63, usar el primero disponible
+            const featured = publicaciones[0];
+            const formattedFeatured = {
+              id: featured.ID_publicacion,
+              title: featured.Titulo,
+              image: featured.Imagen_portada || '/assets/images/tecnologia.jpg',
+              category: featured.categorias && featured.categorias.length > 0 
+                ? featured.categorias[0].Nombre_categoria 
+                : 'Sin categoría',
+              time: '2 horas atrás',
+              excerpt: featured.Resumen || 'Sin resumen disponible'
+            };
+            setFeaturedPost(formattedFeatured);
+          }
           
-          // Formatear el post destacado según el formato requerido
-          const formattedFeatured = {
-            id: featured.ID_publicacion,
-            title: featured.Titulo,
-            image: featured.Imagen_portada || '/assets/images/tecnologia.jpg',
-            category: featured.categorias && featured.categorias.length > 0 
-              ? featured.categorias[0].Nombre_categoria 
-              : 'Sin categoría',
-            time: '2 horas atrás',
-            excerpt: featured.Resumen || 'Sin resumen disponible'
-          };
+          // Crear una copia y mezclarla aleatoriamente para los 6 posts
+          const shuffledPosts = [...publicaciones]
+            .filter(post => post.ID_publicacion !== (featuredPostData ? featuredPostData.ID_publicacion : null))
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 6);
           
-          // Formatear el resto de publicaciones
-          const formattedPosts = randomizedPosts.slice(1, 10).map(post => ({
+          // Formatear los posts
+          const formattedPosts = shuffledPosts.map(post => ({
             id: post.ID_publicacion,
             title: post.Titulo,
             image: post.Imagen_portada || '/assets/images/tecnologia.jpg',
@@ -405,17 +425,16 @@ const HomePage = () => {
             likes: Math.floor(Math.random() * 200)
           }));
           
-          setFeaturedPost(formattedFeatured);
           setPosts(formattedPosts);
         } else {
           // Si no hay publicaciones, usar los datos de ejemplo
           setFeaturedPost({
-            id: 'featured',
-            title: 'Herramientas Tecnológicas para la Educación',
+            id: 63,
+            title: 'El pequeño tomate que revolucionó mi forma de estudiar (y puede transformar la tuya también)',
             image: '/assets/images/tecnologia.jpg',
-            category: 'desarrollo docente',
+            category: 'técnicas de estudio',
             time: '2 horas atrás',
-            excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
+            excerpt: 'Cuando mi compañero de universidad Gregorio llegó a mi cuarto de estudio el semestre pasado, me dijo algo que me resonó profundamente: "Damian, tengo mil ideas rondando en mi cabeza, pero cuando me siento a estudiar, no consigo concentrarme ni cinco minutos seguidos"...'
           });
           
           setPosts([
@@ -442,6 +461,30 @@ const HomePage = () => {
               category: 'problemáticas',
               time: '4 horas atrás',
               likes: 76
+            },
+            {
+              id: 4,
+              title: 'La gamificación en el aula moderna',
+              image: '/assets/images/tecnologia.jpg',
+              category: 'innovación',
+              time: '5 horas atrás',
+              likes: 105
+            },
+            {
+              id: 5,
+              title: 'Educación inclusiva: Estrategias prácticas',
+              image: '/assets/images/humanos.jpg',
+              category: 'inclusión',
+              time: '6 horas atrás',
+              likes: 92
+            },
+            {
+              id: 6,
+              title: 'Evaluación formativa vs sumativa',
+              image: '/assets/images/maestro.jpg',
+              category: 'evaluación',
+              time: '8 horas atrás',
+              likes: 67
             }
           ]);
         }
@@ -1302,6 +1345,41 @@ const HomePage = () => {
                 >
                   <span>Explorar categorías</span>
                   <FaArrowRight size={12} />
+                </a>
+              </div>
+              
+              {/* Botón de Explorar el Blog */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginTop: spacing.xxl,
+                marginBottom: spacing.xxl
+              }}>
+                <a 
+                  href="/blog" 
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: spacing.sm,
+                    padding: `${spacing.md} ${spacing.xxl}`,
+                    backgroundColor: colors.primary,
+                    color: colors.white,
+                    borderRadius: '50px',
+                    textDecoration: 'none',
+                    fontWeight: typography.fontWeight.semiBold,
+                    fontSize: typography.fontSize.md,
+                    boxShadow: '0 8px 20px rgba(11, 68, 68, 0.25)',
+                    transition: 'all 0.3s ease',
+                    ...(hoveredCategory === 'blog-btn' ? {
+                      transform: 'translateY(-5px)',
+                      boxShadow: '0 12px 25px rgba(11, 68, 68, 0.35)'
+                    } : {})
+                  }}
+                  onMouseEnter={() => setHoveredCategory('blog-btn')}
+                  onMouseLeave={() => setHoveredCategory(null)}
+                >
+                  <span>Explora el blog</span>
+                  <FaArrowRight size={14} />
                 </a>
               </div>
             </>
