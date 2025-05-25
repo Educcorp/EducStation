@@ -231,14 +231,122 @@ const SimpleEditor = ({ content, onChange }) => {
   };
 
   const handlePaste = (e) => {
-    // Permitir el pegado normal de texto y HTML básico
-    // Sin procesamiento de imágenes
+    e.preventDefault(); // Prevenir el pegado por defecto
+    
+    // Obtener los datos del portapapeles
+    const clipboardData = e.clipboardData || window.clipboardData;
+    
+    // Intentar obtener el contenido como HTML primero
+    let htmlContent = clipboardData.getData('text/html');
+    let textContent = clipboardData.getData('text/plain');
+    
+    if (htmlContent) {
+      // Filtrar todas las imágenes del HTML
+      // Crear un elemento temporal para manipular el HTML
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      
+      // Eliminar todas las imágenes
+      const images = tempDiv.querySelectorAll('img');
+      images.forEach(img => img.remove());
+      
+      // Eliminar cualquier atributo style que contenga background-image
+      const elementsWithBg = tempDiv.querySelectorAll('[style*="background-image"]');
+      elementsWithBg.forEach(el => {
+        const style = el.getAttribute('style');
+        if (style) {
+          // Eliminar propiedades background-image del style
+          const newStyle = style.replace(/background-image[^;]*;?/gi, '');
+          if (newStyle.trim()) {
+            el.setAttribute('style', newStyle);
+          } else {
+            el.removeAttribute('style');
+          }
+        }
+      });
+      
+      // Obtener el HTML limpio
+      const cleanHTML = tempDiv.innerHTML;
+      
+      // Si queda contenido después de filtrar las imágenes, insertarlo
+      if (cleanHTML.trim()) {
+        document.execCommand('insertHTML', false, cleanHTML);
+      } else if (textContent) {
+        // Si no hay HTML válido, usar el texto plano
+        document.execCommand('insertText', false, textContent);
+      }
+    } else if (textContent) {
+      // Si solo hay texto plano, insertarlo
+      document.execCommand('insertText', false, textContent);
+    }
+    
+    // Actualizar el contenido después del pegado
+    handleContentChange();
   };
 
   // Handle drag and drop - simplified without image handling
   const handleDrop = (e) => {
     e.preventDefault();
-    // Solo permitir drop de texto, sin procesamiento de imágenes
+    
+    // Obtener los datos del drop
+    const dataTransfer = e.dataTransfer;
+    
+    // Verificar si hay archivos (que podrían ser imágenes)
+    if (dataTransfer.files && dataTransfer.files.length > 0) {
+      // Filtrar solo archivos de texto si los hay
+      const textFiles = Array.from(dataTransfer.files).filter(file => 
+        file.type.startsWith('text/') || 
+        file.name.endsWith('.txt') || 
+        file.name.endsWith('.md')
+      );
+      
+      // Si hay archivos de texto, podrían procesarse aquí
+      // Por ahora, simplemente ignoramos todos los archivos
+      console.log('Archivos ignorados (no se permiten imágenes):', dataTransfer.files.length);
+      return;
+    }
+    
+    // Intentar obtener contenido de texto del drop
+    const htmlContent = dataTransfer.getData('text/html');
+    const textContent = dataTransfer.getData('text/plain');
+    
+    if (htmlContent) {
+      // Filtrar imágenes del HTML igual que en handlePaste
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlContent;
+      
+      // Eliminar todas las imágenes
+      const images = tempDiv.querySelectorAll('img');
+      images.forEach(img => img.remove());
+      
+      // Eliminar background-images
+      const elementsWithBg = tempDiv.querySelectorAll('[style*="background-image"]');
+      elementsWithBg.forEach(el => {
+        const style = el.getAttribute('style');
+        if (style) {
+          const newStyle = style.replace(/background-image[^;]*;?/gi, '');
+          if (newStyle.trim()) {
+            el.setAttribute('style', newStyle);
+          } else {
+            el.removeAttribute('style');
+          }
+        }
+      });
+      
+      const cleanHTML = tempDiv.innerHTML;
+      
+      if (cleanHTML.trim()) {
+        document.execCommand('insertHTML', false, cleanHTML);
+      } else if (textContent) {
+        document.execCommand('insertText', false, textContent);
+      }
+    } else if (textContent) {
+      // Solo insertar texto plano
+      document.execCommand('insertText', false, textContent);
+    }
+    
+    // Actualizar el contenido
+    handleContentChange();
   };
 
   // Handle keyboard shortcuts
