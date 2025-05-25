@@ -175,7 +175,7 @@ const Footer = () => {
   // La animación de glow se aplicará directamente en el estilo inline si se requiere, no como keyframes en JS
 
   const styles = {
-    // Footer con fondo sólido para evitar interferencias
+    // Footer sin backgroundColor para evitar conflictos con la imagen de onda
     footer: {
       padding: 0,
       margin: 0,
@@ -184,7 +184,7 @@ const Footer = () => {
       width: '100%',
       overflow: 'hidden',
       zIndex: 10,
-      backgroundColor: '#082c2c', // Fondo sólido base
+      // backgroundColor removido para evitar conflicto con la imagen de onda
       isolation: 'isolate' // Crear contexto de apilamiento independiente
     },
     container: {
