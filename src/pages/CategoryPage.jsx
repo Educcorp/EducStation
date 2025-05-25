@@ -104,6 +104,42 @@ const CategoryPage = () => {
     };
   }, []);
 
+  // Efecto para hacer scroll hacia arriba cuando cambie la categoría
+  useEffect(() => {
+    // Hacer scroll hacia arriba inmediatamente cuando cambie el ID de categoría
+    const scrollToTop = () => {
+      try {
+        window.scrollTo({
+          top: 0,
+          left: 0,
+          behavior: 'smooth'
+        });
+
+        // Fallback para asegurar que funcione
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          if (document.body) {
+            document.body.scrollTop = 0;
+          }
+          if (document.documentElement) {
+            document.documentElement.scrollTop = 0;
+          }
+        }, 100);
+      } catch (error) {
+        console.warn('Error al hacer scroll hacia arriba:', error);
+        window.scrollTo(0, 0);
+      }
+    };
+
+    // Ejecutar scroll inmediatamente
+    scrollToTop();
+
+    // También ejecutar después de un pequeño delay
+    const timeoutId = setTimeout(scrollToTop, 200);
+
+    return () => clearTimeout(timeoutId);
+  }, [id]); // Se ejecuta cada vez que cambie el ID de categoría
+
   // Cargar categorías y posts
   useEffect(() => {
     const fetchData = async () => {
