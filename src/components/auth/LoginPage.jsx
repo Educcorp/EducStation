@@ -773,8 +773,17 @@ const LoginPage = () => {
                             </div>
 
                             {errors.general && (
-                                <div style={styles.generalError}>
-                                    <i className="fas fa-exclamation-circle" style={styles.errorAlertIcon}></i>
+                                <div style={{
+                                    ...styles.generalError,
+                                    backgroundColor: errors.general.includes('exitoso') ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)',
+                                    color: errors.general.includes('exitoso') ? '#28a745' : colors.error,
+                                    border: errors.general.includes('exitoso') ? '1px solid rgba(40, 167, 69, 0.2)' : '1px solid rgba(220, 53, 69, 0.2)',
+                                    boxShadow: errors.general.includes('exitoso') ? '0 4px 10px rgba(40, 167, 69, 0.1)' : '0 4px 10px rgba(220, 53, 69, 0.1)'
+                                }}>
+                                    <i 
+                                        className={errors.general.includes('exitoso') ? "fas fa-check-circle" : "fas fa-exclamation-circle"} 
+                                        style={styles.errorAlertIcon}
+                                    ></i>
                                     {errors.general}
                                 </div>
                             )}
