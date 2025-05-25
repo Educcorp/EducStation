@@ -1404,24 +1404,6 @@ const FloatingToolbar = ({ onFormatText, activeFormats, editorRef, fontSize, set
             />
           )}
         </div>
-        
-        <button 
-          type="button"
-          style={styles.button(false, 'image')}
-          onClick={() => {
-            restoreSelection();
-            onFormatText('image');
-            animateButtonClick('image');
-          }}
-          onMouseEnter={() => showTooltip('image')}
-          onMouseLeave={hideTooltip}
-        >
-          <span style={{ fontSize: '16px' }}><img src="/assets/images/icons/IMG_icon.png" alt="Imagen" style={styles.iconImage} /></span>
-          <Tooltip
-            isVisible={activeTooltip === 'image'}
-            text="Insertar imagen"
-          />
-        </button>
       </div>
     </>
   );
