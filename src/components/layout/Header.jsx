@@ -5,7 +5,7 @@ import { colors, spacing, typography, shadows, borderRadius, transitions } from 
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { useAuth } from '../../context/AuthContext.jsx'; // Importa el contexto de autenticación
-import { FaHome, FaInfo, FaGlobe,  FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope } from 'react-icons/fa';
+import { FaHome, FaInfo, FaGlobe,  FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope, FaUserShield, FaUserCog } from 'react-icons/fa';
 import { updateSuperUserStatus } from '../../services/authService'; // Importar función para actualizar estado de superusuario
 
 const Header = () => {
@@ -647,10 +647,10 @@ const Header = () => {
       icon: <FaTags size={20} />
     },
     {
-      path: '/admin/post',
-      label: 'Crear Post',
-      superuser: true, // Cambiado de admin a superuser para una validación más específica
-      icon: <FaPenSquare size={20} />
+      path: 'https://www.educstation.com/admin/panel',
+      label: 'Admin',
+      superuser: true,
+      icon: <FaUserShield size={20} />
     }
   ];
 
@@ -770,7 +770,7 @@ const Header = () => {
                     e.preventDefault();
                     
                     // Para páginas con recarga forzada instantánea
-                    if(item.path === '/' || item.path === '/blog' || item.path === '/categorias' || item.path === '/admin/post') {
+                    if(item.path === '/' || item.path === '/blog' || item.path === '/categorias') {
                       // Si ya estamos en la página, recargar inmediatamente
                       if(location.pathname === item.path || 
                          (item.path === '/blog' && (location.pathname.startsWith('/blog') || 
@@ -781,6 +781,9 @@ const Header = () => {
                         // Si estamos en otra página, navegar directamente con recarga instantánea
                         window.location.href = item.path;
                       }
+                    } else if (item.path === 'https://www.educstation.com/admin/panel') {
+                      // Redirección especial para el botón Admin
+                      window.location.href = 'https://www.educstation.com/admin/panel';
                     } else {
                       // Para otras páginas, navegación normal
                       navigate(item.path);
@@ -896,30 +899,10 @@ const Header = () => {
                   </span> Mi Perfil
                 </Link>
                 
-                {/* Admin Panel - Solo visible para administradores */}
-                {isSuperUser && (
-                  <Link
-                    to="/admin/panel"
-                    style={getMenuItemStyle(1)}
-                    onMouseEnter={() => setHoveredItem('menu-1')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsMenuOpen(false);
-                      // Usar navigate con forceReload para consistencia
-                      navigate('/admin/panel', { state: { forceReload: true } });
-                    }}
-                  >
-                    <span style={styles.menuItemIcon}>
-                      <FaCog size={24} />
-                    </span> Panel de Admin
-                  </Link>
-                )}
-                
                 <a
                   href="/settings"
-                  style={getMenuItemStyle(isSuperUser ? 2 : 1)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-2' : 'menu-1')}
+                  style={getMenuItemStyle(1)}
+                  onMouseEnter={() => setHoveredItem('menu-1')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -943,8 +926,8 @@ const Header = () => {
                 {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
                 <Link
                   to="/about"
-                  style={getMenuItemStyle(isSuperUser ? 3 : 2)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-3' : 'menu-2')}
+                  style={getMenuItemStyle(2)}
+                  onMouseEnter={() => setHoveredItem('menu-2')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -964,8 +947,8 @@ const Header = () => {
                 </Link>
                 <Link
                   to="/contact"
-                  style={getMenuItemStyle(isSuperUser ? 4 : 3)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-4' : 'menu-3')}
+                  style={getMenuItemStyle(3)}
+                  onMouseEnter={() => setHoveredItem('menu-3')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -988,8 +971,8 @@ const Header = () => {
 
                 <a
                   href="#"
-                  style={getMenuItemStyle(isSuperUser ? 5 : 4)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-5' : 'menu-4')}
+                  style={getMenuItemStyle(4)}
+                  onMouseEnter={() => setHoveredItem('menu-4')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
