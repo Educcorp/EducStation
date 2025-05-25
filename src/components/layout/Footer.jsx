@@ -259,16 +259,16 @@ const Footer = () => {
       borderRadius: "8px",
       padding: "8px 40px 8px 32px",
       boxShadow: '0 0 0 0 transparent',
-      background: 'rgba(8, 44, 44, 0.6)',
+      background: 'rgba(8, 44, 44, 0.3)',
       position: 'relative',
       overflow: 'hidden',
       willChange: "box-shadow, background, color, transform",
-      border: 'none',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
       minWidth: '140px',
       color: '#fff',
       cursor: 'pointer',
-      backdropFilter: 'blur(5px)',
-      WebkitBackdropFilter: 'blur(5px)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
     },
     linkIcon: {
       marginRight: '12px',
@@ -363,18 +363,21 @@ const Footer = () => {
       textDecoration: "none",
       transition: 'all 0.2s ease-in',
       padding: '8px 16px',
-      border: 'none',
-      borderRadius: '5px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '8px',
       position: 'relative',
       overflow: 'hidden',
       cursor: 'pointer',
-      background: 'rgba(8, 44, 44, 0.6)',
-      backdropFilter: 'blur(5px)',
-      WebkitBackdropFilter: 'blur(5px)',
+      background: 'rgba(8, 44, 44, 0.2)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      fontWeight: typography.fontWeight.medium,
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+      marginLeft: '5px',
       '&:hover': {
         color: 'white',
-        boxShadow: '0 0 30px 0 rgba(8, 44, 44, 0.5)',
-        backgroundColor: '#082c2c',
+        boxShadow: '0 0 15px 0 rgba(8, 44, 44, 0.3)',
+        backgroundColor: 'rgba(8, 44, 44, 0.5)',
         transition: 'all 0.2s ease-out'
       }
     },
@@ -469,7 +472,7 @@ const Footer = () => {
 
   const handleLinkMouseLeave = (e) => {
     e.currentTarget.style.boxShadow = '0 0 0 0 transparent';
-    e.currentTarget.style.backgroundColor = 'rgba(8, 44, 44, 0.6)';
+    e.currentTarget.style.backgroundColor = 'rgba(8, 44, 44, 0.3)';
     e.currentTarget.style.color = '#fff';
     e.currentTarget.style.transition = 'all 0.2s ease-in';
     
@@ -621,13 +624,33 @@ const Footer = () => {
           </div>
         </div>
         {/* Bottom Section */}
-        <div style={{...styles.bottom, ...styles.transparentBox, marginTop: spacing.xl}}>
+        <div style={{
+          ...styles.bottom, 
+          ...styles.transparentBox, 
+          marginTop: spacing.xl,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          paddingTop: spacing.md,
+          flexWrap: 'wrap'
+        }}>
           <div style={styles.copyright}>
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
-          <div style={styles.bottomLinks}>
+          <div style={{
+            display: 'flex',
+            gap: '10px',
+            marginTop: window.innerWidth < 768 ? spacing.md : 0
+          }}>
             <span 
-              style={{...styles.bottomLink}} 
+              style={{
+                ...styles.bottomLink,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '100px',
+              }} 
               onClick={(e) => {
                 handleLinkMouseEnter(e);
                 handleInstantNavigation('/terms', e);
@@ -638,7 +661,13 @@ const Footer = () => {
               Términos
             </span>
             <span 
-              style={{...styles.bottomLink}} 
+              style={{
+                ...styles.bottomLink,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '100px',
+              }} 
               onClick={(e) => {
                 handleLinkMouseEnter(e);
                 handleInstantNavigation('/privacy', e);
@@ -649,7 +678,13 @@ const Footer = () => {
               Privacidad
             </span>
             <span 
-              style={{...styles.bottomLink}} 
+              style={{
+                ...styles.bottomLink,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '100px',
+              }} 
               onClick={(e) => {
                 handleLinkMouseEnter(e);
                 handleInstantNavigation('/cookies', e);
