@@ -1069,7 +1069,14 @@ const Header = () => {
             <p>¿Estás seguro de que deseas cerrar tu sesión en <strong>EducStation</strong>?</p>
             <p>Tendrás que volver a iniciar sesión para acceder a tu perfil y contenido personalizado.</p>
           </div>
-          <div style={styles.modalFooter}>
+          <div style={{
+            ...styles.modalFooter,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '16px',
+            marginTop: '-10px',
+            paddingBottom: '20px'
+          }}>
             <button
               style={styles.cancelButton}
               onClick={cancelLogout}

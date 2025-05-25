@@ -273,7 +273,7 @@ const AboutPage = () => {
             cursor: 'pointer',
             fontSize: typography.fontSize.sm,
             background: 'none',
-          }}> 'Se enfoca en educación de calidad.'
+          }}> 'Crea un aprendizaje que inspira, transforma y prepara a cada estudiante para enfrentar el mundo con confianza e innovación.'
         </button>
       ),
     },
@@ -292,7 +292,7 @@ const AboutPage = () => {
             cursor: 'pointer',
             fontSize: typography.fontSize.sm,
             background: 'none',
-          }}>'Encargada del desarrollo profesional docente.'
+          }}>'Exploro y comunico ideas sobre desarrollo profesional docente, conectando tecnología, pedagogía e innovación para inspirar nuevas formas de enseñar y aprender.'
         </button>
       ) 
     },
@@ -331,7 +331,7 @@ const AboutPage = () => {
   return (
     <div 
     //className={animate?"page-animation" : ""}
-      style={{ fontFamily: typography.fontFamily, backgroundColor: '#e6f0ea' }}>
+      style={{ fontFamily: typography.fontFamily, backgroundColor: '#91a8a4' }}>
       <Header />
       
       <main>

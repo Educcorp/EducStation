@@ -558,14 +558,14 @@ const BlogPage = () => {
     return (
       <div
         style={{
-          backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.1)' : 'rgba(31, 147, 111, 0.05)',
+          backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.4)',
           borderRadius: borderRadius.xl,
           padding: spacing.xl,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           marginTop: spacing.xl,
-          border: `1px solid ${isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)'}`,
+          border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.01)'}`,
           boxShadow: shadows.md,
           transition: transitions.default,
           cursor: 'pointer',

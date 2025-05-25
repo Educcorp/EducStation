@@ -49,17 +49,21 @@ const Footer = () => {
   useEffect(() => {
     // Aplicar directamente los estilos al elemento del footer
     if (footerRef.current) {
-      // Usar la imagen de fondo en lugar de un color sólido
-      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&width=1340&height=240&section=footer&animation=twinkling')";
-      footerRef.current.style.backgroundSize = "120% auto";
+      // Restaurar la animación original con la imagen de onda
+      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling')";
+      footerRef.current.style.backgroundSize = "100% auto";
       footerRef.current.style.backgroundPosition = "center bottom";
       footerRef.current.style.backgroundRepeat = "no-repeat";
       footerRef.current.style.backgroundColor = "transparent"; // Fondo transparente
       footerRef.current.style.color = isDarkMode ? '#ccc' : colors.white;
       
-      // Eliminar cualquier otro estilo que pueda estar causando el rectángulo verde
+      // Ajustar propiedades para evitar el rectángulo verde
       footerRef.current.style.border = "none";
       footerRef.current.style.boxShadow = "none";
+      footerRef.current.style.minHeight = "240px"; // Asegurar altura suficiente para la onda
+      footerRef.current.style.marginTop = "40px"; // Espaciado superior
+      footerRef.current.style.position = "relative";
+      footerRef.current.style.overflow = "hidden";
     }
   }, [isDarkMode, colors]);
 
@@ -143,17 +147,18 @@ const Footer = () => {
     footer: {
       padding: 0,
       margin: 0,
-      minHeight: '20px', // Altura para acomodar la onda
+      minHeight: '240px', // Altura para acomodar la onda completa
       position: 'relative',
       width: '100%',
       overflow: 'hidden',
+      zIndex: 1
     },
     container: {
       maxWidth: '1900px',
       margin: '0 auto',
       padding: `${spacing.md} ${spacing.lg} ${spacing.xl * 3}`, // Más padding abajo para la onda
       position: 'relative',
-      zIndex: 3, // Ensure content is above the background
+      zIndex: 3, // Asegurar que el contenido está por encima del fondo
       backgroundColor: 'transparent', // Contenedor transparente
     },
     contentBox: {
