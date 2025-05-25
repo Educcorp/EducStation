@@ -14,29 +14,6 @@ import CoverImageUploader from './CoverImageUploader';
 import StatusMessage from './StatusMessage';
 import ImportExportActions from './ImportExportActions';
 
-// Funciones para almacenamiento local
-const savePostToLocalStorage = (post) => {
-  try {
-    const postToSave = { ...post };
-    delete postToSave.coverImage;
-    postToSave.lastSaved = new Date().toISOString();
-    localStorage.setItem('post_draft', JSON.stringify(postToSave));
-    console.log('Saved to localStorage:', postToSave);
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-  }
-};
-
-const loadPostFromLocalStorage = () => {
-  try {
-    const savedPost = localStorage.getItem('post_draft');
-    return savedPost ? JSON.parse(savedPost) : null;
-  } catch (error) {
-    console.error('Error loading from localStorage:', error);
-    return null;
-  }
-};
-
 // Componente para la etiqueta de Contenido animada
 const ContentLabel = ({ isVisible = false }) => {
   const [isAnimated, setIsAnimated] = useState(false);
@@ -252,59 +229,47 @@ const PostEditor = () => {
   // Cargar post existente si hay un postId
   useEffect(() => {
     const loadExistingPost = async () => {
-      if (postId) {
-        try {
-          const postData = await getPublicacionById(postId);
-          console.log('Post cargado para edición:', postData);
-          
-          let categoryName = '';
-          if (postData.categorias && postData.categorias.length > 0 && categories.length > 0) {
-            const category = categories.find(cat => 
-              cat.ID_categoria === postData.categorias[0].ID_categoria
-            );
-            if (category) {
-              categoryName = category.Nombre_categoria;
-            }
-          }
-          
-          setPost({
-            title: postData.Titulo || '',
-            category: categoryName,
-            content: postData.contenido || '',
-            tags: '',
-            coverImage: null,
-            coverImagePreview: postData.Imagen_portada ? 
-              (postData.Imagen_portada.startsWith('data:') ? 
-                postData.Imagen_portada : 
-                `data:image/jpeg;base64,${postData.Imagen_portada}`) : 
-              null,
-            status: postData.Estado || 'draft',
-            publishDate: postData.Fecha_publicacion ? 
-              new Date(postData.Fecha_publicacion).toISOString().slice(0, 10) : 
-              new Date().toISOString().slice(0, 10),
-            editorMode: 'simple',
-            resumen: postData.Resumen || '',
-            Imagen_portada: postData.Imagen_portada || null
-          });
-          
-          setIsEditing(true);
-          setSaveMessage({
-            type: 'success',
-            text: 'Post cargado correctamente para edición',
-            icon: '✓'
-          });
-          
-          setTimeout(() => setSaveMessage(null), 3000);
-        } catch (error) {
-          console.error('Error al cargar el post para edición:', error);
-          setSaveMessage({
-            type: 'error',
-            text: `Error al cargar el post: ${error.message}`,
-            icon: '✖'
-          });
-          
-          setTimeout(() => setSaveMessage(null), 3000);
+      if (!postId) {
+        console.log('Creando nueva publicación');
+        setIsInitialized(true);
+        return;
+      }
+      
+      try {
+        console.log(`Cargando publicación existente con ID: ${postId}`);
+        const postData = await getPublicacionById(postId);
+        
+        if (!postData) {
+          console.error('No se encontró la publicación');
+          return;
         }
+        
+        console.log('Datos de la publicación cargados:', postData);
+        
+        const categoriaObj = categories.find(cat => 
+          cat.ID_categoria === (postData.categorias && postData.categorias[0]?.ID_categoria)
+        );
+        
+        const categoria = categoriaObj ? categoriaObj.Nombre_categoria : '';
+        
+        setPost({
+          title: postData.titulo || '',
+          content: postData.contenido || '',
+          category: categoria,
+          tags: postData.tags || '',
+          coverImagePreview: postData.imagen_url || null,
+          status: postData.estado || 'draft',
+          publishDate: postData.fecha_publicacion ? new Date(postData.fecha_publicacion).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+          editorMode: postData.contenido && (postData.contenido.includes('<') || postData.contenido.includes('&lt;')) ? 'html' : 'simple',
+          resumen: postData.resumen || ''
+        });
+        
+        setIsEditing(true);
+        setIsInitialized(true);
+        
+      } catch (error) {
+        console.error('Error al cargar la publicación:', error);
+        setIsInitialized(true);
       }
     };
     
@@ -347,37 +312,10 @@ const PostEditor = () => {
     }
   };
 
-  // Cargar datos guardados en localStorage al iniciar
+  // Actualizar el estado cuando cambia el post
   useEffect(() => {
-    const savedPost = loadPostFromLocalStorage();
-    if (savedPost) {
-      setPost(prev => ({
-        ...prev,
-        ...savedPost,
-        editorMode: savedPost.editorMode || 'simple'
-      }));
-    }
-    
-    setIsInitialized(true);
-    
-    let interval;
-    setTimeout(() => {
-      interval = setInterval(() => {
-        if (post.title || post.content) {
-          saveDraft();
-        }
-      }, 30000);
-    }, 5000);
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, []);
-
-  // Autoguardado cuando el contenido cambia
-  useEffect(() => {
-    if (post.content.length > 0 || post.title.length > 0) {
-      savePostToLocalStorage(post);
+    if (isInitialized && post) {
+      console.log("Post actualizado:", post.title);
     }
   }, [post]);
 
@@ -446,8 +384,6 @@ const PostEditor = () => {
           result = await createPublicacion(postData);
         }
       }
-      
-      savePostToLocalStorage(post);
       
       setIsSaving(false);
       setSaveMessage({
@@ -563,8 +499,6 @@ const PostEditor = () => {
       
       setTimeout(() => setSaveMessage(null), 3000);
       
-      localStorage.removeItem('post_draft');
-      
       setTimeout(() => {
         navigate('/admin/panel', { state: { forceReload: true } });
       }, 1500);
@@ -583,29 +517,46 @@ const PostEditor = () => {
 
   const exportToFile = () => {
     try {
-      const postData = {
-        title: post.title,
-        content: post.content,
-        category: post.category,
-        tags: post.tags,
-        status: post.status,
-        publishDate: post.publishDate,
-        editorMode: post.editorMode,
-        resumen: post.resumen,
-        coverImagePreview: post.coverImagePreview
-      };
-      
-      const jsonData = JSON.stringify(postData, null, 2);
-      const blob = new Blob([jsonData], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`;
-      document.body.appendChild(link);
-      link.click();
-      
-      URL.revokeObjectURL(url);
-      document.body.removeChild(link);
+      // Exportar como HTML si estamos en modo HTML
+      if (post.editorMode === 'html') {
+        const htmlContent = post.content;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+        document.body.appendChild(link);
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+      } 
+      // Exportar como JSON en cualquier caso
+      else {
+        const postData = {
+          title: post.title,
+          content: post.content,
+          category: post.category,
+          tags: post.tags,
+          status: post.status,
+          publishDate: post.publishDate,
+          editorMode: post.editorMode,
+          resumen: post.resumen,
+          coverImagePreview: post.coverImagePreview
+        };
+        
+        const jsonData = JSON.stringify(postData, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`;
+        document.body.appendChild(link);
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+      }
       
       setSaveMessage({
         type: 'success',
@@ -633,26 +584,49 @@ const PostEditor = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const importedData = JSON.parse(event.target.result);
+        const fileContent = event.target.result;
         
-        setPost(prev => ({
-          ...prev,
-          title: importedData.title || '',
-          content: importedData.content || '',
-          category: importedData.category || '',
-          tags: importedData.tags || '',
-          status: importedData.status || 'draft',
-          publishDate: importedData.publishDate || new Date().toISOString().slice(0, 10),
-          editorMode: importedData.editorMode || 'simple',
-          resumen: importedData.resumen || '',
-          coverImagePreview: importedData.coverImagePreview || null
-        }));
-        
-        setSaveMessage({
-          type: 'success',
-          text: 'Post importado correctamente',
-          icon: '📥'
-        });
+        // Intentar primero como JSON
+        if (file.name.endsWith('.json')) {
+          const importedData = JSON.parse(fileContent);
+          
+          setPost(prev => ({
+            ...prev,
+            title: importedData.title || '',
+            content: importedData.content || '',
+            category: importedData.category || '',
+            tags: importedData.tags || '',
+            status: importedData.status || 'draft',
+            publishDate: importedData.publishDate || new Date().toISOString().slice(0, 10),
+            editorMode: importedData.editorMode || 'simple',
+            resumen: importedData.resumen || '',
+            coverImagePreview: importedData.coverImagePreview || null
+          }));
+          
+          setSaveMessage({
+            type: 'success',
+            text: 'Post importado correctamente desde JSON',
+            icon: '📥'
+          });
+        } 
+        // Si es HTML, importar como contenido
+        else if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+          setPost(prev => ({
+            ...prev,
+            content: fileContent,
+            editorMode: 'html'
+          }));
+          
+          setSaveMessage({
+            type: 'success',
+            text: 'HTML importado correctamente',
+            icon: '📥'
+          });
+        }
+        // Otro tipo de archivo
+        else {
+          throw new Error('Formato de archivo no soportado');
+        }
         
         setTimeout(() => setSaveMessage(null), 3000);
       } catch (error) {
@@ -725,7 +699,7 @@ const PostEditor = () => {
     },
     actionsContainer: {
       display: "flex",
-      justifyContent: "space-between",
+      justifyContent: "flex-end",
       gap: spacing.md,
       marginTop: spacing.xl,
       opacity: buttonsVisible ? 1 : 0,
@@ -1158,6 +1132,8 @@ const PostEditor = () => {
                 content={post.content}
                 onChange={handleChange}
                 initialMode={post.editorMode}
+                onExport={exportToFile}
+                onImport={importFile}
               />
             </div>
           </div>
@@ -1235,32 +1211,6 @@ const PostEditor = () => {
           )}
 
           <div style={styles.actionsContainer}>
-            <button
-              onClick={saveDraft}
-              disabled={isSaving}
-              style={{
-                ...styles.actionButton,
-                ...styles.saveButton,
-                opacity: buttonsVisible ? 1 : 0,
-                transform: buttonsVisible ? 'scale(1) translateX(0)' : 'scale(0.96) translateX(-8px)',
-                transitionDelay: '0.05s'
-              }}
-              onMouseEnter={(e) => {
-                if (!isSaving) {
-                  e.target.style.transform = 'scale(1.025) translateY(-2px)';
-                  e.target.style.boxShadow = `0 6px 20px ${colors.secondary}30`;
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSaving) {
-                  e.target.style.transform = 'scale(1) translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }
-              }}
-            >
-              {isSaving ? 'Guardando...' : 'Guardar borrador'}
-            </button>
-
             <button
               onClick={publishPost}
               disabled={isPublishing}
