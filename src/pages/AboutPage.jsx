@@ -273,7 +273,7 @@ const AboutPage = () => {
             cursor: 'pointer',
             fontSize: typography.fontSize.sm,
             background: 'none',
-          }}> 'Se enfoca en educación de calidad.'
+          }}> 'Encargada de crear un aprendizaje que inspira, transforma y prepara a cada estudiante para enfrentar el mundo con confianza e innovación.'
         </button>
       ),
     },
@@ -292,7 +292,7 @@ const AboutPage = () => {
             cursor: 'pointer',
             fontSize: typography.fontSize.sm,
             background: 'none',
-          }}>'Encargada del desarrollo profesional docente.'
+          }}>'Exploro y comunico ideas sobre desarrollo profesional docente, conectando tecnología, pedagogía e innovación para inspirar nuevas formas de enseñar y aprender.'
         </button>
       ) 
     },
