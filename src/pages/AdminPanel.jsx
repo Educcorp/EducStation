@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort, FaSync, FaFolder } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort, FaSync, FaFolder, FaChartPie } from 'react-icons/fa';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
@@ -71,6 +71,19 @@ const AdminPanel = () => {
   const [categories, setCategories] = useState([]);
   const [categoryPostCounts, setCategoryPostCounts] = useState({});
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const chartRef = useRef(null);
+
+  // Colores de categorías
+  const categoryColors = {
+    1: '#FF6B6B', // Noticias
+    2: '#4ECDC4', // Técnicas de Estudio
+    3: '#FFD166', // Problemáticas en el Estudio
+    4: '#6A0572', // Educación de Calidad
+    5: '#1A936F', // Herramientas Tecnológicas
+    6: '#3D5A80', // Desarrollo Profesional Docente
+    7: '#F18F01', // Comunidad y Colaboración
+    'default': '#6b7280'
+  };
 
   // Añadir los keyframes al montar el componente
   useEffect(() => {
@@ -494,37 +507,78 @@ const AdminPanel = () => {
     },
     statsContainer: {
       display: 'flex',
-      gap: spacing.md,
+      gap: spacing.xl,
       marginBottom: spacing.xl,
       flexWrap: 'wrap'
     },
     statCard: {
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
       borderRadius: borderRadius.lg,
-      padding: spacing.lg,
+      padding: spacing.xl,
       boxShadow: shadows.sm,
       border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
       flex: '1',
-      minWidth: '150px',
+      minWidth: '200px',
       textAlign: 'center',
       transition: 'all 0.3s ease',
-      cursor: 'pointer',
-      '&:hover': {
-        transform: 'translateY(-5px)',
-        boxShadow: shadows.md
-      }
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     statNumber: {
-      fontSize: typography.fontSize.xxl,
+      fontSize: typography.fontSize.xxxl,
       fontWeight: typography.fontWeight.bold,
       color: isDarkMode ? colors.white : colors.primary,
       marginBottom: spacing.xs
     },
     statLabel: {
-      fontSize: typography.fontSize.sm,
+      fontSize: typography.fontSize.md,
       color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
       textTransform: 'uppercase',
-      letterSpacing: '0.5px'
+      letterSpacing: '1px'
+    },
+    chartContainer: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      boxShadow: shadows.sm,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
+      flex: '2',
+      minWidth: '350px',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    chartTitle: {
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.white : colors.primary,
+      marginBottom: spacing.md,
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs
+    },
+    chartCanvas: {
+      width: '100%',
+      height: '200px'
+    },
+    categoryLegend: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginTop: spacing.md
+    },
+    legendItem: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs,
+      fontSize: typography.fontSize.sm,
+      color: isDarkMode ? colors.white : colors.textPrimary
+    },
+    legendColor: {
+      width: '12px',
+      height: '12px',
+      borderRadius: '50%'
     },
     categoriesContainer: {
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
@@ -805,6 +859,88 @@ const AdminPanel = () => {
 
   const popularCategory = getMostPopularCategory();
 
+  // Función para dibujar el gráfico de categorías
+  const drawCategoryChart = () => {
+    if (!chartRef.current || categories.length === 0 || loadingCategories) return;
+
+    const canvas = chartRef.current;
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 10;
+    
+    // Calcular el total de posts en todas las categorías
+    let totalCategoryPosts = 0;
+    categories.forEach(category => {
+      totalCategoryPosts += categoryPostCounts[category.ID_categoria]?.count || 0;
+    });
+    
+    // Si no hay posts, mostrar un círculo gris
+    if (totalCategoryPosts === 0) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = '#e5e7eb';
+      ctx.fill();
+      
+      // Texto de "No hay datos"
+      ctx.font = '14px Arial';
+      ctx.fillStyle = '#6b7280';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('No hay datos', centerX, centerY);
+      
+      return;
+    }
+    
+    // Dibujar el gráfico de pastel
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    let startAngle = 0;
+    categories.forEach(category => {
+      const count = categoryPostCounts[category.ID_categoria]?.count || 0;
+      if (count > 0) {
+        const sliceAngle = (count / totalCategoryPosts) * 2 * Math.PI;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+        ctx.closePath();
+        
+        // Usar el color correspondiente a la categoría
+        ctx.fillStyle = categoryColors[category.ID_categoria] || categoryColors.default;
+        ctx.fill();
+        
+        startAngle += sliceAngle;
+      }
+    });
+    
+    // Círculo blanco en el centro para efecto donut
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius * 0.6, 0, 2 * Math.PI);
+    ctx.fillStyle = isDarkMode ? '#1a2e2d' : '#ffffff';
+    ctx.fill();
+  };
+  
+  // Dibujar el gráfico cuando cambian las categorías o los conteos
+  useEffect(() => {
+    drawCategoryChart();
+  }, [categories, categoryPostCounts, loadingCategories, isDarkMode]);
+  
+  // Redimensionar el canvas cuando cambie el tamaño de la ventana
+  useEffect(() => {
+    const handleResize = () => {
+      if (chartRef.current) {
+        drawCategoryChart();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [categories, categoryPostCounts]);
+
   return (
     <div style={styles.container}>
       <Header />
@@ -812,41 +948,45 @@ const AdminPanel = () => {
       <div style={styles.content}>
         <h1 style={styles.pageTitle}>Panel de Administración</h1>
         
-        {/* Estadísticas */}
+        {/* Estadísticas simplificadas */}
         <div style={styles.statsContainer}>
           <div style={styles.statCard}>
             <div style={styles.statNumber}>{totalPosts}</div>
-            <div style={styles.statLabel}>Total</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{publishedPosts}</div>
-            <div style={styles.statLabel}>Publicadas</div>
+            <div style={styles.statLabel}>Total de Publicaciones</div>
           </div>
           
-          {/* Reemplazamos el contador de borradores por el panel de categorías */}
-          <div style={styles.categoriesContainer}>
-            <div style={styles.categoryTitle}>
-              <FaFolder style={{ color: colors.secondary }} /> Posts por Categoría
+          {/* Gráfico de categorías */}
+          <div style={styles.chartContainer}>
+            <div style={styles.chartTitle}>
+              <FaChartPie style={{ color: colors.secondary }} /> Distribución por Categoría
             </div>
-            <div style={styles.categoryList}>
-              {loadingCategories ? (
-                <div>Cargando categorías...</div>
-              ) : (
-                categories.map(category => (
-                  <div key={category.ID_categoria} style={styles.categoryItem}>
-                    <span>{category.Nombre_categoria}</span>
-                    <span style={styles.categoryCount}>
-                      {categoryPostCounts[category.ID_categoria]?.count || 0}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-          
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{filteredPosts.length}</div>
-            <div style={styles.statLabel}>Filtradas</div>
+            
+            {loadingCategories ? (
+              <div style={{ textAlign: 'center', padding: spacing.lg }}>Cargando datos...</div>
+            ) : (
+              <>
+                <canvas 
+                  ref={chartRef} 
+                  style={styles.chartCanvas}
+                  width="350"
+                  height="200"
+                ></canvas>
+                
+                <div style={styles.categoryLegend}>
+                  {categories.map(category => (
+                    <div key={category.ID_categoria} style={styles.legendItem}>
+                      <div 
+                        style={{
+                          ...styles.legendColor, 
+                          backgroundColor: categoryColors[category.ID_categoria] || categoryColors.default
+                        }}
+                      ></div>
+                      <span>{category.Nombre_categoria} ({categoryPostCounts[category.ID_categoria]?.count || 0})</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
