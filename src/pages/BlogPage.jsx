@@ -1060,6 +1060,16 @@ const BlogPage = () => {
 
         <CategoryPromo />
 
+        {/* Separador visual más separado */}
+        <div style={{
+          width: '100%',
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}, transparent)`,
+          margin: `${spacing.xxl} 0 ${spacing.xxl} 0`,
+          position: 'relative'
+        }}>
+        </div>
+
         <div ref={postListRef}>
           <PostList
             limit={12}
