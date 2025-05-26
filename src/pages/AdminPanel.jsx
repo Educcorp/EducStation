@@ -60,7 +60,7 @@ const AdminPanel = () => {
   
   // Estados para filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all'); // 'all', 'published', 'draft'
+  const [filter, setFilter] = useState('published'); // Solo 'published' disponible
   const [sortOrder, setSortOrder] = useState('recientes'); // 'recientes', 'antiguos', 'alfabetico'
   
   // Estados para UI
@@ -220,9 +220,8 @@ const AdminPanel = () => {
     }
     
     // Filtrar por estado
-    if (statusFilter !== 'all') {
-      const estado = statusFilter === 'published' ? 'publicado' : 'borrador';
-      result = result.filter(post => post.Estado === estado);
+    if (statusFilter === 'published') {
+      result = result.filter(post => post.Estado === 'publicado');
     }
     
     // Ordenar
@@ -1143,9 +1142,7 @@ const AdminPanel = () => {
               onChange={(e) => setFilter(e.target.value)}
               style={styles.select}
             >
-              <option value="all">Todos los estados</option>
               <option value="published">Publicadas</option>
-              <option value="draft">Borradores</option>
             </select>
             
             <select
