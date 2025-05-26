@@ -24,16 +24,15 @@ import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
-import SettingsPage from './pages/SettingsPage';
 import ProfilePage from './pages/ProfilePage';
 
 // Componente LoadingSpinner
 const LoadingSpinner = () => (
-  <div style={{ 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    height: '100vh' 
+  <div style={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh'
   }}>
     <div style={{
       width: '50px',
@@ -55,66 +54,66 @@ const LoadingSpinner = () => (
 // Componente para rutas protegidas
 const PrivateRoute = ({ children }) => {
   const { isAuth, loading } = useAuth();
-  
+
   // Mostrar loader mientras se verifica la autenticación
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   // Redirigir a login si no está autenticado
   if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
-  
+
   return children;
 };
 
 // Componente para rutas de administrador (solo accesibles para superusers)
 const SuperUserRoute = ({ children }) => {
   const { isAuth, isSuperUser, loading } = useAuth();
-  
+
   // Mostrar loader mientras se verifica la autenticación
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   // Redirigir a login si no está autenticado
   if (!isAuth) {
     return <Navigate to="/login" replace />;
   }
-  
+
   // Redirigir a home si está autenticado pero no es superuser
   if (!isSuperUser) {
     return <Navigate to="/" replace />;
   }
-  
+
   return children;
 };
 
 // Componente para rutas públicas (solo accesibles cuando NO está autenticado)
 const PublicRoute = ({ children }) => {
   const { isAuth, loading } = useAuth();
-  
+
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   // Redirigir a dashboard si ya está autenticado
   if (isAuth) {
     return <Navigate to="/dashboard" replace />;
   }
-  
+
   return children;
 };
 
 // Componente para rutas del blog (accesibles públicamente pero con funciones limitadas)
 const PublicBlogRoute = ({ children }) => {
   const { loading } = useAuth();
-  
+
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   // Permitir acceso independientemente del estado de autenticación
   return children;
 };
@@ -122,11 +121,11 @@ const PublicBlogRoute = ({ children }) => {
 // Componente para redirección inteligente según autenticación
 const SmartRedirect = () => {
   const { isAuth, loading } = useAuth();
-  
+
   if (loading) {
     return <LoadingSpinner />;
   }
-  
+
   // Redirigir según el estado de autenticación
   if (isAuth) {
     return <Navigate to="/dashboard" replace />;
@@ -150,201 +149,193 @@ const App = () => {
           <div className="app">
             <Routes>
               {/* Rutas públicas (accesibles sin autenticación) */}
-              <Route 
-                path="/login" 
+              <Route
+                path="/login"
                 element={
                   <PublicRoute>
                     <LoginPage />
                   </PublicRoute>
-                } 
+                }
               />
-              <Route 
-                path="/register" 
+              <Route
+                path="/register"
                 element={
                   <PublicRoute>
                     <RegisterPage />
                   </PublicRoute>
-                } 
+                }
               />
-              <Route 
-                path="/forgot-password" 
+              <Route
+                path="/forgot-password"
                 element={
                   <PublicRoute>
                     <ForgotPasswordPage />
                   </PublicRoute>
-                } 
+                }
               />
-              <Route 
-                path="/reset-password" 
+              <Route
+                path="/reset-password"
                 element={
                   <PublicRoute>
                     <ResetPasswordPage />
                   </PublicRoute>
-                } 
+                }
               />
-              <Route 
-                path="/reset-password/:token" 
+              <Route
+                path="/reset-password/:token"
                 element={
                   <PublicRoute>
                     <ResetPasswordPage />
                   </PublicRoute>
-                } 
+                }
               />
-              <Route 
-                path="/terms" 
+              <Route
+                path="/terms"
                 element={
                   <TermsPage />
-                } 
+                }
               />
-              <Route 
-                path="/privacy" 
+              <Route
+                path="/privacy"
                 element={
                   <PrivacyPage />
-                } 
+                }
               />
-              <Route 
-                path="/cookies" 
+              <Route
+                path="/cookies"
                 element={
                   <CookiesPage />
-                } 
+                }
               />
-              
+
               {/* Página de inicio (accesible públicamente) */}
-              <Route 
-                path="/home" 
+              <Route
+                path="/home"
                 element={
                   <PublicBlogRoute>
                     <HomePage />
                   </PublicBlogRoute>
-                } 
+                }
               />
 
               {/* Rutas del blog (accesibles públicamente) */}
-              <Route 
-                path="/blog" 
+              <Route
+                path="/blog"
                 element={
                   <PublicBlogRoute>
                     <BlogPage />
                   </PublicBlogRoute>
-                } 
+                }
               />
-              <Route 
-                path="/blog/:id" 
+              <Route
+                path="/blog/:id"
                 element={
                   <PublicBlogRoute>
                     <BlogDetailPage />
                   </PublicBlogRoute>
-                } 
+                }
               />
-              <Route 
-                path="/categoria/:id" 
+              <Route
+                path="/categoria/:id"
                 element={
                   <PublicBlogRoute>
                     <CategoryPage />
                   </PublicBlogRoute>
-                } 
+                }
               />
-              <Route 
-                path="/categorias" 
+              <Route
+                path="/categorias"
                 element={
                   <PublicBlogRoute>
                     <CategoriesListPage />
                   </PublicBlogRoute>
-                } 
+                }
               />
 
               {/* Ruta raíz - redirección inteligente */}
-              <Route 
-                path="/" 
-                element={<SmartRedirect />} 
+              <Route
+                path="/"
+                element={<SmartRedirect />}
               />
 
               {/* Rutas protegidas (requieren autenticación) */}
-              <Route 
-                path="/dashboard" 
+              <Route
+                path="/dashboard"
                 element={
                   <PrivateRoute>
                     <HomePage />
                   </PrivateRoute>
-                } 
+                }
               />
-              <Route 
-                path="/about" 
+              <Route
+                path="/about"
                 element={
                   <PrivateRoute>
                     <AboutPage />
                   </PrivateRoute>
-                } 
+                }
               />
-              <Route 
-                path="/contact" 
+              <Route
+                path="/contact"
                 element={
                   <PrivateRoute>
                     <ContactPage />
                   </PrivateRoute>
-                } 
+                }
               />
-              <Route 
-                path="/admin/post" 
+              <Route
+                path="/admin/post"
                 element={
                   <SuperUserRoute>
                     <AdminPostPage />
                   </SuperUserRoute>
-                } 
+                }
               />
-              <Route 
-                path="/admin/post/new" 
+              <Route
+                path="/admin/post/new"
                 element={
                   <SuperUserRoute>
                     <AdminPostPage />
                   </SuperUserRoute>
-                } 
+                }
               />
-              <Route 
-                path="/admin/post/:postId" 
+              <Route
+                path="/admin/post/:postId"
                 element={
                   <SuperUserRoute>
                     <AdminPostPage />
                   </SuperUserRoute>
-                } 
+                }
               />
-              <Route 
-                path="/admin/post/edit/:postId" 
+              <Route
+                path="/admin/post/edit/:postId"
                 element={
                   <SuperUserRoute>
                     <AdminPostPage />
                   </SuperUserRoute>
-                } 
+                }
               />
-              <Route 
-                path="/settings" 
-                element={
-                  <PrivateRoute>
-                    <SettingsPage />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
+              <Route
+                path="/profile"
                 element={
                   <PrivateRoute>
                     <ProfilePage />
                   </PrivateRoute>
-                } 
+                }
               />
-              <Route 
-                path="/admin/panel" 
+              <Route
+                path="/admin/panel"
                 element={
                   <SuperUserRoute>
                     <AdminPanel />
                   </SuperUserRoute>
-                } 
+                }
               />
-              
+
               {/* Ruta por defecto, redirige según el estado de autenticación */}
-              <Route 
-                path="*" 
-                element={<SmartRedirect />} 
+              <Route
+                path="*"
+                element={<SmartRedirect />}
               />
             </Routes>
           </div>
