@@ -11,8 +11,10 @@ import { useLocation, Link } from 'react-router-dom';
 import { getAllCategorias } from '../services/categoriasServices';
 // Importamos el hook usePosts
 import { usePosts } from '../components/blog/hooks/usePosts';
+// Importamos el contexto de autenticación
+import { useAuth } from '../context/AuthContext.jsx';
 // Añadimos íconos
-import { FaBookmark, FaLightbulb, FaGraduationCap, FaChalkboardTeacher, FaArrowRight } from 'react-icons/fa';
+import { FaBookmark, FaLightbulb, FaGraduationCap, FaChalkboardTeacher, FaArrowRight, FaUserPlus, FaStar, FaUsers, FaRocket, FaHeart, FaShieldAlt, FaGift } from 'react-icons/fa';
 
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
@@ -396,6 +398,7 @@ const NewsCarousel = ({ notes }) => {
 
 const HomePage = () => {
   const { isDarkMode, colors, lightColors } = useTheme();
+  const { isAuth, user } = useAuth(); // Añadimos el contexto de autenticación
   const location = useLocation();
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [categories, setCategories] = useState(['Todos']);
@@ -1083,6 +1086,176 @@ const HomePage = () => {
           </div>
         </div>
 
+        {/* NUEVO: Banner especial para usuarios no registrados */}
+        {!isAuth && (
+          <div style={{
+            background: `linear-gradient(135deg, ${colors.primary}95, ${colors.secondary}85)`,
+            borderRadius: '24px',
+            padding: `${spacing.xxl} ${spacing.xl}`,
+            margin: `${spacing.xl} 0`,
+            color: colors.white,
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: `0 20px 50px ${colors.primary}30`,
+            animation: 'slideInUp 0.8s ease-out'
+          }}>
+            {/* Decoraciones de fondo */}
+            <div style={{
+              position: 'absolute',
+              top: '-50px',
+              right: '-50px',
+              width: '200px',
+              height: '200px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '50%',
+              zIndex: 0
+            }}></div>
+            <div style={{
+              position: 'absolute',
+              bottom: '-30px',
+              left: '-30px',
+              width: '150px',
+              height: '150px',
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '50%',
+              zIndex: 0
+            }}></div>
+
+            <div style={{
+              position: 'relative',
+              zIndex: 1,
+              textAlign: 'center',
+              maxWidth: '800px',
+              margin: '0 auto'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: spacing.md,
+                marginBottom: spacing.lg
+              }}>
+                <FaGift size={32} color={colors.white} />
+                <h2 style={{
+                  fontSize: typography.fontSize.xxl,
+                  fontWeight: typography.fontWeight.bold,
+                  margin: 0,
+                  textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                }}>
+                  ¡Únete a EducStation y desbloquea tu potencial!
+                </h2>
+              </div>
+              
+              <p style={{
+                fontSize: typography.fontSize.lg,
+                marginBottom: spacing.xl,
+                opacity: 0.95,
+                lineHeight: '1.6'
+              }}>
+                Accede a contenido exclusivo, guarda tus artículos favoritos, participa en discusiones 
+                y forma parte de una comunidad educativa en constante crecimiento.
+              </p>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: spacing.lg,
+                marginBottom: spacing.xl
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.sm,
+                  justifyContent: 'center'
+                }}>
+                  <FaHeart size={20} color={colors.white} />
+                  <span>Guarda favoritos</span>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.sm,
+                  justifyContent: 'center'
+                }}>
+                  <FaUsers size={20} color={colors.white} />
+                  <span>Únete a la comunidad</span>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.sm,
+                  justifyContent: 'center'
+                }}>
+                  <FaShieldAlt size={20} color={colors.white} />
+                  <span>Contenido exclusivo</span>
+                </div>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                gap: spacing.md,
+                justifyContent: 'center',
+                flexWrap: 'wrap'
+              }}>
+                <Link 
+                  to="/register" 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing.sm,
+                    backgroundColor: colors.white,
+                    color: colors.primary,
+                    padding: `${spacing.md} ${spacing.xl}`,
+                    borderRadius: '50px',
+                    textDecoration: 'none',
+                    fontSize: typography.fontSize.md,
+                    fontWeight: typography.fontWeight.semibold,
+                    boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+                    transition: 'all 0.3s ease',
+                    ...(hoveredElement === 'register-btn' ? {
+                      transform: 'translateY(-3px)',
+                      boxShadow: '0 12px 25px rgba(0,0,0,0.3)'
+                    } : {})
+                  }}
+                  onMouseEnter={() => setHoveredElement('register-btn')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <FaUserPlus size={16} />
+                  <span>Crear cuenta gratis</span>
+                </Link>
+                
+                <Link 
+                  to="/login" 
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: spacing.sm,
+                    backgroundColor: 'transparent',
+                    color: colors.white,
+                    padding: `${spacing.md} ${spacing.xl}`,
+                    borderRadius: '50px',
+                    textDecoration: 'none',
+                    fontSize: typography.fontSize.md,
+                    fontWeight: typography.fontWeight.medium,
+                    border: `2px solid ${colors.white}`,
+                    transition: 'all 0.3s ease',
+                    ...(hoveredElement === 'login-btn' ? {
+                      backgroundColor: colors.white,
+                      color: colors.primary,
+                      transform: 'translateY(-3px)'
+                    } : {})
+                  }}
+                  onMouseEnter={() => setHoveredElement('login-btn')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <FaRocket size={16} />
+                  <span>Iniciar sesión</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* NUEVO: Carrusel de Noticias */}
         <NewsCarousel notes={notes} />
 
@@ -1414,6 +1587,249 @@ const HomePage = () => {
           </div>
         </div>
 
+        {/* NUEVO: Sección de beneficios para usuarios no registrados */}
+        {!isAuth && (
+          <div style={{
+            background: `linear-gradient(135deg, ${colors.white}, ${colors.gray50})`,
+            borderRadius: '24px',
+            padding: `${spacing.xxl} ${spacing.xl}`,
+            margin: `${spacing.xxl} 0`,
+            boxShadow: `0 15px 40px ${colors.primary}15`,
+            border: `1px solid ${colors.primary}10`,
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Decoraciones sutiles */}
+            <div style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              width: '100px',
+              height: '100px',
+              background: `radial-gradient(circle, ${colors.secondary}10, transparent)`,
+              borderRadius: '50%',
+              zIndex: 0
+            }}></div>
+
+            <div style={{
+              position: 'relative',
+              zIndex: 1,
+              textAlign: 'center',
+              maxWidth: '900px',
+              margin: '0 auto'
+            }}>
+              <h2 style={{
+                fontSize: typography.fontSize.xxl,
+                color: colors.primary,
+                marginBottom: spacing.lg,
+                fontWeight: typography.fontWeight.bold
+              }}>
+                ¿Por qué unirse a EducStation?
+              </h2>
+              
+              <p style={{
+                fontSize: typography.fontSize.lg,
+                color: colors.textSecondary,
+                marginBottom: spacing.xxl,
+                lineHeight: '1.6'
+              }}>
+                Descubre todo lo que puedes lograr siendo parte de nuestra comunidad educativa
+              </p>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: spacing.xl,
+                marginBottom: spacing.xxl
+              }}>
+                {/* Beneficio 1 */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: spacing.lg,
+                  borderRadius: '16px',
+                  background: hoveredElement === 'benefit-1' ? `${colors.primary}05` : 'transparent',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                  onMouseEnter={() => setHoveredElement('benefit-1')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto',
+                    marginBottom: spacing.md,
+                    transform: hoveredElement === 'benefit-1' ? 'scale(1.1)' : 'scale(1)',
+                    transition: 'transform 0.3s ease'
+                  }}>
+                    <FaStar size={24} color={colors.white} />
+                  </div>
+                  <h3 style={{
+                    fontSize: typography.fontSize.lg,
+                    color: colors.primary,
+                    marginBottom: spacing.sm,
+                    fontWeight: typography.fontWeight.semibold
+                  }}>
+                    Contenido Premium
+                  </h3>
+                  <p style={{
+                    fontSize: typography.fontSize.md,
+                    color: colors.textSecondary,
+                    lineHeight: '1.5'
+                  }}>
+                    Accede a artículos exclusivos, guías detalladas y recursos educativos de alta calidad
+                  </p>
+                </div>
+
+                {/* Beneficio 2 */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: spacing.lg,
+                  borderRadius: '16px',
+                  background: hoveredElement === 'benefit-2' ? `${colors.secondary}05` : 'transparent',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                  onMouseEnter={() => setHoveredElement('benefit-2')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${colors.secondary}, ${colors.primary})`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto',
+                    marginBottom: spacing.md,
+                    transform: hoveredElement === 'benefit-2' ? 'scale(1.1)' : 'scale(1)',
+                    transition: 'transform 0.3s ease'
+                  }}>
+                    <FaUsers size={24} color={colors.white} />
+                  </div>
+                  <h3 style={{
+                    fontSize: typography.fontSize.lg,
+                    color: colors.primary,
+                    marginBottom: spacing.sm,
+                    fontWeight: typography.fontWeight.semibold
+                  }}>
+                    Comunidad Activa
+                  </h3>
+                  <p style={{
+                    fontSize: typography.fontSize.md,
+                    color: colors.textSecondary,
+                    lineHeight: '1.5'
+                  }}>
+                    Conecta con otros estudiantes y educadores, comparte experiencias y aprende juntos
+                  </p>
+                </div>
+
+                {/* Beneficio 3 */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: spacing.lg,
+                  borderRadius: '16px',
+                  background: hoveredElement === 'benefit-3' ? `${colors.primary}05` : 'transparent',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer'
+                }}
+                  onMouseEnter={() => setHoveredElement('benefit-3')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <div style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${colors.primary}90, ${colors.secondary}90)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto',
+                    marginBottom: spacing.md,
+                    transform: hoveredElement === 'benefit-3' ? 'scale(1.1)' : 'scale(1)',
+                    transition: 'transform 0.3s ease'
+                  }}>
+                    <FaRocket size={24} color={colors.white} />
+                  </div>
+                  <h3 style={{
+                    fontSize: typography.fontSize.lg,
+                    color: colors.primary,
+                    marginBottom: spacing.sm,
+                    fontWeight: typography.fontWeight.semibold
+                  }}>
+                    Progreso Personalizado
+                  </h3>
+                  <p style={{
+                    fontSize: typography.fontSize.md,
+                    color: colors.textSecondary,
+                    lineHeight: '1.5'
+                  }}>
+                    Guarda tus artículos favoritos, sigue tu progreso y recibe recomendaciones personalizadas
+                  </p>
+                </div>
+              </div>
+
+              {/* Llamada a la acción final */}
+              <div style={{
+                background: `linear-gradient(135deg, ${colors.primary}10, ${colors.secondary}10)`,
+                borderRadius: '16px',
+                padding: spacing.xl,
+                textAlign: 'center'
+              }}>
+                <h3 style={{
+                  fontSize: typography.fontSize.xl,
+                  color: colors.primary,
+                  marginBottom: spacing.md,
+                  fontWeight: typography.fontWeight.semibold
+                }}>
+                  ¡Comienza tu viaje educativo hoy!
+                </h3>
+                <p style={{
+                  fontSize: typography.fontSize.md,
+                  color: colors.textSecondary,
+                  marginBottom: spacing.lg,
+                  lineHeight: '1.5'
+                }}>
+                  Únete a miles de estudiantes y educadores que ya están transformando su experiencia de aprendizaje
+                </p>
+                <Link 
+                  to="/register" 
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: spacing.sm,
+                    backgroundColor: colors.primary,
+                    color: colors.white,
+                    padding: `${spacing.md} ${spacing.xl}`,
+                    borderRadius: '50px',
+                    textDecoration: 'none',
+                    fontSize: typography.fontSize.md,
+                    fontWeight: typography.fontWeight.semibold,
+                    boxShadow: `0 8px 20px ${colors.primary}30`,
+                    transition: 'all 0.3s ease',
+                    ...(hoveredElement === 'final-cta' ? {
+                      transform: 'translateY(-3px)',
+                      boxShadow: `0 12px 25px ${colors.primary}40`
+                    } : {})
+                  }}
+                  onMouseEnter={() => setHoveredElement('final-cta')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <FaUserPlus size={16} />
+                  <span>Registrarse gratis</span>
+                  <FaArrowRight size={14} />
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Categories */}
         <div style={styles.categories}>
           {categories.map(category => (
@@ -1633,6 +2049,242 @@ const HomePage = () => {
             </Link>
           </div>
         </div>
+
+        {/* NUEVO: Sección de estadísticas para usuarios no registrados */}
+        {!isAuth && (
+          <div style={{
+            background: `linear-gradient(135deg, ${colors.primary}95, ${colors.secondary}90)`,
+            color: colors.white,
+            padding: `${spacing.xxl} ${spacing.xl}`,
+            margin: `${spacing.xxl} 0 0 0`,
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            {/* Decoraciones de fondo */}
+            <div style={{
+              position: 'absolute',
+              top: '0',
+              left: '0',
+              width: '100%',
+              height: '100%',
+              background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="4"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+              zIndex: 0
+            }}></div>
+
+            <div style={{
+              position: 'relative',
+              zIndex: 1,
+              textAlign: 'center',
+              maxWidth: '1000px',
+              margin: '0 auto'
+            }}>
+              <h2 style={{
+                fontSize: typography.fontSize.xxl,
+                fontWeight: typography.fontWeight.bold,
+                marginBottom: spacing.lg,
+                textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+              }}>
+                Únete a una comunidad en crecimiento
+              </h2>
+              
+              <p style={{
+                fontSize: typography.fontSize.lg,
+                marginBottom: spacing.xxl,
+                opacity: 0.95,
+                lineHeight: '1.6'
+              }}>
+                Miles de estudiantes y educadores ya confían en EducStation para su desarrollo profesional
+              </p>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: spacing.xl,
+                marginBottom: spacing.xxl
+              }}>
+                {/* Estadística 1 */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: spacing.lg,
+                  borderRadius: '16px',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  transform: hoveredElement === 'stat-1' ? 'translateY(-5px)' : 'translateY(0)',
+                  cursor: 'pointer'
+                }}
+                  onMouseEnter={() => setHoveredElement('stat-1')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <div style={{
+                    fontSize: typography.fontSize.xxxl,
+                    fontWeight: typography.fontWeight.bold,
+                    marginBottom: spacing.sm,
+                    color: colors.white
+                  }}>
+                    5K+
+                  </div>
+                  <p style={{
+                    fontSize: typography.fontSize.md,
+                    margin: 0,
+                    opacity: 0.9
+                  }}>
+                    Estudiantes activos
+                  </p>
+                </div>
+
+                {/* Estadística 2 */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: spacing.lg,
+                  borderRadius: '16px',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  transform: hoveredElement === 'stat-2' ? 'translateY(-5px)' : 'translateY(0)',
+                  cursor: 'pointer'
+                }}
+                  onMouseEnter={() => setHoveredElement('stat-2')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <div style={{
+                    fontSize: typography.fontSize.xxxl,
+                    fontWeight: typography.fontWeight.bold,
+                    marginBottom: spacing.sm,
+                    color: colors.white
+                  }}>
+                    200+
+                  </div>
+                  <p style={{
+                    fontSize: typography.fontSize.md,
+                    margin: 0,
+                    opacity: 0.9
+                  }}>
+                    Artículos publicados
+                  </p>
+                </div>
+
+                {/* Estadística 3 */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: spacing.lg,
+                  borderRadius: '16px',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  transform: hoveredElement === 'stat-3' ? 'translateY(-5px)' : 'translateY(0)',
+                  cursor: 'pointer'
+                }}
+                  onMouseEnter={() => setHoveredElement('stat-3')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <div style={{
+                    fontSize: typography.fontSize.xxxl,
+                    fontWeight: typography.fontWeight.bold,
+                    marginBottom: spacing.sm,
+                    color: colors.white
+                  }}>
+                    98%
+                  </div>
+                  <p style={{
+                    fontSize: typography.fontSize.md,
+                    margin: 0,
+                    opacity: 0.9
+                  }}>
+                    Satisfacción de usuarios
+                  </p>
+                </div>
+
+                {/* Estadística 4 */}
+                <div style={{
+                  textAlign: 'center',
+                  padding: spacing.lg,
+                  borderRadius: '16px',
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  transition: 'all 0.3s ease',
+                  transform: hoveredElement === 'stat-4' ? 'translateY(-5px)' : 'translateY(0)',
+                  cursor: 'pointer'
+                }}
+                  onMouseEnter={() => setHoveredElement('stat-4')}
+                  onMouseLeave={() => setHoveredElement(null)}
+                >
+                  <div style={{
+                    fontSize: typography.fontSize.xxxl,
+                    fontWeight: typography.fontWeight.bold,
+                    marginBottom: spacing.sm,
+                    color: colors.white
+                  }}>
+                    24/7
+                  </div>
+                  <p style={{
+                    fontSize: typography.fontSize.md,
+                    margin: 0,
+                    opacity: 0.9
+                  }}>
+                    Acceso disponible
+                  </p>
+                </div>
+              </div>
+
+              {/* Testimonio destacado */}
+              <div style={{
+                background: 'rgba(255,255,255,0.15)',
+                borderRadius: '20px',
+                padding: spacing.xl,
+                maxWidth: '600px',
+                margin: '0 auto',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255,255,255,0.2)'
+              }}>
+                <div style={{
+                  fontSize: typography.fontSize.lg,
+                  fontStyle: 'italic',
+                  marginBottom: spacing.md,
+                  lineHeight: '1.6'
+                }}>
+                  "EducStation ha transformado completamente mi forma de estudiar. Los recursos son increíbles y la comunidad es muy supportiva."
+                </div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: spacing.sm
+                }}>
+                  <div style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    background: `linear-gradient(135deg, ${colors.white}30, ${colors.white}10)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}>
+                    <FaGraduationCap size={20} color={colors.white} />
+                  </div>
+                  <div>
+                    <div style={{
+                      fontWeight: typography.fontWeight.semibold,
+                      fontSize: typography.fontSize.md
+                    }}>
+                      María González
+                    </div>
+                    <div style={{
+                      fontSize: typography.fontSize.sm,
+                      opacity: 0.8
+                    }}>
+                      Estudiante de Pedagogía
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
