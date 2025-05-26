@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
 import ComentariosList from '../comentarios/ComentariosList';
 import PostSidebar from './PostSidebar';
 import { FaThumbsUp } from 'react-icons/fa';
+
+// Lazy load components that are not immediately visible
+const LazyComentariosList = lazy(() => import('../comentarios/ComentariosList'));
 
 /**
  * Componente rediseñado para mostrar el detalle de un post
@@ -19,7 +22,9 @@ const PostDetail = ({ post }) => {
   const [iframeKey, setIframeKey] = useState(Date.now());
   const [likes, setLikes] = useState(post?.contador_likes || 0);
   const [liked, setLiked] = useState(false);
-  const likeBtnRef = useRef(null);
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
+  const [optimizedContent, setOptimizedContent] = useState('');
+  const iframeRef = useRef(null);
 
   // Asegurarse de que tenemos un ID válido, sea del objeto post o de la URL
   const postId = post?.ID_publicaciones || urlId;
@@ -47,6 +52,37 @@ const PostDetail = ({ post }) => {
     setLiked(false);
   }, [post?.ID_publicaciones]);
 
+  // Optimizar el contenido del post cuando se carga
+  useEffect(() => {
+    if (post && post.Contenido) {
+      // Optimizar el contenido
+      const optimized = optimizePostContent(post.Contenido);
+      setOptimizedContent(optimized);
+      setIsContentLoaded(true);
+    }
+  }, [post?.Contenido]);
+
+  // Función para optimizar el contenido del post
+  const optimizePostContent = (content) => {
+    if (!content) return '';
+    
+    // Reemplazar imágenes con carga lazy
+    let optimized = content.replace(/<img\s+/gi, '<img loading="lazy" decoding="async" ');
+    
+    // Agregar tamaños a las imágenes que no los tienen
+    optimized = optimized.replace(/<img((?!width|height).)*?>/gi, (match) => {
+      if (!/width=["']/.test(match) && !/height=["']/.test(match)) {
+        return match.replace('<img', '<img width="100%" ');
+      }
+      return match;
+    });
+    
+    // Optimizar videos e iframes
+    optimized = optimized.replace(/<iframe\s+/gi, '<iframe loading="lazy" ');
+    
+    return optimized;
+  };
+
   // Función para formatear la fecha
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -55,69 +91,54 @@ const PostDetail = ({ post }) => {
 
   // Función para renderizar la imagen de portada (Base64 o HTML)
   const renderFeaturedImage = () => {
-    // Prioridad 1: Imagen en Base64 desde Imagen_portada
-    if (post.Imagen_portada) {
-      // Verificar primero si Imagen_portada es un string
-      if (typeof post.Imagen_portada !== 'string') {
-        console.error("Error: Imagen_portada no es un string", post.Imagen_portada);
-        return (
-          <img
-            src="https://via.placeholder.com/800x400?text=Error+de+imagen"
-            alt={post.Titulo}
-            style={styles.featuredImage}
-          />
-        );
-      }
-
-      // Verificar si es Base64
-      if (post.Imagen_portada.startsWith('data:image')) {
-        return (
-          <img
-            src={post.Imagen_portada}
-            alt={post.Titulo}
-            style={styles.featuredImage}
-          />
-        );
-      } else if (post.Imagen_portada.includes('<img')) {
-        // Si es etiqueta HTML img, renderizarla como tal
-        // Modificar el HTML para aplicar el estilo a la imagen
-        const modifiedHTML = post.Imagen_portada.replace('<img', `<img style="width:100%;height:100%;object-fit:cover;"`);
-
-        return (
-          <div
-            style={styles.featuredImageContainer}
-            dangerouslySetInnerHTML={{ __html: modifiedHTML }}
-          />
-        );
-      } else {
-        // Si no es Base64 ni etiqueta img, intentar renderizar como URL
-        return (
-          <img
-            src={post.Imagen_portada}
-            alt={post.Titulo}
-            style={styles.featuredImage}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = 'https://via.placeholder.com/800x400?text=Error+al+cargar+imagen';
-            }}
-          />
-        );
-      }
+    if (!post.Imagen_portada) return null;
+    
+    // Verificar primero si Imagen_portada es un string
+    if (typeof post.Imagen_portada !== 'string') {
+      console.error("Error: Imagen_portada no es un string", post.Imagen_portada);
+      return null;
     }
 
-    // Prioridad 2: Imagen desde Imagen_destacada_ID
-    if (post.Imagen_destacada_ID) {
+    // Verificar si es Base64
+    if (post.Imagen_portada.startsWith('data:image')) {
       return (
         <img
-          src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`}
+          src={post.Imagen_portada}
           alt={post.Titulo}
           style={styles.featuredImage}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => console.log("Imagen de portada cargada")}
+        />
+      );
+    } else if (post.Imagen_portada.includes('<img')) {
+      // Si es etiqueta HTML img, renderizarla como tal
+      // Modificar el HTML para aplicar el estilo a la imagen y agregar lazy loading
+      const modifiedHTML = post.Imagen_portada
+        .replace('<img', '<img loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;"');
+
+      return (
+        <div
+          style={styles.featuredImageContainer}
+          dangerouslySetInnerHTML={{ __html: modifiedHTML }}
+        />
+      );
+    } else {
+      // Si no es Base64 ni etiqueta img, intentar renderizar como URL
+      return (
+        <img
+          src={post.Imagen_portada}
+          alt={post.Titulo}
+          style={styles.featuredImage}
+          loading="lazy"
+          decoding="async"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://via.placeholder.com/800x400?text=Error+al+cargar+imagen';
+          }}
         />
       );
     }
-
-    // Si no hay imagen, no mostrar nada
-    return null;
   };
 
   // Generar el documento HTML completo para el iframe
@@ -168,6 +189,7 @@ const PostDetail = ({ post }) => {
             max-width: 100%;
             margin: 0 auto;
             padding: 0;
+            content-visibility: auto;
           }
           
           /* Estilos para encabezados */
@@ -212,6 +234,8 @@ const PostDetail = ({ post }) => {
             margin: 1.5em auto;
             border-radius: 8px;
             object-fit: contain;
+            loading: lazy;
+            decoding: async;
           }
           
           /* Sobreescribir cualquier estilo inline de imágenes */
@@ -228,6 +252,7 @@ const PostDetail = ({ post }) => {
             display: block;
             border-radius: 8px;
             border: none;
+            loading: lazy;
           }
           
           /* Listas */
@@ -330,6 +355,12 @@ const PostDetail = ({ post }) => {
             max-width: 100% !important;
           }
           
+          /* Optimización de rendimiento */
+          .offscreen {
+            content-visibility: auto;
+            contain-intrinsic-size: 1px 5000px;
+          }
+          
           /* Media queries para responsividad */
           @media (max-width: 768px) {
             h1 { font-size: 1.8em; }
@@ -355,7 +386,7 @@ const PostDetail = ({ post }) => {
       </head>
       <body>
         <div class="post-container">
-          ${post.Contenido}
+          ${optimizedContent || post.Contenido}
         </div>
         <script>
           // Función para notificar la altura al padre
@@ -366,6 +397,35 @@ const PostDetail = ({ post }) => {
               height: height
             }, '*');
           }
+          
+          // Optimización de imágenes
+          document.querySelectorAll('img').forEach(img => {
+            if (!img.hasAttribute('loading')) {
+              img.setAttribute('loading', 'lazy');
+            }
+            if (!img.hasAttribute('decoding')) {
+              img.setAttribute('decoding', 'async');
+            }
+            
+            // Manejar eventos de carga
+            if (img.complete) {
+              notifyHeight();
+            } else {
+              img.addEventListener('load', notifyHeight);
+              img.addEventListener('error', () => {
+                img.src = 'https://via.placeholder.com/800x400?text=Error+al+cargar+imagen';
+                notifyHeight();
+              });
+            }
+          });
+          
+          // Optimización de iframes
+          document.querySelectorAll('iframe').forEach(iframe => {
+            if (!iframe.hasAttribute('loading')) {
+              iframe.setAttribute('loading', 'lazy');
+            }
+            iframe.addEventListener('load', notifyHeight);
+          });
           
           // Observar cambios en el DOM para detectar cuando se cargan imágenes o cambia el contenido
           const observer = new MutationObserver(notifyHeight);
@@ -379,26 +439,48 @@ const PostDetail = ({ post }) => {
           // Notificar altura cuando se carga la página
           document.addEventListener('DOMContentLoaded', notifyHeight);
           
-          // Notificar altura cuando se cargan las imágenes
-          document.querySelectorAll('img').forEach(img => {
-            if (img.complete) {
-              notifyHeight();
-            } else {
-              img.addEventListener('load', notifyHeight);
-              img.addEventListener('error', notifyHeight);
-            }
+          // Implementar IntersectionObserver para carga perezosa de contenido
+          const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                const element = entry.target;
+                // Si es una imagen, cargarla
+                if (element.tagName === 'IMG') {
+                  const src = element.dataset.src;
+                  if (src) {
+                    element.src = src;
+                    element.removeAttribute('data-src');
+                  }
+                }
+                // Si es un iframe, cargar su contenido
+                else if (element.tagName === 'IFRAME') {
+                  const src = element.dataset.src;
+                  if (src) {
+                    element.src = src;
+                    element.removeAttribute('data-src');
+                  }
+                }
+                // Si es un div con contenido diferido, mostrarlo
+                else if (element.classList.contains('offscreen')) {
+                  element.classList.remove('offscreen');
+                }
+                observer.unobserve(element);
+              }
+            });
+          }, {
+            rootMargin: '200px 0px',
+            threshold: 0.01
           });
           
-          // Notificar altura cuando se cargan iframes o videos
-          document.querySelectorAll('iframe, video').forEach(media => {
-            media.addEventListener('load', notifyHeight);
+          // Aplicar observador a elementos que deben cargarse de forma perezosa
+          document.querySelectorAll('.offscreen, img[data-src], iframe[data-src]').forEach(el => {
+            lazyLoadObserver.observe(el);
           });
           
           // Ejecutar inmediatamente y también después de un pequeño retraso
           notifyHeight();
           setTimeout(notifyHeight, 100);
           setTimeout(notifyHeight, 500);
-          setTimeout(notifyHeight, 1000);
           
           // Ajustar ancho de elementos con ancho fijo en inline styles
           document.querySelectorAll('[style*="width"]').forEach(el => {
@@ -527,6 +609,26 @@ const PostDetail = ({ post }) => {
     },
   };
 
+  const handleLike = async () => {
+    if (liked) return;
+    try {
+      const response = await fetch(`/api/publicaciones/${post.ID_publicaciones}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        setLikes(likes + 1);
+        setLiked(true);
+      }
+    } catch (err) {
+      // Manejar error si se desea
+    }
+  };
+
+  if (!post) {
+    return null;
+  }
+
   // Estilos dinámicos basados en el tamaño de pantalla
   const dynamicStyles = {
     container: {
@@ -574,43 +676,6 @@ const PostDetail = ({ post }) => {
     backLink: styles.backLink,
   };
 
-  const handleLike = async () => {
-    if (liked) return;
-    try {
-      const response = await fetch(`/api/publicaciones/${post.ID_publicaciones}/like`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (response.ok) {
-        // Intentar obtener el nuevo contador del backend
-        const data = await response.json().catch(() => null);
-        if (data && typeof data.contador_likes === 'number') {
-          setLikes(data.contador_likes);
-        } else {
-          // Si el backend no devuelve el contador, hacer fetch al post
-          try {
-            const postResp = await fetch(`/api/publicaciones/${post.ID_publicaciones}`);
-            if (postResp.ok) {
-              const postData = await postResp.json();
-              setLikes(postData.contador_likes || likes + 1);
-            } else {
-              setLikes(likes + 1); // fallback
-            }
-          } catch {
-            setLikes(likes + 1); // fallback
-          }
-        }
-        setLiked(true);
-      }
-    } catch (err) {
-      // Manejar error si se desea
-    }
-  };
-
-  if (!post) {
-    return null;
-  }
-
   return (
     <div style={dynamicStyles.container}>
       {/* Contenido Principal */}
@@ -625,7 +690,6 @@ const PostDetail = ({ post }) => {
             {/* Botón de Like y contador */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <button
-                ref={likeBtnRef}
                 onClick={handleLike}
                 aria-label={liked ? 'Ya diste like' : 'Dar like a la publicación'}
                 style={{
@@ -648,15 +712,15 @@ const PostDetail = ({ post }) => {
                 }}
                 title={liked ? 'Ya diste like' : 'Me gusta'}
                 disabled={liked}
-                onMouseDown={() => {
-                  if (!liked && likeBtnRef.current) likeBtnRef.current.style.transform = 'scale(0.92)';
+                onMouseDown={e => {
+                  if (!liked) e.currentTarget.style.transform = 'scale(0.92)';
                 }}
-                onMouseUp={() => {
-                  if (!liked && likeBtnRef.current) likeBtnRef.current.style.transform = 'scale(1.08)';
-                  setTimeout(() => { if (!liked && likeBtnRef.current) likeBtnRef.current.style.transform = 'scale(1)'; }, 120);
+                onMouseUp={e => {
+                  if (!liked) e.currentTarget.style.transform = 'scale(1.08)';
+                  setTimeout(() => { if (!liked) e.currentTarget.style.transform = 'scale(1)'; }, 120);
                 }}
-                onMouseLeave={() => {
-                  if (!liked && likeBtnRef.current) likeBtnRef.current.style.transform = 'scale(1)';
+                onMouseLeave={e => {
+                  if (!liked) e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
                 <FaThumbsUp />
@@ -669,6 +733,7 @@ const PostDetail = ({ post }) => {
           {/* Contenido del post en un iframe para aislamiento total */}
           <div style={{ marginBottom: spacing.lg }}>
             <iframe
+              ref={iframeRef}
               key={iframeKey}
               title={post.Titulo || 'Post'}
               style={dynamicStyles.iframeContainer}
@@ -676,6 +741,8 @@ const PostDetail = ({ post }) => {
               sandbox="allow-same-origin allow-scripts"
               frameBorder="0"
               scrolling="no"
+              loading="lazy"
+              importance="high"
             />
           </div>
 
@@ -701,8 +768,10 @@ const PostDetail = ({ post }) => {
             width: '100%'
           }}></div>
 
-          {/* Sección de comentarios */}
-          <ComentariosList postId={postId} />
+          {/* Sección de comentarios - cargada de forma perezosa */}
+          <Suspense fallback={<div>Cargando comentarios...</div>}>
+            <LazyComentariosList postId={postId} />
+          </Suspense>
 
           <button
             onClick={navigateToBlог}
