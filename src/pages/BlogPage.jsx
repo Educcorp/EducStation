@@ -48,13 +48,16 @@ const BlogPage = () => {
       const previousUrl = document.referrer;
       const currentUrl = window.location.href;
 
+      // MODIFICADO: Solo recargar si viene de un post individual, NO de categorías
       const comesFromPost = previousUrl &&
         previousUrl.includes('/blog/') &&
         /\/blog\/\d+/.test(previousUrl) &&
         currentUrl.includes('/blog') &&
-        !currentUrl.includes('/blog/');
+        !currentUrl.includes('/blog/') &&
+        !previousUrl.includes('/categoria/') && // NO recargar si viene de categoría
+        !previousUrl.includes('/categorias'); // NO recargar si viene de página de categorías
 
-      return isBackNavigation || comesFromPost;
+      return (isBackNavigation && comesFromPost) || (leftPost && cameFromBlog);
     };
 
     if (shouldForceReload()) {
@@ -86,7 +89,12 @@ const BlogPage = () => {
         const leftPost = sessionStorage.getItem('left-post');
         const cameFromBlog = sessionStorage.getItem('came-from-blog');
 
-        if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded')) {
+        // MODIFICADO: Verificar que no viene de categorías
+        const previousUrl = document.referrer;
+        const comesFromCategory = previousUrl &&
+          (previousUrl.includes('/categoria/') || previousUrl.includes('/categorias'));
+
+        if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded') && !comesFromCategory) {
           // Limpiar marcadores inmediatamente
           sessionStorage.removeItem('left-post');
           sessionStorage.removeItem('came-from-blog');
@@ -195,7 +203,12 @@ const BlogPage = () => {
       const leftPost = sessionStorage.getItem('left-post');
       const cameFromBlog = sessionStorage.getItem('came-from-blog');
 
-      if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded')) {
+      // MODIFICADO: Verificar que no viene de categorías
+      const previousUrl = document.referrer;
+      const comesFromCategory = previousUrl &&
+        (previousUrl.includes('/categoria/') || previousUrl.includes('/categorias'));
+
+      if (leftPost && cameFromBlog && !sessionStorage.getItem('blogpage-reloaded') && !comesFromCategory) {
         // Limpiar marcadores y recargar inmediatamente
         sessionStorage.removeItem('left-post');
         sessionStorage.removeItem('came-from-blog');
@@ -558,14 +571,14 @@ const BlogPage = () => {
     return (
       <div
         style={{
-          backgroundColor: isDarkMode ? 'rgba(31, 147, 111, 0.1)' : 'rgba(31, 147, 111, 0.05)',
+          backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 255, 255, 0.4)',
           borderRadius: borderRadius.xl,
           padding: spacing.xl,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           marginTop: spacing.xl,
-          border: `1px solid ${isDarkMode ? 'rgba(31, 147, 111, 0.2)' : 'rgba(31, 147, 111, 0.1)'}`,
+          border: `1px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.01)'}`,
           boxShadow: shadows.md,
           transition: transitions.default,
           cursor: 'pointer',
@@ -590,7 +603,7 @@ const BlogPage = () => {
               gap: spacing.sm
             }}
           >
-            <FaTags /> Explora Nuestras Categorías
+            <FaTags /> Descubre todas nuestras categorías
           </h3>
           <p
             style={{
@@ -1045,6 +1058,18 @@ const BlogPage = () => {
           </div>
         </div>
 
+        <CategoryPromo />
+
+        {/* Separador visual más separado */}
+        <div style={{
+          width: '100%',
+          height: '1px',
+          background: `linear-gradient(90deg, transparent, ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}, transparent)`,
+          margin: `${spacing.xxl} 0 ${spacing.xxl} 0`,
+          position: 'relative'
+        }}>
+        </div>
+
         <div ref={postListRef}>
           <PostList
             limit={12}
@@ -1054,8 +1079,6 @@ const BlogPage = () => {
             sortOrder={sortOrder}
           />
         </div>
-
-        <CategoryPromo />
       </div>
     </main>
     <Footer />

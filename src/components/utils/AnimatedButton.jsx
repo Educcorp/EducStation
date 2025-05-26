@@ -79,19 +79,19 @@ const AnimatedButton = ({
     
     // Verificar que el elemento aún existe antes de agregar el brillo
     if (e.currentTarget && e.currentTarget.appendChild) {
-      e.currentTarget.appendChild(shineElement);
-      
-      // Eliminar el elemento de brillo después de la animación
-      setTimeout(() => {
+    e.currentTarget.appendChild(shineElement);
+    
+    // Eliminar el elemento de brillo después de la animación
+    setTimeout(() => {
         // Verificar que ambos elementos aún existen antes de intentar remover
         if (e.currentTarget && shineElement && e.currentTarget.contains && e.currentTarget.contains(shineElement)) {
           try {
-            e.currentTarget.removeChild(shineElement);
+        e.currentTarget.removeChild(shineElement);
           } catch (error) {
             // Si falla la remoción, no hacer nada (el elemento ya no existe)
           }
-        }
-      }, 500);
+      }
+    }, 500);
     }
   };
   

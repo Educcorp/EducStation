@@ -3,7 +3,7 @@ import { getAllPublicaciones } from '../../../services/publicacionesService';
 import { searchPublicaciones, searchByTags } from '../../../services/searchService';
 import { getAllCategorias } from '../../../services/categoriasServices';
 
-const POSTS_PER_PAGE = 6;
+const DEFAULT_POSTS_PER_PAGE = 6;
 
 /**
  * Hook personalizado para manejar la lógica de carga y gestión de posts
@@ -12,13 +12,15 @@ const POSTS_PER_PAGE = 6;
  * @param {string} options.categoryFilter - Filtro de categoría
  * @param {string} options.searchTerm - Término de búsqueda
  * @param {string} options.sortOrder - Orden de clasificación
+ * @param {number} options.initialDisplayCount - Cantidad inicial de posts a mostrar
  * @returns {Object} Estado y funciones para manejar posts
  */
 export const usePosts = ({ 
   limit, 
   categoryFilter, 
   searchTerm, 
-  sortOrder = 'recientes' 
+  sortOrder = 'recientes',
+  initialDisplayCount
 } = {}) => {
   const [posts, setPosts] = useState([]);
   const [displayPosts, setDisplayPosts] = useState([]);
@@ -27,6 +29,9 @@ export const usePosts = ({
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  
+  // Determinar el número de posts por página
+  const POSTS_PER_PAGE = initialDisplayCount || DEFAULT_POSTS_PER_PAGE;
 
   /**
    * Función para ordenar posts según el criterio seleccionado
@@ -56,26 +61,28 @@ export const usePosts = ({
       setPage(1);
       
       let data = [];
+      const pageName = window.location.pathname.includes('/blog') ? 'BlogPage' : 'HomePage';
+      console.log(`[${pageName}] Iniciando carga de posts...`);
 
       // Lógica de carga según los filtros
       if (searchTerm && searchTerm.trim() !== '') {
-        console.log('Buscando posts con término:', searchTerm);
+        console.log(`[${pageName}] Buscando posts con término: "${searchTerm}"`);
         data = await searchPublicaciones(searchTerm, limit || 30, 0);
       } else if (categoryFilter && categoryFilter !== '') {
-        console.log('Filtrando por categoría:', categoryFilter);
+        console.log(`[${pageName}] Filtrando por categoría: "${categoryFilter}"`);
         data = await searchByTags(categoryFilter, limit || 30, 0);
       } else {
-        console.log('Cargando todas las categorías');
+        console.log(`[${pageName}] Cargando todas las categorías`);
         // Cargar por categorías de manera independiente
         try {
           const categorias = await getAllCategorias();
-          console.log(`Obtenidas ${categorias.length} categorías`);
+          console.log(`[${pageName}] Obtenidas ${categorias.length} categorías`);
           
           if (categorias && categorias.length > 0) {
             const promesas = categorias.map(categoria => 
               searchByTags(categoria.ID_categoria, limit || 30, 0)
                 .catch(error => {
-                  console.error(`Error al cargar categoría ${categoria.Nombre_categoria}:`, error);
+                  console.error(`[${pageName}] Error al cargar categoría ${categoria.Nombre_categoria}:`, error);
                   return [];
                 })
             );
@@ -93,13 +100,15 @@ export const usePosts = ({
             });
             
             data = Array.from(postMap.values());
-            console.log(`Combinadas ${data.length} publicaciones únicas`);
+            console.log(`[${pageName}] Combinadas ${data.length} publicaciones únicas`);
           } else {
             // Fallback al método general
+            console.log(`[${pageName}] No hay categorías, usando método alternativo`);
             data = await getAllPublicaciones(limit || 30, 0, 'publicado');
           }
         } catch (categoryError) {
-          console.error("Error al cargar por categorías:", categoryError);
+          console.error(`[${pageName}] Error al cargar por categorías:`, categoryError);
+          console.log(`[${pageName}] Intentando método alternativo de carga`);
           data = await getAllPublicaciones(limit || 30, 0, 'publicado');
         }
       }
@@ -107,7 +116,7 @@ export const usePosts = ({
       // Ordenar posts
       const sortedData = sortPosts(data, sortOrder);
       
-      console.log(`Posts cargados y ordenados: ${sortedData.length}`);
+      console.log(`[${pageName}] Posts cargados y ordenados: ${sortedData.length}`);
       
       setPosts(sortedData);
       setDisplayPosts(sortedData.slice(0, POSTS_PER_PAGE));
@@ -121,7 +130,7 @@ export const usePosts = ({
     } finally {
       setLoading(false);
     }
-  }, [limit, categoryFilter, searchTerm, sortOrder, sortPosts]);
+  }, [limit, categoryFilter, searchTerm, sortOrder, sortPosts, POSTS_PER_PAGE]);
 
   /**
    * Función para cargar más posts (paginación)
@@ -143,7 +152,7 @@ export const usePosts = ({
       setHasMore(endIndex < posts.length);
       setLoadingMore(false);
     }, 500);
-  }, [page, posts, loadingMore, hasMore]);
+  }, [page, posts, loadingMore, hasMore, POSTS_PER_PAGE]);
 
   /**
    * Función para recargar posts

@@ -5,7 +5,7 @@ import { colors, spacing, typography, shadows, borderRadius, transitions } from 
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { useAuth } from '../../context/AuthContext.jsx'; // Importa el contexto de autenticación
-import { FaHome, FaInfo, FaGlobe,  FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope } from 'react-icons/fa';
+import { FaHome, FaInfo, FaGlobe,  FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope, FaUserShield, FaUserCog } from 'react-icons/fa';
 import { updateSuperUserStatus } from '../../services/authService'; // Importar función para actualizar estado de superusuario
 
 const Header = () => {
@@ -73,17 +73,6 @@ const Header = () => {
             contextSuperUser: isSuperUser,
             serverSuperUser: serverIsSuperUser
           });
-
-          // Si hay discrepancia, mostrar una notificación
-          if (isSuperUser !== serverIsSuperUser) {
-            console.log('Corrigiendo discrepancia en estado de superusuario');
-            showNotification(
-              serverIsSuperUser
-                ? '¡Bienvenido Administrador! Tus privilegios han sido activados.'
-                : 'Tu sesión ha sido actualizada con tus permisos correctos.',
-              'info'
-            );
-          }
         })
         .catch(error => {
           console.error('Error al actualizar estado de superusuario:', error);
@@ -244,7 +233,10 @@ const Header = () => {
 
   // Función para obtener el avatar con prefijo base64 si es necesario
   const getAvatarSrc = (avatar) => {
-    if (!avatar) return '/assets/images/logoBN.png';
+    if (!avatar || avatar === "" || avatar === "null" || avatar.length < 30) {
+      // Si es vacío, null, o demasiado corto para ser base64, usar placeholder
+      return '/assets/images/logoBN.png';
+    }
     return avatar.startsWith('data:image') ? avatar : `data:image/jpeg;base64,${avatar}`;
   };
 
@@ -647,10 +639,22 @@ const Header = () => {
       icon: <FaTags size={20} />
     },
     {
-      path: '/admin/post',
-      label: 'Crear Post',
-      superuser: true, // Cambiado de admin a superuser para una validación más específica
-      icon: <FaPenSquare size={20} />
+      path: '/about',
+      label: 'Acerca de',
+      icon: <FaInfo size={20} />,
+      hideForSuperUser: true
+    },
+    {
+      path: '/contact',
+      label: 'Contacto',
+      icon: <FaEnvelope size={20} />,
+      hideForSuperUser: true
+    },
+    {
+      path: 'https://www.educstation.com/admin/panel',
+      label: 'Admin',
+      superuser: true,
+      icon: <FaUserShield size={20} />
     }
   ];
 
@@ -760,7 +764,9 @@ const Header = () => {
 
           <nav style={styles.navLinks}>
             {menuItems.map((item, index) => (
-              (!item.superuser || isSuperUser) && (
+              // Mostrar elemento si no requiere ser superusuario o el usuario es superusuario
+              // Y ocultar si hideForSuperUser es true y el usuario es superusuario
+              ((!item.superuser || isSuperUser) && !(item.hideForSuperUser && isSuperUser)) && (
                 <a
                   key={index}
                   href={item.path}
@@ -771,7 +777,7 @@ const Header = () => {
                     e.preventDefault();
                     
                     // Para páginas con recarga forzada instantánea
-                    if(item.path === '/' || item.path === '/blog' || item.path === '/categorias' || item.path === '/admin/post') {
+                    if(item.path === '/' || item.path === '/blog' || item.path === '/categorias') {
                       // Si ya estamos en la página, recargar inmediatamente
                       if(location.pathname === item.path || 
                          (item.path === '/blog' && (location.pathname.startsWith('/blog') || 
@@ -782,6 +788,9 @@ const Header = () => {
                         // Si estamos en otra página, navegar directamente con recarga instantánea
                         window.location.href = item.path;
                       }
+                    } else if (item.path === 'https://www.educstation.com/admin/panel') {
+                      // Redirección especial para el botón Admin
+                      window.location.href = 'https://www.educstation.com/admin/panel';
                     } else {
                       // Para otras páginas, navegación normal
                       navigate(item.path);
@@ -897,30 +906,10 @@ const Header = () => {
                   </span> Mi Perfil
                 </Link>
                 
-                {/* Admin Panel - Solo visible para administradores */}
-                {isSuperUser && (
-                  <Link
-                    to="/admin/panel"
-                    style={getMenuItemStyle(1)}
-                    onMouseEnter={() => setHoveredItem('menu-1')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setIsMenuOpen(false);
-                      // Usar navigate con forceReload para consistencia
-                      navigate('/admin/panel', { state: { forceReload: true } });
-                    }}
-                  >
-                    <span style={styles.menuItemIcon}>
-                      <FaCog size={24} />
-                    </span> Panel de Admin
-                  </Link>
-                )}
-                
                 <a
                   href="/settings"
-                  style={getMenuItemStyle(isSuperUser ? 2 : 1)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-2' : 'menu-1')}
+                  style={getMenuItemStyle(1)}
+                  onMouseEnter={() => setHoveredItem('menu-1')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -941,56 +930,59 @@ const Header = () => {
 
                 <div style={styles.menuSeparator}></div>
 
-                {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
-                <Link
-                  to="/about"
-                  style={getMenuItemStyle(isSuperUser ? 3 : 2)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-3' : 'menu-2')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMenuOpen(false);
-                    // Si ya estamos en about, recargar inmediatamente
-                    if(location.pathname === '/about') {
-                      window.location.reload();
-                    } else {
-                      // Si estamos en otra página, navegar directamente con recarga instantánea
-                      window.location.href = '/about';
-                    }
-                  }}
-                >
-                  <span style={styles.menuItemIcon}>
-                    <FaInfo size={24} />
-                  </span> Acerca de
-                </Link>
-                <Link
-                  to="/contact"
-                  style={getMenuItemStyle(isSuperUser ? 4 : 3)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-4' : 'menu-3')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMenuOpen(false);
-                    // Si ya estamos en contact, recargar inmediatamente
-                    if(location.pathname === '/contact') {
-                      window.location.reload();
-                    } else {
-                      // Si estamos en otra página, navegar directamente con recarga instantánea
-                      window.location.href = '/contact';
-                    }
-                  }}
-                >
-                  <span style={styles.menuItemIcon}>
-                    <FaEnvelope size={24} />
-                  </span> Contacto
-                </Link>
-
-                <div style={styles.menuSeparator}></div>
+                {/* Enlaces de Acerca de y Contacto (eliminados del menú desplegable para usuarios normales) */}
+                {isSuperUser && (
+                  <>
+                    <Link
+                      to="/about"
+                      style={getMenuItemStyle(2)}
+                      onMouseEnter={() => setHoveredItem('menu-2')}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsMenuOpen(false);
+                        // Si ya estamos en about, recargar inmediatamente
+                        if(location.pathname === '/about') {
+                          window.location.reload();
+                        } else {
+                          // Si estamos en otra página, navegar directamente con recarga instantánea
+                          window.location.href = '/about';
+                        }
+                      }}
+                    >
+                      <span style={styles.menuItemIcon}>
+                        <FaInfo size={24} />
+                      </span> Acerca de
+                    </Link>
+                    <Link
+                      to="/contact"
+                      style={getMenuItemStyle(3)}
+                      onMouseEnter={() => setHoveredItem('menu-3')}
+                      onMouseLeave={() => setHoveredItem(null)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setIsMenuOpen(false);
+                        // Si ya estamos en contact, recargar inmediatamente
+                        if(location.pathname === '/contact') {
+                          window.location.reload();
+                        } else {
+                          // Si estamos en otra página, navegar directamente con recarga instantánea
+                          window.location.href = '/contact';
+                        }
+                      }}
+                    >
+                      <span style={styles.menuItemIcon}>
+                        <FaEnvelope size={24} />
+                      </span> Contacto
+                    </Link>
+                    <div style={styles.menuSeparator}></div>
+                  </>
+                )}
 
                 <a
                   href="#"
-                  style={getMenuItemStyle(isSuperUser ? 5 : 4)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-5' : 'menu-4')}
+                  style={getMenuItemStyle(isSuperUser ? 4 : 2)}
+                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-4' : 'menu-2')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -1078,7 +1070,14 @@ const Header = () => {
             <p>¿Estás seguro de que deseas cerrar tu sesión en <strong>EducStation</strong>?</p>
             <p>Tendrás que volver a iniciar sesión para acceder a tu perfil y contenido personalizado.</p>
           </div>
-          <div style={styles.modalFooter}>
+          <div style={{
+            ...styles.modalFooter,
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '16px',
+            marginTop: '-10px',
+            paddingBottom: '20px'
+          }}>
             <button
               style={styles.cancelButton}
               onClick={cancelLogout}

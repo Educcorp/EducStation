@@ -9,37 +9,75 @@ import { spacing, typography, transitions, applyHoverStyles } from '../styles/th
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
+import { getAllCategorias } from '../services/categoriasServices';
+// Importamos el hook usePosts
+import { usePosts } from '../components/blog/hooks/usePosts';
+// Añadimos íconos
+import { FaBookmark, FaLightbulb, FaGraduationCap, FaChalkboardTeacher, FaArrowRight } from 'react-icons/fa';
 
 // Componente para el carrusel
 const NewsCarousel = ({ notes }) => {
   // Usamos useTheme para obtener los colores según el tema actual
-  const { lightColors, colors } = useTheme(); // Importamos los colores del modo claro
+  const { lightColors, colors } = useTheme();
   
   const [currentSlide, setCurrentSlide] = useState(0);
   const [hoveredElement, setHoveredElement] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
   const carouselRef = useRef(null); 
   const autoPlayRef = useRef(null);
 
-  // Efecto para el carrusel automático
+  // Efecto para el carrusel automático - MOVER ANTES DEL RETURN
   useEffect(() => {
-    const playCarousel = () => {
-      setCurrentSlide((prevSlide) =>
-        prevSlide === notes.length - 1 ? 0 : prevSlide + 1
-      );
-    };
-    autoPlayRef.current = playCarousel;
-  }, [notes.length]);
+    if (notes && notes.length > 0) {
+      const playCarousel = () => {
+        if (!isPaused) {
+          setCurrentSlide((prevSlide) =>
+            prevSlide === notes.length - 1 ? 0 : prevSlide + 1
+          );
+        }
+      };
+      autoPlayRef.current = playCarousel;
+    }
+  }, [notes?.length, isPaused]);
 
-  // Efecto para controlar el intervalo del carrusel
+  // Efecto para controlar el intervalo del carrusel - MOVER ANTES DEL RETURN
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (autoPlayRef.current) {
-        autoPlayRef.current();
-      }
-    }, 5000); // Cambiar slide cada 5 segundos
+    if (notes && notes.length > 0) {
+      const interval = setInterval(() => {
+        if (autoPlayRef.current) {
+          autoPlayRef.current();
+        }
+      }, 5000);
 
-    return () => clearInterval(interval);
-  }, []);
+      return () => clearInterval(interval);
+    }
+  }, [notes?.length]);
+
+  // Verificar si hay notas para mostrar
+  if (!notes || notes.length === 0) {
+    return (
+      <div style={{
+        width: "100%",
+        height: "500px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: colors.gray100,
+        borderRadius: "20px",
+        marginTop: spacing.xl,
+        marginBottom: spacing.xxl,
+        border: `2px dashed ${colors.gray300}`
+      }}>
+        <div style={{
+          textAlign: 'center',
+          color: colors.textSecondary
+        }}>
+          <h3>Carrusel de Noticias</h3>
+          <p>Cargando contenido destacado...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Función para cambiar manualmente al slide anterior
   const prevSlide = () => {
@@ -65,17 +103,22 @@ const NewsCarousel = ({ notes }) => {
     carousel: {
       position: "relative",
       width: "100%",
-      height: "400px",
+      height: "500px",
       overflow: "hidden",
-      borderRadius: "16px",
+      borderRadius: "20px",
       marginTop: spacing.xl,
       marginBottom: spacing.xxl,
-      boxShadow: `0 10px 30px ${lightColors.primary}33`, // Usamos lightColors
+      boxShadow: `0 15px 40px ${lightColors.primary}40`, 
       cursor: "pointer",
+      transition: "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.5s ease",
+      "&:hover": {
+        transform: "translateY(-8px)",
+        boxShadow: `0 20px 50px ${lightColors.primary}60`,
+      }
     },
     carouselInner: {
       whiteSpace: "nowrap",
-      transition: "transform 0.5s ease-in-out",
+      transition: "transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1)",
       height: "100%",
       transform: `translateX(-${currentSlide * 100}%)`,
     },
@@ -91,6 +134,10 @@ const NewsCarousel = ({ notes }) => {
       width: "100%",
       height: "100%",
       objectFit: "cover",
+      transition: "transform 8s ease",
+      "&:hover": {
+        transform: "scale(1.05)",
+      }
     },
     carouselContent: {
       position: "absolute",
@@ -98,26 +145,36 @@ const NewsCarousel = ({ notes }) => {
       left: 0,
       width: "100%",
       padding: spacing.xl,
-      background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
-      color: "#fff", // Color blanco fijo para el texto
+      background: "linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7) 50%, transparent)",
+      color: "#fff", 
       whiteSpace: "normal",
+      transform: "translateY(0)",
+      transition: "transform 0.5s ease, opacity 0.5s ease",
+      opacity: 1,
     },
     carouselTitle: {
       fontSize: typography.fontSize.xxl,
       fontWeight: typography.fontWeight.bold,
       marginBottom: spacing.sm,
-      textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-      color: "#fff", // Color blanco fijo para el título
+      textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+      color: "#fff", 
+      transition: "transform 0.5s ease",
+      transform: "translateY(0)",
+      "&:hover": {
+        transform: "translateY(-5px)",
+      }
     },
     carouselExcerpt: {
       fontSize: typography.fontSize.md,
       marginBottom: 0,
       opacity: "0.9",
-      color: "#f0f8f7", // Color claro fijo para el extracto
+      color: "#f0f8f7", 
+      maxWidth: "80%",
+      lineHeight: "1.6",
     },
     carouselCategory: {
-      backgroundColor: lightColors.primary, // Usamos lightColors para la categoría
-      color: "#fff", // Color blanco fijo
+      backgroundColor: lightColors.primary, 
+      color: "#fff", 
       padding: `${spacing.xs} ${spacing.md}`,
       borderRadius: "16px",
       fontSize: typography.fontSize.xs,
@@ -125,6 +182,8 @@ const NewsCarousel = ({ notes }) => {
       textTransform: "uppercase",
       display: "inline-block",
       marginBottom: spacing.md,
+      boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+      animation: "slideInUp 0.5s ease forwards",
     },
     carouselControls: {
       position: "absolute",
@@ -137,22 +196,25 @@ const NewsCarousel = ({ notes }) => {
       padding: `0 ${spacing.lg}`,
     },
     carouselButton: {
-      backgroundColor: "rgba(255,255,255,0.3)",
+      backgroundColor: "rgba(255,255,255,0.15)",
       borderRadius: "50%",
-      width: "44px",
-      height: "44px",
+      width: "50px",
+      height: "50px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       cursor: "pointer",
       border: "none",
       fontSize: "24px",
-      color: "#fff", // Color blanco fijo
-      backdropFilter: "blur(3px)",
-      transition: transitions.default,
+      color: "#fff", 
+      backdropFilter: "blur(5px)",
+      transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+      opacity: 0.7,
       '&:hover': {
-        backgroundColor: "rgba(255,255,255,0.5)",
-        transform: "scale(1.1)",
+        backgroundColor: "rgba(255,255,255,0.3)",
+        transform: "scale(1.15)",
+        opacity: 1,
+        boxShadow: "0 5px 15px rgba(0,0,0,0.3)",
       }
     },
     carouselDots: {
@@ -168,17 +230,45 @@ const NewsCarousel = ({ notes }) => {
       width: isActive ? "30px" : "12px",
       height: "12px",
       borderRadius: isActive ? "6px" : "50%",
-      backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.5)", // Usamos lightColors
+      backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.5)", 
       cursor: "pointer",
-      transition: transitions.default,
+      transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       '&:hover': {
         backgroundColor: isActive ? lightColors.primary : "rgba(255,255,255,0.8)", 
+        transform: "scale(1.2)",
       }
-    })
+    }),
+    pausePlayButton: {
+      position: "absolute",
+      bottom: spacing.lg,
+      right: spacing.lg,
+      zIndex: 3,
+      backgroundColor: "rgba(255,255,255,0.2)",
+      borderRadius: "50%",
+      width: "36px",
+      height: "36px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      cursor: "pointer",
+      border: "none",
+      color: "#fff",
+      backdropFilter: "blur(5px)",
+      transition: "all 0.3s ease",
+      '&:hover': {
+        backgroundColor: "rgba(255,255,255,0.3)",
+        transform: "scale(1.1)",
+      }
+    }
   };
 
   return (
-    <div style={styles.carousel} ref={carouselRef}>
+    <div 
+      style={styles.carousel} 
+      ref={carouselRef}
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+    >
       <div style={styles.carouselInner}>
         {notes.map((slide, index) => (
           <div key={slide.id} style={styles.carouselItem}>
@@ -186,12 +276,18 @@ const NewsCarousel = ({ notes }) => {
               src={slide.image}
               alt={slide.title}
               style={styles.carouselImage}
+              onError={(e) => {
+                e.target.src = '/assets/images/tecnologia.jpg'; // Imagen de fallback
+              }}
             />
-            <div style={styles.carouselContent}>
+            <div style={{
+              ...styles.carouselContent,
+              opacity: currentSlide === index ? 1 : 0,
+              transform: currentSlide === index ? 'translateY(0)' : 'translateY(20px)'
+            }}>
               <div style={styles.carouselCategory}>{slide.category}</div>
               <h2 style={styles.carouselTitle}>{slide.title}</h2>
               <p style={styles.carouselExcerpt}>{slide.excerpt}</p>
-              {/* El botón "Leer más" ha sido eliminado */}
             </div>
           </div>
         ))}
@@ -201,7 +297,7 @@ const NewsCarousel = ({ notes }) => {
       <div style={styles.carouselControls}>
         <button
           style={hoveredElement === 'prev-btn'
-            ? applyHoverStyles(styles.carouselButton)
+            ? { ...styles.carouselButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.15)", opacity: 1 }
             : styles.carouselButton}
           onClick={prevSlide}
           onMouseEnter={() => setHoveredElement('prev-btn')}
@@ -211,7 +307,7 @@ const NewsCarousel = ({ notes }) => {
         </button>
         <button
           style={hoveredElement === 'next-btn'
-            ? applyHoverStyles(styles.carouselButton)
+            ? { ...styles.carouselButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.15)", opacity: 1 }
             : styles.carouselButton}
           onClick={nextSlide}
           onMouseEnter={() => setHoveredElement('next-btn')}
@@ -226,15 +322,31 @@ const NewsCarousel = ({ notes }) => {
         {notes.map((_, index) => (
           <span
             key={index}
-            style={hoveredElement === `dot-${index}`
-              ? applyHoverStyles(styles.carouselDot(currentSlide === index))
-              : styles.carouselDot(currentSlide === index)}
+            style={{
+              ...styles.carouselDot(currentSlide === index),
+              ...(hoveredElement === `dot-${index}` ? { 
+                backgroundColor: currentSlide === index ? lightColors.primary : "rgba(255,255,255,0.8)",
+                transform: "scale(1.2)"
+              } : {})
+            }}
             onClick={() => goToSlide(index)}
             onMouseEnter={() => setHoveredElement(`dot-${index}`)}
             onMouseLeave={() => setHoveredElement(null)}
           ></span>
         ))}
       </div>
+      
+      {/* Botón de pausa/reproducción */}
+      <button
+        style={hoveredElement === 'pause-play'
+          ? { ...styles.pausePlayButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.1)" }
+          : styles.pausePlayButton}
+        onClick={() => setIsPaused(!isPaused)}
+        onMouseEnter={() => setHoveredElement('pause-play')}
+        onMouseLeave={() => setHoveredElement(null)}
+      >
+        {isPaused ? '▶' : '❚❚'}
+      </button>
     </div>
   );
 };
@@ -242,102 +354,237 @@ const NewsCarousel = ({ notes }) => {
 const HomePage = () => {
   // Añadimos el hook useTheme en el componente principal
   const { colors } = useTheme();
-  const { isAuth } = useAuth();
   
   // Estado para la categoría activa
   const [activeCategory, setActiveCategory] = useState('Todos');
-  // Estado para la categoría sobre la que se está haciendo hover
-  const [hoveredCategory, setHoveredCategory] = useState(null);
-  // Estado para el valor de búsqueda
-  const [searchValue, setSearchValue] = useState('');
+  const [categories, setCategories] = useState(['Todos']);
+  const [notes, setNotes] = useState([]); // Para el carrusel
+  const [featuredPost, setFeaturedPost] = useState(null);
+  const [posts, setPosts] = useState([]); // Mantenemos este estado para filtrar
+  const [loading, setLoading] = useState(true);
+  const [hoveredElement, setHoveredElement] = useState(null);
+  const [activeFact, setActiveFact] = useState(0);
+  const factsRef = useRef(null);
+  const heroBgRef = useRef(null);
+  const heroTitleRef = useRef(null);
+  const heroSubtitleRef = useRef(null);
+  
+  // Utilizamos el hook usePosts para cargar los posts
+  const {
+    posts: blogPosts,
+    loading: postsLoading,
+    error: postsError
+  } = usePosts({ 
+    limit: 20, 
+    categoryFilter: '', 
+    searchTerm: '', 
+    sortOrder: 'recientes',
+    initialDisplayCount: 12 // Aumentamos para tener más posts para filtrar
+  });
 
-  const location = useLocation();
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        // Utilizamos los posts cargados desde el hook usePosts
+        if (blogPosts && blogPosts.length > 0) {
+          console.log('HomePage: Posts disponibles:', blogPosts.length);
+          
+          // NUEVO: Crear datos para el carrusel con los posts más destacados
+          const carouselPosts = blogPosts.slice(0, 5).map(post => ({
+            id: post.ID_publicaciones,
+            title: post.Titulo,
+            image: post.Imagen_portada || '/assets/images/tecnologia.jpg',
+            category: post.categorias && post.categorias.length > 0 
+              ? post.categorias[0].Nombre_categoria 
+              : 'Sin categoría',
+            excerpt: post.Resumen || post.Titulo.substring(0, 150) + '...'
+          }));
+          
+          console.log('HomePage: Datos del carrusel creados:', carouselPosts);
+          setNotes(carouselPosts);
 
-  // Categorías de los artículos
-  const categories = [
-    'Todos',
-    'Noticias',
-    'Técnicas de Estudio',
-    'Problemáticas',
-    'Educación de Calidad',
-    'Herramientas',
-    'Desarrollo Docente'
-  ];
+          // Establecer publicación destacada específica (ID 63)
+          const featuredPostData = blogPosts.find(post => post.ID_publicaciones === 63);
+          
+          if (featuredPostData) {
+            // Formatear el post destacado según el formato requerido
+            const formattedFeatured = {
+              id: featuredPostData.ID_publicaciones,
+              title: "El pequeño tomate que revolucionó mi forma de estudiar (y puede transformar la tuya también)",
+              image: featuredPostData.Imagen_portada || '/assets/images/tecnologia.jpg',
+              category: featuredPostData.categorias && featuredPostData.categorias.length > 0 
+                ? featuredPostData.categorias[0].Nombre_categoria 
+                : 'Sin categoría',
+              time: '2 horas atrás',
+              excerpt: "Cuando mi compañero de universidad Gregorio llegó a mi cuarto de estudio el semestre pasado, me dijo algo que me resonó profundamente: \"Damian, tengo mil ideas rondando en mi cabeza, pero cuando me siento a estudiar, no consigo concentrarme ni cinco minutos seguidos\"..."
+            };
+            setFeaturedPost(formattedFeatured);
+          } else {
+            // Si no se encuentra el post con ID 63, usar el primero disponible
+            const featured = blogPosts[0];
+            const formattedFeatured = {
+              id: featured.ID_publicaciones,
+              title: featured.Titulo,
+              image: featured.Imagen_portada || '/assets/images/tecnologia.jpg',
+              category: featured.categorias && featured.categorias.length > 0 
+                ? featured.categorias[0].Nombre_categoria 
+                : 'Sin categoría',
+              time: '2 horas atrás',
+              excerpt: featured.Resumen || 'Sin resumen disponible'
+            };
+            setFeaturedPost(formattedFeatured);
+          }
+          
+          // CORREGIR: Formatear TODOS los posts para que se puedan filtrar
+          const allFormattedPosts = blogPosts.map(post => ({
+            id: post.ID_publicaciones,
+            title: post.Titulo,
+            image: post.Imagen_portada || '/assets/images/tecnologia.jpg',
+            category: post.categorias && post.categorias.length > 0 
+              ? post.categorias[0].Nombre_categoria 
+              : 'Sin categoría',
+            time: '4 horas atrás',
+            likes: Math.floor(Math.random() * 200),
+            // Agregamos el post original para usar en PostCard
+            originalPost: post
+          }));
+          
+          setPosts(allFormattedPosts);
+        } else {
+          console.log('HomePage: No hay posts, usando datos de ejemplo');
+          // Si no hay publicaciones, usar datos de ejemplo para el carrusel también
+          const exampleNotes = [
+            {
+              id: 1,
+              title: 'Herramientas Tecnológicas para la Educación',
+              image: '/assets/images/tecnologia.jpg',
+              category: 'Herramientas',
+              excerpt: 'Descubre las mejores herramientas digitales que están transformando la educación moderna y cómo implementarlas en tu aula.'
+            },
+            {
+              id: 2,
+              title: 'Técnicas de Estudio Efectivas',
+              image: '/assets/images/humanos.jpg',
+              category: 'Técnicas de Estudio',
+              excerpt: 'Aprende métodos científicamente probados para mejorar tu concentración y retención de información.'
+            },
+            {
+              id: 3,
+              title: 'El Futuro de la Educación Digital',
+              image: '/assets/images/desafio.jpg',
+              category: 'Noticias',
+              excerpt: 'Exploramos las tendencias emergentes en educación digital y su impacto en el aprendizaje del siglo XXI.'
+            },
+            {
+              id: 4,
+              title: 'Desarrollo Profesional Docente',
+              image: '/assets/images/maestro.jpg',
+              category: 'Desarrollo Docente',
+              excerpt: 'Estrategias y recursos para el crecimiento profesional continuo de educadores y formadores.'
+            }
+          ];
+          
+          console.log('HomePage: Usando datos de ejemplo para carrusel:', exampleNotes);
+          setNotes(exampleNotes);
 
-  // Artículo destacado
-  const featuredPost = {
-    id: 'featured', // Agregamos el ID para el enlace
-    title: 'Herramientas Tecnológicas para la Educación',
-    image: '/assets/images/tecnologia.jpg',
-    category: 'desarrollo docente',
-    time: '2 horas atrás',
-    excerpt: 'Descubre cómo los educadores están reinventando sus métodos de enseñanza para adaptarse a un mundo cada vez más digitalizado.'
-  };
+          // Si no hay publicaciones, usar los datos de ejemplo
+          setFeaturedPost({
+            id: 63,
+            title: 'El pequeño tomate que revolucionó mi forma de estudiar (y puede transformar la tuya también)',
+            image: '/assets/images/tecnologia.jpg',
+            category: 'técnicas de estudio',
+            time: '2 horas atrás',
+            excerpt: 'Cuando mi compañero de universidad Gregorio llegó a mi cuarto de estudio el semestre pasado, me dijo algo que me resonó profundamente: "Damian, tengo mil ideas rondando en mi cabeza, pero cuando me siento a estudiar, no consigo concentrarme ni cinco minutos seguidos"...',
+            // Agregamos propiedades para indicar que es destacado
+            isFeatured: true,
+            featuredBadge: '⭐ POST DESTACADO',
+            author: 'Equipo EducStation',
+            readTime: '5 min de lectura',
+            views: '2.5K',
+            rating: '98% útil'
+          });
+          
+          setPosts([
+            {
+              id: 1,
+              title: 'Herramientas Tecnológicas para la Educación',
+              image: '/assets/images/tecnologia.jpg',
+              category: 'Herramientas Tecnológicas',
+              time: '4 horas atrás',
+              likes: 124
+            },
+            {
+              id: 2,
+              title: 'Comunidad y Colaboración en la Educación',
+              image: '/assets/images/humanos.jpg',
+              category: 'Técnicas de Estudio',
+              time: '4 horas atrás',
+              likes: 89
+            },
+            {
+              id: 3,
+              title: 'Problemas a enfrentar en la actualidad',
+              image: '/assets/images/desafio.jpg',
+              category: 'Problemáticas en el Estudio',
+              time: '4 horas atrás',
+              likes: 76
+            },
+            {
+              id: 4,
+              title: 'La gamificación en el aula moderna',
+              image: '/assets/images/tecnologia.jpg',
+              category: 'Herramientas Tecnológicas',
+              time: '5 horas atrás',
+              likes: 105
+            },
+            {
+              id: 5,
+              title: 'Educación inclusiva: Estrategias prácticas',
+              image: '/assets/images/humanos.jpg',
+              category: 'Educación de Calidad',
+              time: '6 horas atrás',
+              likes: 92
+            },
+            {
+              id: 6,
+              title: 'Evaluación formativa vs sumativa',
+              image: '/assets/images/maestro.jpg',
+              category: 'Técnicas de Estudio',
+              time: '8 horas atrás',
+              likes: 67
+            }
+          ]);
+        }
+        
+        // Obtener categorías
+        const categoriasData = await getAllCategorias();
+        if (categoriasData && categoriasData.length > 0) {
+          // Añadir 'Todos' al principio
+          const formattedCategories = ['Todos', ...categoriasData.map(cat => cat.Nombre_categoria)];
+          setCategories(formattedCategories);
+        }
+      } catch (error) {
+        console.error('Error al cargar datos:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [blogPosts]);
 
-  // Lista de artículos
-  const posts = [
-    {
-      id: 1,
-      title: 'Herramientas Tecnológicas para la Educación',
-      image: '/assets/images/tecnologia.jpg',
-      category: 'herramientas',
-      time: '4 horas atrás',
-      likes: 124
-    },
-    {
-      id: 2,
-      title: 'Comunidad y Colaboración en la Educación',
-      image: '/assets/images/humanos.jpg',
-      category: 'técnicas de estudio',
-      time: '4 horas atrás',
-      likes: 89
-    },
-    {
-      id: 3,
-      title: 'Problemas a enfrentar en la actualidad',
-      image: '/assets/images/desafio.jpg',
-      category: 'problemáticas',
-      time: '4 horas atrás',
-      likes: 76
-    }
-  ];
-
-  // NUEVO: Notas para el carrusel
-  const carouselNotes = [
-    {
-      id: 1,
-      title: "Prohibición de bebidas azucaradas en comedores escolares",
-      excerpt: "El gobierno español está trabajando en un decreto para prohibir el consumo de bebidas azucaradas en comedores escolares, donde se busca promover hábitos mas saludables y combatir la obesidad infantil.",
-      image: "/assets/images/humanos.jpg", // Cambiado para usar la misma imagen
-      category: "Ultima Noticia"
-    },
-    {
-      id: 2,
-      title: "Aprendizaje colaborativo: La clave del éxito académico",
-      excerpt: "Estudios demuestran que el trabajo en equipo mejora la retención y comprensión de conceptos complejos.",
-      image: "/assets/images/desafio.jpg", // Cambiado para usar la misma imagen
-      category: "Técnicas de Estudio"
-    },
-    {
-      id: 3,
-      title: "Mindfulness en la educación: Mejorando la concentración",
-      excerpt: "Implementar prácticas de atención plena puede reducir el estrés y mejorar el rendimiento académico.",
-      image: "/assets/images/maestro.jpg", // Cambiado para usar la misma imagen
-      category: "Bienestar"
-    },
-    {
-      id: 4,
-      title: "La gamificación como estrategia pedagógica efectiva",
-      excerpt: "El uso de elementos de juego en el aula aumenta la motivación y el compromiso de los estudiantes.",
-      image: "/assets/images/tecnologia.jpg", // Cambiado para usar la misma imagen
-      category: "Innovación"
-    }
-  ];
+  // Cleanup effect para evitar memory leaks
+  useEffect(() => {
+    return () => {
+      // Cleanup any ongoing operations when component unmounts
+    };
+  }, []);
 
   // Filtrar posts por categoría activa
   const filteredPosts = activeCategory === 'Todos'
     ? posts
-    : posts.filter(post => post.category.toLowerCase() === activeCategory.toLowerCase());
+    : posts.filter(post => post.category === activeCategory);
 
   // Estilos CSS 
   const styles = {
@@ -373,15 +620,35 @@ const HomePage = () => {
     hero: {
       margin: `${spacing.xl} 0 ${spacing.xxl}`,
       position: "relative",
-      background: `linear-gradient(100deg, ${colors.white}99 100%, ${colors.secondary}99 100%)`,
-      padding: `${spacing.xl} ${spacing.md}`,
-      borderRadius: '12px'
+      background: `linear-gradient(120deg, ${colors.white}99 0%, ${colors.secondary}40 100%)`,
+      padding: `${spacing.xxl} ${spacing.xl}`,
+      borderRadius: '24px',
+      boxShadow: '0 20px 50px rgba(11, 68, 68, 0.1)',
+      overflow: 'hidden',
+      transition: 'transform 0.5s ease, box-shadow 0.5s ease',
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: '0 25px 60px rgba(11, 68, 68, 0.15)'
+      }
+    },
+    heroDecoration: {
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      width: '300px',
+      height: '300px',
+      borderRadius: '50%',
+      background: `radial-gradient(circle, ${colors.secondary}30, ${colors.primary}30)`,
+      transform: 'translate(30%, -30%)',
+      zIndex: 0
     },
     heroTitle: {
       fontSize: typography.fontSize.xxxl,
       color: colors.primary,
       marginBottom: spacing.md,
       lineHeight: "1.2",
+      position: 'relative',
+      zIndex: 1,
       animation: "fadeInUp 0.8s ease-out"
     },
     heroText: {
@@ -390,7 +657,27 @@ const HomePage = () => {
       marginBottom: spacing.xl,
       maxWidth: "700px",
       lineHeight: "1.6",
+      position: 'relative',
+      zIndex: 1,
       animation: "fadeInUp 1s ease-out"
+    },
+    heroIconsContainer: {
+      display: 'flex',
+      gap: spacing.lg,
+      marginBottom: spacing.xl,
+      animation: "fadeInUp 1.2s ease-out"
+    },
+    heroIcon: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.sm,
+      color: colors.textSecondary,
+      fontSize: typography.fontSize.sm,
+      '&:hover': {
+        color: colors.primary,
+        transform: 'translateY(-3px)'
+      },
+      transition: 'all 0.3s ease'
     },
     circleLink: {
       position: "relative",
@@ -408,6 +695,7 @@ const HomePage = () => {
       boxShadow: "0 6px 20px rgba(11, 68, 68, 0.3)",
       cursor: "pointer",
       transition: transitions.default,
+      zIndex: 2,
       '&:hover': {
         transform: "scale(1.05) rotate(5deg)",
         boxShadow: "0 8px 25px rgba(11, 68, 68, 0.4)"
@@ -424,6 +712,24 @@ const HomePage = () => {
       fontSize: "28px",
       animation: "pulse 2s infinite"
     },
+    sectionTitle: {
+      fontSize: typography.fontSize.xxl,
+      color: colors.primary,
+      marginBottom: spacing.lg,
+      position: 'relative',
+      display: 'inline-block',
+      paddingBottom: spacing.sm,
+      '&:after': {
+        content: '""',
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        width: '60px',
+        height: '4px',
+        background: `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`,
+        borderRadius: '2px'
+      }
+    },
     featuredSection: {
       marginBottom: spacing.xxl
     },
@@ -434,7 +740,7 @@ const HomePage = () => {
       background: colors.white,
       padding: `${spacing.md} ${spacing.xl}`,
       borderRadius: "50px",
-      boxShadow: "0 4px 15px rgba(11, 68, 68, 0.08)",
+      boxShadow: "0 4px 20px rgba(11, 68, 68, 0.1)",
       marginBottom: spacing.xxl,
       position: "relative",
       zIndex: 1,
@@ -451,39 +757,10 @@ const HomePage = () => {
       fontSize: typography.fontSize.sm,
       fontWeight: typography.fontWeight.medium,
       color: isActive ? colors.white : isHovered ? colors.primary : colors.textPrimary,
-      transition: transitions.default,
+      transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
       boxShadow: isActive ? "0 4px 12px rgba(11, 68, 68, 0.15)" : "none",
       transform: isHovered && !isActive ? "translateY(-2px)" : "translateY(0)"
     }),
-    searchBox: {
-      flex: "1",
-      maxWidth: "300px",
-      position: "relative",
-      marginLeft: "auto"
-    },
-    searchInput: {
-      width: "100%",
-      padding: `${spacing.sm} ${spacing.md} ${spacing.sm} ${spacing.xxl}`,
-      border: "none",
-      borderRadius: "24px",
-      backgroundColor: "rgba(11, 68, 68, 0.05)",
-      fontSize: typography.fontSize.sm,
-      transition: transitions.default,
-      boxShadow: "inset 0 2px 5px rgba(11, 68, 68, 0.05)",
-      '&:focus': {
-        backgroundColor: colors.white,
-        boxShadow: `0 0 0 2px rgba(11, 68, 68, 0.1), inset 0 2px 5px rgba(11, 68, 68, 0.05)`,
-        outline: "none"
-      }
-    },
-    searchIcon: {
-      position: "absolute",
-      left: spacing.md,
-      top: "50%",
-      transform: "translateY(-50%)",
-      color: colors.textSecondary,
-      fontSize: "18px"
-    },
     contentWrapper: {
       display: "flex",
       flexDirection: "column",
@@ -491,31 +768,110 @@ const HomePage = () => {
       marginBottom: spacing.xxl,
       animation: "fadeIn 1s ease-out",
       position: "relative",
-      width: "100%",
-      '@media (max-width: 768px)': {
-        gridTemplateColumns: "1fr",
-      }
+      width: "100%"
     },
     featuredPostWrapper: {
       width: "100%",
       position: "relative",
-      marginBottom: spacing.xl,
-      maxWidth: "800px",
-      margin: "0 auto",
-      transform: "none",
-      transition: "transform 0.3s ease",
+      marginBottom: 0, // Cambiar de spacing.xl a 0
+      maxWidth: "100%",
+      margin: "0", // Ya está bien
+      transform: "translateY(0)",
+      transition: "transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
       "&:hover": {
-        transform: "none",
+        transform: "translateY(-10px)",
       }
     },
     postsGridWrapper: {
       width: "100%",
-      minWidth: "300px"
+      minWidth: "300px",
     },
     postsGrid: {
       display: "grid",
-      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+      gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
       gap: spacing.xl,
+    },
+    exploreBanner: {
+      marginTop: spacing.xxl,
+      marginBottom: spacing.xxl,
+      position: 'relative',
+      borderRadius: '24px',
+      overflow: 'hidden',
+      padding: `${spacing.xxl} ${spacing.xl}`,
+      background: `linear-gradient(120deg, ${colors.primary}99, ${colors.secondary}99)`,
+      color: colors.white,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      textAlign: 'center',
+      boxShadow: '0 15px 40px rgba(11, 68, 68, 0.2)',
+      transition: 'transform 0.5s ease, box-shadow 0.5s ease',
+      '&:hover': {
+        transform: 'translateY(-8px)',
+        boxShadow: '0 20px 50px rgba(11, 68, 68, 0.3)'
+      }
+    },
+    exploreBannerTitle: {
+      fontSize: typography.fontSize.xxl,
+      fontWeight: typography.fontWeight.bold,
+      marginBottom: spacing.md,
+      position: 'relative',
+      zIndex: 1
+    },
+    exploreBannerText: {
+      fontSize: typography.fontSize.lg,
+      marginBottom: spacing.xl,
+      maxWidth: '600px',
+      lineHeight: '1.8',
+      position: 'relative',
+      zIndex: 1
+    },
+    exploreBannerBtn: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.sm,
+      padding: `${spacing.md} ${spacing.xl}`,
+      backgroundColor: colors.white,
+      color: colors.primary,
+      borderRadius: '50px',
+      textDecoration: 'none',
+      fontWeight: typography.fontWeight.medium,
+      boxShadow: '0 8px 20px rgba(0, 0, 0, 0.15)',
+      transition: 'all 0.3s ease',
+      position: 'relative',
+      zIndex: 1,
+      '&:hover': {
+        transform: 'translateY(-3px)',
+        boxShadow: '0 12px 25px rgba(0, 0, 0, 0.2)'
+      }
+    },
+    exploreBannerDecoration1: {
+      position: 'absolute',
+      top: '20%',
+      left: '10%',
+      width: '150px',
+      height: '150px',
+      borderRadius: '50%',
+      background: 'rgba(255, 255, 255, 0.1)',
+      zIndex: 0
+    },
+    exploreBannerDecoration2: {
+      position: 'absolute',
+      bottom: '10%',
+      right: '15%',
+      width: '100px',
+      height: '100px',
+      borderRadius: '50%',
+      background: 'rgba(255, 255, 255, 0.15)',
+      zIndex: 0
+    },
+    loading: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '200px',
+      fontSize: typography.fontSize.lg,
+      color: colors.primary
     },
     animationStyles: `
       @keyframes spin {
@@ -524,8 +880,14 @@ const HomePage = () => {
       }
       
       @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.1); }
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+      
+      @keyframes shine {
+        0% { left: -100%; }
+        100% { left: 100%; }
       }
       
       @keyframes fadeIn {
@@ -534,11 +896,11 @@ const HomePage = () => {
       }
       
       @keyframes fadeInUp {
-        from { 
+        from {
           opacity: 0;
           transform: translateY(20px);
         }
-        to { 
+        to {
           opacity: 1;
           transform: translateY(0);
         }
@@ -546,24 +908,35 @@ const HomePage = () => {
       
       @keyframes slideInUp {
         from {
-          transform: translateY(30px);
           opacity: 0;
+          transform: translateY(20px);
         }
         to {
-          transform: translateY(0);
           opacity: 1;
+          transform: translateY(0);
         }
       }
       
       @keyframes fadeInRight {
         from {
           opacity: 0;
-          transform: translateX(20px);
+          transform: translateX(30px);
         }
         to {
           opacity: 1;
           transform: translateX(0);
         }
+      }
+      
+      @keyframes floatingAnimation {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-15px); }
+      }
+      
+      @keyframes gradientAnimation {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
       }
     `,
     // Nueva propiedad para mostrar inmediatamente el contenido sin minimizarlo
@@ -613,18 +986,8 @@ const HomePage = () => {
 
         {/* Hero Section */}
         <div style={styles.hero}>
-          <h1 style={styles.heroTitle}>
-            {isAuth 
-              ? 'Tu Destino para Educación, Innovación y Crecimiento'
-              : 'Bienvenido a EducStation - Tu Plataforma Educativa'
-            }
-          </h1>
-          <p style={styles.heroText}>
-            {isAuth 
-              ? 'Descubre consejos, tendencias y técnicas para mejorar tu experiencia educativa y desarrollo profesional. Únete a nuestra comunidad de aprendices y educadores comprometidos.'
-              : 'Explora contenido educativo de calidad, lee artículos especializados y descubre recursos para tu crecimiento académico. Regístrate para acceder a funciones exclusivas como comentarios y personalización.'
-            }
-          </p>
+          <h1 style={styles.heroTitle}>Tu Destino para Educación, Innovación y Crecimiento</h1>
+          <p style={styles.heroText}>Descubre consejos, tendencias y técnicas para mejorar tu experiencia educativa y desarrollo profesional. Únete a nuestra comunidad de aprendices y educadores comprometidos.</p>
 
           <div
             style={hoveredCategory === 'circle' ? applyHoverStyles(styles.circleLink) : styles.circleLink}
@@ -633,8 +996,8 @@ const HomePage = () => {
           >
             <div style={{
               ...styles.circleText,
-              animation: 'spin 1s linear infinite',
-              transform: hoveredCategory === 'circle' ? 'rotate(-5deg)' : 'rotate(0deg)',
+              animation: 'spin 20s linear infinite',
+              transform: hoveredElement === 'circle' ? 'rotate(-5deg)' : 'rotate(0deg)',
             }}>
               <img
                 src="/assets/images/educstation-logo.png"
@@ -652,90 +1015,6 @@ const HomePage = () => {
         {/* NUEVO: Carrusel de Noticias */}
         <NewsCarousel notes={carouselNotes} />
 
-        {/* Sección de invitación para usuarios no autenticados */}
-        {!isAuth && (
-          <div style={{
-            background: `linear-gradient(135deg, ${colors.primary}15 0%, ${colors.secondary}15 100%)`,
-            padding: `${spacing.xl} ${spacing.lg}`,
-            borderRadius: '16px',
-            textAlign: 'center',
-            marginBottom: spacing.xxl,
-            border: `1px solid ${colors.primary}20`
-          }}>
-            <h3 style={{
-              fontSize: typography.fontSize.xl,
-              color: colors.primary,
-              marginBottom: spacing.md,
-              fontWeight: typography.fontWeight.semiBold
-            }}>
-              ¡Únete a la Comunidad EducStation!
-            </h3>
-            <p style={{
-              fontSize: typography.fontSize.md,
-              color: colors.textSecondary,
-              marginBottom: spacing.lg,
-              maxWidth: '600px',
-              margin: `0 auto ${spacing.lg} auto`,
-              lineHeight: 1.6
-            }}>
-              Regístrate para acceder a funciones exclusivas como comentarios, personalización de contenido y participación en discusiones educativas.
-            </p>
-            <div style={{
-              display: 'flex',
-              gap: spacing.md,
-              justifyContent: 'center',
-              flexWrap: 'wrap'
-            }}>
-              <a
-                href="/register"
-                style={{
-                  padding: `${spacing.sm} ${spacing.xl}`,
-                  backgroundColor: colors.primary,
-                  color: colors.white,
-                  textDecoration: 'none',
-                  borderRadius: '8px',
-                  fontWeight: typography.fontWeight.semiBold,
-                  transition: transitions.default,
-                  boxShadow: '0 4px 12px rgba(31, 78, 78, 0.25)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primaryDark;
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary;
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                Registrarse Gratis
-              </a>
-              <a
-                href="/login"
-                style={{
-                  padding: `${spacing.sm} ${spacing.xl}`,
-                  backgroundColor: 'transparent',
-                  color: colors.primary,
-                  textDecoration: 'none',
-                  borderRadius: '8px',
-                  fontWeight: typography.fontWeight.medium,
-                  border: `2px solid ${colors.primary}`,
-                  transition: transitions.default
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = colors.primary;
-                  e.currentTarget.style.color = colors.white;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                  e.currentTarget.style.color = colors.primary;
-                }}
-              >
-                Iniciar Sesión
-              </a>
-            </div>
-          </div>
-        )}
-
         {/* Categories */}
         <div style={styles.categories}>
           {categories.map(category => (
@@ -743,44 +1022,178 @@ const HomePage = () => {
               key={category}
               style={styles.category(
                 activeCategory === category,
-                hoveredCategory === category
+                hoveredElement === category
               )}
               onClick={() => setActiveCategory(category)}
-              onMouseEnter={() => setHoveredCategory(category)}
-              onMouseLeave={() => setHoveredCategory(null)}
+              onMouseEnter={() => setHoveredElement(category)}
+              onMouseLeave={() => setHoveredElement(null)}
             >
               {category}
             </button>
           ))}
-
-          {/* <div style={styles.searchBox}>
-            <span style={styles.searchIcon}>🔍</span>
-            <input
-              type="text"
-              placeholder="Buscar un artículo..."
-              style={searchValue !== '' ? applyHoverStyles(styles.searchInput) : styles.searchInput}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onFocus={(e) => e.target.style.boxShadow = '0 0 0 2px rgba(11, 68, 68, 0.1), inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
-              onBlur={(e) => e.target.style.boxShadow = 'inset 0 2px 5px rgba(11, 68, 68, 0.05)'}
-            />
-          </div> */}
         </div>
 
-        {/* Featured Post and Posts Grid - CORREGIDO */}
+        {/* Sección de posts */}
         <div style={styles.contentWrapper}>
-          {/* Featured Post - Ahora a todo lo ancho */}
-          <div style={styles.featuredPostWrapper}>
-            <FeaturedPost post={featuredPost} />
-          </div>
-
-          {/* Posts Grid - Ahora debajo del post destacado */}
-          <div style={styles.postsGridWrapper}>
-            <div style={styles.postsGrid}>
-              {filteredPosts.map((post, index) => (
-                <PostCard key={post.id} post={post} />
-              ))}
+          {/* Publicaciones recientes */}
+          <section style={{ marginTop: spacing.xxl, marginBottom: spacing.xxl }}>
+            <div style={styles.sectionHeader}>
+              <h2 style={styles.sectionTitle}>Publicaciones recientes</h2>
+              <div style={styles.titleUnderline}></div>
             </div>
+
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: spacing.xl }}>
+                <div style={{ width: '40px', height: '40px', margin: '0 auto', border: '4px solid rgba(11, 68, 68, 0.1)', borderTopColor: colors.primary, borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+                <p style={{ marginTop: spacing.md, color: colors.textSecondary }}>Cargando publicaciones...</p>
+              </div>
+            ) : postsError ? (
+              <div style={{ textAlign: 'center', padding: spacing.xl, color: colors.error }}>
+                <p>Error al cargar publicaciones. Por favor, intenta de nuevo más tarde.</p>
+              </div>
+            ) : (
+              <div style={{ 
+                display: "grid", 
+                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
+                gap: spacing.lg,
+                marginBottom: spacing.xl
+              }}>
+                {/* Usar los posts filtrados */}
+                {filteredPosts.slice(0, 6).map((post, index) => (
+                  <div 
+                    key={post.id} 
+                    className="post-card-animation" 
+                    style={{
+                      "--animation-order": index,
+                      background: "transparent"
+                    }}
+                  >
+                    {/* Si existe originalPost (posts reales), usarlo; si no, usar el post formateado */}
+                    <PostCard post={post.originalPost || post} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Mostrar mensaje si no hay posts en la categoría seleccionada */}
+            {!loading && !postsError && filteredPosts.length === 0 && (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: spacing.xl,
+                color: colors.textSecondary 
+              }}>
+                <p>No hay publicaciones disponibles para la categoría "{activeCategory}".</p>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: spacing.xl }}>
+              <a 
+                href="/blog" 
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  backgroundColor: colors.primary,
+                  color: '#fff',
+                  padding: `${spacing.md} ${spacing.xl}`,
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontSize: typography.fontSize.md,
+                  fontWeight: typography.fontWeight.medium,
+                  boxShadow: '0 8px 20px rgba(11, 68, 68, 0.25)',
+                  transition: 'all 0.3s ease',
+                  ...(hoveredElement === 'blog-btn' ? {
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 12px 25px rgba(11, 68, 68, 0.35)'
+                  } : {})
+                }}
+                onMouseEnter={() => setHoveredElement('blog-btn')}
+                onMouseLeave={() => setHoveredElement(null)}
+              >
+                <span>Explora el blog</span>
+                <FaArrowRight />
+              </a>
+            </div>
+          </section>
+
+          {/* Featured Post - Ahora a todo lo ancho con diseño premium */}
+          <div style={{
+            ...styles.featuredPostWrapper,
+            position: 'relative',
+            background: `linear-gradient(135deg, ${colors.white}, ${colors.gray50})`,
+            borderRadius: '24px',
+            padding: 0, // Cambiar de spacing.lg a 0
+            boxShadow: `0 25px 60px ${colors.primary}20, 0 0 0 3px ${colors.primary}15`,
+            border: `2px solid ${colors.primary}30`,
+            overflow: 'hidden',
+            transform: hoveredElement === 'featured-post' ? 'translateY(-12px)' : 'translateY(0)',
+            transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+          }}
+            onMouseEnter={() => setHoveredElement('featured-post')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
+            {/* Efecto de brillo animado */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: '-100%',
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+              animation: 'shine 3s ease-in-out infinite',
+              zIndex: 1,
+              pointerEvents: 'none'
+            }}></div>
+            
+            {/* Badge "POST DESTACADO" */}
+            <div style={{
+              position: 'absolute',
+              top: spacing.lg,
+              right: spacing.lg,
+              zIndex: 2,
+              background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+              color: colors.white,
+              padding: `${spacing.xs} ${spacing.md}`,
+              borderRadius: '50px',
+              fontSize: typography.fontSize.xs,
+              fontWeight: typography.fontWeight.bold,
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: spacing.xs,
+              animation: 'pulse 2s infinite'
+            }}>
+              <span style={{ fontSize: '14px' }}>⭐</span>
+              <span>POST DESTACADO</span>
+            </div>
+
+            {/* Decoración superior izquierda */}
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              left: '-20px',
+              width: '80px',
+              height: '80px',
+              background: `radial-gradient(circle, ${colors.primary}15, transparent)`,
+              borderRadius: '50%',
+              zIndex: 0
+            }}></div>
+
+            {/* Decoración inferior derecha */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-30px',
+              right: '-30px',
+              width: '100px',
+              height: '100px',
+              background: `radial-gradient(circle, ${colors.secondary}10, transparent)`,
+              borderRadius: '50%',
+              zIndex: 0
+            }}></div>
+
+            {featuredPost && <FeaturedPost post={featuredPost} />}
           </div>
         </div>
       </main>

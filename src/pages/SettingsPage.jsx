@@ -1,287 +1,43 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext.jsx';
 import { deleteAccount } from '../services/authService';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
-import { useNavigate, useLocation } from 'react-router-dom';
 
 const SettingsPage = () => {
-  const { isDarkMode, toggleTheme } = useTheme();
-  const { logout } = useAuth(); // Obtener logout del contexto
+  const { isDarkMode } = useTheme();
+  const { logout } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [showSuccessButton, setShowSuccessButton] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false); // Para manejar estado de carga
-  const [error, setError] = useState(null); // Para manejar errores
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState(null);
+  const [fadeIn, setFadeIn] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Efecto para animación de entrada
+  useEffect(() => {
+    // Pequeño retraso para asegurar que la animación se ejecute después de renderizar
+    const timer = setTimeout(() => {
+      setFadeIn(true);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
     if (location.state && location.state.forceReload) {
-      // Verificar si ya se realizó la recarga en esta sesión de navegación
       if (!sessionStorage.getItem('settingspage-reloaded')) {
-        // Marcar que se va a realizar la recarga
         sessionStorage.setItem('settingspage-reloaded', 'true');
-        // Limpiar el estado para evitar bucles infinitos
         window.history.replaceState(null, '', window.location.pathname);
-        // Realizar la recarga
         window.location.reload();
       }
     } else {
-      // Limpiar la marca de recarga si no hay forceReload
       sessionStorage.removeItem('settingspage-reloaded');
     }
   }, [location]);
-
-  const [settings, setSettings] = useState({
-    notifications: {
-      newPosts: true,
-      comments: true,
-      newsletter: false
-    },
-    privacy: {
-      showProfile: true,
-      showEmail: false,
-      allowComments: true
-    },
-    display: {
-      fontSize: 'medium',
-      showAuthor: true,
-      showDate: true,
-      showReadTime: true
-    },
-    email: {
-      frequency: 'weekly',
-      digest: true,
-      marketing: false
-    }
-  });
-
-  const handleReturnHome = () => {
-    navigate('/login', { replace: true });
-  };
-
-  const handleSettingChange = (category, setting) => {
-    setSettings(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [setting]: !prev[category][setting]
-      }
-    }));
-  };
-
-  const handleSelectChange = (category, setting, value) => {
-    setSettings(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [setting]: value
-      }
-    }));
-  };
-
-  const styles = {
-    container: {
-      maxWidth: '1200px',
-      margin: '0 auto',
-      padding: `${spacing.xxl} ${spacing.md}`,
-      minHeight: '100vh',
-      backgroundColor: isDarkMode ? '#1a1a1a' : colors.background,
-      color: isDarkMode ? '#fff' : '#1a1a1a',
-    },
-    title: {
-      fontSize: typography.fontSize.xxl,
-      fontWeight: typography.fontWeight.bold,
-      marginBottom: spacing.xl,
-      color: isDarkMode ? '#fff' : '#1a1a1a',
-    },
-    section: {
-      backgroundColor: isDarkMode ? '#2d2d2d' : colors.white,
-      borderRadius: borderRadius.lg,
-      padding: spacing.xl,
-      marginBottom: spacing.xl,
-      boxShadow: shadows.md,
-    },
-    sectionTitle: {
-      fontSize: typography.fontSize.lg,
-      fontWeight: typography.fontWeight.bold,
-      marginBottom: spacing.lg,
-      color: isDarkMode ? colors.primary : '#1a1a1a',
-    },
-    optionContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: spacing.md,
-    },
-    option: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: spacing.md,
-      backgroundColor: isDarkMode ? '#3d3d3d' : colors.background,
-      borderRadius: borderRadius.md,
-      transition: 'all 0.3s ease',
-    },
-    optionLabel: {
-      fontSize: typography.fontSize.md,
-      fontWeight: typography.fontWeight.medium,
-      color: isDarkMode ? '#fff' : '#1a1a1a',
-    },
-    optionDescription: {
-      fontSize: typography.fontSize.sm,
-      color: isDarkMode ? '#ccc' : '#4a4a4a',
-      marginTop: spacing.xs,
-    },
-    switch: {
-      width: '50px',
-      height: '24px',
-      backgroundColor: colors.gray200,
-      borderRadius: '12px',
-      padding: '2px',
-      cursor: 'pointer',
-      position: 'relative',
-      transition: 'background-color 0.3s ease',
-    },
-    switchActive: {
-      backgroundColor: colors.primary,
-    },
-    switchHandle: {
-      width: '20px',
-      height: '20px',
-      backgroundColor: colors.white,
-      borderRadius: '50%',
-      position: 'absolute',
-      transition: 'transform 0.3s ease',
-    },
-    select: {
-      padding: `${spacing.sm} ${spacing.md}`,
-      borderRadius: borderRadius.md,
-      border: `1px solid ${isDarkMode ? '#555' : colors.gray200}`,
-      backgroundColor: isDarkMode ? '#3d3d3d' : colors.white,
-      color: isDarkMode ? '#fff' : '#1a1a1a',
-      fontSize: typography.fontSize.md,
-      cursor: 'pointer',
-      outline: 'none',
-      fontWeight: typography.fontWeight.medium,
-    },
-    saveButton: {
-      padding: `${spacing.md} ${spacing.xl}`,
-      backgroundColor: colors.primary,
-      color: colors.white,
-      border: 'none',
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.md,
-      fontWeight: typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'all 0.3s ease',
-      marginTop: spacing.xl,
-      '&:hover': {
-        backgroundColor: colors.primaryDark,
-        transform: 'translateY(-2px)',
-      },
-    },
-    // Estilos para el modal de confirmación
-    modalOverlay: {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      display: showDeleteModal ? 'flex' : 'none',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 9999,
-      backdropFilter: 'blur(4px)'
-    },
-    modalContent: {
-      backgroundColor: isDarkMode ? '#2d2d2d' : colors.white,
-      borderRadius: borderRadius.lg,
-      boxShadow: shadows.xl,
-      width: '90%',
-      maxWidth: '450px',
-      padding: 0,
-      overflow: 'hidden',
-      animation: 'modalFadeIn 0.3s ease-out forwards',
-      transform: 'scale(0.9)',
-      opacity: 0
-    },
-    modalHeader: {
-      backgroundColor: colors.error,
-      color: colors.white,
-      padding: `${spacing.md} ${spacing.xl}`,
-      display: 'flex',
-      alignItems: 'center',
-      borderBottom: `1px solid ${colors.error}`
-    },
-    modalWarningIcon: {
-      fontSize: '24px',
-      marginRight: spacing.md,
-      color: colors.white
-    },
-    modalTitle: {
-      fontSize: typography.fontSize.lg,
-      fontWeight: typography.fontWeight.bold,
-      margin: 0,
-      color: colors.white
-    },
-    modalBody: {
-      padding: `${spacing.xl} ${spacing.xl}`,
-      fontSize: typography.fontSize.md,
-      lineHeight: '1.6',
-      color: isDarkMode ? colors.white : colors.textPrimary,
-      textAlign: 'center'
-    },
-    modalFooter: {
-      padding: `${spacing.md} ${spacing.xl}`,
-      borderTop: `1px solid ${isDarkMode ? '#3d3d3d' : colors.gray200}`,
-      display: 'flex',
-      justifyContent: 'flex-end',
-      gap: spacing.md
-    },
-    cancelButton: {
-      padding: `${spacing.sm} ${spacing.xl}`,
-      backgroundColor: isDarkMode ? '#3d3d3d' : colors.white,
-      color: isDarkMode ? colors.white : colors.textPrimary,
-      border: `1px solid ${isDarkMode ? '#4d4d4d' : colors.gray200}`,
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'all 0.2s ease'
-    },
-    confirmDeleteButton: {
-      padding: `${spacing.sm} ${spacing.xl}`,
-      backgroundColor: colors.error,
-      color: colors.white,
-      border: 'none',
-      borderRadius: borderRadius.md,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
-      cursor: 'pointer',
-      transition: 'all 0.2s ease'
-    }
-  };
-
-  const Switch = ({ isOn, onToggle }) => (
-    <div
-      style={{
-        ...styles.switch,
-        ...(isOn && styles.switchActive),
-      }}
-      onClick={onToggle}
-    >
-      <div
-        style={{
-          ...styles.switchHandle,
-          transform: isOn ? 'translateX(26px)' : 'translateX(0)',
-        }}
-      />
-    </div>
-  );
 
   const handleDeleteAccount = async () => {
     setIsDeleting(true);
@@ -290,456 +46,583 @@ const SettingsPage = () => {
     try {
       // Llamar a la función de eliminar cuenta
       await deleteAccount();
-
-      // Cerrar el modal de confirmación de eliminación
+      
+      // Cerrar el modal de confirmación
       setShowDeleteModal(false);
-
-      // Primero realizar el logout para limpiar el estado de autenticación
+      
+      // Realizar logout
       logout();
-
-      // Mostrar el mensaje de éxito estilizado
-      const successModal = document.createElement('div');
-      successModal.style.position = 'fixed';
-      successModal.style.top = '0';
-      successModal.style.left = '0';
-      successModal.style.right = '0';
-      successModal.style.bottom = '0';
-      successModal.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-      successModal.style.display = 'flex';
-      successModal.style.justifyContent = 'center';
-      successModal.style.alignItems = 'center';
-      successModal.style.zIndex = '10000';
-      successModal.style.backdropFilter = 'blur(3px)';
-      successModal.style.willChange = 'opacity';
-
-      const messageBox = document.createElement('div');
-      messageBox.style.backgroundColor = isDarkMode ? '#2d2d2d' : '#ffffff';
-      messageBox.style.padding = '30px';
-      messageBox.style.borderRadius = '12px';
-      messageBox.style.boxShadow = '0 12px 24px rgba(0, 0, 0, 0.3)';
-      messageBox.style.textAlign = 'center';
-      messageBox.style.maxWidth = '400px';
-      messageBox.style.width = '90%';
-      messageBox.style.border = `2px solid ${colors.success}`;
-      messageBox.style.willChange = 'transform, opacity';
-      messageBox.style.transform = 'scale(0.9)';
-      messageBox.style.opacity = '0';
-      messageBox.style.transition = 'transform 0.3s ease-out, opacity 0.3s ease-out';
-
-      const iconContainer = document.createElement('div');
-      iconContainer.innerHTML = '✓';
-      iconContainer.style.fontSize = '64px';
-      iconContainer.style.marginBottom = '15px';
-      iconContainer.style.color = colors.success;
-      iconContainer.style.transform = 'scale(0)';
-      iconContainer.style.opacity = '0';
-      iconContainer.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out';
-      iconContainer.style.willChange = 'transform, opacity';
-
-      const title = document.createElement('h3');
-      title.innerText = '¡Cuenta Eliminada con Éxito!';
-      title.style.fontSize = '20px';
-      title.style.fontWeight = 'bold';
-      title.style.marginBottom = '15px';
-      title.style.color = isDarkMode ? '#ffffff' : '#333333';
-
-      const message = document.createElement('p');
-      message.innerText = 'Tu cuenta ha sido eliminada exitosamente. Serás redirigido a la página de inicio de sesión.';
-      message.style.fontSize = '16px';
-      message.style.marginBottom = '0';
-      message.style.color = isDarkMode ? '#cccccc' : '#666666';
-      message.style.lineHeight = '1.5';
-
-      // Añadir elementos al DOM
-      messageBox.appendChild(iconContainer);
-      messageBox.appendChild(title);
-      messageBox.appendChild(message);
-      successModal.appendChild(messageBox);
-      document.body.appendChild(successModal);
-
-      // Aplicar las animaciones con un pequeño retraso para asegurar que el DOM se ha actualizado
-      requestAnimationFrame(() => {
-        messageBox.style.transform = 'scale(1)';
-        messageBox.style.opacity = '1';
-
-        setTimeout(() => {
-          iconContainer.style.transform = 'scale(1)';
-          iconContainer.style.opacity = '1';
-        }, 100);
-      });
-
-      // Redireccionar después de mostrar el mensaje por 2 segundos
-      setTimeout(() => {
-        // Animación de salida
-        messageBox.style.transform = 'scale(0.9)';
-        messageBox.style.opacity = '0';
-        successModal.style.opacity = '0';
-
-        // Esperar a que termine la animación de salida antes de navegar
-        setTimeout(() => {
-          // Eliminar el modal antes de navegar
-          document.body.removeChild(successModal);
-
-          // Usar navigate con replace para evitar problemas con el historial
-          navigate('/login', { replace: true });
-        }, 300);
-      }, 2000);
-
+      
+      // Mostrar animación de éxito y redireccionar
+      showSuccessAnimation();
     } catch (error) {
-      // Manejar error
       console.error('Error al eliminar cuenta:', error);
       setError(error.message || 'Error al eliminar la cuenta');
       setIsDeleting(false);
     }
   };
 
+  const showSuccessAnimation = () => {
+    // Crear el contenedor principal
+    const successModal = document.createElement('div');
+    Object.assign(successModal.style, {
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      right: '0',
+      bottom: '0',
+      backgroundColor: 'rgba(0, 0, 0, 0.8)',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: '10000',
+      backdropFilter: 'blur(5px)',
+      opacity: '0',
+      transition: 'opacity 0.5s ease'
+    });
+
+    // Crear la caja del mensaje
+    const messageBox = document.createElement('div');
+    Object.assign(messageBox.style, {
+      backgroundColor: isDarkMode ? '#2d2d2d' : '#ffffff',
+      padding: '40px',
+      borderRadius: '16px',
+      boxShadow: '0 15px 30px rgba(0, 0, 0, 0.3)',
+      textAlign: 'center',
+      maxWidth: '450px',
+      width: '90%',
+      transform: 'translateY(30px)',
+      opacity: '0',
+      transition: 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s ease'
+    });
+
+    // Crear el círculo de éxito
+    const successCircle = document.createElement('div');
+    Object.assign(successCircle.style, {
+      width: '80px',
+      height: '80px',
+      borderRadius: '50%',
+      backgroundColor: '#4caf50',
+      margin: '0 auto 20px',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      transform: 'scale(0)',
+      transition: 'transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)'
+    });
+
+    // Crear el ícono de check
+    const checkIcon = document.createElement('div');
+    checkIcon.innerHTML = `
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" fill="white"/>
+      </svg>
+    `;
+    Object.assign(checkIcon.style, {
+      opacity: '0',
+      transition: 'opacity 0.3s ease 0.2s'
+    });
+
+    // Agregar el ícono al círculo
+    successCircle.appendChild(checkIcon);
+
+    // Crear el título
+    const title = document.createElement('h3');
+    title.innerText = '¡Cuenta Eliminada con Éxito!';
+    Object.assign(title.style, {
+      fontSize: '24px',
+      fontWeight: 'bold',
+      marginBottom: '15px',
+      color: isDarkMode ? '#ffffff' : '#333333',
+      opacity: '0',
+      transform: 'translateY(10px)',
+      transition: 'opacity 0.5s ease 0.3s, transform 0.5s ease 0.3s'
+    });
+
+    // Crear el mensaje
+    const message = document.createElement('p');
+    message.innerText = 'Tu cuenta ha sido eliminada exitosamente. Serás redirigido a la página de inicio de sesión.';
+    Object.assign(message.style, {
+      fontSize: '16px',
+      lineHeight: '1.6',
+      color: isDarkMode ? '#cccccc' : '#666666',
+      marginBottom: '0',
+      opacity: '0',
+      transform: 'translateY(10px)',
+      transition: 'opacity 0.5s ease 0.4s, transform 0.5s ease 0.4s'
+    });
+
+    // Ensamblar los elementos
+    messageBox.appendChild(successCircle);
+    messageBox.appendChild(title);
+    messageBox.appendChild(message);
+    successModal.appendChild(messageBox);
+    document.body.appendChild(successModal);
+
+    // Aplicar las animaciones secuencialmente
+    requestAnimationFrame(() => {
+      successModal.style.opacity = '1';
+      
+      setTimeout(() => {
+        messageBox.style.opacity = '1';
+        messageBox.style.transform = 'translateY(0)';
+        
+        setTimeout(() => {
+          successCircle.style.transform = 'scale(1)';
+          
+          setTimeout(() => {
+            checkIcon.style.opacity = '1';
+            
+            setTimeout(() => {
+              title.style.opacity = '1';
+              title.style.transform = 'translateY(0)';
+              
+              setTimeout(() => {
+                message.style.opacity = '1';
+                message.style.transform = 'translateY(0)';
+                
+                // Redireccionar después de mostrar todas las animaciones
+                setTimeout(() => {
+                  // Animación de salida
+                  messageBox.style.opacity = '0';
+                  messageBox.style.transform = 'translateY(30px)';
+                  successModal.style.opacity = '0';
+                  
+                  setTimeout(() => {
+                    document.body.removeChild(successModal);
+                    navigate('/login', { replace: true });
+                  }, 600);
+                }, 2000);
+              }, 100);
+            }, 100);
+          }, 100);
+        }, 300);
+      }, 300);
+    });
+  };
+
   return (
     <>
       <Header />
-      <main style={styles.container}>
-        <h1 style={styles.title}>Configuración</h1>
-
-        {/* Notificaciones */}
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>Notificaciones</h2>
-          <div style={styles.optionContainer}>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Nuevas publicaciones</div>
-                <div style={styles.optionDescription}>Recibe notificaciones cuando se publiquen nuevos posts</div>
-              </div>
-              <Switch
-                isOn={settings.notifications.newPosts}
-                onToggle={() => handleSettingChange('notifications', 'newPosts')}
-              />
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Comentarios</div>
-                <div style={styles.optionDescription}>Notificaciones de respuestas a tus comentarios</div>
-              </div>
-              <Switch
-                isOn={settings.notifications.comments}
-                onToggle={() => handleSettingChange('notifications', 'comments')}
-              />
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Newsletter</div>
-                <div style={styles.optionDescription}>Recibe nuestro boletín semanal</div>
-              </div>
-              <Switch
-                isOn={settings.notifications.newsletter}
-                onToggle={() => handleSettingChange('notifications', 'newsletter')}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Privacidad */}
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>Privacidad</h2>
-          <div style={styles.optionContainer}>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Mostrar perfil público</div>
-                <div style={styles.optionDescription}>Tu perfil será visible para otros usuarios</div>
-              </div>
-              <Switch
-                isOn={settings.privacy.showProfile}
-                onToggle={() => handleSettingChange('privacy', 'showProfile')}
-              />
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Mostrar email</div>
-                <div style={styles.optionDescription}>Tu email será visible en tu perfil público</div>
-              </div>
-              <Switch
-                isOn={settings.privacy.showEmail}
-                onToggle={() => handleSettingChange('privacy', 'showEmail')}
-              />
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Permitir comentarios</div>
-                <div style={styles.optionDescription}>Otros usuarios podrán comentar en tus posts</div>
-              </div>
-              <Switch
-                isOn={settings.privacy.allowComments}
-                onToggle={() => handleSettingChange('privacy', 'allowComments')}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Visualización */}
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>Visualización</h2>
-          <div style={styles.optionContainer}>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Tamaño de fuente</div>
-                <div style={styles.optionDescription}>Ajusta el tamaño del texto en los posts</div>
-              </div>
-              <select
-                style={styles.select}
-                value={settings.display.fontSize}
-                onChange={(e) => handleSelectChange('display', 'fontSize', e.target.value)}
-              >
-                <option value="small">Pequeño</option>
-                <option value="medium">Mediano</option>
-                <option value="large">Grande</option>
-              </select>
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Mostrar autor</div>
-                <div style={styles.optionDescription}>Muestra el autor en las previsualizaciones</div>
-              </div>
-              <Switch
-                isOn={settings.display.showAuthor}
-                onToggle={() => handleSettingChange('display', 'showAuthor')}
-              />
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Mostrar fecha</div>
-                <div style={styles.optionDescription}>Muestra la fecha de publicación</div>
-              </div>
-              <Switch
-                isOn={settings.display.showDate}
-                onToggle={() => handleSettingChange('display', 'showDate')}
-              />
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Tiempo de lectura</div>
-                <div style={styles.optionDescription}>Muestra el tiempo estimado de lectura</div>
-              </div>
-              <Switch
-                isOn={settings.display.showReadTime}
-                onToggle={() => handleSettingChange('display', 'showReadTime')}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Preferencias de Email */}
-        <section style={styles.section}>
-          <h2 style={styles.sectionTitle}>Preferencias de Email</h2>
-          <div style={styles.optionContainer}>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Frecuencia de emails</div>
-                <div style={styles.optionDescription}>¿Con qué frecuencia quieres recibir emails?</div>
-              </div>
-              <select
-                style={styles.select}
-                value={settings.email.frequency}
-                onChange={(e) => handleSelectChange('email', 'frequency', e.target.value)}
-              >
-                <option value="daily">Diario</option>
-                <option value="weekly">Semanal</option>
-                <option value="monthly">Mensual</option>
-                <option value="never">Nunca</option>
-              </select>
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Resumen de actividad</div>
-                <div style={styles.optionDescription}>Recibe un resumen de la actividad del blog</div>
-              </div>
-              <Switch
-                isOn={settings.email.digest}
-                onToggle={() => handleSettingChange('email', 'digest')}
-              />
-            </div>
-            <div style={styles.option}>
-              <div>
-                <div style={styles.optionLabel}>Emails promocionales</div>
-                <div style={styles.optionDescription}>Recibe información sobre ofertas y novedades</div>
-              </div>
-              <Switch
-                isOn={settings.email.marketing}
-                onToggle={() => handleSettingChange('email', 'marketing')}
-              />
-            </div>
-          </div>
-        </section>
-
-        {/* Sección de eliminar cuenta */}
-        <section style={{
-          ...styles.section,
-          borderColor: '#ff3333',
-          borderWidth: '2px',
-          borderStyle: 'solid',
-          backgroundColor: isDarkMode ? '#2d2d2d' : colors.white
+      
+      <div className="settings-page-container" style={{
+        background: 'linear-gradient(135deg, #8ca3a3 0%, #6b8a8a 100%)',
+        minHeight: '100vh',
+        padding: `${spacing.xl} 0`,
+      }}>
+        <div className={`settings-content ${fadeIn ? 'fade-in' : ''}`} style={{
+          maxWidth: '800px',
+          margin: '0 auto',
+          padding: `0 ${spacing.md}`,
+          opacity: fadeIn ? 1 : 0,
+          transform: fadeIn ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'opacity 0.6s ease, transform 0.6s ease',
         }}>
-          <h2 style={{
-            ...styles.sectionTitle,
-            color: '#cc0000'
-          }}>Zona Peligrosa</h2>
-          <div style={styles.optionContainer}>
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            textAlign: 'center',
+            marginBottom: spacing.xl,
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>Configuración</h1>
+
+          {/* Sección de Cambiar Contraseña */}
+          <div className="settings-card password-section" style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+            overflow: 'hidden',
+            marginBottom: spacing.xl,
+            transform: fadeIn ? 'translateY(0)' : 'translateY(30px)',
+            opacity: fadeIn ? 1 : 0,
+            transition: 'opacity 0.6s ease 0.2s, transform 0.6s ease 0.2s',
+          }}>
             <div style={{
-              ...styles.option,
-              backgroundColor: isDarkMode ? '#3d3d3d' : '#ffffff',
-              border: `1px solid ${isDarkMode ? '#4d4d4d' : colors.gray200}`
+              padding: spacing.xl,
+              borderBottom: '1px solid #f0f0f0'
             }}>
-              <div>
-                <div style={{
-                  ...styles.optionLabel,
-                  color: '#cc0000',
-                  fontWeight: typography.fontWeight.bold
-                }}>Eliminar Cuenta</div>
-                <div style={{
-                  ...styles.optionDescription,
-                  color: isDarkMode ? '#ff9999' : '#990000'
-                }}>Esta acción es permanente y no se puede deshacer. Se perderán todos tus datos.</div>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#333',
+                marginBottom: spacing.md
+              }}>Cambiar Contraseña</h2>
+            </div>
+            
+            <div style={{
+              padding: spacing.xl,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: spacing.lg
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: spacing.md
+              }}>
+                <div>
+                  <h3 style={{
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    color: '#333',
+                    marginBottom: spacing.xs
+                  }}>Cambiar tu contraseña</h3>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    color: '#666',
+                    margin: 0
+                  }}>Actualiza tu contraseña para mantener tu cuenta segura</p>
+                </div>
+                
+                <a 
+                  href="https://www.educstation.com/forgot-password"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-change-password"
+                  style={{
+                    display: 'inline-block',
+                    padding: '12px 24px',
+                    backgroundColor: '#1e88e5',
+                    color: '#ffffff',
+                    borderRadius: '8px',
+                    textDecoration: 'none',
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 6px rgba(30, 136, 229, 0.2)',
+                    textAlign: 'center',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1976d2';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(30, 136, 229, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#1e88e5';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(30, 136, 229, 0.2)';
+                  }}
+                >
+                  Cambiar Contraseña
+                </a>
               </div>
-              <button
-                onClick={() => setShowDeleteModal(true)}
-                style={{
-                  padding: `${spacing.sm} ${spacing.xl}`,
-                  backgroundColor: '#ff3333',
-                  color: colors.white,
-                  border: 'none',
-                  borderRadius: borderRadius.md,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  fontWeight: typography.fontWeight.bold
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#ff0000';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#ff3333';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                Eliminar Cuenta
-              </button>
             </div>
           </div>
-        </section>
 
-        {/* Botón Guardar */}
-        <button
-          style={styles.saveButton}
-          onClick={() => {
-            // Aquí iría la lógica para guardar las configuraciones
-            alert('Configuraciones guardadas correctamente');
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = colors.primaryDark;
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = colors.primary;
-            e.currentTarget.style.transform = 'translateY(0)';
-          }}
-        >
-          Guardar cambios
-        </button>
-      </main>
-
-      {/* Modal de confirmación para eliminar cuenta */}
-      <div style={styles.modalOverlay} onClick={() => setShowDeleteModal(false)}>
-        <div style={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-          <div style={{
-            ...styles.modalHeader,
-            backgroundColor: '#ff3333'
+          {/* Sección de Eliminar Cuenta */}
+          <div className="settings-card danger-section" style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+            overflow: 'hidden',
+            marginBottom: spacing.xl,
+            transform: fadeIn ? 'translateY(0)' : 'translateY(40px)',
+            opacity: fadeIn ? 1 : 0,
+            transition: 'opacity 0.6s ease 0.4s, transform 0.6s ease 0.4s',
+            border: '2px solid #ff3333',
           }}>
-            <span style={styles.modalWarningIcon}>⚠️</span>
-            <h3 style={styles.modalTitle}>Eliminar Cuenta</h3>
-          </div>
-          <div style={{
-            ...styles.modalBody,
-            backgroundColor: isDarkMode ? '#331111' : '#fff0f0'
-          }}>
-            <p>¿Estás seguro de que deseas eliminar tu cuenta de <strong>EducStation</strong>?</p>
-            <p>Esta acción es permanente y no se puede deshacer. Se perderán todos tus datos, incluyendo:</p>
-            <ul style={{
-              textAlign: 'left',
-              color: isDarkMode ? '#ff9999' : '#cc0000',
-              backgroundColor: isDarkMode ? '#441111' : '#ffe0e0',
-              padding: spacing.lg,
-              borderRadius: borderRadius.md,
-              border: '1px solid #ff3333'
+            <div style={{
+              padding: spacing.xl,
+              borderBottom: '1px solid #ffe6e6',
+              backgroundColor: '#fff5f5'
             }}>
-              <li>Tu perfil y configuraciones</li>
-              <li>Tus publicaciones y comentarios</li>
-              <li>Tu historial de actividad</li>
-              <li>Tus datos guardados</li>
-            </ul>
-          </div>
-          <div style={{
-            ...styles.modalFooter,
-            backgroundColor: isDarkMode ? '#331111' : '#fff0f0',
-            borderTop: `1px solid #ff3333`
-          }}>
-            <button
-              style={styles.cancelButton}
-              onClick={() => setShowDeleteModal(false)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? '#441111' : '#ffe0e0';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isDarkMode ? '#331111' : '#fff0f0';
-              }}
-            >
-              Cancelar
-            </button>
-            <button
-              style={{
-                ...styles.confirmDeleteButton,
-                backgroundColor: isDeleting ? '#999999' : '#ff3333',
-                fontWeight: typography.fontWeight.bold,
-                cursor: isDeleting ? 'not-allowed' : 'pointer'
-              }}
-              onClick={handleDeleteAccount}
-              disabled={isDeleting}
-              onMouseEnter={(e) => {
-                if (!isDeleting) {
-                  e.currentTarget.style.backgroundColor = '#ff0000';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 8px rgba(255, 0, 0, 0.2)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isDeleting) {
-                  e.currentTarget.style.backgroundColor = '#ff3333';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }
-              }}
-            >
-              {isDeleting ? 'Eliminando...' : 'Sí, eliminar mi cuenta'}
-            </button>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#cc0000',
+                marginBottom: 0
+              }}>Zona Peligrosa</h2>
+            </div>
+            
+            <div style={{
+              padding: spacing.xl,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: spacing.lg
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: spacing.md
+              }}>
+                <div>
+                  <h3 style={{
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    color: '#cc0000',
+                    marginBottom: spacing.xs
+                  }}>Eliminar Cuenta</h3>
+                  <p style={{
+                    fontSize: '0.95rem',
+                    color: '#990000',
+                    margin: 0
+                  }}>Esta acción es permanente y no se puede deshacer. Se perderán todos tus datos.</p>
+                </div>
+                
+                <button
+                  onClick={() => setShowDeleteModal(true)}
+                  className="btn-delete-account"
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: '#ff3333',
+                    color: '#ffffff',
+                    borderRadius: '8px',
+                    border: 'none',
+                    fontWeight: '600',
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 6px rgba(255, 51, 51, 0.2)',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e60000';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 6px 12px rgba(255, 51, 51, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#ff3333';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(255, 51, 51, 0.2)';
+                  }}
+                >
+                  Eliminar Cuenta
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Animaciones CSS */}
+      {/* Modal de confirmación para eliminar cuenta */}
+      {showDeleteModal && (
+        <div className="modal-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999,
+          backdropFilter: 'blur(5px)',
+          animation: 'fadeIn 0.3s ease forwards'
+        }} onClick={() => !isDeleting && setShowDeleteModal(false)}>
+          <div className="modal-content" style={{
+            backgroundColor: '#ffffff',
+            borderRadius: '16px',
+            boxShadow: '0 15px 30px rgba(0, 0, 0, 0.3)',
+            width: '90%',
+            maxWidth: '500px',
+            overflow: 'hidden',
+            animation: 'scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards'
+          }} onClick={(e) => e.stopPropagation()}>
+            <div style={{
+              backgroundColor: '#ff3333',
+              padding: '20px 24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                backgroundColor: '#ffffff',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexShrink: 0
+              }}>
+                <span style={{
+                  color: '#ff3333',
+                  fontSize: '20px',
+                  fontWeight: 'bold'
+                }}>!</span>
+              </div>
+              <h3 style={{
+                margin: 0,
+                color: '#ffffff',
+                fontSize: '1.3rem',
+                fontWeight: 'bold'
+              }}>Eliminar Cuenta</h3>
+            </div>
+            
+            <div style={{
+              padding: '24px',
+              backgroundColor: '#fff5f5'
+            }}>
+              <p style={{
+                fontSize: '1rem',
+                lineHeight: '1.6',
+                color: '#333',
+                marginTop: 0
+              }}>¿Estás seguro de que deseas eliminar tu cuenta de <strong>EducStation</strong>?</p>
+              
+              <p style={{
+                fontSize: '1rem',
+                lineHeight: '1.6',
+                color: '#333'
+              }}>Esta acción es permanente y no se puede deshacer. Se perderán todos tus datos, incluyendo:</p>
+              
+              <ul style={{
+                backgroundColor: '#ffe6e6',
+                padding: '16px 16px 16px 36px',
+                borderRadius: '8px',
+                margin: '16px 0',
+                color: '#cc0000',
+                border: '1px solid #ffcccc'
+              }}>
+                <li style={{ marginBottom: '8px' }}>Tu perfil y configuraciones</li>
+                <li style={{ marginBottom: '8px' }}>Tus publicaciones y comentarios</li>
+                <li style={{ marginBottom: '8px' }}>Tu historial de actividad</li>
+                <li>Tus datos guardados</li>
+              </ul>
+              
+              {error && (
+                <div style={{
+                  padding: '12px',
+                  backgroundColor: '#ffebee',
+                  color: '#d32f2f',
+                  borderRadius: '8px',
+                  marginTop: '16px',
+                  fontSize: '0.9rem',
+                  border: '1px solid #ffcdd2'
+                }}>
+                  {error}
+                </div>
+              )}
+            </div>
+            
+            <div style={{
+              padding: '16px 24px',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '12px',
+              borderTop: '1px solid #ffcccc',
+              backgroundColor: '#fff5f5'
+            }}>
+              <button
+                onClick={() => !isDeleting && setShowDeleteModal(false)}
+                disabled={isDeleting}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: '#f5f5f5',
+                  color: '#333',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  fontSize: '0.95rem',
+                  fontWeight: '500',
+                  cursor: isDeleting ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  opacity: isDeleting ? 0.7 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!isDeleting) {
+                    e.currentTarget.style.backgroundColor = '#e0e0e0';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isDeleting) {
+                    e.currentTarget.style.backgroundColor = '#f5f5f5';
+                  }
+                }}
+              >
+                Cancelar
+              </button>
+              
+              <button
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                style={{
+                  padding: '10px 20px',
+                  backgroundColor: isDeleting ? '#999' : '#ff3333',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  cursor: isDeleting ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isDeleting) {
+                    e.currentTarget.style.backgroundColor = '#e60000';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isDeleting) {
+                    e.currentTarget.style.backgroundColor = '#ff3333';
+                  }
+                }}
+              >
+                {isDeleting && (
+                  <span className="spinner" style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid rgba(255,255,255,0.3)',
+                    borderRadius: '50%',
+                    borderTopColor: '#ffffff',
+                    animation: 'spin 0.8s linear infinite'
+                  }}></span>
+                )}
+                {isDeleting ? 'Eliminando...' : 'Sí, eliminar mi cuenta'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* CSS para animaciones */}
       <style dangerouslySetInnerHTML={{
         __html: `
-      @keyframes modalFadeIn {
-        0% { transform: scale(0.9); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-      @keyframes successIconPop {
-        0% { transform: scale(0); opacity: 0; }
-        50% { transform: scale(1.2); }
-        100% { transform: scale(1); opacity: 1; }
-      }
-    `
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          
+          @keyframes scaleIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+          }
+          
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+          
+          .fade-in {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          
+          @media (max-width: 600px) {
+            .settings-content h1 {
+              font-size: 2rem;
+            }
+            
+            .btn-change-password,
+            .btn-delete-account {
+              width: 100%;
+              margin-top: 16px;
+            }
+          }
+        `
       }} />
+      
       <Footer />
     </>
   );
 };
 
-export default SettingsPage;
+export default SettingsPage; 

@@ -156,7 +156,6 @@ const CategoriesListPage = () => {
     }
     return '1px solid rgba(0,0,0,0.05)';
   };
-
   const styles = {
     container: {
       maxWidth: '1200px',
@@ -552,202 +551,208 @@ const CategoriesListPage = () => {
 
   return (
     <>
-      <Header />
-      <div style={styles.header}>
-        <div style={styles.headerBackground}></div>
-        <div style={styles.headerDecoration}></div>
-        <div 
-          style={{
-            position: 'absolute',
-            top: '10%',
-            left: '5%',
-            width: '150px',
-            height: '150px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-            zIndex: 1,
-            opacity: animate ? 1 : 0,
-            transition: 'opacity 0.8s ease 0.3s'
-          }}
-        ></div>
-        <div 
-          style={{
-            position: 'absolute',
-            bottom: '15%',
-            right: '8%',
-            width: '100px',
-            height: '100px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
-            zIndex: 1,
-            opacity: animate ? 1 : 0,
-            transition: 'opacity 0.8s ease 0.5s'
-          }}
-        ></div>
-        <div 
-          style={{
-            position: 'absolute',
-            top: '40%',
-            right: '15%',
-            width: '50px',
-            height: '50px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,209,102,0.15) 0%, rgba(255,209,102,0) 70%)',
-            zIndex: 1,
-            opacity: animate ? 1 : 0,
-            transition: 'opacity 0.8s ease 0.7s'
-          }}
-        ></div>
-        <div style={styles.headerContent}>
-          <div style={styles.container}>
-            <div style={styles.titleContainer}>
-              <h1 style={styles.pageTitle}>
-                Explora Nuestras Categorías
-                <div style={styles.titleUnderline}></div>
-              </h1>
-              <p style={styles.subtitle}>
-                Descubre contenido especializado organizado en categorías diseñadas para potenciar 
-                tu desarrollo educativo y profesional. Cada categoría ofrece recursos, artículos 
-                y herramientas adaptados a tus necesidades.
-              </p>
+      <div style={{
+        backgroundColor: '#91a8a4',
+        minHeight: '100vh',
+        width: '100%'
+      }}>
+        <Header />
+        <div style={styles.header}>
+          <div style={styles.headerBackground}></div>
+          <div style={styles.headerDecoration}></div>
+          <div 
+            style={{
+              position: 'absolute',
+              top: '10%',
+              left: '5%',
+              width: '150px',
+              height: '150px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+              zIndex: 1,
+              opacity: animate ? 1 : 0,
+              transition: 'opacity 0.8s ease 0.3s'
+            }}
+          ></div>
+          <div 
+            style={{
+              position: 'absolute',
+              bottom: '15%',
+              right: '8%',
+              width: '100px',
+              height: '100px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+              zIndex: 1,
+              opacity: animate ? 1 : 0,
+              transition: 'opacity 0.8s ease 0.5s'
+            }}
+          ></div>
+          <div 
+            style={{
+              position: 'absolute',
+              top: '40%',
+              right: '15%',
+              width: '50px',
+              height: '50px',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,209,102,0.15) 0%, rgba(255,209,102,0) 70%)',
+              zIndex: 1,
+              opacity: animate ? 1 : 0,
+              transition: 'opacity 0.8s ease 0.7s'
+            }}
+          ></div>
+          <div style={styles.headerContent}>
+            <div style={styles.container}>
+              <div style={styles.titleContainer}>
+                <h1 style={styles.pageTitle}>
+                  Explora Nuestras Categorías
+                  <div style={styles.titleUnderline}></div>
+                </h1>
+                <p style={styles.subtitle}>
+                  Descubre contenido especializado organizado en categorías diseñadas para potenciar 
+                  tu desarrollo educativo y profesional. Cada categoría ofrece recursos, artículos 
+                  y herramientas adaptados a tus necesidades.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div style={styles.container}>
-        <div ref={gridRef} style={{...styles.grid, marginTop: spacing.xxl}} className="category-grid">
-          {filteredCategories.length > 0 ? (
-            filteredCategories.map((category, index) => (
-              <Link 
-                key={category.id} 
-                to={`/categoria/${category.id}`} 
-                style={styles.link}
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigateToCategory(category.id);
-                }}
-              >
-                <div 
-                  className="category-card hover-transform"
-                  style={{
-                    ...styles.card,
-                    transform: getCardTransform(category.id),
-                    boxShadow: getCardBoxShadow(category.id, category.color),
-                    border: getCardBorder(category.id, category.color)
+        <div style={styles.container}>
+          <div ref={gridRef} style={{...styles.grid, marginTop: spacing.xxl}} className="category-grid">
+            {filteredCategories.length > 0 ? (
+              filteredCategories.map((category, index) => (
+                <Link 
+                  key={category.id} 
+                  to={`/categoria/${category.id}`} 
+                  style={styles.link}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigateToCategory(category.id);
                   }}
-                  onMouseEnter={() => setHoveredCard(category.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
                 >
-                  <div style={styles.cardBg(category.color)}></div>
-                  <div style={styles.cardPattern(category.color)}></div>
-                  
                   <div 
-                    style={styles.iconContainer(category.color)}
+                    className="category-card hover-transform"
+                    style={{
+                      ...styles.card,
+                      transform: getCardTransform(category.id),
+                      boxShadow: getCardBoxShadow(category.id, category.color),
+                      border: getCardBorder(category.id, category.color)
+                    }}
+                    onMouseEnter={() => setHoveredCard(category.id)}
+                    onMouseLeave={() => setHoveredCard(null)}
                   >
-                    {React.cloneElement(category.icon, { size: 50, opacity: 1 })}
+                    <div style={styles.cardBg(category.color)}></div>
+                    <div style={styles.cardPattern(category.color)}></div>
+                    
+                    <div 
+                      style={styles.iconContainer(category.color)}
+                    >
+                      {React.cloneElement(category.icon, { size: 50, opacity: 1 })}
+                    </div>
+                    
+                    <h2 style={styles.categoryName}>
+                      {category.name}
+                      <div style={styles.nameDecoration(hoveredCard === category.id, category.color)}></div>
+                    </h2>
+                    <p style={styles.categoryDescription}>{category.description}</p>
+                    <button 
+                      style={styles.button(hoveredCard === category.id, category.color)}
+                    >
+                      Ver artículos
+                      <FaArrowRight size={14} />
+                    </button>
                   </div>
-                  
-                  <h2 style={styles.categoryName}>
-                    {category.name}
-                    <div style={styles.nameDecoration(hoveredCard === category.id, category.color)}></div>
-                  </h2>
-                  <p style={styles.categoryDescription}>{category.description}</p>
-                  <button 
-                    style={styles.button(hoveredCard === category.id, category.color)}
-                  >
-                    Ver artículos
-                    <FaArrowRight size={14} />
-                  </button>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div style={{...styles.noResults, gridColumn: '1 / -1'}}>
-              <h3>No se encontraron categorías</h3>
-              <p>No hay categorías que coincidan con "{searchQuery}".</p>
-              <button 
-                onClick={clearSearch}
-                style={{
-                  backgroundColor: colors.primary,
-                  color: '#fff',
-                  border: 'none',
-                  padding: `${spacing.xs} ${spacing.lg}`,
-                  borderRadius: borderRadius.md,
-                  marginTop: spacing.md,
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: colors.primaryDark
-                  }
-                }}
+                </Link>
+              ))
+            ) : (
+              <div style={{...styles.noResults, gridColumn: '1 / -1'}}>
+                <h3>No se encontraron categorías</h3>
+                <p>No hay categorías que coincidan con "{searchQuery}".</p>
+                <button 
+                  onClick={clearSearch}
+                  style={{
+                    backgroundColor: colors.primary,
+                    color: '#fff',
+                    border: 'none',
+                    padding: `${spacing.xs} ${spacing.lg}`,
+                    borderRadius: borderRadius.md,
+                    marginTop: spacing.md,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: colors.primaryDark
+                    }
+                  }}
+                >
+                  Mostrar todas las categorías
+                </button>
+              </div>
+            )}
+          </div>
+          
+          <div 
+            ref={featuredSectionRef}
+            style={{...styles.featuredSection, marginTop: spacing.xxl}}
+          >
+            <h2 style={styles.featuredTitle}>
+              Lo que encontrarás
+              <div style={styles.titleUnderline}></div>
+            </h2>
+            <div style={styles.featuredCards}>
+              <div 
+                style={styles.featuredCard}
+                className="hover-transform"
               >
-                Mostrar todas las categorías
-              </button>
-            </div>
-          )}
-        </div>
-        
-        <div 
-          ref={featuredSectionRef}
-          style={{...styles.featuredSection, marginTop: spacing.xxl}}
-        >
-          <h2 style={styles.featuredTitle}>
-            Lo que encontrarás
-            <div style={styles.titleUnderline}></div>
-          </h2>
-          <div style={styles.featuredCards}>
-            <div 
-              style={styles.featuredCard}
-              className="hover-transform"
-            >
-              <div style={{...styles.featuredIcon, color: '#FF6B6B'}}>📚</div>
-              <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
-                Artículos de Calidad
-              </h3>
-              <p style={styles.featuredText}>Contenido redactado por expertos en educación y tecnología.</p>
-            </div>
-            <div 
-              style={styles.featuredCard}
-              className="hover-transform"
-            >
-              <div style={{...styles.featuredIcon, color: '#4ECDC4'}}>🔍</div>
-              <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
-                Recursos Filtrados
-              </h3>
-              <p style={styles.featuredText}>Navega por categorías para encontrar justo lo que necesitas.</p>
-            </div>
-            <div 
-              style={styles.featuredCard}
-              className="hover-transform"
-            >
-              <div style={{...styles.featuredIcon, color: '#FFD166'}}>💡</div>
-              <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
-                Ideas Innovadoras
-              </h3>
-              <p style={styles.featuredText}>Descubre nuevas tendencias en educación y tecnología.</p>
+                <div style={{...styles.featuredIcon, color: '#FF6B6B'}}>📚</div>
+                <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
+                  Artículos de Calidad
+                </h3>
+                <p style={styles.featuredText}>Contenido redactado por expertos en educación y tecnología.</p>
+              </div>
+              <div 
+                style={styles.featuredCard}
+                className="hover-transform"
+              >
+                <div style={{...styles.featuredIcon, color: '#4ECDC4'}}>🔍</div>
+                <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
+                  Recursos Filtrados
+                </h3>
+                <p style={styles.featuredText}>Navega por categorías para encontrar justo lo que necesitas.</p>
+              </div>
+              <div 
+                style={styles.featuredCard}
+                className="hover-transform"
+              >
+                <div style={{...styles.featuredIcon, color: '#FFD166'}}>💡</div>
+                <h3 style={{fontSize: '1.3rem', marginBottom: spacing.sm, color: isDarkMode ? colors.white : colors.primary}}>
+                  Ideas Innovadoras
+                </h3>
+                <p style={styles.featuredText}>Descubre nuevas tendencias en educación y tecnología.</p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div 
-        className="back-to-top" 
-        style={styles.backToTop}
-        onClick={scrollToTop}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = 'translateY(-3px)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = 'translateY(0)';
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M10 2.5V17.5M10 2.5L5 7.5M10 2.5L15 7.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </div>
+        <div 
+          className="back-to-top" 
+          style={styles.backToTop}
+          onClick={scrollToTop}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-3px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 2.5V17.5M10 2.5L5 7.5M10 2.5L15 7.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
 
-      <Footer />
+        <Footer />
+      </div>
 
       <style>
         {`
@@ -802,4 +807,4 @@ const CategoriesListPage = () => {
   );
 };
 
-export default CategoriesListPage; 
+export default CategoriesListPage;

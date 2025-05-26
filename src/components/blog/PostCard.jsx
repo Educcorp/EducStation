@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
 import { FaUser, FaCalendarAlt, FaTag, FaEye, FaBookOpen, FaArrowRight } from 'react-icons/fa';
-import AnimatedButton from '../utils/AnimatedButton';
 
 // Importar utilidades
 import { 
@@ -38,6 +37,94 @@ const addKeyframeStyles = () => {
   styleSheet.type = "text/css";
   styleSheet.innerText = shineAnimation;
   document.head.appendChild(styleSheet);
+};
+
+/**
+ * Función mejorada para limpiar el resumen de cualquier código HTML/CSS
+ * @param {string} content - Contenido HTML o texto
+ * @param {number} maxLength - Longitud máxima del resumen
+ * @returns {string} Texto limpio para mostrar como resumen
+ */
+const cleanSummary = (content, maxLength = 120) => {
+  if (!content) return 'Sin contenido disponible...';
+  
+  try {
+    // Caso especial: Detectar si es principalmente código HTML/CSS
+    if (content.includes('<!DOCTYPE html>') || 
+        (content.includes('<html') && content.includes('<head'))) {
+      return 'Contenido HTML (vista previa no disponible)';
+    }
+    
+    // Eliminar bloques de estilos CSS completos
+    content = content.replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '');
+    
+    // Eliminar cualquier bloque de código CSS como body { ... }
+    content = content.replace(/[\w\s.#-]+\s*{[^}]*}/g, '');
+    
+    // Eliminar etiquetas DOCTYPE, html, head, etc.
+    content = content.replace(/<!DOCTYPE[^>]*>/gi, '');
+    content = content.replace(/<html[^>]*>|<\/html>/gi, '');
+    content = content.replace(/<head[^>]*>[\s\S]*?<\/head>/gi, '');
+    
+    // Crear un elemento temporal para procesar HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = content;
+    
+    // Obtener solo el texto plano
+    let plainText = tempDiv.textContent || tempDiv.innerText || '';
+    
+    // Limpiar el texto de caracteres especiales y normalizar espacios
+    plainText = plainText
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/\s+/g, ' ')
+      .replace(/[\r\n\t]/g, ' ')
+      .trim();
+    
+    // Verificar si quedó algo después de la limpieza
+    if (!plainText || plainText.trim().length === 0) {
+      return 'Sin contenido disponible...';
+    }
+    
+    // Si el texto parece ser principalmente código, informarlo
+    if ((plainText.includes('{') && plainText.includes('}') && 
+         plainText.includes(';') && plainText.split(';').length > 3) ||
+        (plainText.includes('<') && plainText.includes('>') && 
+         plainText.split('>').length > 3)) {
+      return 'Este contenido parece ser código (vista previa no disponible)';
+    }
+    
+    // Truncar al tamaño máximo manteniendo palabras completas
+    if (plainText.length <= maxLength) {
+      return plainText;
+    }
+    
+    let truncated = plainText.substring(0, maxLength);
+    const lastSpace = truncated.lastIndexOf(' ');
+    
+    if (lastSpace > maxLength * 0.6) {
+      truncated = truncated.substring(0, lastSpace);
+    }
+    
+    return truncated + '...';
+  } catch (error) {
+    console.error('Error al procesar el resumen:', error);
+    // En caso de error, intentar una limpieza básica
+    if (typeof content === 'string') {
+      const strippedContent = content
+        .replace(/<[^>]*>?/gm, '')
+        .replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      
+      if (strippedContent.length > 0) {
+        return strippedContent.substring(0, maxLength) + '...';
+      }
+    }
+    return 'Sin contenido disponible...';
+  }
 };
 
 const PostCard = ({ post, showCategory = true, showViews = true }) => {
@@ -85,28 +172,6 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
     return post.categoria || 'Sin categoría';
   };
   
-  // Función para obtener resumen limpio
-  const getCleanSummary = (post) => {
-    // Prioridad 1: Usar el campo Resumen si existe y no está vacío
-    if (post.Resumen && post.Resumen.trim() !== '') {
-      // Si el resumen contiene HTML, extraer solo el texto
-      if (post.Resumen.includes('<') && post.Resumen.includes('>')) {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = post.Resumen;
-        const cleanText = tempDiv.textContent || tempDiv.innerText || '';
-        return cleanText.trim() || 'Sin resumen disponible';
-      }
-      return post.Resumen;
-    }
-    
-    // Prioridad 2: Si no hay resumen, usar extractSummary del contenido
-    if (post.contenido || post.Contenido) {
-      return extractSummary(post.contenido || post.Contenido, 120);
-    }
-    
-    return 'Sin resumen disponible';
-  };
-
   // Función para renderizar la imagen de portada
   const renderPortadaImage = () => {
     if (!post.Imagen_portada) {
@@ -363,24 +428,30 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           </h3>
           
           <p style={styles.postSummary}>
-            {getCleanSummary(post)}
+            {post.Resumen || post.resumen || cleanSummary(post.contenido || post.Contenido, 120)}
           </p>
 
           {/* Botón Leer más con animación */}
           <div style={{ marginBottom: spacing.md, display: 'flex', justifyContent: 'flex-end' }}>
-            <AnimatedButton 
-              to={`/blog/${post.ID_publicaciones}`}
-              backgroundColor="rgba(8, 44, 44, 0.6)"
-              hoverBackgroundColor="#082c2c"
-              padding="8px 16px"
-              borderRadius="6px"
+            <div 
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                backgroundColor: isHovered ? "#082c2c" : "rgba(8, 44, 44, 0.6)",
+                color: '#fff',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                transition: 'background-color 0.3s ease',
+                fontSize: typography.fontSize.sm,
+                fontWeight: typography.fontWeight.medium,
+              }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>Leer más</span>
-                <FaArrowRight size={12} />
-              </div>
-            </AnimatedButton>
+              <span>Leer más</span>
+              <FaArrowRight size={12} />
+            </div>
           </div>
           
           {/* Metadatos */}

@@ -49,17 +49,21 @@ const Footer = () => {
   useEffect(() => {
     // Aplicar directamente los estilos al elemento del footer
     if (footerRef.current) {
-      // Usar la imagen de fondo en lugar de un color sólido
-      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&width=1340&height=240&section=footer&animation=twinkling')";
-      footerRef.current.style.backgroundSize = "120% auto";
+      // Restaurar la animación original con la imagen de onda
+      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling')";
+      footerRef.current.style.backgroundSize = "100% auto";
       footerRef.current.style.backgroundPosition = "center bottom";
       footerRef.current.style.backgroundRepeat = "no-repeat";
       footerRef.current.style.backgroundColor = "transparent"; // Fondo transparente
       footerRef.current.style.color = isDarkMode ? '#ccc' : colors.white;
       
-      // Eliminar cualquier otro estilo que pueda estar causando el rectángulo verde
+      // Ajustar propiedades para evitar el rectángulo verde
       footerRef.current.style.border = "none";
       footerRef.current.style.boxShadow = "none";
+      footerRef.current.style.minHeight = "240px"; // Asegurar altura suficiente para la onda
+      footerRef.current.style.marginTop = "40px"; // Espaciado superior
+      footerRef.current.style.position = "relative";
+      footerRef.current.style.overflow = "hidden";
     }
   }, [isDarkMode, colors]);
 
@@ -143,17 +147,18 @@ const Footer = () => {
     footer: {
       padding: 0,
       margin: 0,
-      minHeight: '20px', // Altura para acomodar la onda
+      minHeight: '240px', // Altura para acomodar la onda completa
       position: 'relative',
       width: '100%',
       overflow: 'hidden',
+      zIndex: 1
     },
     container: {
       maxWidth: '1900px',
       margin: '0 auto',
       padding: `${spacing.md} ${spacing.lg} ${spacing.xl * 3}`, // Más padding abajo para la onda
       position: 'relative',
-      zIndex: 3, // Ensure content is above the background
+      zIndex: 3, // Asegurar que el contenido está por encima del fondo
       backgroundColor: 'transparent', // Contenedor transparente
     },
     contentBox: {
@@ -259,16 +264,16 @@ const Footer = () => {
       borderRadius: "8px",
       padding: "8px 40px 8px 32px",
       boxShadow: '0 0 0 0 transparent',
-      background: 'rgba(8, 44, 44, 0.6)',
+      background: 'rgba(8, 44, 44, 0.3)',
       position: 'relative',
       overflow: 'hidden',
       willChange: "box-shadow, background, color, transform",
-      border: 'none',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
       minWidth: '140px',
       color: '#fff',
       cursor: 'pointer',
-      backdropFilter: 'blur(5px)',
-      WebkitBackdropFilter: 'blur(5px)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
     },
     linkIcon: {
       marginRight: '12px',
@@ -363,18 +368,21 @@ const Footer = () => {
       textDecoration: "none",
       transition: 'all 0.2s ease-in',
       padding: '8px 16px',
-      border: 'none',
-      borderRadius: '5px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      borderRadius: '8px',
       position: 'relative',
       overflow: 'hidden',
       cursor: 'pointer',
-      background: 'rgba(8, 44, 44, 0.6)',
-      backdropFilter: 'blur(5px)',
-      WebkitBackdropFilter: 'blur(5px)',
+      background: 'rgba(8, 44, 44, 0.2)',
+      backdropFilter: 'blur(8px)',
+      WebkitBackdropFilter: 'blur(8px)',
+      fontWeight: typography.fontWeight.medium,
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+      marginLeft: '5px',
       '&:hover': {
         color: 'white',
-        boxShadow: '0 0 30px 0 rgba(8, 44, 44, 0.5)',
-        backgroundColor: '#082c2c',
+        boxShadow: '0 0 15px 0 rgba(8, 44, 44, 0.3)',
+        backgroundColor: 'rgba(8, 44, 44, 0.5)',
         transition: 'all 0.2s ease-out'
       }
     },
@@ -469,7 +477,7 @@ const Footer = () => {
 
   const handleLinkMouseLeave = (e) => {
     e.currentTarget.style.boxShadow = '0 0 0 0 transparent';
-    e.currentTarget.style.backgroundColor = 'rgba(8, 44, 44, 0.6)';
+    e.currentTarget.style.backgroundColor = 'rgba(8, 44, 44, 0.3)';
     e.currentTarget.style.color = '#fff';
     e.currentTarget.style.transition = 'all 0.2s ease-in';
     
@@ -495,7 +503,7 @@ const Footer = () => {
     },
     {
       icon: <SiX />,
-      url: 'https://twitter.com/EducStation',
+      url: 'https://x.com/Educcorp',
       label: 'X (Twitter)',
       colors: {
         primary: '#000000',
@@ -621,13 +629,33 @@ const Footer = () => {
           </div>
         </div>
         {/* Bottom Section */}
-        <div style={{...styles.bottom, ...styles.transparentBox, marginTop: spacing.xl}}>
+        <div style={{
+          ...styles.bottom, 
+          ...styles.transparentBox, 
+          marginTop: spacing.xl,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+          paddingTop: spacing.md,
+          flexWrap: 'wrap'
+        }}>
           <div style={styles.copyright}>
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
-          <div style={styles.bottomLinks}>
+          <div style={{
+            display: 'flex',
+            gap: '10px',
+            marginTop: window.innerWidth < 768 ? spacing.md : 0
+          }}>
             <span 
-              style={{...styles.bottomLink}} 
+              style={{
+                ...styles.bottomLink,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '100px',
+              }} 
               onClick={(e) => {
                 handleLinkMouseEnter(e);
                 handleInstantNavigation('/terms', e);
@@ -638,7 +666,13 @@ const Footer = () => {
               Términos
             </span>
             <span 
-              style={{...styles.bottomLink}} 
+              style={{
+                ...styles.bottomLink,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '100px',
+              }} 
               onClick={(e) => {
                 handleLinkMouseEnter(e);
                 handleInstantNavigation('/privacy', e);
@@ -649,7 +683,13 @@ const Footer = () => {
               Privacidad
             </span>
             <span 
-              style={{...styles.bottomLink}} 
+              style={{
+                ...styles.bottomLink,
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                minWidth: '100px',
+              }} 
               onClick={(e) => {
                 handleLinkMouseEnter(e);
                 handleInstantNavigation('/cookies', e);

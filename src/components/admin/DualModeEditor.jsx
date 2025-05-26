@@ -114,6 +114,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
 
   // Inicializar el modo según initialMode cuando cambie
   useEffect(() => {
+    console.log('DualModeEditor - InitialMode cambiado a:', initialMode);
     if (initialMode === 'html' && mode !== 'developer') {
       console.log('DualModeEditor - Inicializando en modo HTML desde props');
       setMode('developer');
@@ -125,9 +126,23 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
 
   // Actualizar contenido cuando cambia externamente
   useEffect(() => {
-    setInternalContent(content || '');
-    setSimpleContent(content || '');
-  }, [content]);
+    console.log('DualModeEditor - Contenido externo actualizado:', content ? content.substring(0, 50) + '...' : 'vacío');
+    console.log('DualModeEditor - Longitud del contenido:', content ? content.length : 0);
+    
+    if (content !== undefined && content !== null) {
+      setInternalContent(content);
+      setSimpleContent(content);
+      
+      // Si estamos en modo desarrollador, asegurarse de que el textarea tenga el contenido
+      if (mode === 'developer' && textAreaRef.current) {
+        console.log('DualModeEditor - Actualizando textarea directamente');
+        textAreaRef.current.value = content;
+      }
+      
+      // Log adicional para depuración
+      console.log('DualModeEditor - Contenido actualizado en modo:', mode);
+    }
+  }, [content, mode]);
 
   // Manejar acciones de la barra de herramientas para el modo desarrollador
   const handleToolbarAction = async (actionType, placeholder) => {
@@ -261,6 +276,19 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
       setActiveTab('code');
       // Asegurar que el contenido esté sincronizado
       setInternalContent(content || '');
+      
+      // Asegurarse de que el textarea tenga el contenido
+      if (textAreaRef.current) {
+        console.log('DualModeEditor - Sincronizando contenido en textarea al cambiar a modo developer');
+        console.log('DualModeEditor - Contenido a sincronizar:', content ? content.substring(0, 50) + '...' : 'vacío');
+        
+        setTimeout(() => {
+          if (textAreaRef.current) {
+            textAreaRef.current.value = content || '';
+            console.log('DualModeEditor - Contenido sincronizado en textarea');
+          }
+        }, 50);
+      }
     } else {
       // Si pasamos a modo simple, sincronizamos el contenido
       setSimpleContent(internalContent || '');
@@ -280,11 +308,29 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   // Confirmar cambio al modo desarrollador
   const confirmDeveloperMode = () => {
     console.log('DualModeEditor - confirmDeveloperMode: Confirmando cambio a modo HTML');
+    console.log('DualModeEditor - confirmDeveloperMode: Contenido actual:', content ? content.substring(0, 50) + '...' : 'vacío');
+    console.log('DualModeEditor - confirmDeveloperMode: Longitud del contenido:', content ? content.length : 0);
+    
     setShowDeveloperModal(false);
     setMode('developer');
     
     // Asegurar que el contenido esté sincronizado
-    setInternalContent(content || '');
+    const contentToUse = content || '';
+    setInternalContent(contentToUse);
+    
+    // Asegurarse de que el textarea tenga el contenido actualizado
+    setTimeout(() => {
+      if (textAreaRef.current) {
+        textAreaRef.current.value = contentToUse;
+        console.log('DualModeEditor - confirmDeveloperMode: Contenido sincronizado en textarea');
+        
+        // Verificación adicional
+        if (textAreaRef.current.value !== contentToUse) {
+          console.warn('DualModeEditor - confirmDeveloperMode: El contenido no se sincronizó correctamente');
+          textAreaRef.current.value = contentToUse;
+        }
+      }
+    }, 50);
     
     // Notificar al componente padre sobre el cambio de modo
     const event = {
@@ -295,6 +341,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     };
     console.log('DualModeEditor - confirmDeveloperMode: Notificando cambio de modo al padre:', event.target.value);
     onChange(event);
+    
+    // Verificación adicional después de un tiempo
+    setTimeout(() => {
+      if (textAreaRef.current && textAreaRef.current.value !== contentToUse) {
+        console.log('DualModeEditor - confirmDeveloperMode: Corrección tardía de contenido');
+        textAreaRef.current.value = contentToUse;
+      }
+    }, 500);
   };
 
   // Cancelar cambio al modo desarrollador
@@ -306,6 +360,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   const handleTextAreaChange = (e) => {
     console.log('DualModeEditor - handleTextAreaChange llamado con valor:', 
       e.target.value ? `"${e.target.value.substring(0, 50)}..."` : 'vacío');
+    console.log('DualModeEditor - handleTextAreaChange longitud del contenido:', e.target.value ? e.target.value.length : 0);
     
     // Asegurar que no estamos estableciendo a null o undefined
     const newContent = e.target.value || '';
@@ -321,6 +376,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     
     console.log('DualModeEditor - notificando al padre con contenido de longitud:', newContent.length);
     onChange(cleanEvent);
+    
+    // Verificación adicional para asegurar que el textarea tenga el contenido actualizado
+    setTimeout(() => {
+      if (textAreaRef.current && textAreaRef.current.value !== newContent) {
+        console.log('DualModeEditor - Corrigiendo desincronización en textarea');
+        textAreaRef.current.value = newContent;
+      }
+    }, 0);
   };
 
   // Manejar cambios en el contenido del editor simple
@@ -761,46 +824,54 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
         {mode === 'developer' && (
           <>
             {activeTab === 'code' && (
-              <>
-                <EditorToolbar 
-                  onInsertMarkdown={handleToolbarAction} 
-                  mode="html"
+              <div style={{
+                position: 'relative',
+                height: '600px',
+                backgroundColor: '#1E1E1E',
+                borderRadius: `0 0 ${borderRadius.md} ${borderRadius.md}`,
+                overflow: 'hidden'
+              }}>
+                <textarea
+                  ref={textAreaRef}
+                  value={internalContent || ''}
+                  onChange={handleTextAreaChange}
+                  onPaste={handlePaste}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    padding: spacing.md,
+                    backgroundColor: '#1E1E1E',
+                    color: '#D4D4D4',
+                    border: 'none',
+                    outline: 'none',
+                    resize: 'none',
+                    fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    tabSize: '2',
+                    whiteSpace: 'pre',
+                    overflowX: 'auto',
+                    overflowY: 'auto'
+                  }}
+                  spellCheck={false}
                 />
-                
-                {isHighlightingEnabled ? (
-                  <SyntaxHighlighter
-                    content={internalContent}
-                    onChange={handleTextAreaChange}
-                    textAreaRef={textAreaRef}
-                  />
-                ) : (
-                  <textarea
-                    ref={textAreaRef}
-                    value={internalContent}
-                    onChange={handleTextAreaChange}
-                    onPaste={handlePaste}
-                    style={{
-                      width: '100%',
-                      height: '600px',
-                      padding: spacing.md,
-                      backgroundColor: '#272822',
-                      color: '#F8F8F2',
-                      fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
-                      fontSize: '14px',
-                      lineHeight: 1.5,
-                      border: `1px solid ${colors.gray200}`,
-                      borderRadius: borderRadius.md,
-                      resize: 'vertical',
-                      outline: 'none',
-                      overflowWrap: 'normal',
-                      whiteSpace: 'pre',
-                      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
-                    }}
-                    placeholder="Escribe o pega tu código HTML aquí..."
-                    spellCheck="false"
-                  />
+                {imageError && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    left: '20px',
+                    right: '20px',
+                    backgroundColor: '#E34C26',
+                    color: '#FFFFFF',
+                    padding: spacing.md,
+                    borderRadius: borderRadius.md,
+                    boxShadow: shadows.md,
+                    animation: 'fadeIn 0.3s ease-out'
+                  }}>
+                    {imageError}
+                  </div>
                 )}
-              </>
+              </div>
             )}
 
             {activeTab === 'preview' && (

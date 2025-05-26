@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { FaPaperPlane, FaTimes, FaRobot, FaUser, FaGraduationCap, FaSpinner } from 'react-icons/fa';
-import { BsChatDots, BsArrowUp } from 'react-icons/bs';
+import { BsChatDots, BsArrowUp, BsQuestionCircle, BsLightbulb } from 'react-icons/bs';
 import { MdSend, MdClose, MdSchool } from 'react-icons/md';
 
 const API_URL = 'https://educstation-backend-production.up.railway.app/api/chatbot/message';
@@ -16,8 +16,56 @@ const Chatbot = () => {
   const [loading, setLoading] = useState(false);
   const [typing, setTyping] = useState(false);
   const [minimized, setMinimized] = useState(false);
+  const [showPromo, setShowPromo] = useState(false);
+  const [promoAnimation, setPromoAnimation] = useState('');
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  const promoTimeoutRef = useRef(null);
+
+  // Mostrar mensaje promocional después de unos segundos si el chat está cerrado
+  useEffect(() => {
+    if (!open && !sessionStorage.getItem('chatbotHelpDismissed')) {
+      // Mostrar mensaje promocional después de un tiempo
+      promoTimeoutRef.current = setTimeout(() => {
+        setShowPromo(true);
+        setPromoAnimation('slideIn');
+      }, 3000); // Mostrar después de 3 segundos
+      
+      // Ocultar mensaje promocional después de un tiempo si el usuario no interactúa
+      const hideTimeout = setTimeout(() => {
+        if (showPromo) {
+          handleClosePromo();
+        }
+      }, 15000); // Ocultar después de 15 segundos si no hay interacción
+      
+      return () => {
+        clearTimeout(promoTimeoutRef.current);
+        clearTimeout(hideTimeout);
+      };
+    } else {
+      // Si el chat se abre, ocultar el mensaje promocional
+      if (showPromo) {
+        handleClosePromo();
+      }
+    }
+  }, [open, showPromo]);
+
+  // Cerrar el mensaje promocional con animación
+  const handleClosePromo = () => {
+    sessionStorage.setItem('chatbotHelpDismissed', 'true');
+    setPromoAnimation('slideOut');
+    setTimeout(() => {
+      setShowPromo(false);
+      setPromoAnimation('');
+    }, 300); // Duración de la animación
+  };
+
+  // Abrir el chat desde el mensaje promocional
+  const handleOpenChatFromPromo = () => {
+    sessionStorage.setItem('chatbotHelpDismissed', 'true');
+    handleClosePromo();
+    setOpen(true);
+  };
 
   useEffect(() => {
     if (open && messagesEndRef.current) {
@@ -101,6 +149,75 @@ const Chatbot = () => {
       fontSize: '1.5rem',
       transition: 'transform 0.3s ease',
       animation: 'pulse 2s infinite'
+    },
+    promoMessage: {
+      position: 'absolute',
+      bottom: 75,
+      right: 10,
+      background: isDarkMode ? colors.primaryDark : colors.white,
+      color: isDarkMode ? colors.white : colors.textPrimary,
+      padding: '12px 16px',
+      borderRadius: 15,
+      boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+      maxWidth: 220,
+      fontSize: '0.9rem',
+      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray200}`,
+      transition: 'all 0.3s ease',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '8px',
+      cursor: 'pointer',
+      transform: promoAnimation === 'slideOut' 
+        ? 'translateX(100%) scale(0.9)' 
+        : promoAnimation === 'slideIn' 
+          ? 'translateX(0) scale(1)' 
+          : 'translateX(100%) scale(0.9)',
+      opacity: promoAnimation === 'slideOut' ? 0 : 1,
+      transformOrigin: 'bottom right'
+    },
+    promoHeader: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      fontWeight: 600,
+      color: colors.primary
+    },
+    promoIcon: {
+      color: colors.secondary,
+      fontSize: '1.1rem',
+      animation: 'bounce 2s infinite'
+    },
+    promoClose: {
+      position: 'absolute',
+      top: '8px',
+      right: '8px',
+      background: 'transparent',
+      border: 'none',
+      color: isDarkMode ? 'rgba(255,255,255,0.5)' : colors.gray400,
+      cursor: 'pointer',
+      fontSize: '0.9rem',
+      padding: '2px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '50%',
+      width: '18px',
+      height: '18px',
+      transition: 'all 0.2s ease',
+      zIndex: 10,
+      '&:hover': {
+        background: isDarkMode ? 'rgba(255,255,255,0.1)' : colors.gray100,
+        color: isDarkMode ? colors.white : colors.gray700,
+      }
+    },
+    promoTip: {
+      marginTop: '4px',
+      fontSize: '0.8rem',
+      color: isDarkMode ? 'rgba(255,255,255,0.7)' : colors.gray600,
+      fontStyle: 'italic',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px'
     },
     window: {
       width: 360,
@@ -324,6 +441,10 @@ const Chatbot = () => {
     '@keyframes spin': {
       '0%': { transform: 'rotate(0deg)' },
       '100%': { transform: 'rotate(360deg)' }
+    },
+    '@keyframes floatUpDown': {
+      '0%, 100%': { transform: 'translateY(0)' },
+      '50%': { transform: 'translateY(-8px)' }
     }
   };
 
@@ -348,6 +469,10 @@ const Chatbot = () => {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
       }
+      @keyframes floatUpDown {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+      }
       .chatbot-toggle-icon {
         animation: pulse 2s infinite;
       }
@@ -368,6 +493,9 @@ const Chatbot = () => {
       }
       .chatbot-spinner {
         animation: spin 1s linear infinite;
+      }
+      .chatbot-promo-icon {
+        animation: floatUpDown 2s infinite ease-in-out;
       }
     `;
     document.head.appendChild(style);
@@ -468,13 +596,72 @@ const Chatbot = () => {
           )}
         </div>
       ) : (
-        <button 
-          style={styles.toggle} 
-          onClick={() => setOpen(true)} 
-          title="Abrir asistente de educación"
-        >
-          <BsChatDots className="chatbot-toggle-icon" style={styles.toggleIcon} />
-        </button>
+        <>
+          {/* Mensaje promocional */}
+          {showPromo && (
+            <div style={styles.promoMessage} className="chatbot-promo" onClick={(e) => e.target === e.currentTarget && handleOpenChatFromPromo()}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleClosePromo();
+                }} 
+                style={styles.promoClose}
+                title="Cerrar mensaje"
+              >
+                <MdClose />
+              </button>
+              <div style={styles.promoHeader}>
+                <BsLightbulb className="chatbot-promo-icon" style={styles.promoIcon} />
+                <span>¿Necesitas ayuda?</span>
+              </div>
+              <p>¡Hola! Soy tu asistente virtual. Puedes consultarme cualquier duda sobre educación.</p>
+              <div style={{
+                marginTop: '8px',
+                display: 'flex',
+                justifyContent: 'center'
+              }}>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenChatFromPromo();
+                  }}
+                  style={{
+                    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryLight} 100%)`,
+                    color: colors.white,
+                    border: 'none',
+                    padding: '8px 12px',
+                    borderRadius: '20px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <BsChatDots size={14} />
+                  Abrir chat
+                </button>
+              </div>
+              <div style={styles.promoTip}>
+                <BsQuestionCircle size={12} />
+                <span>Respuestas rápidas a tus dudas</span>
+              </div>
+            </div>
+          )}
+          
+          <button 
+            style={styles.toggle} 
+            onClick={() => setOpen(true)} 
+            title="Abrir asistente de educación"
+          >
+            <BsChatDots className="chatbot-toggle-icon" style={styles.toggleIcon} />
+          </button>
+        </>
       )}
     </div>
   );

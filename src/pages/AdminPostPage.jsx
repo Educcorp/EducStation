@@ -1,6 +1,6 @@
 // src/pages/AdminPostPage.jsx
 import React, { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import PostEditor from '../components/admin/PostEditor';
@@ -9,6 +9,9 @@ import { useTheme } from '../context/ThemeContext';
 const AdminPostPage = () => {
   const { colors } = useTheme(); // Obtenemos los colores del tema actual
   const location = useLocation();
+  const { postId } = useParams(); // Extraer el postId de los parámetros de la URL
+
+  console.log('AdminPostPage - Post ID desde URL:', postId);
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
@@ -32,7 +35,7 @@ const AdminPostPage = () => {
     <div style={{ fontFamily: 'Poppins, sans-serif', backgroundColor: colors.background }}>
       <Header />
       <main>
-        <PostEditor />
+        <PostEditor postId={postId} />
       </main>
       <Footer />
     </div>

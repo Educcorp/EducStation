@@ -76,11 +76,107 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
 // Obtener una publicación por ID
 export const getPublicacionById = async (id) => {
     try {
+        console.log(`getPublicacionById: Obteniendo publicación con ID ${id}`);
         const response = await fetch(`${API_URL}/api/publicaciones/${id}`);
+        
         if (!response.ok) {
+            console.error(`getPublicacionById: Error en la respuesta - ${response.status} ${response.statusText}`);
             throw new Error('Error al obtener la publicación');
         }
-        return await response.json();
+        
+        const data = await response.json();
+        console.log(`getPublicacionById: Publicación obtenida con éxito, propiedades:`, Object.keys(data));
+        
+        // Verificar si el contenido está presente
+        if (!data.contenido) {
+            console.warn(`getPublicacionById: El campo 'contenido' no está presente en la respuesta`);
+            
+            // Intentar encontrar el contenido en otras propiedades
+            if (data.Contenido) {
+                console.log('getPublicacionById: Usando campo Contenido (mayúscula)');
+                data.contenido = data.Contenido;
+            } else if (data.content) {
+                console.log('getPublicacionById: Usando campo content (inglés)');
+                data.contenido = data.content;
+            } else if (data.htmlContent) {
+                console.log('getPublicacionById: Usando campo htmlContent');
+                data.contenido = data.htmlContent;
+            }
+        } else {
+            console.log(`getPublicacionById: Contenido encontrado, longitud: ${data.contenido.length}`);
+        }
+        
+        // Verificar si el título está presente
+        if (!data.titulo) {
+            console.warn(`getPublicacionById: El campo 'titulo' no está presente en la respuesta`);
+            
+            // Intentar encontrar el título en otras propiedades
+            if (data.Titulo) {
+                console.log('getPublicacionById: Usando campo Titulo (mayúscula)');
+                data.titulo = data.Titulo;
+            } else if (data.title) {
+                console.log('getPublicacionById: Usando campo title (inglés)');
+                data.titulo = data.title;
+            }
+        } else {
+            console.log(`getPublicacionById: Título encontrado: "${data.titulo}"`);
+        }
+        
+        // Verificar si el resumen está presente
+        if (!data.resumen) {
+            console.warn(`getPublicacionById: El campo 'resumen' no está presente en la respuesta`);
+            
+            // Intentar encontrar el resumen en otras propiedades
+            if (data.Resumen) {
+                console.log('getPublicacionById: Usando campo Resumen (mayúscula)');
+                data.resumen = data.Resumen;
+            } else if (data.summary) {
+                console.log('getPublicacionById: Usando campo summary (inglés)');
+                data.resumen = data.summary;
+            } else if (data.descripcion || data.Descripcion) {
+                console.log('getPublicacionById: Usando campo descripcion');
+                data.resumen = data.descripcion || data.Descripcion;
+            } else {
+                // Si no hay resumen, crear uno a partir del título
+                console.log('getPublicacionById: Creando resumen a partir del título');
+                data.resumen = data.titulo ? data.titulo.substring(0, 150) : '';
+            }
+        } else {
+            console.log(`getPublicacionById: Resumen encontrado, longitud: ${data.resumen.length}`);
+        }
+        
+        // Verificar si la imagen de portada está presente
+        if (!data.imagen_url && !data.Imagen_portada) {
+            console.warn(`getPublicacionById: No se encontró imagen de portada`);
+            
+            // Intentar encontrar la imagen en otras propiedades
+            if (data.imagen) {
+                console.log('getPublicacionById: Usando campo imagen');
+                data.imagen_url = data.imagen;
+            } else if (data.Imagen) {
+                console.log('getPublicacionById: Usando campo Imagen (mayúscula)');
+                data.imagen_url = data.Imagen;
+            } else if (data.image_url || data.imageUrl) {
+                console.log('getPublicacionById: Usando campo image_url/imageUrl (inglés)');
+                data.imagen_url = data.image_url || data.imageUrl;
+            } else if (data.coverImage) {
+                console.log('getPublicacionById: Usando campo coverImage');
+                data.imagen_url = data.coverImage;
+            }
+            
+            // Si tenemos Imagen_portada pero no imagen_url
+            if (data.Imagen_portada && !data.imagen_url) {
+                data.imagen_url = data.Imagen_portada;
+            }
+        } else {
+            console.log(`getPublicacionById: Imagen de portada encontrada`);
+            // Asegurar que imagen_url esté definido si solo tenemos Imagen_portada
+            if (!data.imagen_url && data.Imagen_portada) {
+                data.imagen_url = data.Imagen_portada;
+            }
+        }
+        
+        return data;
     } catch (error) {
         console.error('Error en getPublicacionById:', error);
         throw error;

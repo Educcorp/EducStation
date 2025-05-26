@@ -1,7 +1,7 @@
 // src/components/admin/PostEditor.jsx
 import React, { useState, useEffect } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
-import { useTheme } from '../../context/ThemeContext'; // Añadir esta importación
+import { useTheme } from '../../context/ThemeContext';
 import { createPublicacion, createPublicacionFromHTML, getPublicacionById, updatePublicacion } from '../../services/publicacionesService';
 import { getAllCategorias } from '../../services/categoriasServices';
 import { Calendar } from 'lucide-react';
@@ -14,66 +14,57 @@ import CoverImageUploader from './CoverImageUploader';
 import StatusMessage from './StatusMessage';
 import ImportExportActions from './ImportExportActions';
 
-// Funciones para almacenamiento local
-const savePostToLocalStorage = (post) => {
-  try {
-    const postToSave = { ...post };
-    // No guardamos la imagen como tal, sino solo la URL de vista previa
-    delete postToSave.coverImage;
-    // Incluimos el resumen en los datos guardados
-    postToSave.lastSaved = new Date().toISOString();
-    localStorage.setItem('post_draft', JSON.stringify(postToSave));
-    console.log('Saved to localStorage:', postToSave); // Debug
-  } catch (error) {
-    console.error('Error saving to localStorage:', error);
-  }
-};
-
-const loadPostFromLocalStorage = () => {
-  try {
-    const savedPost = localStorage.getItem('post_draft');
-    return savedPost ? JSON.parse(savedPost) : null;
-  } catch (error) {
-    console.error('Error loading from localStorage:', error);
-    return null;
-  }
+// Función para detectar si el contenido es HTML completo
+const isFullHTML = (content) => {
+  if (!content) return false;
+  // Verifica si el contenido comienza con DOCTYPE html
+  const trimmedContent = content.trim().toLowerCase();
+  return trimmedContent.startsWith('<!doctype html>') || 
+         trimmedContent.startsWith('<!DOCTYPE html>') || 
+         trimmedContent.startsWith('<html');
 };
 
 // Componente para la etiqueta de Contenido animada
-const ContentLabel = () => {
+const ContentLabel = ({ isVisible = false }) => {
   const [isAnimated, setIsAnimated] = useState(false);
-  const { colors, isDarkMode } = useTheme(); // Obtener colores del tema
+  const { colors, isDarkMode } = useTheme();
 
   useEffect(() => {
-    // Activar animación después de un breve retraso
-    const timer = setTimeout(() => {
-      setIsAnimated(true);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, []);
+    if (isVisible) {
+      const timer = setTimeout(() => setIsAnimated(true), 80);
+      return () => clearTimeout(timer);
+    }
+  }, [isVisible]);
 
   const styles = {
     container: {
       display: 'flex',
       alignItems: 'center',
       marginBottom: spacing.md,
-      transform: isAnimated ? 'translateX(0)' : 'translateX(-20px)',
       opacity: isAnimated ? 1 : 0,
-      transition: 'all 0.6s ease-out'
+      transform: isAnimated ? 'translateX(0)' : 'translateX(-18px)',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)'
     },
     icon: {
       fontSize: '22px',
       marginRight: spacing.sm,
       color: colors.secondary,
-      animation: isAnimated ? 'pulseIcon 2s infinite' : 'none'
+      opacity: isAnimated ? 1 : 0,
+      transform: isAnimated ? 'scale(1) rotate(0deg)' : 'scale(0.8) rotate(-35deg)',
+      transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+      transitionDelay: '0.15s',
+      animation: isAnimated ? 'float 3.5s ease-in-out infinite 0.8s' : 'none'
     },
     label: {
       fontSize: typography.fontSize.lg,
       fontWeight: typography.fontWeight.semiBold,
-      color: isDarkMode ? colors.textLight : colors.primary, // Ajustar color según el tema
+      color: isDarkMode ? colors.textLight : colors.primary,
       position: 'relative',
-      paddingBottom: '3px'
+      paddingBottom: '3px',
+      opacity: isAnimated ? 1 : 0,
+      transform: isAnimated ? 'translateY(0)' : 'translateY(-6px)',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+      transitionDelay: '0.2s'
     },
     underline: {
       position: 'absolute',
@@ -82,8 +73,8 @@ const ContentLabel = () => {
       width: isAnimated ? '100%' : '0%',
       height: '2px',
       backgroundColor: colors.secondary,
-      transition: 'width 0.8s ease-in-out',
-      transitionDelay: '0.3s'
+      transition: 'width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1)',
+      transitionDelay: '0.35s'
     },
     badge: {
       display: 'inline-block',
@@ -93,10 +84,11 @@ const ContentLabel = () => {
       borderRadius: borderRadius.round,
       fontSize: typography.fontSize.xs,
       marginLeft: spacing.md,
-      transform: isAnimated ? 'scale(1)' : 'scale(0)',
-      transition: 'all 0.5s ease-out',
-      transitionDelay: '0.6s',
-      boxShadow: isAnimated ? '0 2px 4px rgba(11, 68, 68, 0.2)' : 'none'
+      opacity: isAnimated ? 1 : 0,
+      transform: isAnimated ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(10px)',
+      transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+      transitionDelay: '0.5s',
+      boxShadow: isAnimated ? '0 4px 15px rgba(11, 68, 68, 0.25)' : 'none'
     }
   };
 
@@ -113,32 +105,40 @@ const ContentLabel = () => {
 };
 
 const PostEditor = () => {
-  // Obtener los colores del tema actual
   const { colors, isDarkMode } = useTheme();
-  const { postId } = useParams(); // Obtener el ID del post de los parámetros de la URL
+  const { postId } = useParams();
   const navigate = useNavigate();
+
+  // Estados para animaciones moderadas
+  const [mounted, setMounted] = useState(false);
+  const [pageVisible, setPageVisible] = useState(false);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [titleVisible, setTitleVisible] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
+  const [editorVisible, setEditorVisible] = useState(false);
+  const [summaryVisible, setSummaryVisible] = useState(false);
+  const [buttonsVisible, setButtonsVisible] = useState(false);
 
   const [post, setPost] = useState({
     title: '',
     category: '',
-    content: '', // Aseguramos que se inicie con una cadena vacía
+    content: '',
     tags: '',
     coverImage: null,
     coverImagePreview: null,
-    status: 'draft', // 'draft', 'published'
+    status: 'draft',
     publishDate: new Date().toISOString().slice(0, 10),
-    editorMode: 'simple', // Set default mode to 'simple'
-    resumen: '', // Añadimos el campo resumen
+    editorMode: 'simple',
+    resumen: '',
   });
 
-  const [isEditing, setIsEditing] = useState(false); // Estado para saber si estamos editando un post existente
+  const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  // Estado para controlar qué categoría tiene el cursor encima
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -158,43 +158,28 @@ const PostEditor = () => {
     "Comunidad y Colaboración": "Espacios de colaboración e intercambio entre miembros de la comunidad educativa."
   };
 
-  // Estilos para animaciones de tooltips
-  const keyframes = `
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-      to {
-        opacity: 0.98;
-        transform: translateY(0);
-      }
-    }
+  // Efectos para animaciones moderadas y balanceadas
+  useEffect(() => {
+    setMounted(true);
     
-    @keyframes fadeOut {
-      from {
-        opacity: 0.98;
-        transform: translateY(0);
-      }
-      to {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-    }
+    // Timing balanceado - ni muy rápido ni muy lento
+    const timers = [
+      setTimeout(() => setPageVisible(true), 100),
+      setTimeout(() => setSidebarVisible(true), 250),
+      setTimeout(() => setTitleVisible(true), 400),
+      setTimeout(() => setContentVisible(true), 550),
+      setTimeout(() => setEditorVisible(true), 700),
+      setTimeout(() => setSummaryVisible(true), 850),
+      setTimeout(() => setButtonsVisible(true), 1000)
+    ];
 
-    .tooltip-arrow {
-      position: absolute;
-      bottom: -8px;
-      left: 50%;
-      margin-left: -8px;
-      width: 0;
-      height: 0;
-      border-left: 8px solid transparent;
-      border-right: 8px solid transparent;
-      border-top: 8px solid white;
-    }
-  `;
+    return () => {
+      timers.forEach(timer => clearTimeout(timer));
+    };
+  }, []);
 
+  // Resto del código se mantiene igual...
+  
   // Cargar categorías desde el backend
   useEffect(() => {
     const fetchCategories = async () => {
@@ -205,7 +190,6 @@ const PostEditor = () => {
         if (data && Array.isArray(data)) {
           setCategories(data);
         } else {
-          // Si no hay datos o no es un array, usar categorías predeterminadas
           setCategories([
             { ID_categoria: 1, Nombre_categoria: 'Noticias' },
             { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
@@ -218,7 +202,6 @@ const PostEditor = () => {
         }
       } catch (error) {
         console.error('Error al cargar categorías:', error);
-        // Usar categorías predeterminadas en caso de error
         setCategories([
           { ID_categoria: 1, Nombre_categoria: 'Noticias' },
           { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
@@ -248,8 +231,6 @@ const PostEditor = () => {
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-
-    // Cleanup: remover el listener cuando el componente se desmonte
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -258,64 +239,163 @@ const PostEditor = () => {
   // Cargar post existente si hay un postId
   useEffect(() => {
     const loadExistingPost = async () => {
-      if (postId) {
-        try {
-          const postData = await getPublicacionById(postId);
-          console.log('Post cargado para edición:', postData);
-          
-          // Encontrar la categoría por su ID
-          let categoryName = '';
-          if (postData.categorias && postData.categorias.length > 0 && categories.length > 0) {
-            const category = categories.find(cat => 
-              cat.ID_categoria === postData.categorias[0].ID_categoria
-            );
-            if (category) {
-              categoryName = category.Nombre_categoria;
-            }
-          }
-          
-          setPost({
-            title: postData.Titulo || '',
-            category: categoryName,
-            content: postData.contenido || '',
-            tags: '',
-            coverImage: null,
-            coverImagePreview: postData.Imagen_portada ? 
-              (postData.Imagen_portada.startsWith('data:') ? 
-                postData.Imagen_portada : 
-                `data:image/jpeg;base64,${postData.Imagen_portada}`) : 
-              null,
-            status: postData.Estado || 'draft',
-            publishDate: postData.Fecha_publicacion ? 
-              new Date(postData.Fecha_publicacion).toISOString().slice(0, 10) : 
-              new Date().toISOString().slice(0, 10),
-            editorMode: 'simple',
-            resumen: postData.Resumen || '',
-            Imagen_portada: postData.Imagen_portada || null
-          });
-          
-          setIsEditing(true);
-          setSaveMessage({
-            type: 'success',
-            text: 'Post cargado correctamente para edición',
-            icon: '✓'
-          });
-          
-          setTimeout(() => setSaveMessage(null), 3000);
-        } catch (error) {
-          console.error('Error al cargar el post para edición:', error);
-          setSaveMessage({
-            type: 'error',
-            text: `Error al cargar el post: ${error.message}`,
-            icon: '✖'
-          });
-          
-          setTimeout(() => setSaveMessage(null), 3000);
+      if (!postId) {
+        console.log('Creando nueva publicación');
+        setIsInitialized(true);
+        return;
+      }
+      
+      try {
+        console.log(`Cargando publicación existente con ID: ${postId}`);
+        const postData = await getPublicacionById(postId);
+        
+        if (!postData) {
+          console.error('No se encontró la publicación');
+          return;
         }
+        
+        console.log('Datos de la publicación cargados:', postData);
+        
+        // Verificar si el título está presente
+        if (!postData.titulo) {
+          console.error('ERROR: El título de la publicación está vacío o indefinido');
+          console.log('Propiedades disponibles en postData:', Object.keys(postData));
+          
+          // Buscar propiedades alternativas que puedan contener el título
+          let tituloAlternativo = null;
+          if (postData.Titulo) tituloAlternativo = postData.Titulo;
+          else if (postData.title) tituloAlternativo = postData.title;
+          
+          if (tituloAlternativo) {
+            console.log('Se encontró título alternativo:', tituloAlternativo);
+            postData.titulo = tituloAlternativo;
+          } else {
+            console.warn('No se pudo encontrar el título en ninguna propiedad alternativa');
+            postData.titulo = 'Sin título';
+          }
+        }
+        
+        // Verificar si el resumen está presente
+        if (!postData.resumen) {
+          console.warn('El resumen de la publicación está vacío o indefinido');
+          
+          // Buscar propiedades alternativas que puedan contener el resumen
+          let resumenAlternativo = null;
+          if (postData.Resumen) resumenAlternativo = postData.Resumen;
+          else if (postData.summary) resumenAlternativo = postData.summary;
+          else if (postData.descripcion) resumenAlternativo = postData.descripcion;
+          else if (postData.Descripcion) resumenAlternativo = postData.Descripcion;
+          
+          if (resumenAlternativo) {
+            console.log('Se encontró resumen alternativo:', 
+                        resumenAlternativo.substring(0, 50) + '...');
+            postData.resumen = resumenAlternativo;
+          } else {
+            console.log('Creando resumen a partir del título');
+            postData.resumen = postData.titulo ? postData.titulo.substring(0, 150) : '';
+          }
+        }
+        
+        // Verificar si la imagen de portada está presente
+        let imagenPortada = postData.imagen_url || postData.Imagen_portada || null;
+        if (!imagenPortada) {
+          console.warn('La imagen de portada está vacía o indefinida');
+          
+          // Buscar propiedades alternativas que puedan contener la imagen
+          if (postData.imagen) imagenPortada = postData.imagen;
+          else if (postData.Imagen) imagenPortada = postData.Imagen;
+          else if (postData.image_url) imagenPortada = postData.image_url;
+          else if (postData.imageUrl) imagenPortada = postData.imageUrl;
+          else if (postData.coverImage) imagenPortada = postData.coverImage;
+          
+          if (imagenPortada) {
+            console.log('Se encontró imagen de portada alternativa');
+          } else {
+            console.warn('No se pudo encontrar la imagen de portada en ninguna propiedad alternativa');
+          }
+        }
+        
+        // Verificar si el contenido está presente
+        if (!postData.contenido) {
+          console.error('ERROR: El contenido de la publicación está vacío o indefinido');
+          console.log('Propiedades disponibles en postData:', Object.keys(postData));
+          
+          // Buscar propiedades alternativas que puedan contener el contenido
+          let contenidoAlternativo = null;
+          if (postData.Contenido) contenidoAlternativo = postData.Contenido;
+          else if (postData.content) contenidoAlternativo = postData.content;
+          else if (postData.htmlContent) contenidoAlternativo = postData.htmlContent;
+          
+          if (contenidoAlternativo) {
+            console.log('Se encontró contenido alternativo en otra propiedad:', 
+                        contenidoAlternativo.substring(0, 50) + '...');
+            postData.contenido = contenidoAlternativo;
+          } else {
+            console.warn('No se pudo encontrar el contenido en ninguna propiedad alternativa');
+          }
+        }
+        
+        const categoriaObj = categories.find(cat => 
+          cat.ID_categoria === (postData.categorias && postData.categorias[0]?.ID_categoria)
+        );
+        
+        const categoria = categoriaObj ? categoriaObj.Nombre_categoria : '';
+        
+        // Determinar si el contenido es HTML completo o tiene marcado HTML
+        const contentHasHTML = postData.contenido && (
+          postData.contenido.includes('<') || 
+          postData.contenido.includes('&lt;')
+        );
+        
+        // Verificar si es HTML completo (con DOCTYPE o tag html)
+        const isHTMLDocument = isFullHTML(postData.contenido);
+        
+        console.log('¿El contenido tiene HTML?', contentHasHTML);
+        console.log('¿Es un documento HTML completo?', isHTMLDocument);
+        console.log('Contenido del post:', postData.contenido ? postData.contenido.substring(0, 100) + '...' : 'vacío');
+        
+        // Determinar el modo de editor basado en el contenido
+        const editorMode = isHTMLDocument ? 'html' : (contentHasHTML ? 'html' : 'simple');
+        console.log('Modo de editor seleccionado:', editorMode);
+        
+        // Crear el objeto post con los datos cargados
+        const postObj = {
+          title: postData.titulo || '',
+          content: postData.contenido || '',
+          category: categoria,
+          tags: postData.tags || '',
+          coverImagePreview: imagenPortada,
+          status: postData.estado || 'draft',
+          publishDate: postData.fecha_publicacion ? new Date(postData.fecha_publicacion).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+          editorMode: editorMode,
+          resumen: postData.resumen || '',
+          Imagen_portada: imagenPortada
+        };
+        
+        console.log('Objeto post creado:', {
+          title: postObj.title,
+          contentLength: postObj.content ? postObj.content.length : 0,
+          contentPreview: postObj.content ? postObj.content.substring(0, 50) + '...' : 'vacío',
+          editorMode: postObj.editorMode,
+          resumen: postObj.resumen ? postObj.resumen.substring(0, 50) + '...' : 'vacío',
+          imagenPortada: postObj.coverImagePreview ? 'presente' : 'no presente'
+        });
+        
+        // Actualizar el estado
+        setPost(postObj);
+        
+        // Asegurarse de que el contenido se cargue correctamente en el editor
+        console.log('Contenido cargado en el editor:', postData.contenido ? postData.contenido.substring(0, 50) + '...' : 'vacío');
+        
+        setIsEditing(true);
+        setIsInitialized(true);
+        
+      } catch (error) {
+        console.error('Error al cargar la publicación:', error);
+        setIsInitialized(true);
       }
     };
     
-    // Solo cargar el post después de que las categorías estén disponibles
     if (categories.length > 0 && postId) {
       loadExistingPost();
     }
@@ -324,31 +404,43 @@ const PostEditor = () => {
   // Manejador para cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Log para depuración
-    console.log(`Changing ${name} to ${value}`);
-
-    setPost(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Log más detallado para el contenido
+    if (name === 'content') {
+      console.log(`Changing ${name}, length: ${value ? value.length : 0}`);
+      console.log(`Content preview: ${value ? value.substring(0, 50) + '...' : 'vacío'}`);
+    } else {
+      console.log(`Changing ${name} to ${value}`);
+    }
+    
+    setPost(prev => {
+      const updatedPost = {
+        ...prev,
+        [name]: value
+      };
+      
+      // Log adicional para verificar que el contenido se actualiza correctamente
+      if (name === 'content') {
+        console.log(`Post content updated, new length: ${updatedPost.content ? updatedPost.content.length : 0}`);
+      }
+      
+      return updatedPost;
+    });
   };
 
   // Manejador para cambios en la imagen de portada
   const handleImageChange = (e, base64Image) => {
     const file = e.target.files && e.target.files[0];
     
-    // Si hay un archivo y base64Image, es una nueva imagen
     if (file && base64Image) {
       console.log("Imagen Base64 recibida:", base64Image ? base64Image.substring(0, 50) + "..." : "No hay imagen Base64");
       setPost(prev => ({
         ...prev,
         coverImage: file,
-        coverImagePreview: base64Image, // Usar base64 en lugar de blob URL
+        coverImagePreview: base64Image,
         Imagen_portada: base64Image
       }));
     } 
-    // Si no hay archivo (eliminación de imagen)
     else if (!file && base64Image === null) {
       console.log("Eliminando imagen seleccionada");
       setPost(prev => ({
@@ -360,47 +452,15 @@ const PostEditor = () => {
     }
   };
 
-  // Cargar datos guardados en localStorage al iniciar
+  // Actualizar el estado cuando cambia el post
   useEffect(() => {
-    // Cargar borrador del almacenamiento local
-    const savedPost = loadPostFromLocalStorage();
-    if (savedPost) {
-      setPost(prev => ({
-        ...prev,
-        ...savedPost,
-        // Asegurarnos que editorMode existe y tiene un valor válido
-        editorMode: savedPost.editorMode || 'simple'
-      }));
-    }
-    
-    // Marcar como inicializado después de cargar
-    setIsInitialized(true);
-    
-    // Auto-guardado cada 30 segundos
-    let interval;
-    setTimeout(() => {
-      interval = setInterval(() => {
-        if (post.title || post.content) {
-          saveDraft();
-        }
-      }, 30000);
-    }, 5000); // Esperar 5 segundos antes de iniciar el intervalo
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, []);
-
-  // Autoguardado cuando el contenido cambia
-  useEffect(() => {
-    if (post.content.length > 0 || post.title.length > 0) {
-      savePostToLocalStorage(post);
+    if (isInitialized && post) {
+      console.log("Post actualizado:", post.title);
     }
   }, [post]);
 
-  // Guardar como borrador
+  // Resto de las funciones (saveDraft, publishPost, exportToFile, importFile) - mantener las mismas
   const saveDraft = async () => {
-    // Validación básica
     if (!post.title.trim()) {
       setSaveMessage({
         type: 'error',
@@ -415,10 +475,8 @@ const PostEditor = () => {
     setIsSaving(true);
     
     try {
-      // Convertir la categoría seleccionada a un ID numérico si existe
       let categorias = [];
       if (post.category) {
-        // Buscar el ID de la categoría seleccionada
         const categoriaSeleccionada = categories.find(cat => 
           typeof cat === 'object' ? cat.Nombre_categoria === post.category : cat === post.category
         );
@@ -426,33 +484,28 @@ const PostEditor = () => {
         if (typeof categoriaSeleccionada === 'object' && categoriaSeleccionada.ID_categoria) {
           categorias = [categoriaSeleccionada.ID_categoria];
         } else if (post.category) {
-          // Si no encontramos el ID pero hay una categoría seleccionada, usamos 1 como valor predeterminado
           console.warn("No se pudo encontrar el ID de la categoría, usando valor predeterminado");
           categorias = [1];
         }
       }
       
-      // Preparar los datos para el backend
       const postData = {
         titulo: post.title,
         contenido: post.content,
-        resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
+        resumen: post.resumen || post.title.substring(0, 150),
         estado: 'borrador',
         categorias: categorias,
-        Imagen_portada: post.Imagen_portada || null // Enviar la imagen en Base64 si existe
+        Imagen_portada: post.Imagen_portada || null
       };
       
       console.log("Guardando borrador con datos:", postData);
       
-      // Guardar en el backend
       let result;
       
       if (isEditing) {
-        // Si estamos editando un post existente, usamos updatePublicacion
         console.log(`Actualizando borrador existente con ID: ${postId}`);
         result = await updatePublicacion(postId, postData);
       } else {
-        // Detectar si el contenido tiene imágenes HTML (de SimpleEditor)
         const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
         const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
         
@@ -472,9 +525,6 @@ const PostEditor = () => {
         }
       }
       
-      // Guardar en localStorage como respaldo
-      savePostToLocalStorage(post);
-      
       setIsSaving(false);
       setSaveMessage({
         type: 'success',
@@ -482,7 +532,6 @@ const PostEditor = () => {
         icon: '✓'
       });
       
-      // Limpiar mensaje después de unos segundos
       setTimeout(() => setSaveMessage(null), 3000);
     } catch (error) {
       console.error('Error al guardar borrador:', error);
@@ -497,9 +546,7 @@ const PostEditor = () => {
     }
   };
 
-  // Publicar el post
   const publishPost = async () => {
-    // Validación básica
     if (!post.title.trim() || !post.content.trim() || !post.category) {
       setSaveMessage({
         type: 'error',
@@ -514,8 +561,6 @@ const PostEditor = () => {
     setIsPublishing(true);
     
     try {
-      // Convertir la categoría seleccionada a un ID numérico
-      // Buscar el ID de la categoría seleccionada
       const categoriaSeleccionada = categories.find(cat => 
         typeof cat === 'object' ? cat.Nombre_categoria === post.category : cat === post.category
       );
@@ -524,23 +569,21 @@ const PostEditor = () => {
       if (typeof categoriaSeleccionada === 'object' && categoriaSeleccionada.ID_categoria) {
         categoriaId = categoriaSeleccionada.ID_categoria;
       } else {
-        // Si no encontramos el ID, usamos 1 como valor predeterminado (asumiendo que existe)
         console.warn("No se pudo encontrar el ID de la categoría, usando valor predeterminado");
         categoriaId = 1;
       }
       
-      // Preparar los datos para el backend
       const postData = {
         titulo: post.title,
         contenido: post.content,
-        resumen: post.resumen || post.title.substring(0, 150), // Usar el resumen o parte del título como resumen si no existe
+        resumen: post.resumen || post.title.substring(0, 150),
         estado: 'publicado',
-        categorias: [categoriaId], // Usar el ID numérico de la categoría
-        Imagen_portada: post.Imagen_portada || null // Enviar la imagen en Base64 si existe
+        categorias: [categoriaId],
+        Imagen_portada: post.Imagen_portada || null
       };
       
       console.log("Enviando publicación con datos:", postData);
-      // Verificar si la imagen está presente
+      
       if (post.Imagen_portada) {
         console.log("Imagen incluida en la publicación (primeros 50 caracteres):", post.Imagen_portada.substring(0, 50) + "...");
         console.log("Longitud de la imagen Base64:", post.Imagen_portada.length);
@@ -548,11 +591,9 @@ const PostEditor = () => {
         console.log("No se incluyó imagen en la publicación");
       }
       
-      // Determinar qué endpoint usar
       let result;
       
       if (isEditing) {
-        // Si estamos editando un post existente, usamos updatePublicacion
         console.log(`Actualizando post existente con ID: ${postId}`);
         result = await updatePublicacion(postId, postData);
         setSaveMessage({
@@ -561,7 +602,6 @@ const PostEditor = () => {
           icon: '🎉'
         });
       } else {
-        // Detectar si el contenido tiene imágenes HTML (de SimpleEditor) o es modo HTML explícito
         const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
         const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
         
@@ -570,18 +610,17 @@ const PostEditor = () => {
           console.log("Contenido HTML longitud:", post.content.length);
           console.log("Muestra del contenido HTML:", post.content.substring(0, 150) + "...");
           
-          // Verificar que el contenido no sea vacío o solo espacios
           if (!post.content.trim()) {
             throw new Error("El contenido HTML está vacío o solo contiene espacios");
           }
           
           result = await createPublicacionFromHTML({
             titulo: postData.titulo,
-            htmlContent: post.content, // Enviar como htmlContent
+            htmlContent: post.content,
             resumen: post.resumen || postData.resumen,
             estado: postData.estado,
             categorias: postData.categorias,
-            Imagen_portada: postData.Imagen_portada // Enviar la imagen en Base64
+            Imagen_portada: postData.Imagen_portada
           });
         } else {
           console.log("Usando endpoint estándar para contenido simple");
@@ -598,13 +637,8 @@ const PostEditor = () => {
       setIsPublishing(false);
       setPost(prev => ({ ...prev, status: 'published' }));
       
-      // Limpiar mensaje después de unos segundos
       setTimeout(() => setSaveMessage(null), 3000);
       
-      // Limpieza del borrador en localStorage después de publicar
-      localStorage.removeItem('post_draft');
-      
-      // Redireccionar al panel de administración después de publicar/actualizar
       setTimeout(() => {
         navigate('/admin/panel', { state: { forceReload: true } });
       }, 1500);
@@ -621,43 +655,49 @@ const PostEditor = () => {
     }
   };
 
-  // Exportar el post a HTML para descargar
   const exportToFile = () => {
     try {
-      // Prepare the data for export (including the resumen field)
-      const postData = {
-        title: post.title,
-        content: post.content,
-        category: post.category,
-        tags: post.tags,
-        status: post.status,
-        publishDate: post.publishDate,
-        editorMode: post.editorMode,
-        resumen: post.resumen,
-        // We don't include the image as it's a File object which can't be serialized
-        // But we could include the coverImagePreview URL
-        coverImagePreview: post.coverImagePreview
-      };
+      // Exportar como HTML si estamos en modo HTML
+      if (post.editorMode === 'html') {
+        const htmlContent = post.content;
+        const blob = new Blob([htmlContent], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.html`;
+        document.body.appendChild(link);
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+      } 
+      // Exportar como JSON en cualquier caso
+      else {
+        const postData = {
+          title: post.title,
+          content: post.content,
+          category: post.category,
+          tags: post.tags,
+          status: post.status,
+          publishDate: post.publishDate,
+          editorMode: post.editorMode,
+          resumen: post.resumen,
+          coverImagePreview: post.coverImagePreview
+        };
+        
+        const jsonData = JSON.stringify(postData, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`;
+        document.body.appendChild(link);
+        link.click();
+        
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+      }
       
-      // Convert to JSON
-      const jsonData = JSON.stringify(postData, null, 2);
-      
-      // Create a blob from the JSON data
-      const blob = new Blob([jsonData], { type: 'application/json' });
-      
-      // Create a download link and trigger it
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${post.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`;
-      document.body.appendChild(link);
-      link.click();
-      
-      // Clean up
-      URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-      
-      // Show success message
       setSaveMessage({
         type: 'success',
         text: 'Post exportado correctamente',
@@ -677,7 +717,6 @@ const PostEditor = () => {
     }
   };
 
-  // Importar un archivo HTML
   const importFile = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -685,29 +724,49 @@ const PostEditor = () => {
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        // Parse the imported JSON data
-        const importedData = JSON.parse(event.target.result);
+        const fileContent = event.target.result;
         
-        // Update the post state with the imported data
-        setPost(prev => ({
-          ...prev,
-          title: importedData.title || '',
-          content: importedData.content || '',
-          category: importedData.category || '',
-          tags: importedData.tags || '',
-          status: importedData.status || 'draft',
-          publishDate: importedData.publishDate || new Date().toISOString().slice(0, 10),
-          editorMode: importedData.editorMode || 'simple',
-          resumen: importedData.resumen || '',
-          coverImagePreview: importedData.coverImagePreview || null
-        }));
-        
-        // Show success message
-        setSaveMessage({
-          type: 'success',
-          text: 'Post importado correctamente',
-          icon: '📥'
-        });
+        // Intentar primero como JSON
+        if (file.name.endsWith('.json')) {
+          const importedData = JSON.parse(fileContent);
+          
+          setPost(prev => ({
+            ...prev,
+            title: importedData.title || '',
+            content: importedData.content || '',
+            category: importedData.category || '',
+            tags: importedData.tags || '',
+            status: importedData.status || 'draft',
+            publishDate: importedData.publishDate || new Date().toISOString().slice(0, 10),
+            editorMode: importedData.editorMode || 'simple',
+            resumen: importedData.resumen || '',
+            coverImagePreview: importedData.coverImagePreview || null
+          }));
+          
+          setSaveMessage({
+            type: 'success',
+            text: 'Post importado correctamente desde JSON',
+            icon: '📥'
+          });
+        } 
+        // Si es HTML, importar como contenido
+        else if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+          setPost(prev => ({
+            ...prev,
+            content: fileContent,
+            editorMode: 'html'
+          }));
+          
+          setSaveMessage({
+            type: 'success',
+            text: 'HTML importado correctamente',
+            icon: '📥'
+          });
+        }
+        // Otro tipo de archivo
+        else {
+          throw new Error('Formato de archivo no soportado');
+        }
         
         setTimeout(() => setSaveMessage(null), 3000);
       } catch (error) {
@@ -725,64 +784,88 @@ const PostEditor = () => {
     reader.readAsText(file);
   };
 
-  // Estilos CSS
+  // Estilos con animaciones moderadas
   const styles = {
     container: {
+      minHeight: '100vh',
       maxWidth: "1200px",
       margin: "0 auto",
-      padding: `${"100px"} ${spacing.md}`,
-      fontFamily: typography.fontFamily
+      padding: `100px ${spacing.md} 100px`,
+      fontFamily: typography.fontFamily,
+      opacity: mounted && pageVisible ? 1 : 0,
+      transform: mounted && pageVisible ? 'translateY(0)' : 'translateY(12px)',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+      position: 'relative',
+      zIndex: 1
     },
     editorContainer: {
       display: "grid",
-      // Cambiado: Invertir el orden de las columnas para que la barra lateral esté a la izquierda
       gridTemplateColumns: "300px 1fr",
       gap: spacing.xl,
-      marginBottom: spacing.xxl
+      marginBottom: spacing.xxl,
+      minHeight: '600px',
     },
     mainEditor: {
       width: "100%",
-      maxWidth: "800px" // Anchura predefinida para el contenido del post
+      maxWidth: "800px",
+      opacity: editorVisible ? 1 : 0,
+      transform: editorVisible ? 'translateX(0)' : 'translateX(20px)',
+      transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
     },
     sidebar: {
-      // No necesita cambios específicos de estilo aquí
+      opacity: sidebarVisible ? 1 : 0,
+      transform: sidebarVisible ? 'translateX(0)' : 'translateX(-20px)',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)'
     },
     formGroup: {
       marginBottom: spacing.lg
     },
+    titleContainer: {
+      opacity: titleVisible ? 1 : 0,
+      transform: titleVisible ? 'translateY(0)' : 'translateY(12px)',
+      transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    },
+    summaryContainer: {
+      marginBottom: spacing.xl,
+      marginTop: spacing.xl,
+      border: `1px solid ${colors.gray200}`,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      backgroundColor: colors.white,
+      boxShadow: shadows.sm,
+      opacity: summaryVisible ? 1 : 0,
+      transform: summaryVisible ? 'translateY(0) scale(1)' : 'translateY(12px) scale(0.98)',
+      transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
+    },
     actionsContainer: {
       display: "flex",
-      justifyContent: "space-between",
+      justifyContent: "flex-end",
       gap: spacing.md,
-      marginTop: spacing.xl
+      marginTop: spacing.xl,
+      opacity: buttonsVisible ? 1 : 0,
+      transform: buttonsVisible ? 'translateY(0)' : 'translateY(15px)',
+      transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
     },
     actionButton: {
       padding: `${spacing.sm} ${spacing.lg}`,
       borderRadius: borderRadius.md,
       fontWeight: typography.fontWeight.medium,
       cursor: "pointer",
-      transition: "all 0.3s ease",
+      transition: "all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1)", // Hover moderado
       fontSize: typography.fontSize.md,
       border: "none",
-      // Estilos específicos se aplicarán en cada botón
+      transform: 'scale(1)',
     },
     saveButton: {
       backgroundColor: colors.secondary,
       color: colors.primary,
-      "&:hover": {
-        backgroundColor: colors.secondary + "cc", // Añadir transparencia al hover
-      }
     },
     publishButton: {
       backgroundColor: colors.primary,
       color: colors.white,
-      "&:hover": {
-        backgroundColor: colors.primaryLight,
-      }
     }
   };
 
-  // Modificar el componente PostMetadata para usar las categorías cargadas
   const renderPostMetadata = () => {
     return (
       <div style={{
@@ -810,7 +893,6 @@ const PostEditor = () => {
             Categoría
           </label>
 
-          {/* Custom Dropdown Implementation */}
           <div style={{
             position: "relative",
             width: "100%",
@@ -824,7 +906,7 @@ const PostEditor = () => {
                 fontSize: typography.fontSize.md,
                 backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
                 borderLeft: `4px solid ${colors.secondary}`,
-                transition: "all 0.3s ease",
+                transition: "all 0.25s ease", // Moderado
                 cursor: "pointer",
                 display: "flex",
                 justifyContent: "space-between",
@@ -839,7 +921,7 @@ const PostEditor = () => {
               <span style={{
                 marginLeft: spacing.sm,
                 transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0)',
-                transition: 'transform 0.2s ease-in-out'
+                transition: 'transform 0.2s ease'
               }}>▼</span>
             </div>
 
@@ -852,12 +934,12 @@ const PostEditor = () => {
                 backgroundColor: colors.white,
                 borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
-                //borderLeft: `4px solid ${colors.secondary}`,
                 boxShadow: shadows.md,
                 zIndex: 20,
                 maxHeight: "300px",
                 overflowY: "auto",
-                width: "100%"
+                width: "100%",
+                animation: 'fadeIn 0.25s ease-out'
               }}
                 data-dropdown
               >
@@ -869,7 +951,7 @@ const PostEditor = () => {
                     borderBottom: `1px solid ${colors.gray200}`,
                     transition: "background-color 0.2s ease",
                     position: "relative",
-                    color: colors.primary, // Cambiado a color primario
+                    color: colors.primary,
                     backgroundColor: 'transparent',
                     borderLeft: 'none'
                   }}
@@ -897,11 +979,11 @@ const PostEditor = () => {
                         transition: "all 0.2s ease",
                         position: "relative",
                         backgroundColor: hoveredCategory === categoryName
-                          ? colors.secondary + '15' // Reducido de 25% a 15% para hover
+                          ? colors.secondary + '15'
                           : isSelected
-                            ? colors.secondary + '08' // Reducido de 15% a 8% para selección
+                            ? colors.secondary + '08'
                             : 'transparent',
-                        color: colors.primary, // Color de texto
+                        color: colors.primary,
                         fontWeight: isSelected ? typography.fontWeight.bold : typography.fontWeight.normal,
                         borderLeft: 'none'
                       }}
@@ -915,7 +997,6 @@ const PostEditor = () => {
                     >
                       {categoryName}
 
-                      {/* Tooltip de descripción */}
                       {hoveredCategory === categoryName && categoryDescriptions[categoryName] && (
                         <div style={{
                           position: "absolute",
@@ -933,7 +1014,7 @@ const PostEditor = () => {
                           zIndex: 100,
                           width: "100%",
                           opacity: 0.98,
-                          animation: "fadeIn 0.2s ease-in-out",
+                          animation: "fadeIn 0.2s ease-out",
                           pointerEvents: "none",
                           fontWeight: typography.fontWeight.medium,
                           maxWidth: "100%",
@@ -953,7 +1034,6 @@ const PostEditor = () => {
           </div>
         </div>
 
-
         <div style={{ marginBottom: spacing.md, position: 'relative' }}>
           <label style={{
             display: 'block',
@@ -964,7 +1044,6 @@ const PostEditor = () => {
             Fecha de publicación
           </label>
 
-          {/* Campo de fecha con estilo similar a categorías y etiquetas */}
           <div style={{
             position: "relative",
             width: "100%",
@@ -976,12 +1055,12 @@ const PostEditor = () => {
               border: `1px solid ${colors.gray200}`,
               fontSize: typography.fontSize.md,
               backgroundColor: isDarkMode ? colors.backgroundDark : colors.white,
-              transition: "all 0.3s ease",
+              transition: "all 0.25s ease",
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
               color: isDarkMode ? colors.textLight : colors.textPrimary,
-              pointerEvents: "none", // Deshabilita interacciones con el contenedor
+              pointerEvents: "none",
             }}>
               <input
                 type="text"
@@ -997,7 +1076,7 @@ const PostEditor = () => {
                   fontSize: typography.fontSize.md,
                   backgroundColor: "transparent",
                   color: isDarkMode ? colors.textLight : colors.textPrimary,
-                  cursor: "default" // Cambia el cursor para indicar que no es interactivo
+                  cursor: "default"
                 }}
               />
               <Calendar size={18} color={colors.gray400} />
@@ -1008,74 +1087,141 @@ const PostEditor = () => {
     );
   };
 
-  // Solo renderizar una vez inicializado para evitar problemas de redimensión
   if (loadingCategories) {
-    return <div style={styles.container}>Cargando categorías...</div>;
+    return (
+      <div style={{
+        ...styles.container,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh'
+      }}>
+        <div style={{
+          animation: 'pulse 2s infinite',
+          display: 'flex',
+          alignItems: 'center',
+          gap: spacing.md
+        }}>
+          <div style={{
+            width: '20px',
+            height: '20px',
+            border: `3px solid ${colors.primary}`,
+            borderTop: '3px solid transparent',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }}></div>
+          Cargando categorías...
+        </div>
+      </div>
+    );
   }
 
   return (
     <div style={styles.container}>
-      {/* Estilos CSS en línea para animaciones */}
+      {/* Estilos CSS moderados */}
       <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
           }
-          @keyframes slideInUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+          @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
           }
-          @keyframes pulseIcon {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+          @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
           }
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }
-          @keyframes shine {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
+          @keyframes scaleIn {
+            from { transform: scale(0.96); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
           }
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-            20%, 40%, 60%, 80% { transform: translateX(5px); }
+          .tooltip-arrow {
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            margin-left: -8px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
           }
-          ${keyframes}
         `
       }} />
 
       <div style={styles.editorContainer}>
-        {/* Sidebar - Ahora a la izquierda */}
+        {/* Sidebar */}
         <div style={styles.sidebar}>
-          <CoverImageUploader
-            coverImagePreview={post.coverImagePreview}
-            onChange={handleImageChange}
-          />
+          <div style={{
+            opacity: sidebarVisible ? 1 : 0,
+            transform: sidebarVisible ? 'translateY(0) scale(1)' : 'translateY(8px) scale(0.98)',
+            transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            transitionDelay: '0.05s'
+          }}>
+            <CoverImageUploader
+              coverImagePreview={post.coverImagePreview}
+              onChange={handleImageChange}
+              isAnimated={sidebarVisible}
+            />
+          </div>
 
-          {renderPostMetadata()}
+          <div style={{
+            opacity: sidebarVisible ? 1 : 0,
+            transform: sidebarVisible ? 'translateY(0) scale(1)' : 'translateY(8px) scale(0.98)',
+            transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            transitionDelay: '0.1s'
+          }}>
+            {renderPostMetadata()}
+          </div>
 
-          <ImportExportActions
-            onExport={exportToFile}
-            onImport={importFile}
-          />
+          <div style={{
+            opacity: sidebarVisible ? 1 : 0,
+            transform: sidebarVisible ? 'translateY(0) scale(1)' : 'translateY(8px) scale(0.98)',
+            transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+            transitionDelay: '0.15s'
+          }}>
+            <ImportExportActions
+              onExport={exportToFile}
+              onImport={importFile}
+              isAnimated={sidebarVisible}
+            />
+          </div>
         </div>
 
-        {/* Main Editor - Ahora a la derecha */}
+        {/* Main Editor */}
         <div style={styles.mainEditor}>
-          <div style={styles.formGroup}>
+          <div style={{
+            ...styles.formGroup,
+            ...styles.titleContainer
+          }}>
             <label style={{
               display: 'flex',
               alignItems: 'center',
               gap: spacing.xs,
               marginBottom: spacing.xs,
               fontWeight: typography.fontWeight.medium,
-              color: isDarkMode ? colors.textLight : colors.primary
+              color: isDarkMode ? colors.textLight : colors.primary,
+              opacity: titleVisible ? 1 : 0,
+              transform: titleVisible ? 'translateX(0)' : 'translateX(-12px)',
+              transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+              transitionDelay: '0.1s'
             }} htmlFor="title">
-              <span style={{ color: isDarkMode ? colors.textLight : colors.primary, fontSize: '1.4em' }}>📝</span> Título del post
+              <span style={{ 
+                color: isDarkMode ? colors.textLight : colors.primary, 
+                fontSize: '1.4em',
+                opacity: titleVisible ? 1 : 0,
+                transform: titleVisible ? 'scale(1) rotate(0deg)' : 'scale(0.85) rotate(-25deg)',
+                transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                transitionDelay: '0.2s',
+                animation: titleVisible ? 'float 3.5s ease-in-out infinite 0.8s' : 'none'
+              }}>📝</span> 
+              Título del post
             </label>
             <input
               type="text"
@@ -1089,46 +1235,50 @@ const PostEditor = () => {
                 borderRadius: borderRadius.md,
                 border: `1px solid ${colors.gray200}`,
                 fontSize: typography.fontSize.lg,
-                transition: "all 0.3s ease",
+                transition: "all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1)",
                 marginBottom: spacing.md,
                 fontWeight: typography.fontWeight.semiBold,
                 borderLeft: `4px solid ${colors.primary}`,
                 backgroundColor: colors.white,
                 color: isDarkMode ? colors.textPrimary : "#000000",
+                opacity: titleVisible ? 1 : 0,
+                transform: titleVisible ? 'translateY(0) scale(1)' : 'translateY(6px) scale(0.99)',
+                transitionDelay: '0.3s'
               }}
               placeholder="Escribe un título atractivo"
               onFocus={(e) => {
-                e.target.style.boxShadow = `0 0 0 2px ${colors.primary}30`;
+                e.target.style.boxShadow = `0 0 0 3px ${colors.primary}20`;
                 e.target.style.borderLeft = `4px solid ${colors.secondary}`;
+                e.target.style.transform = 'scale(1.003) translateY(-1px)';
               }}
               onBlur={(e) => {
                 e.target.style.boxShadow = 'none';
                 e.target.style.borderLeft = `4px solid ${colors.primary}`;
+                e.target.style.transform = 'scale(1) translateY(0)';
               }}
             />
           </div>
 
           <div style={styles.formGroup}>
-            {/* Etiqueta "Contenido" animada */}
-            <ContentLabel />
+            <ContentLabel isVisible={contentVisible} />
 
-            <DualModeEditor
-              content={post.content}
-              onChange={handleChange}
-              initialMode={post.editorMode}
-            />
+            <div style={{
+              opacity: editorVisible ? 1 : 0,
+              transform: editorVisible ? 'scale(1)' : 'scale(0.99)',
+              transition: 'all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1)',
+              transitionDelay: '0.05s'
+            }}>
+              <DualModeEditor
+                content={post.content}
+                onChange={handleChange}
+                initialMode={post.editorMode}
+                onExport={exportToFile}
+                onImport={importFile}
+              />
+            </div>
           </div>
 
-          {/* Campo para resumen */}
-          <div style={{
-            marginBottom: spacing.xl,
-            marginTop: spacing.xl,
-            border: `1px solid ${colors.gray200}`,
-            borderRadius: borderRadius.md,
-            padding: spacing.md,
-            backgroundColor: colors.white,
-            boxShadow: shadows.sm,
-          }}>
+          <div style={styles.summaryContainer}>
             <label 
               htmlFor="resumen" 
               style={{
@@ -1137,6 +1287,10 @@ const PostEditor = () => {
                 fontSize: typography.fontSize.md,
                 fontWeight: typography.fontWeight.medium,
                 color: colors.textPrimary,
+                opacity: summaryVisible ? 1 : 0,
+                transform: summaryVisible ? 'translateX(0)' : 'translateX(-8px)',
+                transition: 'all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+                transitionDelay: '0.1s'
               }}
             >
               Resumen de la publicación
@@ -1156,45 +1310,68 @@ const PostEditor = () => {
                 fontSize: typography.fontSize.md,
                 color: colors.textPrimary,
                 resize: 'vertical',
+                transition: 'all 0.25s ease',
+                opacity: summaryVisible ? 1 : 0,
+                transform: summaryVisible ? 'scale(1)' : 'scale(0.99)',
+                transitionDelay: '0.15s'
               }}
               maxLength={500}
+              onFocus={(e) => {
+                e.target.style.boxShadow = `0 0 0 3px ${colors.primary}15`;
+                e.target.style.transform = 'scale(1.001)';
+              }}
+              onBlur={(e) => {
+                e.target.style.boxShadow = 'none';
+                e.target.style.transform = 'scale(1)';
+              }}
             />
             <div style={{
               textAlign: 'right',
               marginTop: spacing.xs,
               fontSize: typography.fontSize.sm,
               color: colors.textSecondary,
+              opacity: summaryVisible ? 1 : 0,
+              transition: 'opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1)',
+              transitionDelay: '0.2s'
             }}>
               {post.resumen.length}/500 caracteres
             </div>
           </div>
 
           {saveMessage && (
-            <StatusMessage
-              type={saveMessage.type}
-              text={saveMessage.text}
-              icon={saveMessage.icon}
-            />
+            <div style={{
+              animation: 'scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)'
+            }}>
+              <StatusMessage
+                type={saveMessage.type}
+                text={saveMessage.text}
+                icon={saveMessage.icon}
+              />
+            </div>
           )}
 
           <div style={styles.actionsContainer}>
-            <button
-              onClick={saveDraft}
-              disabled={isSaving}
-              style={{
-                ...styles.actionButton,
-                ...styles.saveButton
-              }}
-            >
-              {isSaving ? 'Guardando...' : 'Guardar borrador'}
-            </button>
-
             <button
               onClick={publishPost}
               disabled={isPublishing}
               style={{
                 ...styles.actionButton,
-                ...styles.publishButton
+                ...styles.publishButton,
+                opacity: buttonsVisible ? 1 : 0,
+                transform: buttonsVisible ? 'scale(1) translateX(0)' : 'scale(0.96) translateX(8px)',
+                transitionDelay: '0.1s'
+              }}
+              onMouseEnter={(e) => {
+                if (!isPublishing) {
+                  e.target.style.transform = 'scale(1.025) translateY(-2px)';
+                  e.target.style.boxShadow = `0 6px 20px ${colors.primary}30`;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isPublishing) {
+                  e.target.style.transform = 'scale(1) translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }
               }}
             >
               {isPublishing ? 'Publicando...' : 'Publicar post'}

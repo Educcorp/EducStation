@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
 import ComentariosList from '../comentarios/ComentariosList';
+import PostSidebar from './PostSidebar';
 
 /**
  * Componente rediseñado para mostrar el detalle de un post
@@ -15,10 +16,10 @@ const PostDetail = ({ post }) => {
   const { id: urlId } = useParams();
   const [iframeHeight, setIframeHeight] = useState(500);
   const [iframeKey, setIframeKey] = useState(Date.now());
-  
+
   // Asegurarse de que tenemos un ID válido, sea del objeto post o de la URL
   const postId = post?.ID_publicaciones || urlId;
-  
+
   // Escuchar mensajes desde el iframe
   useEffect(() => {
     const handleMessage = (event) => {
@@ -50,20 +51,20 @@ const PostDetail = ({ post }) => {
       if (typeof post.Imagen_portada !== 'string') {
         console.error("Error: Imagen_portada no es un string", post.Imagen_portada);
         return (
-          <img 
+          <img
             src="https://via.placeholder.com/800x400?text=Error+de+imagen"
-            alt={post.Titulo} 
+            alt={post.Titulo}
             style={styles.featuredImage}
           />
         );
       }
-      
+
       // Verificar si es Base64
       if (post.Imagen_portada.startsWith('data:image')) {
         return (
-          <img 
-            src={post.Imagen_portada} 
-            alt={post.Titulo} 
+          <img
+            src={post.Imagen_portada}
+            alt={post.Titulo}
             style={styles.featuredImage}
           />
         );
@@ -71,9 +72,9 @@ const PostDetail = ({ post }) => {
         // Si es etiqueta HTML img, renderizarla como tal
         // Modificar el HTML para aplicar el estilo a la imagen
         const modifiedHTML = post.Imagen_portada.replace('<img', `<img style="width:100%;height:100%;object-fit:cover;"`);
-        
+
         return (
-          <div 
+          <div
             style={styles.featuredImageContainer}
             dangerouslySetInnerHTML={{ __html: modifiedHTML }}
           />
@@ -81,9 +82,9 @@ const PostDetail = ({ post }) => {
       } else {
         // Si no es Base64 ni etiqueta img, intentar renderizar como URL
         return (
-          <img 
-            src={post.Imagen_portada} 
-            alt={post.Titulo} 
+          <img
+            src={post.Imagen_portada}
+            alt={post.Titulo}
             style={styles.featuredImage}
             onError={(e) => {
               e.target.onerror = null;
@@ -93,18 +94,18 @@ const PostDetail = ({ post }) => {
         );
       }
     }
-    
+
     // Prioridad 2: Imagen desde Imagen_destacada_ID
     if (post.Imagen_destacada_ID) {
       return (
-        <img 
-          src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`} 
-          alt={post.Titulo} 
+        <img
+          src={`${process.env.REACT_APP_API_URL}/api/imagenes/${post.Imagen_destacada_ID}`}
+          alt={post.Titulo}
           style={styles.featuredImage}
         />
       );
     }
-    
+
     // Si no hay imagen, no mostrar nada
     return null;
   };
@@ -409,12 +410,39 @@ const PostDetail = ({ post }) => {
     navigate('/blog', { state: { forceReload: true } });
   };
 
+  // Aplicar estilos responsivos dinámicamente
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Estilos para el componente
   const styles = {
+    container: {
+      display: 'flex',
+      gap: spacing.xl,
+      width: '100%',
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: spacing.lg,
+    },
+    mainContent: {
+      flex: '2',
+      minWidth: 0, // Permite que el contenido se contraiga
+    },
+    sidebarContent: {
+      flex: '1',
+      maxWidth: '350px',
+      minWidth: '300px',
+    },
     article: {
       width: '100%',
-      maxWidth: '800px',
-      margin: '0 auto',
       padding: spacing.lg,
       backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : '#ffffff',
       borderRadius: borderRadius.md,
@@ -436,6 +464,8 @@ const PostDetail = ({ post }) => {
       marginBottom: spacing.lg,
       color: colors.textSecondary,
       fontSize: typography.fontSize.sm,
+      flexWrap: 'wrap',
+      gap: spacing.sm,
     },
     featuredImage: {
       width: '100%',
@@ -487,73 +517,132 @@ const PostDetail = ({ post }) => {
     },
   };
 
+  // Estilos dinámicos basados en el tamaño de pantalla
+  const dynamicStyles = {
+    container: {
+      ...styles.container,
+      ...(isMobile && {
+        flexDirection: 'column',
+        gap: spacing.lg,
+        padding: spacing.md,
+      }),
+    },
+    mainContent: styles.mainContent,
+    sidebarContent: {
+      ...styles.sidebarContent,
+      ...(isMobile && {
+        maxWidth: 'none',
+        minWidth: 'auto',
+      }),
+    },
+    article: {
+      ...styles.article,
+      ...(isMobile && {
+        padding: spacing.md,
+      }),
+    },
+    header: styles.header,
+    title: {
+      ...styles.title,
+      ...(isMobile && {
+        fontSize: typography.fontSize.xl,
+      }),
+    },
+    meta: {
+      ...styles.meta,
+      ...(isMobile && {
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        gap: spacing.xs,
+      }),
+    },
+    featuredImage: styles.featuredImage,
+    featuredImageContainer: styles.featuredImageContainer,
+    iframeContainer: styles.iframeContainer,
+    categories: styles.categories,
+    category: styles.category,
+    backLink: styles.backLink,
+  };
+
   if (!post) {
     return null;
   }
 
   return (
-    <article style={styles.article}>
-      <header style={styles.header}>
-        <h1 style={styles.title}>{post.Titulo}</h1>
-        <div style={styles.meta}>
-          <span>Por {post.NombreAdmin || 'Admin'}</span>
-          <span>{formatDate(post.Fecha_creacion)}</span>
-        </div>
-        {renderFeaturedImage()}
-      </header>
-      
-      {/* Contenido del post en un iframe para aislamiento total */}
-      <iframe 
-        key={iframeKey}
-        title={post.Titulo || 'Post'}
-        style={styles.iframeContainer}
-        srcDoc={generateIframeContent()}
-        sandbox="allow-same-origin allow-scripts"
-        frameBorder="0"
-        scrolling="no"
-      />
-      
-      {post.categorias && post.categorias.length > 0 && (
-        <div style={styles.categories}>
-          <span>Categorías: </span>
-          {post.categorias.map(cat => (
-            <Link 
-              key={cat.ID_categoria} 
-              to={`/categoria/${cat.ID_categoria}`} 
-              style={styles.category}
-            >
-              {cat.Nombre_categoria}
-            </Link>
-          ))}
-        </div>
-      )}
-      
-      {/* Separador visual antes de los comentarios */}
-      <div className="comentarios-separador" style={{
-        borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-        margin: '2rem 0',
-        width: '100%'
-      }}></div>
-      
-      {/* Sección de comentarios */}
-      <ComentariosList postId={postId} />
-      
-      <button 
-        onClick={navigateToBlог}
-        style={{
-          ...styles.backLink,
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 0,
-          fontFamily: 'inherit',
-          fontSize: 'inherit',
-          fontWeight: 'inherit'
-        }}
-      >
-        ← Volver al blog
-      </button>
-    </article>
+    <div style={dynamicStyles.container}>
+      {/* Contenido Principal */}
+      <div style={dynamicStyles.mainContent}>
+        <article style={dynamicStyles.article}>
+          <header style={dynamicStyles.header}>
+            <h1 style={dynamicStyles.title}>{post.Titulo}</h1>
+            <div style={dynamicStyles.meta}>
+              <span>Por {post.NombreAdmin || 'Admin'}</span>
+              <span>{formatDate(post.Fecha_creacion)}</span>
+            </div>
+            {renderFeaturedImage()}
+          </header>
+
+          {/* Contenido del post en un iframe para aislamiento total */}
+          <div style={{ marginBottom: spacing.lg }}>
+            <iframe
+              key={iframeKey}
+              title={post.Titulo || 'Post'}
+              style={dynamicStyles.iframeContainer}
+              srcDoc={generateIframeContent()}
+              sandbox="allow-same-origin allow-scripts"
+              frameBorder="0"
+              scrolling="no"
+            />
+          </div>
+
+          {post.categorias && post.categorias.length > 0 && (
+            <div style={dynamicStyles.categories}>
+              <span>Categorías: </span>
+              {post.categorias.map(cat => (
+                <Link
+                  key={cat.ID_categoria}
+                  to={`/categoria/${cat.ID_categoria}`}
+                  style={dynamicStyles.category}
+                >
+                  {cat.Nombre_categoria}
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Separador visual antes de los comentarios */}
+          <div className="comentarios-separador" style={{
+            borderTop: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+            margin: '2rem 0',
+            width: '100%'
+          }}></div>
+
+          {/* Sección de comentarios */}
+          <ComentariosList postId={postId} />
+
+          <button
+            onClick={navigateToBlог}
+            style={{
+              ...dynamicStyles.backLink,
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 0,
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
+              fontWeight: 'inherit'
+            }}
+          >
+            ← Volver al blog
+          </button>
+        </article>
+      </div>
+
+      {/* Sidebar */}
+      <div style={dynamicStyles.sidebarContent}>
+        <PostSidebar currentPost={post} />
+      </div>
+    </div>
   );
 };
 

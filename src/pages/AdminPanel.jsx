@@ -1,13 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort, FaSync } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort, FaSync, FaFolder, FaChartPie } from 'react-icons/fa';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { colors, spacing, typography, shadows, borderRadius } from '../styles/theme';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext';
 import { deletePublicacion, getAllPublicaciones } from '../services/publicacionesService';
+import { getAllCategorias, getPublicacionesByCategoria } from '../services/categoriasServices';
 import { toast } from 'react-toastify';
+import AnimatedButton from '../components/utils/AnimatedButton';
+
+// Estilo keyframes para la animación de brillo
+const shineAnimation = `
+  @keyframes shine {
+    from {
+      opacity: 0;
+      left: 0%;
+    }
+    50% {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+      left: 100%;
+    }
+  }
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+`;
+
+// Añadir los estilos keyframes al documento
+const addKeyframeStyles = () => {
+  const existingStyle = document.getElementById('admin-animation-style');
+  if (!existingStyle) {
+    const styleSheet = document.createElement("style");
+    styleSheet.id = 'admin-animation-style';
+    styleSheet.type = "text/css";
+    styleSheet.innerText = shineAnimation;
+    document.head.appendChild(styleSheet);
+  }
+};
 
 const AdminPanel = () => {
   const navigate = useNavigate();
@@ -29,6 +66,29 @@ const AdminPanel = () => {
   // Estados para UI
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
+  
+  // Estado para categorías
+  const [categories, setCategories] = useState([]);
+  const [categoryPostCounts, setCategoryPostCounts] = useState({});
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const chartRef = useRef(null);
+
+  // Colores de categorías
+  const categoryColors = {
+    1: '#FF6B6B', // Noticias
+    2: '#4ECDC4', // Técnicas de Estudio
+    3: '#FFD166', // Problemáticas en el Estudio
+    4: '#6A0572', // Educación de Calidad
+    5: '#1A936F', // Herramientas Tecnológicas
+    6: '#3D5A80', // Desarrollo Profesional Docente
+    7: '#F18F01', // Comunidad y Colaboración
+    'default': '#6b7280'
+  };
+
+  // Añadir los keyframes al montar el componente
+  useEffect(() => {
+    addKeyframeStyles();
+  }, []);
 
   // Verificación inmediata al montar el componente
   useEffect(() => {
@@ -95,10 +155,55 @@ const AdminPanel = () => {
     }
   };
 
-  // Cargar publicaciones al montar el componente
+  // Cargar publicaciones y categorías al montar el componente
   useEffect(() => {
     fetchAllPosts();
+    fetchCategories();
   }, []);
+
+  // Función para cargar categorías y contar posts por categoría
+  const fetchCategories = async () => {
+    try {
+      setLoadingCategories(true);
+      const categoriesData = await getAllCategorias();
+      
+      if (categoriesData && categoriesData.length > 0) {
+        setCategories(categoriesData);
+        
+        // Obtener el recuento de posts por categoría
+        const countPromises = categoriesData.map(async (category) => {
+          try {
+            const posts = await getPublicacionesByCategoria(category.ID_categoria);
+            return { 
+              id: category.ID_categoria, 
+              name: category.Nombre_categoria, 
+              count: posts ? posts.length : 0 
+            };
+          } catch (error) {
+            console.error(`Error al obtener posts para categoría ${category.Nombre_categoria}:`, error);
+            return { id: category.ID_categoria, name: category.Nombre_categoria, count: 0 };
+          }
+        });
+        
+        const categoryCounts = await Promise.all(countPromises);
+        
+        // Convertir a objeto para fácil acceso
+        const countsObj = {};
+        categoryCounts.forEach(item => {
+          countsObj[item.id] = {
+            name: item.name,
+            count: item.count
+          };
+        });
+        
+        setCategoryPostCounts(countsObj);
+      }
+    } catch (error) {
+      console.error('Error al cargar categorías:', error);
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   // Función para aplicar filtros
   const applyFilters = (postsToFilter, term, statusFilter, order) => {
@@ -177,6 +282,13 @@ const AdminPanel = () => {
 
   // Manejar edición de publicación
   const handleEditPost = (postId) => {
+    if (!postId) {
+      console.error('Error: No se proporcionó un ID de publicación válido para editar');
+      showNotification('Error al preparar la publicación para editar', 'error');
+      return;
+    }
+
+    console.log(`Redirigiendo al editor para editar publicación con ID: ${postId}`);
     showNotification('Preparando publicación para editar...', 'info');
     navigate(`/admin/post/edit/${postId}`);
   };
@@ -402,31 +514,128 @@ const AdminPanel = () => {
     },
     statsContainer: {
       display: 'flex',
-      gap: spacing.md,
+      gap: spacing.xl,
       marginBottom: spacing.xl,
       flexWrap: 'wrap'
     },
     statCard: {
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
       borderRadius: borderRadius.lg,
-      padding: spacing.lg,
+      padding: spacing.xl,
       boxShadow: shadows.sm,
       border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
       flex: '1',
-      minWidth: '150px',
-      textAlign: 'center'
+      minWidth: '200px',
+      textAlign: 'center',
+      transition: 'all 0.3s ease',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center'
     },
     statNumber: {
-      fontSize: typography.fontSize.xxl,
+      fontSize: typography.fontSize.xxxl,
       fontWeight: typography.fontWeight.bold,
       color: isDarkMode ? colors.white : colors.primary,
       marginBottom: spacing.xs
     },
     statLabel: {
-      fontSize: typography.fontSize.sm,
+      fontSize: typography.fontSize.md,
       color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
       textTransform: 'uppercase',
-      letterSpacing: '0.5px'
+      letterSpacing: '1px'
+    },
+    chartContainer: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      boxShadow: shadows.sm,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
+      flex: '2',
+      minWidth: '350px',
+      display: 'flex',
+      flexDirection: 'column'
+    },
+    chartTitle: {
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.white : colors.primary,
+      marginBottom: spacing.md,
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs
+    },
+    chartCanvas: {
+      width: '100%',
+      aspectRatio: '1/1', // Asegurar relación de aspecto 1:1
+      maxWidth: '400px',
+      margin: '0 auto',
+      display: 'block'
+    },
+    categoryLegend: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginTop: spacing.md,
+      justifyContent: 'center'
+    },
+    legendItem: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs,
+      fontSize: typography.fontSize.sm,
+      color: isDarkMode ? colors.white : colors.textPrimary,
+      margin: `${spacing.xs} ${spacing.sm}`,
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.md,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+      transition: 'all 0.2s ease'
+    },
+    legendColor: {
+      width: '12px',
+      height: '12px',
+      borderRadius: '50%',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    },
+    categoriesContainer: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      boxShadow: shadows.sm,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
+      flex: '1',
+      minWidth: '300px',
+      position: 'relative',
+      overflow: 'hidden'
+    },
+    categoryTitle: {
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.white : colors.primary,
+      marginBottom: spacing.md,
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs
+    },
+    categoryList: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: spacing.xs,
+      maxHeight: '150px',
+      overflowY: 'auto'
+    },
+    categoryItem: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      fontSize: typography.fontSize.sm,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.03)',
+      color: isDarkMode ? colors.white : colors.textPrimary
+    },
+    categoryCount: {
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.secondary : colors.secondary
     },
     postsGrid: {
       display: 'grid',
@@ -512,8 +721,13 @@ const AdminPanel = () => {
       borderRadius: '50%',
       border: 'none',
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      fontSize: '14px'
+      transition: 'all 0.3s ease',
+      position: 'relative',
+      overflow: 'hidden',
+      '&:hover': {
+        transform: 'translateY(-3px) scale(1.1)',
+        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)'
+      }
     },
     viewButton: {
       backgroundColor: isDarkMode ? '#2563eb' : '#3b82f6',
@@ -574,7 +788,7 @@ const AdminPanel = () => {
         ? (isDarkMode ? '#065f46' : '#10b981') 
         : notification.type === 'error' 
         ? (isDarkMode ? '#7f1d1d' : '#ef4444')
-        : (isDarkMode ? '#1e40af' : '#3b82f6'),
+        : notification.type === 'info' ? '#3b82f6' : '#f59e0b',
       color: colors.white,
       padding: `${spacing.md} ${spacing.lg}`,
       borderRadius: borderRadius.md,
@@ -642,8 +856,184 @@ const AdminPanel = () => {
   // Calcular estadísticas
   const totalPosts = posts.length;
   const publishedPosts = posts.filter(post => post.Estado === 'publicado').length;
-  const draftPosts = posts.filter(post => post.Estado === 'borrador').length;
-  const filteredCount = filteredPosts.length;
+
+  // Obtener la categoría con más posts
+  const getMostPopularCategory = () => {
+    if (!categories || categories.length === 0) return { name: 'Ninguna', count: 0 };
+    
+    let maxCount = 0;
+    let popularCategory = { name: 'Ninguna', count: 0 };
+    
+    Object.values(categoryPostCounts).forEach(category => {
+      if (category.count > maxCount) {
+        maxCount = category.count;
+        popularCategory = category;
+      }
+    });
+    
+    return popularCategory;
+  };
+
+  const popularCategory = getMostPopularCategory();
+
+  // Función para dibujar el gráfico de categorías
+  const drawCategoryChart = () => {
+    if (!chartRef.current || categories.length === 0 || loadingCategories) return;
+
+    const canvas = chartRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Mejora la calidad para pantallas de alta resolución
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Ajustar el tamaño del canvas para mantener aspecto cuadrado
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.width * dpr; // Usar width para ambos para hacerlo cuadrado
+    
+    // Escalar el contexto según el DPR para mejor calidad
+    ctx.scale(dpr, dpr);
+    
+    // Asegurar que el canvas mantiene su aspecto visual correcto
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.width + 'px';
+    
+    const size = Math.min(rect.width, rect.width);
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const radius = (size / 2) * 0.8; // Reducir ligeramente para dejar margen
+    
+    // Calcular el total de posts en todas las categorías
+    let totalCategoryPosts = 0;
+    categories.forEach(category => {
+      totalCategoryPosts += categoryPostCounts[category.ID_categoria]?.count || 0;
+    });
+    
+    // Si no hay posts, mostrar un círculo gris
+    if (totalCategoryPosts === 0) {
+      ctx.clearRect(0, 0, size, size);
+      
+      // Fondo circular con gradiente
+      const bgGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+      bgGradient.addColorStop(0, isDarkMode ? '#2d3748' : '#f7fafc');
+      bgGradient.addColorStop(1, isDarkMode ? '#1a202c' : '#e2e8f0');
+      
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = bgGradient;
+      ctx.fill();
+      
+      // Sombra sutil
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2;
+      
+      // Texto de "No hay datos" con mejor estilo
+      ctx.font = 'bold 16px Arial, sans-serif';
+      ctx.fillStyle = isDarkMode ? '#a0aec0' : '#4a5568';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('No hay datos', centerX, centerY);
+      
+      // Resetear sombra
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      
+      return;
+    }
+    
+    // Limpiar el canvas
+    ctx.clearRect(0, 0, size, size);
+    
+    // Dibujar el gráfico de pastel con sombra
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 5;
+    
+    let startAngle = 0;
+    categories.forEach(category => {
+      const count = categoryPostCounts[category.ID_categoria]?.count || 0;
+      if (count > 0) {
+        const sliceAngle = (count / totalCategoryPosts) * 2 * Math.PI;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+        ctx.closePath();
+        
+        // Usar el color correspondiente a la categoría
+        const color = categoryColors[category.ID_categoria] || categoryColors.default;
+        ctx.fillStyle = color;
+        ctx.fill();
+        
+        // Dibujar un borde sutil entre secciones
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.7)';
+        ctx.stroke();
+        
+        startAngle += sliceAngle;
+      }
+    });
+    
+    // Resetear sombra
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    
+    // Círculo blanco en el centro para efecto donut con gradiente
+    const innerRadius = radius * 0.6;
+    const gradient = ctx.createRadialGradient(centerX, centerY, innerRadius * 0.7, centerX, centerY, innerRadius);
+    
+    if (isDarkMode) {
+      gradient.addColorStop(0, '#1a2e2d');
+      gradient.addColorStop(1, '#1a2e2d');
+    } else {
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(1, '#f8fafc');
+    }
+    
+    // Sombra interna para profundidad
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // Borde sutil para el círculo interno
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+    ctx.stroke();
+    
+    // Resetear sombra
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+  };
+  
+  // Dibujar el gráfico cuando cambian las categorías o los conteos
+  useEffect(() => {
+    drawCategoryChart();
+  }, [categories, categoryPostCounts, loadingCategories, isDarkMode]);
+  
+  // Redimensionar el canvas cuando cambie el tamaño de la ventana
+  useEffect(() => {
+    const handleResize = () => {
+      if (chartRef.current) {
+        drawCategoryChart();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [categories, categoryPostCounts]);
 
   return (
     <div style={styles.container}>
@@ -652,23 +1042,45 @@ const AdminPanel = () => {
       <div style={styles.content}>
         <h1 style={styles.pageTitle}>Panel de Administración</h1>
         
-        {/* Estadísticas */}
+        {/* Estadísticas simplificadas */}
         <div style={styles.statsContainer}>
           <div style={styles.statCard}>
             <div style={styles.statNumber}>{totalPosts}</div>
-            <div style={styles.statLabel}>Total</div>
+            <div style={styles.statLabel}>Total de Publicaciones</div>
           </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{publishedPosts}</div>
-            <div style={styles.statLabel}>Publicadas</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{draftPosts}</div>
-            <div style={styles.statLabel}>Borradores</div>
-          </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{filteredCount}</div>
-            <div style={styles.statLabel}>Filtradas</div>
+          
+          {/* Gráfico de categorías */}
+          <div style={styles.chartContainer}>
+            <div style={styles.chartTitle}>
+              <FaChartPie style={{ color: colors.secondary }} /> Distribución por Categoría
+            </div>
+            
+            {loadingCategories ? (
+              <div style={{ textAlign: 'center', padding: spacing.lg }}>Cargando datos...</div>
+            ) : (
+              <>
+                <canvas 
+                  ref={chartRef} 
+                  style={styles.chartCanvas}
+                  width="400"
+                  height="400"
+                ></canvas>
+                
+                <div style={styles.categoryLegend}>
+                  {categories.map(category => (
+                    <div key={category.ID_categoria} style={styles.legendItem}>
+                      <div 
+                        style={{
+                          ...styles.legendColor, 
+                          backgroundColor: categoryColors[category.ID_categoria] || categoryColors.default
+                        }}
+                      ></div>
+                      <span>{category.Nombre_categoria} ({categoryPostCounts[category.ID_categoria]?.count || 0})</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -676,18 +1088,39 @@ const AdminPanel = () => {
         <div style={styles.header}>
           <h2 style={styles.title}>Publicaciones</h2>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <button
-              style={styles.refreshButton}
+            <AnimatedButton
               onClick={refreshPosts}
-              disabled={loading}
+              backgroundColor={isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f8f9fa'}
+              hoverBackgroundColor={isDarkMode ? 'rgba(255, 255, 255, 0.2)' : '#e9ecef'}
+              textColor={isDarkMode ? '#fff' : colors.primary}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginRight: '10px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
             >
-              <FaSync />
-              Actualizar
-            </button>
-            <Link to="/admin/post/new" style={styles.createButton}>
-              <FaPlus />
-              Nueva Publicación
-            </Link>
+              <FaSync /> Actualizar
+            </AnimatedButton>
+            
+            <AnimatedButton
+              to="/admin/post/new"
+              backgroundColor={colors.secondary}
+              hoverBackgroundColor="#0d5353"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 12px rgba(11, 68, 68, 0.2)'
+              }}
+            >
+              <FaPlus /> Nueva Publicación
+            </AnimatedButton>
           </div>
         </div>
 
@@ -753,10 +1186,23 @@ const AdminPanel = () => {
                     : 'No hay publicaciones en el sistema. ¡Crea tu primera publicación!'}
                 </p>
                 {(!searchTerm && filter === 'all') && (
-                  <Link to="/admin/post/new" style={styles.createButton}>
-                    <FaPlus />
-                    Crear Primera Publicación
-                  </Link>
+                  <AnimatedButton
+                    to="/admin/post/new"
+                    backgroundColor={colors.secondary}
+                    hoverBackgroundColor="#0d5353"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      borderRadius: '8px',
+                      margin: '0 auto',
+                      marginTop: spacing.md,
+                      boxShadow: '0 2px 12px rgba(11, 68, 68, 0.2)'
+                    }}
+                  >
+                    <FaPlus /> Crear Primera Publicación
+                  </AnimatedButton>
                 )}
               </div>
             ) : (
@@ -794,27 +1240,61 @@ const AdminPanel = () => {
                         </div>
                         
                         <div style={styles.actionsContainer}>
-                          <button
-                            style={{...styles.actionButton, ...styles.viewButton}}
+                          <AnimatedButton
                             onClick={() => handleViewPost(post.ID_publicaciones)}
+                            backgroundColor={isDarkMode ? colors.infoDark : colors.info}
+                            hoverBackgroundColor={isDarkMode ? '#1a7fa1' : '#38bdf8'}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              padding: '0'
+                            }}
                             title="Ver publicación"
                           >
                             <FaEye />
-                          </button>
-                          <button
-                            style={{...styles.actionButton, ...styles.editButton}}
+                          </AnimatedButton>
+                          
+                          <AnimatedButton
                             onClick={() => handleEditPost(post.ID_publicaciones)}
+                            backgroundColor={isDarkMode ? colors.warningDark : colors.warning}
+                            hoverBackgroundColor={isDarkMode ? '#996614' : '#fbbf24'}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              padding: '0',
+                              marginLeft: '8px'
+                            }}
                             title="Editar publicación"
                           >
                             <FaEdit />
-                          </button>
-                          <button
-                            style={{...styles.actionButton, ...styles.deleteButton}}
+                          </AnimatedButton>
+                          
+                          <AnimatedButton
                             onClick={() => setConfirmDelete(post)}
+                            backgroundColor={isDarkMode ? colors.errorDark : colors.error}
+                            hoverBackgroundColor={isDarkMode ? '#b91c1c' : '#f87171'}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: '36px',
+                              height: '36px',
+                              borderRadius: '50%',
+                              padding: '0',
+                              marginLeft: '8px'
+                            }}
                             title="Eliminar publicación"
                           >
                             <FaTrash />
-                          </button>
+                          </AnimatedButton>
                         </div>
                       </div>
                     </div>
@@ -836,47 +1316,53 @@ const AdminPanel = () => {
               Esta acción no se puede deshacer.
             </p>
             <div style={styles.modalActions}>
-              <button
-                style={{...styles.modalButton, ...styles.cancelButton}}
+              <AnimatedButton
                 onClick={() => setConfirmDelete(null)}
+                backgroundColor={isDarkMode ? '#374151' : '#e5e7eb'}
+                hoverBackgroundColor={isDarkMode ? '#4b5563' : '#d1d5db'}
+                textColor={isDarkMode ? colors.white : colors.textPrimary}
+                style={{
+                  padding: `${spacing.sm} ${spacing.md}`,
+                  borderRadius: borderRadius.md,
+                  fontWeight: typography.fontWeight.medium,
+                  marginRight: spacing.md
+                }}
               >
                 Cancelar
-              </button>
-              <button
-                style={{...styles.modalButton, ...styles.confirmButton}}
+              </AnimatedButton>
+              
+              <AnimatedButton
                 onClick={() => handleDeletePost(confirmDelete.ID_publicaciones)}
+                backgroundColor='#ef4444'
+                hoverBackgroundColor='#dc2626'
+                style={{
+                  padding: `${spacing.sm} ${spacing.md}`,
+                  borderRadius: borderRadius.md,
+                  fontWeight: typography.fontWeight.medium
+                }}
               >
                 Eliminar
-              </button>
+              </AnimatedButton>
             </div>
           </div>
         </div>
       )}
-
+      
       {/* Notificación */}
       {notification.show && (
-        <div style={styles.notification}>
+        <div 
+          style={{
+            ...styles.notification,
+            backgroundColor: notification.type === 'success' ? '#10b981' : 
+                            notification.type === 'error' ? '#ef4444' : 
+                            notification.type === 'info' ? '#3b82f6' : '#f59e0b'
+          }}
+        >
           {notification.message}
         </div>
       )}
-
-      <Footer />
       
-      {/* CSS para animaciones */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes slideInRight {
-            from {
-              transform: translateX(100%);
-              opacity: 0;
-            }
-            to {
-              transform: translateX(0);
-              opacity: 1;
-            }
-          }
-        `
-      }} />
+      <Footer />
     </div>
   );
 };
