@@ -6,7 +6,6 @@ import { createPublicacion, createPublicacionFromHTML, getPublicacionById, updat
 import { getAllCategorias } from '../../services/categoriasServices';
 import { Calendar } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { compressBase64Image } from '../../utils/imageOptimizer';
 
 // Componentes para el editor
 import DualModeEditor from './DualModeEditor';
@@ -431,33 +430,17 @@ const PostEditor = () => {
   };
 
   // Manejador para cambios en la imagen de portada
-  const handleImageChange = async (e, base64Image) => {
+  const handleImageChange = (e, base64Image) => {
     const file = e.target.files && e.target.files[0];
     
     if (file && base64Image) {
-      console.log("Imagen Base64 recibida, optimizando...");
-      
-      try {
-        // Comprimir la imagen antes de guardarla
-        const optimizedImage = await compressBase64Image(base64Image, 0.7);
-        console.log("Imagen optimizada correctamente");
-        
-        setPost(prev => ({
-          ...prev,
-          coverImage: file,
-          coverImagePreview: optimizedImage,
-          Imagen_portada: optimizedImage
-        }));
-      } catch (error) {
-        console.error("Error al optimizar la imagen:", error);
-        // Usar la imagen original si hay error
-        setPost(prev => ({
-          ...prev,
-          coverImage: file,
-          coverImagePreview: base64Image,
-          Imagen_portada: base64Image
-        }));
-      }
+      console.log("Imagen Base64 recibida:", base64Image ? base64Image.substring(0, 50) + "..." : "No hay imagen Base64");
+      setPost(prev => ({
+        ...prev,
+        coverImage: file,
+        coverImagePreview: base64Image,
+        Imagen_portada: base64Image
+      }));
     } 
     else if (!file && base64Image === null) {
       console.log("Eliminando imagen seleccionada");

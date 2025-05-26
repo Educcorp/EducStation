@@ -1,49 +1,8 @@
 const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
 
-// Cache para almacenar publicaciones y reducir llamadas al servidor
-const postCache = {
-  byId: new Map(),
-  allPosts: null,
-  lastFetched: {
-    allPosts: 0,
-  },
-  // Tiempo de expiración de la caché en milisegundos (5 minutos)
-  cacheExpiry: 5 * 60 * 1000
-};
-
-// Función para limpiar la caché si es necesario
-const cleanupCache = () => {
-  const now = Date.now();
-  // Limpiar caché de posts por ID que tienen más de 5 minutos
-  postCache.byId.forEach((value, key) => {
-    if (now - value.timestamp > postCache.cacheExpiry) {
-      postCache.byId.delete(key);
-    }
-  });
-  
-  // Limpiar caché de todos los posts si tiene más de 5 minutos
-  if (postCache.allPosts && (now - postCache.lastFetched.allPosts > postCache.cacheExpiry)) {
-    postCache.allPosts = null;
-  }
-};
-
-// Ejecutar limpieza de caché cada 10 minutos
-setInterval(cleanupCache, 10 * 60 * 1000);
-
 // Obtener todas las publicaciones
 export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null) => {
     try {
-        // Verificar si tenemos datos en caché y no están expirados
-        const now = Date.now();
-        const cacheKey = `all_${limite}_${offset}_${estado}`;
-        
-        if (postCache.allPosts && 
-            postCache.allPosts[cacheKey] && 
-            (now - postCache.lastFetched[cacheKey] < postCache.cacheExpiry)) {
-            console.log("Usando datos en caché para getAllPublicaciones");
-            return postCache.allPosts[cacheKey];
-        }
-        
         // Obtener el token de autenticación
         const token = localStorage.getItem('userToken');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -61,22 +20,6 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
                 if (adminResponse.ok) {
                     const adminData = await adminResponse.json();
                     console.log(`Obtenidas ${adminData.length} publicaciones como administrador`);
-                    
-                    // Guardar en caché
-                    if (!postCache.allPosts) postCache.allPosts = {};
-                    postCache.allPosts[cacheKey] = adminData;
-                    postCache.lastFetched[cacheKey] = now;
-                    
-                    // También guardar cada post en la caché individual
-                    adminData.forEach(post => {
-                        if (post.ID_publicaciones) {
-                            postCache.byId.set(post.ID_publicaciones.toString(), {
-                                data: post,
-                                timestamp: now
-                            });
-                        }
-                    });
-                    
                     return adminData;
                 } else {
                     console.log(`Error en endpoint admin: ${adminResponse.status}. Intentando alternativas...`);
@@ -105,22 +48,6 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
             
             const data = await response.json();
             console.log(`Obtenidas ${data.length} publicaciones correctamente`);
-            
-            // Guardar en caché
-            if (!postCache.allPosts) postCache.allPosts = {};
-            postCache.allPosts[cacheKey] = data;
-            postCache.lastFetched[cacheKey] = now;
-            
-            // También guardar cada post en la caché individual
-            data.forEach(post => {
-                if (post.ID_publicaciones) {
-                    postCache.byId.set(post.ID_publicaciones.toString(), {
-                        data: post,
-                        timestamp: now
-                    });
-                }
-            });
-            
             return data;
         } catch (fetchError) {
             console.error("Error en la petición principal:", fetchError);
@@ -137,22 +64,6 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
             
             const fallbackData = await fallbackResponse.json();
             console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
-            
-            // Guardar en caché
-            if (!postCache.allPosts) postCache.allPosts = {};
-            postCache.allPosts[cacheKey] = fallbackData;
-            postCache.lastFetched[cacheKey] = now;
-            
-            // También guardar cada post en la caché individual
-            fallbackData.forEach(post => {
-                if (post.ID_publicaciones) {
-                    postCache.byId.set(post.ID_publicaciones.toString(), {
-                        data: post,
-                        timestamp: now
-                    });
-                }
-            });
-            
             return fallbackData;
         }
     } catch (error) {
@@ -165,15 +76,6 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
 // Obtener una publicación por ID
 export const getPublicacionById = async (id) => {
     try {
-        // Verificar si tenemos el post en caché y no está expirado
-        const now = Date.now();
-        const cachedPost = postCache.byId.get(id.toString());
-        
-        if (cachedPost && (now - cachedPost.timestamp < postCache.cacheExpiry)) {
-            console.log(`getPublicacionById: Usando post en caché para ID ${id}`);
-            return cachedPost.data;
-        }
-        
         console.log(`getPublicacionById: Obteniendo publicación con ID ${id}`);
         const response = await fetch(`${API_URL}/api/publicaciones/${id}`);
         
@@ -273,12 +175,6 @@ export const getPublicacionById = async (id) => {
                 data.imagen_url = data.Imagen_portada;
             }
         }
-        
-        // Guardar en caché
-        postCache.byId.set(id.toString(), {
-            data: data,
-            timestamp: now
-        });
         
         return data;
     } catch (error) {
