@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaEdit, FaTrash, FaSave, FaTimes, FaUser, FaReply, FaThumbsUp } from 'react-icons/fa';
+import { FaEdit, FaTrash, FaSave, FaTimes, FaUser, FaReply } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useTheme } from '../../context/ThemeContext';
 import { AnimatedButton } from '../utils';
@@ -155,7 +155,7 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
             {comentario.contenido || comentario.Contenido}
           </div>
           <div className="comentario-actions">
-            {isCurrentUser ? (
+            {isCurrentUser && (
               <>
                 <button
                   onClick={handleEdit}
@@ -170,13 +170,6 @@ const ComentarioItem = ({ comentario, onDelete, onUpdate }) => {
                   <FaTrash /> Eliminar
                 </button>
               </>
-            ) : (
-              <button
-                onClick={() => {}}
-                className="comentario-btn comentario-btn-like"
-              >
-                <FaThumbsUp /> Me gusta
-              </button>
             )}
           </div>
         </>

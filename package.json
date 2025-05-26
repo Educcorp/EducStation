@@ -19,6 +19,7 @@
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
     "express": "^4.17.1",
+    "firebase": "^11.8.1",
     "lucide-react": "^0.510.0",
     "mongoose": "^5.10.9",
     "react": "17.0.2",

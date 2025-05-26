@@ -555,48 +555,42 @@ const HomePage = () => {
               title: 'Herramientas Tecnológicas para la Educación',
               image: '/assets/images/tecnologia.jpg',
               category: 'Herramientas Tecnológicas',
-              time: '4 horas atrás',
-              likes: 124
+              time: '4 horas atrás'
             },
             {
               id: 2,
               title: 'Comunidad y Colaboración en la Educación',
               image: '/assets/images/humanos.jpg',
               category: 'Técnicas de Estudio',
-              time: '4 horas atrás',
-              likes: 89
+              time: '4 horas atrás'
             },
             {
               id: 3,
               title: 'Problemas a enfrentar en la actualidad',
               image: '/assets/images/desafio.jpg',
               category: 'Problemáticas en el Estudio',
-              time: '4 horas atrás',
-              likes: 76
+              time: '4 horas atrás'
             },
             {
               id: 4,
               title: 'La gamificación en el aula moderna',
               image: '/assets/images/tecnologia.jpg',
               category: 'Herramientas Tecnológicas',
-              time: '5 horas atrás',
-              likes: 105
+              time: '5 horas atrás'
             },
             {
               id: 5,
               title: 'Educación inclusiva: Estrategias prácticas',
               image: '/assets/images/humanos.jpg',
               category: 'Educación de Calidad',
-              time: '6 horas atrás',
-              likes: 92
+              time: '6 horas atrás'
             },
             {
               id: 6,
               title: 'Evaluación formativa vs sumativa',
               image: '/assets/images/maestro.jpg',
               category: 'Técnicas de Estudio',
-              time: '8 horas atrás',
-              likes: 67
+              time: '8 horas atrás'
             }
           ]);
         }
