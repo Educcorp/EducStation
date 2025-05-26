@@ -7,7 +7,7 @@ import PostCard from '../components/blog/PostCard';
 import { spacing, typography, transitions, applyHoverStyles } from '../styles/theme';
 // Importamos el hook useTheme
 import { useTheme } from '../context/ThemeContext';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { getAllCategorias } from '../services/categoriasServices';
 // Importamos el hook usePosts
 import { usePosts } from '../components/blog/hooks/usePosts';
@@ -271,23 +271,51 @@ const NewsCarousel = ({ notes }) => {
       <div style={styles.carouselInner}>
         {notes.map((slide, index) => (
           <div key={slide.id} style={styles.carouselItem}>
-            <img
-              src={slide.image}
-              alt={slide.title}
-              style={styles.carouselImage}
-              onError={(e) => {
-                e.target.src = '/assets/images/tecnologia.jpg'; // Imagen de fallback
+            {/* Envolver toda la slide en un Link */}
+            <Link
+              to={`/blog/${slide.id}`}
+              state={{ forceReload: true }}
+              style={{
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                textDecoration: 'none',
+                color: 'inherit',
+                cursor: 'pointer'
               }}
-            />
-            <div style={{
-              ...styles.carouselContent,
-              opacity: currentSlide === index ? 1 : 0,
-              transform: currentSlide === index ? 'translateY(0)' : 'translateY(20px)'
-            }}>
-              <div style={styles.carouselCategory}>{slide.category}</div>
-              <h2 style={styles.carouselTitle}>{slide.title}</h2>
-              <p style={styles.carouselExcerpt}>{slide.excerpt}</p>
-            </div>
+            >
+              <img
+                src={slide.image}
+                alt={slide.title}
+                style={styles.carouselImage}
+                onError={(e) => {
+                  e.target.src = '/assets/images/tecnologia.jpg'; // Imagen de fallback
+                }}
+              />
+              <div style={{
+                ...styles.carouselContent,
+                opacity: currentSlide === index ? 1 : 0,
+                transform: currentSlide === index ? 'translateY(0)' : 'translateY(20px)'
+              }}>
+                <div style={styles.carouselCategory}>{slide.category}</div>
+                <h2 style={styles.carouselTitle}>{slide.title}</h2>
+                <p style={styles.carouselExcerpt}>{slide.excerpt}</p>
+                
+                {/* Indicador visual de que es clicable */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.xs,
+                  marginTop: spacing.md,
+                  fontSize: typography.fontSize.sm,
+                  color: 'rgba(255,255,255,0.9)',
+                  fontWeight: typography.fontWeight.medium
+                }}>
+                  <span>Leer artículo completo</span>
+                  <FaArrowRight size={12} />
+                </div>
+              </div>
+            </Link>
           </div>
         ))}
       </div>
@@ -298,7 +326,11 @@ const NewsCarousel = ({ notes }) => {
           style={hoveredElement === 'prev-btn'
             ? { ...styles.carouselButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.15)", opacity: 1 }
             : styles.carouselButton}
-          onClick={prevSlide}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            prevSlide();
+          }}
           onMouseEnter={() => setHoveredElement('prev-btn')}
           onMouseLeave={() => setHoveredElement(null)}
         >
@@ -308,7 +340,11 @@ const NewsCarousel = ({ notes }) => {
           style={hoveredElement === 'next-btn'
             ? { ...styles.carouselButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.15)", opacity: 1 }
             : styles.carouselButton}
-          onClick={nextSlide}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            nextSlide();
+          }}
           onMouseEnter={() => setHoveredElement('next-btn')}
           onMouseLeave={() => setHoveredElement(null)}
         >
@@ -328,7 +364,11 @@ const NewsCarousel = ({ notes }) => {
                 transform: "scale(1.2)"
               } : {})
             }}
-            onClick={() => goToSlide(index)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              goToSlide(index);
+            }}
             onMouseEnter={() => setHoveredElement(`dot-${index}`)}
             onMouseLeave={() => setHoveredElement(null)}
           ></span>
@@ -340,7 +380,11 @@ const NewsCarousel = ({ notes }) => {
         style={hoveredElement === 'pause-play'
           ? { ...styles.pausePlayButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.1)" }
           : styles.pausePlayButton}
-        onClick={() => setIsPaused(!isPaused)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsPaused(!isPaused);
+        }}
         onMouseEnter={() => setHoveredElement('pause-play')}
         onMouseLeave={() => setHoveredElement(null)}
       >
@@ -1355,8 +1399,8 @@ const HomePage = () => {
               técnicas innovadoras y mucho más. Encuentra soluciones a problemas comunes y 
               herramientas para mejorar tu experiencia educativa.
             </p>
-            <a 
-              href="/categories" 
+            <Link 
+              to="/categorias"
               style={hoveredElement === 'explore-btn' ? 
                 { ...styles.exploreBannerBtn, ...styles.exploreBannerBtn['&:hover'] } : 
                 styles.exploreBannerBtn
@@ -1366,7 +1410,7 @@ const HomePage = () => {
             >
               <span>Explorar categorías</span>
               <FaArrowRight size={12} />
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -1442,8 +1486,8 @@ const HomePage = () => {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: spacing.xl }}>
-              <a 
-                href="/blog" 
+              <Link 
+                to="/blog" 
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1467,7 +1511,7 @@ const HomePage = () => {
               >
                 <span>Explora el blog</span>
                 <FaArrowRight />
-              </a>
+              </Link>
             </div>
           </section>
 
@@ -1477,7 +1521,7 @@ const HomePage = () => {
             position: 'relative',
             background: `linear-gradient(135deg, ${colors.white}, ${colors.gray50})`,
             borderRadius: '24px',
-            padding: 0, // Cambiar de spacing.lg a 0
+            padding: 0,
             boxShadow: `0 25px 60px ${colors.primary}20, 0 0 0 3px ${colors.primary}15`,
             border: `2px solid ${colors.primary}30`,
             overflow: 'hidden',
@@ -1487,68 +1531,106 @@ const HomePage = () => {
             onMouseEnter={() => setHoveredElement('featured-post')}
             onMouseLeave={() => setHoveredElement(null)}
           >
-            {/* Efecto de brillo animado */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: '-100%',
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-              animation: 'shine 3s ease-in-out infinite',
-              zIndex: 1,
-              pointerEvents: 'none'
-            }}></div>
-            
-            {/* Badge "POST DESTACADO" */}
-            <div style={{
-              position: 'absolute',
-              top: spacing.lg,
-              right: spacing.lg,
-              zIndex: 2,
-              background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-              color: colors.white,
-              padding: `${spacing.xs} ${spacing.md}`,
-              borderRadius: '50px',
-              fontSize: typography.fontSize.xs,
-              fontWeight: typography.fontWeight.bold,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: spacing.xs,
-              animation: 'pulse 2s infinite'
-            }}>
-              <span style={{ fontSize: '14px' }}>⭐</span>
-              <span>POST DESTACADO</span>
-            </div>
+            {/* Envolver todo el contenido en un Link */}
+            <Link
+              to={`/blog/${featuredPost?.id}`}
+              state={{ forceReload: true }}
+              style={{
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                textDecoration: 'none',
+                color: 'inherit',
+                cursor: 'pointer',
+                position: 'relative'
+              }}
+            >
+              {/* Efecto de brillo animado */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                animation: 'shine 3s ease-in-out infinite',
+                zIndex: 1,
+                pointerEvents: 'none'
+              }}></div>
+              
+              {/* Badge "POST DESTACADO" */}
+              <div style={{
+                position: 'absolute',
+                top: spacing.lg,
+                right: spacing.lg,
+                zIndex: 2,
+                background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                color: colors.white,
+                padding: `${spacing.xs} ${spacing.md}`,
+                borderRadius: '50px',
+                fontSize: typography.fontSize.xs,
+                fontWeight: typography.fontWeight.bold,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs,
+                animation: 'pulse 2s infinite'
+              }}>
+                <span style={{ fontSize: '14px' }}>⭐</span>
+                <span>POST DESTACADO</span>
+              </div>
 
-            {/* Decoración superior izquierda */}
-            <div style={{
-              position: 'absolute',
-              top: '-20px',
-              left: '-20px',
-              width: '80px',
-              height: '80px',
-              background: `radial-gradient(circle, ${colors.primary}15, transparent)`,
-              borderRadius: '50%',
-              zIndex: 0
-            }}></div>
+              {/* Decoración superior izquierda */}
+              <div style={{
+                position: 'absolute',
+                top: '-20px',
+                left: '-20px',
+                width: '80px',
+                height: '80px',
+                background: `radial-gradient(circle, ${colors.primary}15, transparent)`,
+                borderRadius: '50%',
+                zIndex: 0
+              }}></div>
 
-            {/* Decoración inferior derecha */}
-            <div style={{
-              position: 'absolute',
-              bottom: '-30px',
-              right: '-30px',
-              width: '100px',
-              height: '100px',
-              background: `radial-gradient(circle, ${colors.secondary}10, transparent)`,
-              borderRadius: '50%',
-              zIndex: 0
-            }}></div>
+              {/* Decoración inferior derecha */}
+              <div style={{
+                position: 'absolute',
+                bottom: '-30px',
+                right: '-30px',
+                width: '100px',
+                height: '100px',
+                background: `radial-gradient(circle, ${colors.secondary}10, transparent)`,
+                borderRadius: '50%',
+                zIndex: 0
+              }}></div>
 
-            {featuredPost && <FeaturedPost post={featuredPost} />}
+              {/* Indicador visual de que es clicable */}
+              <div style={{
+                position: 'absolute',
+                bottom: spacing.lg,
+                left: spacing.lg,
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs,
+                backgroundColor: 'rgba(255,255,255,0.9)',
+                color: colors.primary,
+                padding: `${spacing.xs} ${spacing.sm}`,
+                borderRadius: '20px',
+                fontSize: typography.fontSize.xs,
+                fontWeight: typography.fontWeight.medium,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                transform: hoveredElement === 'featured-post' ? 'translateY(-3px)' : 'translateY(0)'
+              }}>
+                <span>Leer artículo completo</span>
+                <FaArrowRight size={10} />
+              </div>
+
+              {featuredPost && <FeaturedPost post={featuredPost} />}
+            </Link>
           </div>
         </div>
       </main>
