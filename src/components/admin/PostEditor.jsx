@@ -597,6 +597,25 @@ const PostEditor = () => {
       // Asegurar que la imagen de portada esté en el campo correcto
       let imagenPortada = post.Imagen_portada || post.coverImagePreview || null;
       
+      // Verificar el tamaño de la imagen si existe
+      if (imagenPortada && typeof imagenPortada === 'string') {
+        const sizeInMB = (imagenPortada.length * 0.75) / (1024 * 1024);
+        console.log(`Tamaño aproximado de la imagen: ${sizeInMB.toFixed(2)}MB`);
+        
+        if (sizeInMB > 2) {
+          console.warn(`La imagen es grande (${sizeInMB.toFixed(2)}MB), podría causar problemas`);
+          
+          // Mostrar advertencia al usuario
+          setSaveMessage({
+            type: 'warning',
+            text: `La imagen es grande (${sizeInMB.toFixed(2)}MB). Si hay problemas al guardar, intenta con una imagen más pequeña.`,
+            icon: '⚠️'
+          });
+          
+          setTimeout(() => setSaveMessage(null), 5000);
+        }
+      }
+      
       const postData = {
         titulo: post.title,
         contenido: post.content,
@@ -628,12 +647,74 @@ const PostEditor = () => {
       
       if (isEditing) {
         console.log(`Actualizando post existente con ID: ${postId}`);
-        result = await updatePublicacion(postId, postData);
-        setSaveMessage({
-          type: 'success',
-          text: '¡Post actualizado correctamente!',
-          icon: '🎉'
-        });
+        try {
+          result = await updatePublicacion(postId, postData);
+          
+          // Verificar si hay advertencia sobre la imagen
+          if (result && result.warning) {
+            setSaveMessage({
+              type: 'warning',
+              text: result.warning,
+              icon: '⚠️'
+            });
+            
+            setTimeout(() => {
+              setSaveMessage({
+                type: 'success',
+                text: '¡Post actualizado correctamente!',
+                icon: '🎉'
+              });
+              
+              setTimeout(() => setSaveMessage(null), 3000);
+            }, 4000);
+          } else {
+            setSaveMessage({
+              type: 'success',
+              text: '¡Post actualizado correctamente!',
+              icon: '🎉'
+            });
+            
+            setTimeout(() => setSaveMessage(null), 3000);
+          }
+        } catch (updateError) {
+          console.error('Error al actualizar post:', updateError);
+          
+          // Si el error parece estar relacionado con la imagen, intentar sin ella
+          if (updateError.message.toLowerCase().includes('imagen') || 
+              updateError.message.toLowerCase().includes('image') ||
+              updateError.message.toLowerCase().includes('large') ||
+              updateError.message.toLowerCase().includes('grande') ||
+              updateError.message.toLowerCase().includes('size') ||
+              updateError.message.toLowerCase().includes('tamaño')) {
+            
+            setSaveMessage({
+              type: 'warning',
+              text: 'Error con la imagen. Intentando actualizar sin la imagen...',
+              icon: '⚠️'
+            });
+            
+            try {
+              // Intentar nuevamente sin la imagen
+              const postDataWithoutImage = { ...postData };
+              delete postDataWithoutImage.Imagen_portada;
+              
+              result = await updatePublicacion(postId, postDataWithoutImage);
+              
+              setSaveMessage({
+                type: 'warning',
+                text: 'Post actualizado sin la imagen. La imagen era demasiado grande.',
+                icon: '⚠️'
+              });
+              
+              setTimeout(() => setSaveMessage(null), 5000);
+            } catch (retryError) {
+              console.error('Error al reintentar sin imagen:', retryError);
+              throw retryError; // Propagar el error para que sea manejado por el catch principal
+            }
+          } else {
+            throw updateError; // Propagar el error para que sea manejado por el catch principal
+          }
+        }
       } else {
         const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
         const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
@@ -684,7 +765,7 @@ const PostEditor = () => {
         icon: '✖'
       });
       
-      setTimeout(() => setSaveMessage(null), 3000);
+      setTimeout(() => setSaveMessage(null), 5000);
     }
   };
 

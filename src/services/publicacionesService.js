@@ -391,9 +391,49 @@ export const updatePublicacion = async (id, publicacionData) => {
             console.log("updatePublicacion: Imagen de portada presente, longitud:", 
                 typeof formattedData.Imagen_portada === 'string' ? 
                 formattedData.Imagen_portada.length : 'no es string');
+            
+            // Verificar si la imagen es muy grande (más de 1MB)
+            if (typeof formattedData.Imagen_portada === 'string' && 
+                formattedData.Imagen_portada.length > 1000000) {
+                console.log("updatePublicacion: La imagen es grande, podría causar problemas");
+                
+                // Intentar verificar si es una imagen base64 válida
+                if (formattedData.Imagen_portada.startsWith('data:image')) {
+                    console.log("updatePublicacion: Es una imagen base64");
+                    
+                    // Verificar si la imagen es demasiado grande para el backend
+                    const sizeInMB = (formattedData.Imagen_portada.length * 0.75) / (1024 * 1024);
+                    console.log(`updatePublicacion: Tamaño aproximado de la imagen: ${sizeInMB.toFixed(2)}MB`);
+                    
+                    if (sizeInMB > 2) {
+                        console.warn(`updatePublicacion: La imagen es muy grande (${sizeInMB.toFixed(2)}MB), podría ser rechazada por el servidor`);
+                    }
+                }
+            }
         } else {
             console.log("updatePublicacion: No hay imagen de portada para enviar");
         }
+        
+        // Eliminar campos que podrían causar problemas
+        delete formattedData.coverImage;
+        delete formattedData.coverImagePreview;
+        delete formattedData.editorMode;
+        delete formattedData.publishDate;
+        delete formattedData.status;
+        delete formattedData.tags;
+        
+        // Asegurar que los campos tengan los nombres correctos
+        if (formattedData.title && !formattedData.titulo) {
+            formattedData.titulo = formattedData.title;
+            delete formattedData.title;
+        }
+        
+        if (formattedData.content && !formattedData.contenido) {
+            formattedData.contenido = formattedData.content;
+            delete formattedData.content;
+        }
+        
+        console.log("updatePublicacion: Campos finales a enviar:", Object.keys(formattedData));
         
         const response = await fetch(`${API_URL}/api/publicaciones/${id}`, {
             method: 'PUT',
@@ -405,9 +445,56 @@ export const updatePublicacion = async (id, publicacionData) => {
         });
         
         if (!response.ok) {
-            const errorData = await response.json();
-            console.error("updatePublicacion: Error del servidor:", response.status, errorData);
-            throw new Error(errorData.detail || 'Error al actualizar la publicación');
+            let errorMessage = `Error del servidor: ${response.status}`;
+            try {
+                const errorData = await response.json();
+                console.error("updatePublicacion: Error del servidor:", response.status, errorData);
+                
+                if (errorData.message) {
+                    errorMessage = errorData.message;
+                } else if (errorData.error) {
+                    errorMessage = errorData.error;
+                } else if (errorData.detail) {
+                    errorMessage = errorData.detail;
+                }
+                
+                // Verificar si el error está relacionado con la imagen
+                if (errorMessage.toLowerCase().includes('image') || 
+                    errorMessage.toLowerCase().includes('imagen') ||
+                    errorMessage.toLowerCase().includes('large') ||
+                    errorMessage.toLowerCase().includes('grande') ||
+                    errorMessage.toLowerCase().includes('size') ||
+                    errorMessage.toLowerCase().includes('tamaño')) {
+                    
+                    console.error("updatePublicacion: Error relacionado con la imagen");
+                    
+                    // Intentar nuevamente sin la imagen
+                    console.log("updatePublicacion: Intentando actualizar sin la imagen");
+                    delete formattedData.Imagen_portada;
+                    
+                    const retryResponse = await fetch(`${API_URL}/api/publicaciones/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                        },
+                        body: JSON.stringify(formattedData)
+                    });
+                    
+                    if (retryResponse.ok) {
+                        console.log("updatePublicacion: Actualización exitosa sin la imagen");
+                        const responseData = await retryResponse.json();
+                        return {
+                            ...responseData,
+                            warning: "La publicación se actualizó correctamente, pero no se pudo guardar la imagen debido a restricciones de tamaño."
+                        };
+                    }
+                }
+            } catch (jsonError) {
+                console.error("updatePublicacion: Error al procesar la respuesta de error:", jsonError);
+            }
+            
+            throw new Error(`No se pudo actualizar la publicación: ${errorMessage}`);
         }
         
         const responseData = await response.json();
