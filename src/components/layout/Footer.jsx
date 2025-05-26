@@ -50,9 +50,9 @@ const Footer = () => {
     // Aplicar directamente los estilos al elemento del footer
     if (footerRef.current) {
       // Restaurar la animación original con la imagen de onda
-      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=240&section=footer&animation=twinkling')";
+      footerRef.current.style.backgroundImage = "url('https://capsule-render.vercel.app/api?type=waving&color=082c2c&height=280&section=footer&animation=twinkling')";
       footerRef.current.style.backgroundSize = "100% auto";
-      footerRef.current.style.backgroundPosition = "center bottom";
+      footerRef.current.style.backgroundPosition = "center top"; // Cambiar a top para que esté más arriba
       footerRef.current.style.backgroundRepeat = "no-repeat";
       footerRef.current.style.backgroundColor = "transparent"; // Fondo transparente
       footerRef.current.style.color = isDarkMode ? '#ccc' : colors.white;
@@ -60,8 +60,8 @@ const Footer = () => {
       // Ajustar propiedades para evitar el rectángulo verde
       footerRef.current.style.border = "none";
       footerRef.current.style.boxShadow = "none";
-      footerRef.current.style.minHeight = "240px"; // Asegurar altura suficiente para la onda
-      footerRef.current.style.marginTop = "40px"; // Espaciado superior
+      footerRef.current.style.minHeight = "280px"; // Aumentar altura mínima
+      footerRef.current.style.marginTop = "60px"; // Más espacio superior
       footerRef.current.style.position = "relative";
       footerRef.current.style.overflow = "hidden";
     }
@@ -147,19 +147,20 @@ const Footer = () => {
     footer: {
       padding: 0,
       margin: 0,
-      minHeight: '240px', // Altura para acomodar la onda completa
+      minHeight: '280px', // Aumentar altura para acomodar mejor la animación
       position: 'relative',
       width: '100%',
       overflow: 'hidden',
-      zIndex: 1
+      zIndex: 1,
+      marginTop: '60px', // Más espacio superior para la animación
     },
     container: {
       maxWidth: '1900px',
       margin: '0 auto',
-      padding: `${spacing.md} ${spacing.lg} ${spacing.xl * 3}`, // Más padding abajo para la onda
+      padding: `${spacing.lg} ${spacing.lg} ${spacing.xl * 4}`, // Más padding abajo
       position: 'relative',
-      zIndex: 3, // Asegurar que el contenido está por encima del fondo
-      backgroundColor: 'transparent', // Contenedor transparente
+      zIndex: 3,
+      backgroundColor: 'transparent',
     },
     contentBox: {
       backgroundColor: 'rgba(8, 44, 44, 0.6)', // Más transparente
@@ -180,8 +181,8 @@ const Footer = () => {
     },
     grid: {
       display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: spacing.lg,
+      gridTemplateColumns: "1fr 1fr", // Mantener 2 columnas en desktop
+      gap: spacing.xl,
       justifyContent: "center",
       alignItems: "flex-start",
       maxWidth: "2100px",
@@ -525,111 +526,501 @@ const Footer = () => {
     }
   ];
 
+  // Reemplazar todo el responsiveStyles con esta versión súper compacta
+  const responsiveStyles = `
+    /* TABLETS - 768px y menos */
+    @media (max-width: 768px) {
+      .footer-content {
+        padding: 30px 12px 80px 12px !important; /* Más padding abajo */
+        gap: 24px !important;
+      }
+      
+      .footer-grid {
+        grid-template-columns: 1fr !important;
+        gap: 24px !important;
+        text-align: center !important;
+      }
+      
+      .footer-column {
+        width: 100% !important;
+        text-align: center !important;
+      }
+      
+      .footer-logo {
+        font-size: 18px !important;
+        margin-bottom: 12px !important;
+        justify-content: center !important;
+      }
+      
+      .footer-logo img {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      
+      .footer-description {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+        margin-bottom: 16px !important;
+        text-align: center !important;
+      }
+      
+      .footer-social {
+        justify-content: center !important;
+        gap: 12px !important;
+        margin-bottom: 20px !important;
+      }
+      
+      .footer-social-icon {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 18px !important;
+      }
+      
+      .footer-title {
+        font-size: 16px !important;
+        margin-bottom: 12px !important;
+        text-align: center !important;
+      }
+      
+      .footer-links {
+        flex-direction: column !important;
+        gap: 8px !important;
+        align-items: center !important;
+        margin: 0 auto !important;
+      }
+      
+      .footer-link {
+        font-size: 13px !important;
+        padding: 6px 16px !important;
+        min-width: 120px !important;
+        margin-bottom: 4px !important;
+        text-align: center !important;
+      }
+      
+      .footer-link-icon {
+        font-size: 14px !important;
+        margin-right: 8px !important;
+      }
+      
+      .footer-categories-container {
+        flex-direction: row !important; /* Mantener lado a lado en tablets */
+        gap: 20px !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        width: 100% !important;
+      }
+      
+      .footer-categories-container > div {
+        flex: 1 !important;
+        max-width: 200px !important;
+      }
+      
+      .footer-bottom {
+        flex-direction: column !important;
+        gap: 12px !important;
+        text-align: center !important;
+        margin-top: 24px !important;
+        padding-top: 16px !important;
+      }
+      
+      .footer-copyright {
+        font-size: 12px !important;
+      }
+      
+      .footer-bottom-links {
+        justify-content: center !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+      }
+      
+      .footer-bottom-link {
+        font-size: 11px !important;
+        padding: 6px 12px !important;
+        min-width: 80px !important;
+      }
+    }
+    
+    /* MÓVILES - 480px y menos */
+    @media (max-width: 480px) {
+      .footer-content {
+        padding: 20px 8px 70px 8px !important;
+        gap: 18px !important;
+      }
+      
+      .footer-grid {
+        gap: 18px !important;
+      }
+      
+      .footer-logo {
+        font-size: 16px !important;
+        margin-bottom: 10px !important;
+      }
+      
+      .footer-logo img {
+        width: 24px !important;
+        height: 24px !important;
+      }
+      
+      .footer-description {
+        font-size: 12px !important;
+        line-height: 1.4 !important;
+        margin-bottom: 14px !important;
+      }
+      
+      .footer-social {
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+      }
+      
+      .footer-social-icon {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 16px !important;
+      }
+      
+      .footer-title {
+        font-size: 14px !important;
+        margin-bottom: 10px !important;
+      }
+      
+      .footer-links {
+        gap: 6px !important;
+      }
+      
+      .footer-link {
+        font-size: 12px !important;
+        padding: 5px 12px !important;
+        min-width: 100px !important;
+        margin-bottom: 3px !important;
+      }
+      
+      .footer-link-icon {
+        font-size: 12px !important;
+        margin-right: 6px !important;
+      }
+      
+      .footer-categories-container {
+        flex-direction: row !important; /* Mantener lado a lado en móviles */
+        gap: 16px !important;
+        justify-content: space-between !important;
+      }
+      
+      .footer-categories-container > div {
+        flex: 1 !important;
+        max-width: 140px !important;
+      }
+      
+      .footer-bottom {
+        gap: 10px !important;
+        margin-top: 18px !important;
+        padding-top: 12px !important;
+      }
+      
+      .footer-copyright {
+        font-size: 11px !important;
+      }
+      
+      .footer-bottom-links {
+        gap: 6px !important;
+      }
+      
+      .footer-bottom-link {
+        font-size: 10px !important;
+        padding: 4px 8px !important;
+        min-width: 70px !important;
+      }
+    }
+    
+    /* MÓVILES PEQUEÑOS - 360px y menos */
+    @media (max-width: 360px) {
+      .footer-content {
+        padding: 16px 6px 60px 6px !important;
+        gap: 14px !important;
+      }
+      
+      .footer-grid {
+        gap: 14px !important;
+      }
+      
+      .footer-logo {
+        font-size: 14px !important;
+        margin-bottom: 8px !important;
+      }
+      
+      .footer-logo img {
+        width: 22px !important;
+        height: 22px !important;
+      }
+      
+      .footer-description {
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+        margin-bottom: 12px !important;
+      }
+      
+      .footer-social {
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+      }
+      
+      .footer-social-icon {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 14px !important;
+      }
+      
+      .footer-title {
+        font-size: 13px !important;
+        margin-bottom: 8px !important;
+      }
+      
+      .footer-links {
+        gap: 4px !important;
+      }
+      
+      .footer-link {
+        font-size: 11px !important;
+        padding: 4px 10px !important;
+        min-width: 90px !important;
+        margin-bottom: 2px !important;
+      }
+      
+      .footer-link-icon {
+        font-size: 11px !important;
+        margin-right: 5px !important;
+      }
+      
+      .footer-categories-container {
+        flex-direction: column !important; /* Cambiar a columna solo en pantallas muy pequeñas */
+        gap: 12px !important;
+        align-items: center !important;
+      }
+      
+      .footer-categories-container > div {
+        max-width: 200px !important;
+      }
+      
+      .footer-bottom {
+        gap: 8px !important;
+        margin-top: 14px !important;
+        padding-top: 10px !important;
+      }
+      
+      .footer-copyright {
+        font-size: 10px !important;
+      }
+      
+      .footer-bottom-links {
+        gap: 4px !important;
+        flex-direction: column !important;
+      }
+      
+      .footer-bottom-link {
+        font-size: 9px !important;
+        padding: 3px 6px !important;
+        min-width: 60px !important;
+      }
+    }
+    
+    /* MÓVILES EXTRA PEQUEÑOS - 320px y menos */
+    @media (max-width: 320px) {
+      .footer-content {
+        padding: 12px 4px 50px 4px !important;
+        gap: 12px !important;
+      }
+      
+      .footer-grid {
+        gap: 12px !important;
+      }
+      
+      .footer-logo {
+        font-size: 13px !important;
+        margin-bottom: 6px !important;
+      }
+      
+      .footer-logo img {
+        width: 20px !important;
+        height: 20px !important;
+      }
+      
+      .footer-description {
+        font-size: 10px !important;
+        line-height: 1.2 !important;
+        margin-bottom: 10px !important;
+      }
+      
+      .footer-social {
+        gap: 6px !important;
+        margin-bottom: 10px !important;
+      }
+      
+      .footer-social-icon {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 13px !important;
+      }
+      
+      .footer-title {
+        font-size: 12px !important;
+        margin-bottom: 6px !important;
+      }
+      
+      .footer-links {
+        gap: 3px !important;
+      }
+      
+      .footer-link {
+        font-size: 10px !important;
+        padding: 3px 8px !important;
+        min-width: 80px !important;
+        margin-bottom: 2px !important;
+      }
+      
+      .footer-link-icon {
+        font-size: 10px !important;
+        margin-right: 4px !important;
+      }
+      
+      .footer-categories-container {
+        gap: 10px !important;
+      }
+      
+      .footer-bottom {
+        gap: 6px !important;
+        margin-top: 12px !important;
+        padding-top: 8px !important;
+      }
+      
+      .footer-copyright {
+        font-size: 9px !important;
+      }
+      
+      .footer-bottom-links {
+        gap: 3px !important;
+      }
+      
+      .footer-bottom-link {
+        font-size: 8px !important;
+        padding: 2px 5px !important;
+        min-width: 50px !important;
+      }
+    }
+  `;
+
   return (
     <footer ref={footerRef} style={styles.footer}>
-      <div style={styles.container}>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1.5fr',
-          gap: spacing.xl,
-          alignItems: 'flex-start',
-          justifyContent: 'center',
-          maxWidth: '1200px',
-          margin: '0 auto',
-        }}>
-          {/* Columna Izquierda: Logo, descripción y redes sociales */}
-          <div style={{ ...styles.transparentBox, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: spacing.sm }}>
-            <div 
-              style={styles.logo}
-              onClick={(e) => handleInstantNavigation('/', e)}
-            >
-              <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
-              <span style={{ color: isDarkMode ? '#fff' : colors.white, marginLeft: spacing.sm, fontWeight: typography.fontWeight.bold }}>EducStation</span>
-            </div>
-            <p style={styles.description}>
-              Plataforma educativa dedicada al desarrollo profesional y personal de educadores y estudiantes. Fomentamos la innovación, colaboración y excelencia en el ámbito educativo.
-            </p>
-            <div style={{ ...styles.social, marginTop: 0 }}>
-              {socialLinks.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    ...styles.socialIcon,
-                    background: `linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%)`,
-                    boxShadow: `0 4px 24px 0 ${social.colors.glow}`,
-                    color: social.colors.primary === '#000000' ? '#fff' : '#fff'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-4px)';
-                    e.currentTarget.style.boxShadow = `0 8px 32px 0 ${social.colors.glow}`;
-                    e.currentTarget.style.background = `linear-gradient(135deg, ${social.colors.secondary} 0%, ${social.colors.hover} 100%)`;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = `0 4px 24px 0 ${social.colors.glow}`;
-                    e.currentTarget.style.background = `linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%)`;
-                  }}
-                  aria-label={social.label}
-                >
-                  {social.icon}
-                </a>
-              ))}
+      <style>{responsiveStyles}</style>
+      <div className="footer-content" style={styles.container}>
+        <div className="footer-grid" style={styles.grid}>
+          <div className="footer-column">
+            {/* Columna Izquierda: Logo, descripción y redes sociales */}
+            <div style={{ ...styles.transparentBox, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', justifyContent: 'center', gap: spacing.sm }}>
+              <div 
+                className="footer-logo"
+                style={styles.logo}
+                onClick={(e) => handleInstantNavigation('/', e)}
+              >
+                <img src="/assets/images/Icon.png" alt="Logo" style={styles.logoIcon} />
+                <span style={{ color: isDarkMode ? '#fff' : colors.white, marginLeft: spacing.sm, fontWeight: typography.fontWeight.bold }}>EducStation</span>
+              </div>
+              <p className="footer-description" style={styles.description}>
+                Plataforma educativa dedicada al desarrollo profesional y personal de educadores y estudiantes. Fomentamos la innovación, colaboración y excelencia en el ámbito educativo.
+              </p>
+              <div className="footer-social" style={{ ...styles.social, marginTop: 0 }}>
+                {socialLinks.map((social, index) => (
+                  <a
+                    key={index}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="footer-social-icon"
+                    style={{
+                      ...styles.socialIcon,
+                      background: `linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%)`,
+                      boxShadow: `0 4px 24px 0 ${social.colors.glow}`,
+                      color: social.colors.primary === '#000000' ? '#fff' : '#fff'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = `0 8px 32px 0 ${social.colors.glow}`;
+                      e.currentTarget.style.background = `linear-gradient(135deg, ${social.colors.secondary} 0%, ${social.colors.hover} 100%)`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = `0 4px 24px 0 ${social.colors.glow}`;
+                      e.currentTarget.style.background = `linear-gradient(135deg, ${social.colors.primary} 0%, ${social.colors.secondary} 100%)`;
+                    }}
+                    aria-label={social.label}
+                  >
+                    {social.icon}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
-
-          {/* Columna Derecha: Enlaces y Categorías */}
-          <div style={{ ...styles.transparentBox, display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: spacing.xl, width: '100%' }}>
-            {/* Descubre Más */}
-            <div>
-              <h3 style={styles.title}>Descubre Más</h3>
-              <ul style={styles.links}>
-                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/', e)}>
-                  <span style={styles.linkIcon}><FaHome size={18} /></span>
-                  <span style={styles.linkAnchor}>Inicio</span>
-                </li>
-                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/about', e)}>
-                  <span style={styles.linkIcon}><FaInfo size={18} /></span>
-                  <span style={styles.linkAnchor}>Acerca de</span>
-                </li>
-                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/contact', e)}>
-                  <span style={styles.linkIcon}><FaEnvelope size={18} /></span>
-                  <span style={styles.linkAnchor}>Contacto</span>
-                </li>
-                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/contact', e)}>
-                  <span style={styles.linkIcon}><FaQuestionCircle size={18} /></span>
-                  <span style={styles.linkAnchor}>FAQ</span>
-                </li>
-              </ul>
-            </div>
-            {/* Categorías */}
-            <div>
-              <h3 style={styles.title}>Categorías</h3>
-              <ul style={styles.links}>
-                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/1', e)}>
-                  <span style={styles.linkIcon}><FaBook size={18} /></span>
-                  <span style={styles.linkAnchor}>Noticias</span>
-                </li>
-                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/2', e)}>
-                  <span style={styles.linkIcon}><FaChartBar size={18} /></span>
-                  <span style={styles.linkAnchor}>Técnicas de Estudio</span>
-                </li>
-                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/6', e)}>
-                  <span style={styles.linkIcon}><FaAward size={18} /></span>
-                  <span style={styles.linkAnchor}>Desarrollo Profesional</span>
-                </li>
-                <li style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categorias', e)}>
-                  <span style={styles.linkIcon}><FaTags size={18} /></span>
-                  <span style={styles.linkAnchor}>Descubre más categorías</span>
-                </li>
-              </ul>
+          
+          <div className="footer-column">
+            {/* Columna Derecha: Enlaces y Categorías LADO A LADO */}
+            <div className="footer-categories-container" style={{ 
+              ...styles.transparentBox, 
+              display: 'flex', 
+              flexDirection: 'row', // Forzar que estén lado a lado
+              justifyContent: 'space-between', // Distribuir espacio uniformemente
+              gap: spacing.xl, 
+              width: '100%',
+              alignItems: 'flex-start' // Alinear al inicio para mejor distribución
+            }}>
+              {/* Descubre Más */}
+              <div style={{ flex: 1, minWidth: '160px' }}>
+                <h3 className="footer-title" style={styles.title}>Descubre Más</h3>
+                <ul className="footer-links" style={styles.links}>
+                  <li className="footer-link" style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/', e)}>
+                    <span className="footer-link-icon" style={styles.linkIcon}><FaHome size={18} /></span>
+                    <span style={styles.linkAnchor}>Inicio</span>
+                  </li>
+                  <li className="footer-link" style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/about', e)}>
+                    <span className="footer-link-icon" style={styles.linkIcon}><FaInfo size={18} /></span>
+                    <span style={styles.linkAnchor}>Acerca de</span>
+                  </li>
+                  <li className="footer-link" style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/contact', e)}>
+                    <span className="footer-link-icon" style={styles.linkIcon}><FaEnvelope size={18} /></span>
+                    <span style={styles.linkAnchor}>Contacto</span>
+                  </li>
+                  <li className="footer-link" style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/contact', e)}>
+                    <span className="footer-link-icon" style={styles.linkIcon}><FaQuestionCircle size={18} /></span>
+                    <span style={styles.linkAnchor}>FAQ</span>
+                  </li>
+                </ul>
+              </div>
+              
+              {/* Categorías */}
+              <div style={{ flex: 1, minWidth: '160px' }}>
+                <h3 className="footer-title" style={styles.title}>Categorías</h3>
+                <ul className="footer-links" style={styles.links}>
+                  <li className="footer-link" style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/1', e)}>
+                    <span className="footer-link-icon" style={styles.linkIcon}><FaBook size={18} /></span>
+                    <span style={styles.linkAnchor}>Noticias</span>
+                  </li>
+                  <li className="footer-link" style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/2', e)}>
+                    <span className="footer-link-icon" style={styles.linkIcon}><FaChartBar size={18} /></span>
+                    <span style={styles.linkAnchor}>Técnicas de Estudio</span>
+                  </li>
+                  <li className="footer-link" style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categoria/6', e)}>
+                    <span className="footer-link-icon" style={styles.linkIcon}><FaAward size={18} /></span>
+                    <span style={styles.linkAnchor}>Desarrollo Profesional</span>
+                  </li>
+                  <li className="footer-link" style={{...styles.link, cursor: 'pointer'}} onMouseEnter={handleLinkMouseEnter} onMouseLeave={handleLinkMouseLeave} onClick={(e) => handleInstantNavigation('/categorias', e)}>
+                    <span className="footer-link-icon" style={styles.linkIcon}><FaTags size={18} /></span>
+                    <span style={styles.linkAnchor}>Descubre más categorías</span>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </div>
+        
         {/* Bottom Section */}
-        <div style={{
+        <div className="footer-bottom" style={{
           ...styles.bottom, 
           ...styles.transparentBox, 
           marginTop: spacing.xl,
@@ -640,15 +1031,16 @@ const Footer = () => {
           paddingTop: spacing.md,
           flexWrap: 'wrap'
         }}>
-          <div style={styles.copyright}>
+          <div className="footer-copyright" style={styles.copyright}>
             &copy; {new Date().getFullYear()} EducStation. Todos los derechos reservados.
           </div>
-          <div style={{
+          <div className="footer-bottom-links" style={{
             display: 'flex',
             gap: '10px',
             marginTop: window.innerWidth < 768 ? spacing.md : 0
           }}>
             <span 
+              className="footer-bottom-link"
               style={{
                 ...styles.bottomLink,
                 display: 'inline-flex',
@@ -666,6 +1058,7 @@ const Footer = () => {
               Términos
             </span>
             <span 
+              className="footer-bottom-link"
               style={{
                 ...styles.bottomLink,
                 display: 'inline-flex',
@@ -683,6 +1076,7 @@ const Footer = () => {
               Privacidad
             </span>
             <span 
+              className="footer-bottom-link"
               style={{
                 ...styles.bottomLink,
                 display: 'inline-flex',

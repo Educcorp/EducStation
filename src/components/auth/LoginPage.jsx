@@ -175,6 +175,612 @@ const LoginPage = () => {
         }
     };
 
+    // Modificar responsiveStyles agregando estilos para el contenido de la imagen
+    const responsiveStyles = `
+  /* Estilos base para móviles - MANTENIENDO COLORES ORIGINALES EXACTOS */
+  .login-form-container {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(11, 68, 68, 0.25);
+    background-color: white;
+    height: 600px;
+    position: relative;
+    z-index: 2;
+    animation: fadeInUp 0.8s ease-out;
+  }
+  
+  .login-image-section {
+    background-image: url('/assets/images/humanos.jpg');
+    background-size: cover;
+    background-position: center;
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .login-form-content {
+    flex: 1;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 600px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+    backdrop-filter: blur(10px);
+  }
+  
+  /* Estilos para el contenido de la imagen */
+  .login-image-overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(31, 78, 78, 0.85) 0%, rgba(31, 78, 78, 0.7) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px;
+    color: white;
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  .login-raccoon-logo-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out forwards;
+    animation-delay: 0.3s;
+  }
+  
+  .login-raccoon-image {
+    width: 64px;
+    height: 64px;
+    border-radius: 12px;
+    margin-right: 16px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: rotate(-5deg);
+    transition: transform 0.3s ease;
+  }
+  
+  .login-logo-text {
+    font-size: 32px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  .login-logo-text2 {
+    font-size: 32px;
+    font-weight: 700;
+    color: #d2b99a;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  }
+  
+  .login-image-text {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out forwards;
+    animation-delay: 0.6s;
+  }
+  
+  .login-image-quote {
+    font-style: italic;
+    font-size: 16px;
+    position: relative;
+    padding: 24px;
+    border-left: 3px solid #d2b99a;
+    border-radius: 0 8px 8px 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    animation: fadeInUp 0.8s ease-out forwards;
+    animation-delay: 0.9s;
+  }
+  
+  .login-input-field {
+    width: 100%;
+    padding: 16px 24px 16px 50px;
+    border-width: 2px;
+    border-style: solid;
+    border-color: #e5e7eb;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-sizing: border-box;
+    color: #1F4E4E;
+  }
+  
+  .login-input-field:focus {
+    border-color: #2C7171;
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(44, 113, 113, 0.15);
+    outline: none;
+    transform: translateY(-2px);
+  }
+  
+  .login-input-field::placeholder {
+    color: #91a8a9;
+    opacity: 0.7;
+  }
+  
+  .login-input-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #91a8a9;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    z-index: 1;
+  }
+  
+  .login-form-group:focus-within .login-input-icon {
+    color: #1F4E4E;
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  .login-password-toggle {
+    position: absolute;
+    right: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #91a8a9;
+    font-size: 20px;
+    z-index: 10;
+    background: none;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+  
+  .login-password-toggle:hover {
+    background-color: rgba(145, 168, 169, 0.2);
+    transform: translateY(-50%) scale(1.1);
+    color: #1F4E4E;
+  }
+  
+  .login-button {
+    width: 100%;
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #1F4E4E 0%, #2C7171 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(31, 78, 78, 0.3);
+    min-height: 52px;
+  }
+  
+  .login-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .login-button:hover::before {
+    left: 100%;
+  }
+  
+  .login-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(31, 78, 78, 0.4);
+    background: linear-gradient(135deg, #2C7171 0%, #1F4E4E 100%);
+  }
+  
+  .login-remember-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  
+  .login-form-group {
+    margin-bottom: 24px;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .login-header h1 {
+    color: #1F4E4E;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+  }
+  
+  .login-header p {
+    color: #91a8a9;
+    font-size: 16px;
+    margin-bottom: 32px;
+    opacity: 0.9;
+  }
+  
+  .login-error-message {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%);
+    color: #dc3545;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    text-align: center;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+  }
+  
+  .login-register-link {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 14px;
+    color: #91a8a9;
+  }
+
+  /* Media queries para responsive - COMPACTO PERO LEGIBLE */
+  @media (max-width: 768px) {
+    .login-form-container {
+      flex-direction: column !important;
+      max-width: 96% !important;
+      margin: 15px auto !important;
+      min-height: auto !important;
+      height: auto !important;
+    }
+    
+    .login-image-section {
+      min-height: 180px !important;
+      border-radius: 16px 16px 0 0 !important;
+      flex: none !important;
+    }
+    
+    /* Contenido de la imagen responsive */
+    .login-image-overlay {
+      padding: 20px !important;
+      justify-content: center !important;
+    }
+    
+    .login-raccoon-logo-row {
+      margin-bottom: 16px !important;
+      justify-content: center !important;
+    }
+    
+    .login-raccoon-image {
+      width: 40px !important;
+      height: 40px !important;
+      margin-right: 12px !important;
+    }
+    
+    .login-logo-text {
+      font-size: 20px !important;
+    }
+    
+    .login-logo-text2 {
+      font-size: 20px !important;
+    }
+    
+    .login-image-text {
+      font-size: 13px !important;
+      line-height: 1.4 !important;
+      margin-bottom: 16px !important;
+      text-align: center !important;
+    }
+    
+    .login-image-quote {
+      font-size: 12px !important;
+      padding: 12px !important;
+      line-height: 1.3 !important;
+      text-align: center !important;
+    }
+    
+    .login-form-content {
+      padding: 28px 24px !important;
+      min-height: auto !important;
+      flex: none !important;
+    }
+    
+    .login-header h1 {
+      font-size: 26px !important;
+      margin-bottom: 6px !important;
+    }
+    
+    .login-header p {
+      font-size: 14px !important;
+      margin-bottom: 24px !important;
+    }
+    
+    .login-form-group {
+      margin-bottom: 18px !important;
+    }
+    
+    .login-input-field {
+      padding: 14px 16px 14px 45px !important;
+      font-size: 16px !important;
+      min-height: 50px !important;
+    }
+    
+    .login-input-icon {
+      left: 15px !important;
+      font-size: 16px !important;
+    }
+    
+    .login-password-toggle {
+      right: 15px !important;
+      padding: 10px !important;
+    }
+    
+    .login-button {
+      padding: 15px !important;
+      font-size: 16px !important;
+      min-height: 50px !important;
+      margin-top: 8px !important;
+      margin-bottom: 12px !important;
+    }
+    
+    .login-remember-row {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 12px !important;
+      margin-bottom: 20px !important;
+    }
+    
+    .login-remember-checkbox {
+      order: 1;
+    }
+    
+    .login-forgot-link {
+      order: 2;
+      font-size: 14px !important;
+    }
+    
+    .login-register-link {
+      font-size: 14px !important;
+      margin-top: 18px !important;
+      text-align: center !important;
+    }
+    
+    .login-background-elements {
+      display: none !important;
+    }
+    
+    .login-error-message {
+      padding: 12px 16px !important;
+      font-size: 14px !important;
+      margin-bottom: 18px !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .login-form-container {
+      max-width: 98% !important;
+      margin: 8px auto !important;
+    }
+    
+    .login-image-section {
+      min-height: 160px !important;
+    }
+    
+    /* Contenido imagen más compacto */
+    .login-image-overlay {
+      padding: 16px !important;
+    }
+    
+    .login-raccoon-logo-row {
+      margin-bottom: 12px !important;
+    }
+    
+    .login-raccoon-image {
+      width: 32px !important;
+      height: 32px !important;
+      margin-right: 8px !important;
+    }
+    
+    .login-logo-text {
+      font-size: 18px !important;
+    }
+    
+    .login-logo-text2 {
+      font-size: 18px !important;
+    }
+    
+    .login-image-text {
+      font-size: 12px !important;
+      margin-bottom: 12px !important;
+    }
+    
+    .login-image-quote {
+      font-size: 11px !important;
+      padding: 10px !important;
+    }
+    
+    .login-form-content {
+      padding: 24px 20px !important;
+    }
+    
+    .login-header h1 {
+      font-size: 24px !important;
+      margin-bottom: 5px !important;
+    }
+    
+    .login-header p {
+      font-size: 13px !important;
+      margin-bottom: 20px !important;
+    }
+    
+    .login-form-group {
+      margin-bottom: 16px !important;
+    }
+    
+    .login-input-field {
+      padding: 13px 14px 13px 42px !important;
+      font-size: 16px !important;
+      min-height: 48px !important;
+    }
+    
+    .login-input-icon {
+      left: 14px !important;
+      font-size: 15px !important;
+    }
+    
+    .login-password-toggle {
+      right: 12px !important;
+      padding: 8px !important;
+    }
+    
+    .login-button {
+      padding: 14px !important;
+      font-size: 15px !important;
+      min-height: 48px !important;
+      margin-bottom: 10px !important;
+    }
+    
+    .login-remember-row {
+      gap: 10px !important;
+      margin-bottom: 18px !important;
+    }
+    
+    .login-forgot-link {
+      font-size: 13px !important;
+    }
+    
+    .login-register-link {
+      font-size: 13px !important;
+      margin-top: 16px !important;
+    }
+    
+    .login-error-message {
+      margin-bottom: 16px !important;
+    }
+  }
+  
+  @media (max-width: 360px) {
+    .login-form-container {
+      max-width: 100% !important;
+      margin: 5px auto !important;
+      border-radius: 12px !important;
+    }
+    
+    .login-image-section {
+      min-height: 140px !important;
+    }
+    
+    /* Imagen súper compacta */
+    .login-image-overlay {
+      padding: 12px !important;
+    }
+    
+    .login-raccoon-logo-row {
+      margin-bottom: 8px !important;
+    }
+    
+    .login-raccoon-image {
+      width: 28px !important;
+      height: 28px !important;
+      margin-right: 6px !important;
+    }
+    
+    .login-logo-text {
+      font-size: 16px !important;
+    }
+    
+    .login-logo-text2 {
+      font-size: 16px !important;
+    }
+    
+    .login-image-text {
+      font-size: 10px !important;
+      margin-bottom: 8px !important;
+      line-height: 1.2 !important;
+    }
+    
+    .login-image-quote {
+      font-size: 9px !important;
+      padding: 8px !important;
+      line-height: 1.2 !important;
+    }
+    
+    .login-form-content {
+      padding: 20px 16px !important;
+    }
+    
+    .login-header h1 {
+      font-size: 22px !important;
+      margin-bottom: 4px !important;
+    }
+    
+    .login-header p {
+      font-size: 12px !important;
+      margin-bottom: 18px !important;
+    }
+    
+    .login-form-group {
+      margin-bottom: 14px !important;
+    }
+    
+    .login-input-field {
+      padding: 12px 12px 12px 40px !important;
+      min-height: 46px !important;
+    }
+    
+    .login-input-icon {
+      left: 12px !important;
+    }
+    
+    .login-password-toggle {
+      right: 10px !important;
+    }
+    
+    .login-button {
+      min-height: 46px !important;
+      padding: 13px !important;
+    }
+    
+    .login-remember-row {
+      margin-bottom: 16px !important;
+    }
+    
+    .login-register-link {
+      margin-top: 14px !important;
+    }
+  }
+`;
+
+    // Corregir el estilo del checkmark para evitar conflictos de border
     const styles = {
         loginContainer: {
             minHeight: '100vh',
@@ -193,39 +799,6 @@ const LoginPage = () => {
             opacity: 0.08,
             pointerEvents: 'none',
         },
-        circle1: {
-            position: 'absolute',
-            width: '400px',
-            height: '400px',
-            borderRadius: '50%',
-            backgroundColor: '#ffffff',
-            top: '-100px',
-            right: '-100px',
-            opacity: '0.1',
-            animation: 'float 15s infinite ease-in-out',
-        },
-        circle2: {
-            position: 'absolute',
-            width: '300px',
-            height: '300px',
-            borderRadius: '50%',
-            backgroundColor: '#d2b99a',
-            bottom: '-50px',
-            left: '10%',
-            opacity: '0.1',
-            animation: 'float 18s infinite ease-in-out reverse',
-        },
-        circle3: {
-            position: 'absolute',
-            width: '200px',
-            height: '200px',
-            borderRadius: '50%',
-            backgroundColor: '#91a8a9',
-            top: '20%',
-            left: '-50px',
-            opacity: '0.1',
-            animation: 'float 20s infinite ease-in-out',
-        },
         mainContent: {
             flex: 1,
             display: 'flex',
@@ -234,32 +807,6 @@ const LoginPage = () => {
             padding: `${spacing.xl} ${spacing.md}`,
             position: 'relative',
             zIndex: 1,
-        },
-        formContainer: {
-            width: "100%",
-            maxWidth: "1100px",
-            display: "flex",
-            borderRadius: "16px",
-            overflow: "hidden",
-            boxShadow: '0 25px 50px rgba(11, 68, 68, 0.25)',
-            backgroundColor: colors.white,
-            opacity: formActive ? 1 : 0,
-            transform: formActive ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        },
-        loginImage: {
-            backgroundImage: "url('/assets/images/humanos.jpg')",
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            flex: 1,
-            position: 'relative',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-            '@media (max-width: 768px)': {
-                display: 'none'
-            }
         },
         imageOverlay: {
             position: 'absolute',
@@ -291,9 +838,6 @@ const LoginPage = () => {
             boxShadow: '0 8px 20px rgba(0, 0, 0, 0.2)',
             transform: 'rotate(-5deg)',
             transition: 'transform 0.3s ease',
-            '&:hover': {
-                transform: 'rotate(0deg) scale(1.05)',
-            },
         },
         logoText: {
             fontSize: '32px',
@@ -331,46 +875,13 @@ const LoginPage = () => {
             animation: 'fadeInUp 0.8s ease-out forwards',
             animationDelay: '0.9s',
         },
-        formContent: {
-            flex: 1,
-            padding: spacing.xl,
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
+        inputWrapper: {
             position: 'relative',
-            overflow: 'hidden',
+            width: '100%',
         },
-        formContentInner: {
-            opacity: animationComplete ? 1 : 0,
-            transform: animationComplete ? 'translateY(0)' : 'translateY(20px)',
-            transition: 'all 0.5s ease-out',
-        },
-        loginHeader: {
-            marginBottom: spacing.xl,
-        },
-        loginTitle: {
-            color: '#1F4E4E',
-            fontSize: typography.fontSize.xxl,
-            marginBottom: spacing.sm,
+        passwordWrapper: {
             position: 'relative',
-            display: 'inline-block',
-            overflow: 'hidden',
-        },
-        loginSubtitle: {
-            color: colors.primaryLight,
-            fontSize: typography.fontSize.md,
-            opacity: 0,
-            animation: 'fadeInUp 0.6s ease-out forwards',
-            animationDelay: '1.2s',
-        },
-        formGroup: {
-            marginBottom: spacing.lg,
-            position: 'relative',
-            transition: 'all 0.3s ease',
-            transform: 'translateY(0)',
-        },
-        activeFormGroup: {
-            transform: 'translateY(-5px)',
+            width: '100%',
         },
         label: {
             display: 'block',
@@ -381,125 +892,25 @@ const LoginPage = () => {
             transition: 'all 0.3s ease',
             opacity: 0.9,
         },
-        activeLabel: {
-            color: '#2C7171',
-            opacity: 1,
-            transform: 'translateY(-2px)',
-        },
-        inputIcon: {
-            position: 'absolute',
-            left: '15px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: '#91a8a9',
-            fontSize: '18px',
-            transition: 'all 0.3s ease',
-            zIndex: 1,
-        },
-        activeInputIcon: {
-            color: '#1F4E4E',
-            transform: 'translateY(-50%) scale(1.1)',
-        },
-        input: {
-            width: '100%',
-            padding: `${spacing.md} ${spacing.lg}`,
-            paddingLeft: '45px',
-            border: `2px solid ${colors.gray200}`,
-            borderRadius: '12px',
-            fontSize: typography.fontSize.md,
-            transition: 'all 0.3s ease',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-        },
-        activeInput: {
-            border: '2px solid #2C7171',
-            backgroundColor: '#ffffff',
-            boxShadow: '0 5px 15px rgba(44, 113, 113, 0.15)',
-        },
-        passwordInput: {
-            width: '100%',
-            padding: `${spacing.md} ${spacing.lg}`,
-            paddingLeft: '45px',
-            paddingRight: '45px',
-            border: `2px solid ${colors.gray200}`,
-            borderRadius: '12px',
-            fontSize: typography.fontSize.md,
-            transition: 'all 0.3s ease',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-        },
-        activePasswordInput: {
-            border: '2px solid #2C7171',
-            backgroundColor: '#ffffff',
-            boxShadow: '0 5px 15px rgba(44, 113, 113, 0.15)',
-        },
-        passwordWrapper: {
-            position: 'relative',
-            width: '100%',
-        },
-        eyeIcon: {
-            position: 'absolute',
-            right: '15px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            cursor: 'pointer',
-            color: colors.primaryLight,
-            fontSize: '20px',
-            zIndex: 10,
-            background: 'none',
-            border: 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '8px',
-            borderRadius: '50%',
-            transition: 'all 0.3s ease',
-        },
-        activeEyeIcon: {
-            color: '#1F4E4E',
-            backgroundColor: 'rgba(44, 113, 113, 0.1)',
-        },
         errorText: {
             color: colors.error,
             fontSize: typography.fontSize.xs,
             marginTop: spacing.xs,
             display: 'flex',
             alignItems: 'center',
-            animation: 'shakeX 0.5s',
         },
         errorIcon: {
             marginRight: spacing.xs,
             fontSize: '12px',
-        },
-        rememberForgot: {
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: spacing.lg,
-            fontSize: typography.fontSize.sm,
-            opacity: 0,
-            animation: 'fadeIn 0.6s ease-out forwards',
-            animationDelay: '1.3s',
-        },
-        checkbox: {
-            display: 'flex',
-            alignItems: 'center',
-            color: colors.primaryLight,
-            cursor: 'pointer',
-        },
-        checkboxInput: {
-            marginRight: spacing.xs,
-            accentColor: '#1F4E4E',
-            height: '16px',
-            width: '16px',
-            cursor: 'pointer',
         },
         checkmark: {
             position: 'relative',
             height: '20px',
             width: '20px',
             borderRadius: '4px',
-            border: `2px solid #91a8a9`,
+            borderWidth: '2px',
+            borderStyle: 'solid',
+            borderColor: '#91a8a9',
             marginRight: spacing.xs,
             display: 'flex',
             alignItems: 'center',
@@ -520,6 +931,18 @@ const LoginPage = () => {
         activeCheckmarkIcon: {
             opacity: 1,
         },
+        hiddenCheckbox: {
+            display: 'none',
+        },
+        rememberText: {
+            color: colors.primaryLight,
+        },
+        rememberLabel: {
+            display: 'flex',
+            alignItems: 'center',
+            color: colors.primaryLight,
+            cursor: 'pointer',
+        },
         forgotLink: {
             color: '#1F4E4E',
             textDecoration: 'none',
@@ -527,56 +950,10 @@ const LoginPage = () => {
             position: 'relative',
             paddingBottom: '2px',
         },
-        forgotLinkAfter: {
-            content: '""',
-            position: 'absolute',
-            width: '0',
-            height: '2px',
-            bottom: '0',
-            left: '0',
-            backgroundColor: '#2C7171',
-            transition: 'width 0.3s ease',
-        },
-        loginButton: {
-            width: '100%',
-            padding: `${spacing.md} ${spacing.lg}`,
-            backgroundColor: '#1F4E4E',
-            color: colors.white,
-            border: 'none',
-            borderRadius: '12px',
-            fontSize: typography.fontSize.md,
-            fontWeight: typography.fontWeight.semiBold,
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            marginBottom: spacing.md,
-            position: 'relative',
-            overflow: 'hidden',
-            boxShadow: '0 4px 15px rgba(31, 78, 78, 0.3)',
-            opacity: 0,
-            animation: 'fadeInUp 0.5s ease-out forwards',
-            animationDelay: '1.4s',
-        },
-        buttonRipple: {
-            position: 'absolute',
-            width: '100%',
-            height: '100%',
-            top: '0',
-            left: '0',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)',
-            transform: 'scale(0)',
-            opacity: '0',
-            transition: 'all 0.5s ease-out',
+        registerPrompt: {
+            color: colors.primaryLight,
         },
         registerLink: {
-            textAlign: 'center',
-            marginTop: spacing.xl,
-            fontSize: typography.fontSize.sm,
-            color: colors.primaryLight,
-            opacity: 0,
-            animation: 'fadeIn 0.6s ease-out forwards',
-            animationDelay: '1.5s',
-        },
-        registerLinkText: {
             color: '#1F4E4E',
             fontWeight: typography.fontWeight.semiBold,
             textDecoration: 'none',
@@ -584,34 +961,61 @@ const LoginPage = () => {
             position: 'relative',
             paddingBottom: '2px',
         },
-        registerLinkAfter: {
-            content: '""',
-            position: 'absolute',
-            width: '0',
-            height: '2px',
-            bottom: '0',
-            left: '0',
-            backgroundColor: '#2C7171',
-            transition: 'width 0.3s ease',
-        },
-        generalError: {
-            backgroundColor: `rgba(220, 53, 69, 0.1)`,
-            color: colors.error,
-            padding: spacing.md,
-            borderRadius: '8px',
-            marginBottom: spacing.lg,
-            textAlign: 'center',
-            fontSize: typography.fontSize.sm,
+        loadingContainer: {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            animation: 'shakeX 0.5s',
-            boxShadow: '0 4px 10px rgba(220, 53, 69, 0.1)',
-            border: '1px solid rgba(220, 53, 69, 0.2)',
+            gap: spacing.sm,
         },
-        errorAlertIcon: {
-            fontSize: '18px',
-            marginRight: spacing.sm,
+        spinner: {
+            width: '20px',
+            height: '20px',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+            borderTop: '2px solid white',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+        },
+        buttonIcon: {
+            marginRight: spacing.xs,
+            fontSize: '16px',
+        },
+        disabledButton: {
+            opacity: 0.7,
+            cursor: 'not-allowed',
+        },
+        // Mantener solo estilos de background que no entran en conflicto
+        circle1: {
+            position: 'absolute',
+            width: '400px',
+            height: '400px',
+            borderRadius: '50%',
+            backgroundColor: '#ffffff',
+            top: '-100px',
+            right: '-100px',
+            opacity: '0.1',
+            animation: 'float 15s infinite ease-in-out',
+        },
+        circle2: {
+            position: 'absolute',
+            width: '300px',
+            height: '300px',
+            borderRadius: '50%',
+            backgroundColor: '#d2b99a',
+            bottom: '-50px',
+            left: '10%',
+            opacity: '0.1',
+            animation: 'float 18s infinite ease-in-out reverse',
+        },
+        circle3: {
+            position: 'absolute',
+            width: '200px',
+            height: '200px',
+            borderRadius: '50%',
+            backgroundColor: '#91a8a9',
+            top: '20%',
+            left: '-50px',
+            opacity: '0.1',
+            animation: 'float 20s infinite ease-in-out',
         },
         backgroundParticles: {
             position: 'absolute',
@@ -631,68 +1035,7 @@ const LoginPage = () => {
             opacity: 0.2,
             animation: 'float 15s infinite linear',
         },
-        forgotPasswordContainer: {
-            marginTop: spacing.xs,
-            textAlign: 'right',
-        },
-        forgotPasswordLink: {
-            color: colors.primaryLight,
-            fontSize: typography.fontSize.sm,
-            textDecoration: 'none',
-            transition: 'all 0.3s ease',
-        },
-        forgotPasswordWrapper: {
-            textAlign: 'center',
-            margin: `${spacing.md} 0`,
-            padding: `${spacing.sm} ${spacing.md}`,
-            borderRadius: '8px',
-            backgroundColor: 'rgba(210, 185, 154, 0.15)',
-            border: '1px dashed rgba(11, 68, 68, 0.2)',
-            transition: 'all 0.3s ease',
-            animation: 'pulseAttention 2s infinite',
-        },
-        forgotPasswordLinkProminent: {
-            color: colors.primary,
-            fontSize: typography.fontSize.md,
-            textDecoration: 'none',
-            fontWeight: typography.fontWeight.semiBold,
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s ease',
-            padding: `${spacing.xs} ${spacing.sm}`,
-            borderRadius: '8px',
-            width: '100%',
-        },
-        forgotPasswordIcon: {
-            marginRight: spacing.xs,
-            fontSize: '16px',
-            color: colors.secondary,
-        },
     };
-
-    // Estilos para bordes de inputs con error
-    const getInputStyle = (fieldName) => ({
-        ...styles.input,
-        ...(activeField === fieldName ? styles.activeInput : {}),
-        borderColor: errors[fieldName] ? colors.error : activeField === fieldName ? '#2C7171' : colors.gray200,
-        boxShadow: errors[fieldName]
-            ? '0 4px 10px rgba(220, 53, 69, 0.1)'
-            : activeField === fieldName
-                ? '0 5px 15px rgba(44, 113, 113, 0.15)'
-                : '0 2px 4px rgba(0, 0, 0, 0.05)',
-    });
-
-    const getPasswordInputStyle = () => ({
-        ...styles.passwordInput,
-        ...(activeField === 'password' ? styles.activePasswordInput : {}),
-        borderColor: errors.password ? colors.error : activeField === 'password' ? '#2C7171' : colors.gray200,
-        boxShadow: errors.password
-            ? '0 4px 10px rgba(220, 53, 69, 0.1)'
-            : activeField === 'password'
-                ? '0 5px 15px rgba(44, 113, 113, 0.15)'
-                : '0 2px 4px rgba(0, 0, 0, 0.05)',
-    });
 
     // Crear partículas para el fondo
     const renderParticles = () => {
@@ -719,413 +1062,280 @@ const LoginPage = () => {
 
     return (
         <div style={styles.loginContainer}>
-            {/* Background Elements */}
-            <div style={styles.backgroundElements}>
-                <div style={styles.circle1}></div>
-                <div style={styles.circle2}></div>
-                <div style={styles.circle3}></div>
-                <div style={styles.backgroundParticles}>
-                    {renderParticles()}
-                </div>
+            <style>{`
+          ${responsiveStyles}
+          
+          @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          
+          @keyframes fadeInUp {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+          }
+          
+          @keyframes float {
+            0% {
+                transform: translateY(0) translateX(0);
+            }
+            25% {
+                transform: translateY(-20px) translateX(10px);
+            }
+            50% {
+                transform: translateY(0) translateX(20px);
+            }
+            75% {
+                transform: translateY(20px) translateX(10px);
+            }
+            100% {
+                transform: translateY(0) translateX(0);
+            }
+          }
+          
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          
+          @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(44, 113, 113, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(44, 113, 113, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(44, 113, 113, 0);
+            }
+          }
+          
+          @keyframes shakeX {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+          }
+          
+          .input-animation:focus {
+            transform: translateY(-2px);
+          }
+          
+          .link-hover-effect {
+            position: relative;
+          }
+          
+          .link-hover-effect::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #2C7171;
+            transition: width 0.3s ease;
+          }
+          
+          .link-hover-effect:hover::after {
+            width: 100%;
+          }
+          
+          .pulse-animation {
+            animation: pulse 2s infinite;
+          }
+          
+          .form-error {
+            animation: shakeX 0.5s;
+          }
+        `}</style>
+        
+        {/* Background Elements */}
+        <div style={styles.backgroundElements} className="login-background-elements">
+            <div style={styles.circle1}></div>
+            <div style={styles.circle2}></div>
+            <div style={styles.circle3}></div>
+            <div style={styles.backgroundParticles}>
+                {renderParticles()}
             </div>
+        </div>
 
-            <main style={styles.mainContent}>
-                <div
-                    style={styles.formContainer}
-                    ref={formRef}
-                    className="login-form-container"
-                >
-                    <div style={styles.loginImage}>
-                        <div style={styles.imageOverlay}>
-                            <div style={styles.raccoonLogoRow}>
-                                <img
-                                    src="/assets/images/educstation-logo.png"
-                                    alt="logo"
-                                    style={styles.raccoonImage}
-                                    className="pulse-animation"
-                                />
-                                <span style={styles.logoText}>Educ</span>
-                                <span style={styles.logoText2}>Station</span>
-                            </div>
-                            <p style={styles.imageText}>
-                                Tu destino para educación, innovación y crecimiento profesional.
-                                Conecta con nuestra comunidad de educadores y estudiantes comprometidos.
-                            </p>
-                            <div style={styles.imageQuote}>
-                                "La educación es el arma más poderosa que puedes usar para cambiar el mundo." - Nelson Mandela
-                            </div>
+        <main style={styles.mainContent}>
+            <div
+                ref={formRef}
+                className="login-form-container"
+            >
+                <div className="login-image-section">
+                    <div className="login-image-overlay">
+                        <div className="login-raccoon-logo-row">
+                            <img
+                                src="/assets/images/educstation-logo.png"
+                                alt="logo"
+                                className="login-raccoon-image pulse-animation"
+                            />
+                            <span className="login-logo-text">Educ</span>
+                            <span className="login-logo-text2">Station</span>
+                        </div>
+                        <p className="login-image-text">
+                            Tu destino para educación, innovación y crecimiento profesional.
+                            Conecta con nuestra comunidad de educadores y estudiantes comprometidos.
+                        </p>
+                        <div className="login-image-quote">
+                            "La educación es el arma más poderosa que puedes usar para cambiar el mundo." - Nelson Mandela
                         </div>
                     </div>
+                </div>
 
-                    <div style={styles.formContent}>
-                        <div style={styles.formContentInner}>
-                            <div style={styles.loginHeader}>
-                                <h1
-                                    style={styles.loginTitle}
-                                    ref={titleRef}
-                                    className="welcome-text"
-                                >
-                                    ¡Bienvenido de nuevo!
-                                </h1>
-                                <p style={styles.loginSubtitle}>
-                                    Ingresa tus credenciales para acceder a tu cuenta
-                                </p>
+                <div className="login-form-content">
+                    <div className="login-header">
+                        <h1 ref={titleRef}>
+                            ¡Bienvenido de nuevo!
+                        </h1>
+                        <p>
+                            Ingresa tus credenciales para acceder a tu cuenta
+                        </p>
+                    </div>
+
+                    {errors.general && (
+                        <div className="login-error-message">
+                            <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
+                            {errors.general}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit}>
+                        <div className="login-form-group">
+                            <label style={styles.label}>
+                                Usuario o Correo Electrónico
+                            </label>
+                            <div style={styles.inputWrapper}>
+                                <i className="fas fa-user login-input-icon"></i>
+                                <input
+                                    ref={inputRefs.username}
+                                    type="text"
+                                    name="usernameOrEmail"
+                                    value={formData.usernameOrEmail}
+                                    onChange={handleChange}
+                                    onFocus={() => handleFocus('usernameOrEmail')}
+                                    onBlur={handleBlur}
+                                    className="login-input-field"
+                                    placeholder="Introduce tu usuario o correo"
+                                    required
+                                />
                             </div>
-
-                            {errors.general && (
-                                <div style={{
-                                    ...styles.generalError,
-                                    backgroundColor: errors.general.includes('exitoso') ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)',
-                                    color: errors.general.includes('exitoso') ? '#28a745' : colors.error,
-                                    border: errors.general.includes('exitoso') ? '1px solid rgba(40, 167, 69, 0.2)' : '1px solid rgba(220, 53, 69, 0.2)',
-                                    boxShadow: errors.general.includes('exitoso') ? '0 4px 10px rgba(40, 167, 69, 0.1)' : '0 4px 10px rgba(220, 53, 69, 0.1)'
-                                }}>
-                                    <i 
-                                        className={errors.general.includes('exitoso') ? "fas fa-check-circle" : "fas fa-exclamation-circle"} 
-                                        style={styles.errorAlertIcon}
-                                    ></i>
-                                    {errors.general}
+                            {errors.usernameOrEmail && (
+                                <div style={styles.errorText}>
+                                    <i className="fas fa-exclamation-circle" style={styles.errorIcon}></i>
+                                    {errors.usernameOrEmail}
                                 </div>
                             )}
-
-                            <form onSubmit={handleSubmit}>
-                                <div
-                                    style={{
-                                        ...styles.formGroup,
-                                        ...(activeField === 'usernameOrEmail' ? styles.activeFormGroup : {})
-                                    }}
-                                    className="form-group-animation"
-                                >
-                                    <label
-                                        style={{
-                                            ...styles.label,
-                                            ...(activeField === 'usernameOrEmail' ? styles.activeLabel : {})
-                                        }}
-                                        htmlFor="usernameOrEmail"
-                                    >
-                                        Nombre de usuario o correo electrónico
-                                    </label>
-                                    <div style={{ position: 'relative' }}>
-                                        <i
-                                            className="fas fa-user"
-                                            style={{
-                                                ...styles.inputIcon,
-                                                ...(activeField === 'usernameOrEmail' ? styles.activeInputIcon : {})
-                                            }}
-                                        ></i>
-                                        <input
-                                            type="text"
-                                            id="usernameOrEmail"
-                                            name="usernameOrEmail"
-                                            ref={inputRefs.username}
-                                            value={formData.usernameOrEmail}
-                                            onChange={handleChange}
-                                            onFocus={() => handleFocus('usernameOrEmail')}
-                                            onBlur={handleBlur}
-                                            placeholder="usuario123 o correo@ejemplo.com"
-                                            style={getInputStyle('usernameOrEmail')}
-                                            className="input-animation"
-                                        />
-                                    </div>
-                                    {errors.usernameOrEmail && (
-                                        <div style={styles.errorText}>
-                                            <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
-                                            {errors.usernameOrEmail}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div
-                                    style={{
-                                        ...styles.formGroup,
-                                        ...(activeField === 'password' ? styles.activeFormGroup : {})
-                                    }}
-                                    className="form-group-animation"
-                                >
-                                    <label
-                                        style={{
-                                            ...styles.label,
-                                            ...(activeField === 'password' ? styles.activeLabel : {})
-                                        }}
-                                        htmlFor="password"
-                                    >
-                                        Contraseña
-                                    </label>
-                                    <div style={styles.passwordWrapper}>
-                                        <i
-                                            className="fas fa-lock"
-                                            style={{
-                                                ...styles.inputIcon,
-                                                ...(activeField === 'password' ? styles.activeInputIcon : {})
-                                            }}
-                                        ></i>
-                                        <input
-                                            type={showPassword ? "text" : "password"}
-                                            id="password"
-                                            name="password"
-                                            ref={inputRefs.password}
-                                            value={formData.password}
-                                            onChange={handleChange}
-                                            onFocus={() => handleFocus('password')}
-                                            onBlur={handleBlur}
-                                            placeholder="Ingresa tu contraseña"
-                                            style={getPasswordInputStyle()}
-                                            className="input-animation"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={togglePasswordVisibility}
-                                            style={styles.eyeIcon}
-                                            aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                                        >
-                                            {showPassword ? <i className="fa-solid fa-eye-slash"></i> : <i className="fa-solid fa-eye"></i>}
-                                        </button>
-                                    </div>
-                                    {errors.password && (
-                                        <div style={styles.errorText}>
-                                            <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
-                                            {errors.password}
-                                        </div>
-                                    )}
-                                </div>
-
-                                <div style={styles.rememberForgot}>
-                                    <label style={styles.checkbox}>
-                                        <input
-                                            type="checkbox"
-                                            id="remember"
-                                            name="remember"
-                                            checked={formData.remember}
-                                            onChange={handleChange}
-                                            style={{ display: 'none' }}
-                                        />
-                                        <div
-                                            style={{
-                                                ...styles.checkmark,
-                                                ...(formData.remember ? styles.activeCheckmark : {})
-                                            }}
-                                            onClick={() => setFormData({ ...formData, remember: !formData.remember })}
-                                        >
-                                            <i
-                                                className="fas fa-check"
-                                                style={{
-                                                    ...styles.checkmarkIcon,
-                                                    ...(formData.remember ? styles.activeCheckmarkIcon : {})
-                                                }}
-                                            ></i>
-                                        </div>
-                                        Recordar sesión
-                                    </label>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    style={styles.loginButton}
-                                    ref={buttonRef}
-                                    disabled={isSubmitting}
-                                    className="login-button-animation"
-                                >
-                                    <span style={styles.buttonRipple}></span>
-                                    {isSubmitting ? (
-                                        <>
-                                            <i className="fas fa-circle-notch fa-spin" style={{ marginRight: '10px' }}></i>
-                                            Iniciando sesión...
-                                        </>
-                                    ) : 'Iniciar Sesión'}
-                                </button>
-
-                                <div style={styles.forgotPasswordWrapper}>
-                                    <Link to="/forgot-password" style={styles.forgotPasswordLinkProminent}>
-                                        <i className="fas fa-key" style={styles.forgotPasswordIcon}></i> ¿Olvidaste tu contraseña?
-                                    </Link>
-                                </div>
-
-                                <div style={styles.registerLink}>
-                                    ¿No tienes una cuenta?
-                                    <Link
-                                        to="/register"
-                                        style={styles.registerLinkText}
-                                        className="link-hover-effect"
-                                    > Regístrate ahora
-                                    </Link>
-                                </div>
-                            </form>
                         </div>
-                    </div>
-                </div>
-            </main>
 
-            <style jsx="true">{`
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                
-                @keyframes fadeInUp {
-                    from { 
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to { 
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                
-                @keyframes float {
-                    0% {
-                        transform: translateY(0) translateX(0);
-                    }
-                    25% {
-                        transform: translateY(-20px) translateX(10px);
-                    }
-                    50% {
-                        transform: translateY(0) translateX(20px);
-                    }
-                    75% {
-                        transform: translateY(20px) translateX(10px);
-                    }
-                    100% {
-                        transform: translateY(0) translateX(0);
-                    }
-                }
-                
-                @keyframes pulse {
-                    0% {
-                        transform: scale(1);
-                        box-shadow: 0 0 0 0 rgba(44, 113, 113, 0.7);
-                    }
-                    70% {
-                        transform: scale(1.05);
-                        box-shadow: 0 0 0 10px rgba(44, 113, 113, 0);
-                    }
-                    100% {
-                        transform: scale(1);
-                        box-shadow: 0 0 0 0 rgba(44, 113, 113, 0);
-                    }
-                }
-                
-                @keyframes pulseAttention {
-                    0% {
-                        box-shadow: 0 0 0 0 rgba(210, 185, 154, 0.3);
-                        transform: scale(1);
-                    }
-                    50% {
-                        box-shadow: 0 0 0 5px rgba(210, 185, 154, 0);
-                        transform: scale(1.02);
-                    }
-                    100% {
-                        box-shadow: 0 0 0 0 rgba(210, 185, 154, 0);
-                        transform: scale(1);
-                    }
-                }
-                
-                @keyframes shakeX {
-                    0%, 100% { transform: translateX(0); }
-                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                    20%, 40%, 60%, 80% { transform: translateX(5px); }
-                }
-                
-                @keyframes typing {
-                    from { width: 150% }
-                    to { width: 0% }
-                }
-                
-                .typing-animation::after {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    height: 100%;
-                    width: 100%;
-                    background-color: white;
-                    border-left: 2px solid #1F4E4E;
-                    animation: typing 1.5s steps(30) forwards;
-                }
-                
-                .welcome-text {
-                    position: relative;
-                    display: inline-block;
-                }
-                
-                .form-group-animation {
-                    animation: fadeInUp 0.5s ease-out forwards;
-                    opacity: 0;
-                }
-                
-                .form-group-animation:nth-child(1) {
-                    animation-delay: 0.9s;
-                }
-                
-                .form-group-animation:nth-child(2) {
-                    animation-delay: 1.1s;
-                }
-                
-                .pulse-animation {
-                    animation: pulse 2s infinite;
-                }
-                
-                .login-button-animation:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 25px rgba(31, 78, 78, 0.4);
-                    background-color: #2C7171;
-                }
-                
-                .login-button-animation:active {
-                    transform: translateY(0);
-                    box-shadow: 0 4px 15px rgba(31, 78, 78, 0.3);
-                }
-                
-                .button-press {
-                    animation: buttonPress 0.3s forwards;
-                }
-                
-                @keyframes buttonPress {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(0.95); }
-                    100% { transform: scale(1); }
-                }
-                
-                .link-hover-effect {
-                    position: relative;
-                }
-                
-                .link-hover-effect::after {
-                    content: '';
-                    position: absolute;
-                    width: 0;
-                    height: 2px;
-                    bottom: -2px;
-                    left: 0;
-                    background-color: #2C7171;
-                    transition: width 0.3s ease;
-                }
-                
-                .link-hover-effect:hover::after {
-                    width: 100%;
-                }
-                
-                .input-animation:focus {
-                    transform: translateY(-2px);
-                }
-                
-                .eye-icon-animation:hover {
-                    background-color: rgba(44, 113, 113, 0.2);
-                    transform: translateY(-50%) scale(1.1);
-                }
-                
-                .form-error {
-                    animation: shakeX 0.5s;
-                }
-                
-                @media (max-width: 768px) {
-                    .form-container {
-                        max-width: 90%;
-                    }
-                }
-            `}</style>
-        </div>
-    );
+                        <div className="login-form-group">
+                            <label style={styles.label}>
+                                Contraseña
+                            </label>
+                            <div style={styles.passwordWrapper}>
+                                <i className="fas fa-lock login-input-icon"></i>
+                                <input
+                                    ref={inputRefs.password}
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    onFocus={() => handleFocus('password')}
+                                    onBlur={handleBlur}
+                                    className="login-input-field"
+                                    placeholder="Introduce tu contraseña"
+                                    required
+                                />
+                                <button
+                                    type="button"
+                                    onClick={togglePasswordVisibility}
+                                    className="login-password-toggle"
+                                >
+                                    <i className={showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'}></i>
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <div style={styles.errorText}>
+                                    <i className="fas fa-exclamation-circle" style={styles.errorIcon}></i>
+                                    {errors.password}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="login-remember-row">
+                            <label style={styles.rememberLabel} className="login-remember-checkbox">
+                                <div style={{
+                                    ...styles.checkmark,
+                                    ...(formData.remember ? styles.activeCheckmark : {})
+                                }}>
+                                    <i
+                                        className="fas fa-check"
+                                        style={{
+                                            ...styles.checkmarkIcon,
+                                            ...(formData.remember ? styles.activeCheckmarkIcon : {})
+                                        }}
+                                    ></i>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    name="remember"
+                                    checked={formData.remember}
+                                    onChange={handleChange}
+                                    style={styles.hiddenCheckbox}
+                                />
+                                <span style={styles.rememberText}>Recordarme</span>
+                            </label>
+                            <Link
+                                to="/forgot-password"
+                                style={styles.forgotLink}
+                                className="link-hover-effect login-forgot-link"
+                            >
+                                ¿Olvidaste tu contraseña?
+                            </Link>
+                        </div>
+
+                        <button
+                            ref={buttonRef}
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="login-button"
+                            style={isSubmitting ? styles.disabledButton : {}}
+                        >
+                            {isSubmitting ? (
+                                <div style={styles.loadingContainer}>
+                                    <div style={styles.spinner}></div>
+                                    <span>Iniciando sesión...</span>
+                                </div>
+                            ) : (
+                                <>
+                                    <i className="fas fa-sign-in-alt" style={styles.buttonIcon}></i>
+                                    Iniciar Sesión
+                                </>
+                            )}
+                        </button>
+
+                        <div className="login-register-link">
+                            ¿No tienes una cuenta?{' '}
+                            <Link to="/register" style={styles.registerLink} className="link-hover-effect">
+                                Regístrate aquí
+                            </Link>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+);
 };
 
 export default LoginPage;
