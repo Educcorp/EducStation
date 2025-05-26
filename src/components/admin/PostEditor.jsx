@@ -143,21 +143,35 @@ const PostEditor = () => {
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  // Definir descripciones de categorías para los tooltips
+  // Descripciones de categorías para ayudar al usuario
   const categoryDescriptions = {
-    "Noticias": "Información actualizada sobre eventos y novedades en el ámbito educativo.",
-    "Técnicas de Estudio": "Métodos y estrategias para optimizar el aprendizaje y mejorar el rendimiento académico.",
-    "Técnicas": "Métodos y estrategias para optimizar el aprendizaje y mejorar el rendimiento académico.",
-    "Problemáticas": "Análisis de desafíos y obstáculos en el sistema educativo actual.",
-    "Problemáticas en el Estudio": "Análisis de desafíos y obstáculos en el sistema educativo actual.",
-    "Educación de Calidad": "Estándares, prácticas y enfoques para una enseñanza de excelencia.",
-    "Herramientas": "Recursos tecnológicos y pedagógicos para facilitar la labor docente.",
-    "Herramientas Tecnológicas": "Recursos tecnológicos y pedagógicos para facilitar la labor docente.",
-    "Desarrollo Docente": "Oportunidades de crecimiento profesional y capacitación para educadores.",
-    "Desarrollo Profesional Docente": "Oportunidades de crecimiento profesional y capacitación para educadores.",
-    "Comunidad": "Espacios de colaboración e intercambio entre miembros de la comunidad educativa.",
-    "Comunidad y Colaboración": "Espacios de colaboración e intercambio entre miembros de la comunidad educativa."
+    "Noticias": "Actualizaciones y novedades sobre el mundo educativo.",
+    "Técnicas de Estudio": "Métodos y estrategias para mejorar el aprendizaje y la retención.",
+    "Problemáticas en el Estudio": "Dificultades comunes y cómo abordarlas efectivamente.",
+    "Educación de Calidad": "Prácticas y enfoques para una educación de excelencia.",
+    "Herramientas Tecnológicas": "Recursos digitales y tecnológicos para potenciar el aprendizaje.",
+    "Desarrollo Profesional Docente": "Crecimiento y formación continua para educadores."
   };
+
+  // Categorías disponibles (simuladas para desarrollo)
+  const [categorias, setCategorias] = useState([
+    { ID_categoria: 1, Nombre_categoria: 'Noticias' },
+    { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
+    { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
+    { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
+    { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
+    { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' }
+  ]);
+
+  // Categorías disponibles para desarrollo (simuladas)
+  const categoriasMock = [
+    { ID_categoria: 1, Nombre_categoria: 'Noticias' },
+    { ID_categoria: 2, Nombre_categoria: 'Técnicas de Estudio' },
+    { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
+    { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
+    { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
+    { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' }
+  ];
 
   // Efectos para animaciones moderadas y balanceadas
   useEffect(() => {
@@ -197,8 +211,7 @@ const PostEditor = () => {
             { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
             { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
             { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
-            { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
-            { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
+            { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' }
           ]);
         }
       } catch (error) {
@@ -209,8 +222,7 @@ const PostEditor = () => {
           { ID_categoria: 3, Nombre_categoria: 'Problemáticas en el Estudio' },
           { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
           { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
-          { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
-          { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
+          { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' }
         ]);
       } finally {
         setLoadingCategories(false);

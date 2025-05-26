@@ -558,13 +558,6 @@ const HomePage = () => {
               time: '4 horas atrás'
             },
             {
-              id: 2,
-              title: 'Comunidad y Colaboración en la Educación',
-              image: '/assets/images/humanos.jpg',
-              category: 'Técnicas de Estudio',
-              time: '4 horas atrás'
-            },
-            {
               id: 3,
               title: 'Problemas a enfrentar en la actualidad',
               image: '/assets/images/desafio.jpg',

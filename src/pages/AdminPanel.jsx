@@ -73,16 +73,14 @@ const AdminPanel = () => {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const chartRef = useRef(null);
 
-  // Colores de categorías
+  // Mapeo de IDs de categoría a colores
   const categoryColors = {
     1: '#FF6B6B', // Noticias
     2: '#4ECDC4', // Técnicas de Estudio
     3: '#FFD166', // Problemáticas en el Estudio
     4: '#6A0572', // Educación de Calidad
     5: '#1A936F', // Herramientas Tecnológicas
-    6: '#3D5A80', // Desarrollo Profesional Docente
-    7: '#F18F01', // Comunidad y Colaboración
-    'default': '#6b7280'
+    6: '#3D5A80'  // Desarrollo Profesional Docente
   };
 
   // Añadir los keyframes al montar el componente

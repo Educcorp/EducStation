@@ -6,7 +6,7 @@ import PostList from '../components/blog/PostList';
 import { useTheme } from '../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows, transitions } from '../styles/theme';
 import { getAllCategorias } from '../services/categoriasServices';
-import { FaTags, FaArrowRight, FaSearch, FaFilter, FaSort, FaBookOpen, FaTag, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers } from 'react-icons/fa';
+import { FaTags, FaArrowRight, FaSearch, FaFilter, FaSort, FaBookOpen, FaTag, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers, FaExclamationTriangle, FaLaptop } from 'react-icons/fa';
 
 const BlogPage = () => {
   const { colors, isDarkMode } = useTheme();
@@ -639,26 +639,54 @@ const BlogPage = () => {
 
   // Category dropdown component
   const CategoryDropdown = () => {
-    // Map of category icons by ID (or type)
+    // Mapeo de IDs de categoría a iconos
     const categoryIcons = {
       1: <FaNewspaper size={16} />, // Noticias
       2: <FaBook size={16} />, // Técnicas de Estudio
-      3: <FaPenNib size={16} />, // Problemáticas en el Estudio
+      3: <FaExclamationTriangle size={16} />, // Problemáticas en el Estudio
       4: <FaAward size={16} />, // Educación de Calidad
-      5: <FaCog size={16} />, // Herramientas Tecnológicas
-      6: <FaChalkboardTeacher size={16} />, // Desarrollo Profesional Docente
-      7: <FaUsers size={16} />, // Comunidad y Colaboración
+      5: <FaLaptop size={16} />, // Herramientas Tecnológicas
+      6: <FaChalkboardTeacher size={16} /> // Desarrollo Profesional Docente
     };
 
-    // Category colors for better visual identification
+    // Mapeo de IDs de categoría a colores
     const categoryColors = {
-      1: '#FF6B6B', // Noticias
-      2: '#4ECDC4', // Técnicas de Estudio
-      3: '#FFD166', // Problemáticas en el Estudio
-      4: '#6A0572', // Educación de Calidad
-      5: '#1A936F', // Herramientas Tecnológicas
-      6: '#3D5A80', // Desarrollo Profesional Docente
-      7: '#F18F01'  // Comunidad y Colaboración
+      1: '#FF6B6B',  // Noticias
+      2: '#4ECDC4',  // Técnicas de Estudio
+      3: '#FFD166',  // Problemáticas en el Estudio
+      4: '#6A0572',  // Educación de Calidad
+      5: '#1A936F',  // Herramientas Tecnológicas
+      6: '#3D5A80'   // Desarrollo Profesional Docente
+    };
+
+    // Mapeo de IDs de categoría a nombres
+    const categoryNames = {
+      1: 'Noticias',
+      2: 'Técnicas de Estudio',
+      3: 'Problemáticas en el Estudio',
+      4: 'Educación de Calidad',
+      5: 'Herramientas Tecnológicas',
+      6: 'Desarrollo Profesional Docente'
+    };
+
+    // Mapeo de IDs de categoría a nombres para el filtro
+    const categoryNamesFilter = {
+      1: 'Noticias',
+      2: 'Técnicas de Estudio',
+      3: 'Problemáticas en el Estudio',
+      4: 'Educación de Calidad',
+      5: 'Herramientas Tecnológicas',
+      6: 'Desarrollo Profesional Docente'
+    };
+
+    // Mapeo de IDs de categoría a colores de fondo
+    const categoryBgColors = {
+      1: '#FF6B6B',  // Noticias
+      2: '#4ECDC4',  // Técnicas de Estudio
+      3: '#FFD166',  // Problemáticas en el Estudio
+      4: '#6A0572',  // Educación de Calidad
+      5: '#1A936F',  // Herramientas Tecnológicas
+      6: '#3D5A80'   // Desarrollo Profesional Docente
     };
 
     // Function to get lighter color variation
@@ -735,15 +763,6 @@ const BlogPage = () => {
             }}>
               {selectedCategory
                 ? (() => {
-                  const categoryNames = {
-                    1: 'Noticias',
-                    2: 'Técnicas de Estudio',
-                    3: 'Problemáticas en el Estudio',
-                    4: 'Educación de Calidad',
-                    5: 'Herramientas Tecnológicas',
-                    6: 'Desarrollo Profesional Docente',
-                    7: 'Comunidad y Colaboración'
-                  };
                   return categoryNames[parseInt(selectedCategory)] || 'Categoría';
                 })()
                 : 'Todas las categorías'}
@@ -845,15 +864,6 @@ const BlogPage = () => {
                   {categoryIcons[category.ID_categoria] || <FaTag size={14} />}
                 </span>
                 {(() => {
-                  const categoryNames = {
-                    1: 'Noticias',
-                    2: 'Técnicas de Estudio',
-                    3: 'Problemáticas en el Estudio',
-                    4: 'Educación de Calidad',
-                    5: 'Herramientas Tecnológicas',
-                    6: 'Desarrollo Profesional Docente',
-                    7: 'Comunidad y Colaboración'
-                  };
                   return categoryNames[category.ID_categoria] || category.Nombre || category.nombre || `Categoría ${category.ID_categoria}`;
                 })()}
               </div>
@@ -883,7 +893,6 @@ const BlogPage = () => {
           4: '#6A0572', // Educación de Calidad
           5: '#1A936F', // Herramientas Tecnológicas
           6: '#3D5A80', // Desarrollo Profesional Docente
-          7: '#F18F01'  // Comunidad y Colaboración
         };
         return categoryColors[categoryId] || '#1A936F';
       }

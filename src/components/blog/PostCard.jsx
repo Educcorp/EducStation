@@ -146,7 +146,6 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       4: '#6A0572', // Educación de Calidad
       5: '#1A936F', // Herramientas Tecnológicas
       6: '#3D5A80', // Desarrollo Profesional Docente
-      7: '#F18F01', // Comunidad y Colaboración
       'default': '#6b7280'
     };
     

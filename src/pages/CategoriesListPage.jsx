@@ -4,7 +4,7 @@ import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useTheme } from '../context/ThemeContext';
 import { spacing, typography, shadows, borderRadius } from '../styles/theme';
-import { FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaNewspaper, FaPenNib, FaChalkboardTeacher, FaArrowRight, FaSearch, FaHome } from 'react-icons/fa';
+import { FaBook, FaChartBar, FaAward, FaUsers, FaCog, FaNewspaper, FaPenNib, FaChalkboardTeacher, FaArrowRight, FaSearch, FaHome, FaExclamationTriangle, FaLaptop } from 'react-icons/fa';
 import '../styles/animations.css';
 
 const CategoriesListPage = () => {
@@ -22,15 +22,14 @@ const CategoriesListPage = () => {
   const featuredSectionRef = useRef(null);
   const gridRef = useRef(null);
   
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Noticias', description: 'Últimas noticias y novedades sobre educación y tecnología', icon: <FaNewspaper size={38} />, color: '#FF6B6B' },
-    { id: 2, name: 'Técnicas de Estudio', description: 'Estrategias y métodos para mejorar el aprendizaje', icon: <FaBook size={38} />, color: '#4ECDC4' },
-    { id: 3, name: 'Problemáticas en el Estudio', description: 'Dificultades y retos comunes en el aprendizaje', icon: <FaPenNib size={38} />, color: '#FFD166' },
-    { id: 4, name: 'Educación de Calidad', description: 'Mejores prácticas y estándares para una educación eficaz', icon: <FaAward size={38} />, color: '#6A0572' },
-    { id: 5, name: 'Herramientas Tecnológicas', description: 'Tecnología y recursos para mejorar la enseñanza', icon: <FaCog size={38} />, color: '#1A936F' },
-    { id: 6, name: 'Desarrollo Profesional Docente', description: 'Capacitación y crecimiento profesional para docentes', icon: <FaChalkboardTeacher size={38} />, color: '#3D5A80' },
-    { id: 7, name: 'Comunidad y Colaboración', description: 'Interacción y trabajo en equipo en el ámbito educativo', icon: <FaUsers size={38} />, color: '#F18F01' }
-  ]);
+  const staticCategories = [
+    { id: 1, name: 'Noticias', description: 'Últimas actualizaciones y novedades en el ámbito educativo', icon: <FaNewspaper size={38} />, color: '#FF6B6B' },
+    { id: 2, name: 'Técnicas de Estudio', description: 'Métodos y estrategias para un aprendizaje más efectivo', icon: <FaBook size={38} />, color: '#4ECDC4' },
+    { id: 3, name: 'Problemáticas en el Estudio', description: 'Dificultades comunes y cómo superarlas', icon: <FaExclamationTriangle size={38} />, color: '#FFD166' },
+    { id: 4, name: 'Educación de Calidad', description: 'Estándares y prácticas para una educación de excelencia', icon: <FaAward size={38} />, color: '#6A0572' },
+    { id: 5, name: 'Herramientas Tecnológicas', description: 'Recursos digitales para potenciar el aprendizaje', icon: <FaLaptop size={38} />, color: '#1A936F' },
+    { id: 6, name: 'Desarrollo Profesional Docente', description: 'Crecimiento y formación continua para educadores', icon: <FaChalkboardTeacher size={38} />, color: '#3D5A80' }
+  ];
 
   // Recarga forzada al entrar (solo una vez por sesión)
   useEffect(() => {
@@ -94,17 +93,17 @@ const CategoriesListPage = () => {
   // Filtrar categorías según la búsqueda
   useEffect(() => {
     if (searchQuery.trim() === '') {
-      setFilteredCategories(categories);
+      setFilteredCategories(staticCategories);
       return;
     }
     
-    const filtered = categories.filter(category => 
+    const filtered = staticCategories.filter(category => 
       category.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
       category.description.toLowerCase().includes(searchQuery.toLowerCase())
     );
     
     setFilteredCategories(filtered);
-  }, [searchQuery, categories]);
+  }, [searchQuery, staticCategories]);
   
   // Búsqueda inteligente
   const handleSearchChange = (e) => {

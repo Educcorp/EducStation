@@ -9,7 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { searchByTags, searchPublicaciones } from '../services/searchService';
 import { getAllCategorias } from '../services/categoriasServices';
 import '../styles/animations.css';
-import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers, FaTag, FaTags, FaSort } from 'react-icons/fa';
+import { FaArrowLeft, FaSearch, FaFilter, FaNewspaper, FaBook, FaPenNib, FaAward, FaCog, FaChalkboardTeacher, FaUsers, FaTag, FaTags, FaSort, FaExclamationTriangle, FaLaptop } from 'react-icons/fa';
 
 const CategoryPage = () => {
   const { colors, isDarkMode } = useTheme();
@@ -54,15 +54,24 @@ const CategoryPage = () => {
   const categoryDropdownRef = useRef(null);
   const sortDropdownRef = useRef(null);
 
-  // Category colors for better visual identification
+  // Mapeo de IDs de categoría a colores
   const categoryColors = {
-    1: '#FF6B6B', // Noticias
-    2: '#4ECDC4', // Técnicas de Estudio
-    3: '#FFD166', // Problemáticas en el Estudio
-    4: '#6A0572', // Educación de Calidad
-    5: '#1A936F', // Herramientas Tecnológicas
-    6: '#3D5A80', // Desarrollo Profesional Docente
-    7: '#F18F01'  // Comunidad y Colaboración
+    1: '#FF6B6B',  // Noticias
+    2: '#4ECDC4',  // Técnicas de Estudio
+    3: '#FFD166',  // Problemáticas en el Estudio
+    4: '#6A0572',  // Educación de Calidad
+    5: '#1A936F',  // Herramientas Tecnológicas
+    6: '#3D5A80'   // Desarrollo Profesional Docente
+  };
+
+  // Mapeo de IDs de categoría a colores para el tema oscuro
+  const categoryColorsDark = {
+    1: '#FF6B6B',  // Noticias
+    2: '#4ECDC4',  // Técnicas de Estudio
+    3: '#FFD166',  // Problemáticas en el Estudio
+    4: '#6A0572',  // Educación de Calidad
+    5: '#1A936F',  // Herramientas Tecnológicas
+    6: '#3D5A80'   // Desarrollo Profesional Docente
   };
 
   // Get current category color
@@ -163,8 +172,7 @@ const CategoryPage = () => {
             3: '#FFD166', // Problemáticas en el Estudio
             4: '#6A0572', // Educación de Calidad
             5: '#1A936F', // Herramientas Tecnológicas
-            6: '#3D5A80', // Desarrollo Profesional Docente
-            7: '#F18F01'  // Comunidad y Colaboración
+            6: '#3D5A80'  // Desarrollo Profesional Docente
           };
 
           setCategoryColor(categoryColors[category.ID_categoria] || '#0b4444');
@@ -953,15 +961,14 @@ const CategoryPage = () => {
 
   // Category dropdown component
   const CategoryDropdown = () => {
-    // Map of category icons by ID (or type)
+    // Mapeo de IDs de categoría a iconos
     const categoryIcons = {
       1: <FaNewspaper size={16} />, // Noticias
       2: <FaBook size={16} />, // Técnicas de Estudio
-      3: <FaPenNib size={16} />, // Problemáticas en el Estudio
+      3: <FaExclamationTriangle size={16} />, // Problemáticas en el Estudio
       4: <FaAward size={16} />, // Educación de Calidad
-      5: <FaCog size={16} />, // Herramientas Tecnológicas
-      6: <FaChalkboardTeacher size={16} />, // Desarrollo Profesional Docente
-      7: <FaUsers size={16} />, // Comunidad y Colaboración
+      5: <FaLaptop size={16} />, // Herramientas Tecnológicas
+      6: <FaChalkboardTeacher size={16} /> // Desarrollo Profesional Docente
     };
 
     const handleCategorySelect = (categoryId) => {
@@ -1372,12 +1379,11 @@ const CategoryPage = () => {
                 }} className="float-animation">
                   {currentCategory?.ID_categoria === 1 ? <FaNewspaper size={150} /> :
                     currentCategory?.ID_categoria === 2 ? <FaBook size={150} /> :
-                      currentCategory?.ID_categoria === 3 ? <FaPenNib size={150} /> :
+                      currentCategory?.ID_categoria === 3 ? <FaExclamationTriangle size={150} /> :
                         currentCategory?.ID_categoria === 4 ? <FaAward size={150} /> :
-                          currentCategory?.ID_categoria === 5 ? <FaCog size={150} /> :
+                          currentCategory?.ID_categoria === 5 ? <FaLaptop size={150} /> :
                             currentCategory?.ID_categoria === 6 ? <FaChalkboardTeacher size={150} /> :
-                              currentCategory?.ID_categoria === 7 ? <FaUsers size={150} /> :
-                                <FaNewspaper size={150} />}
+                              <FaNewspaper size={150} />}
                 </div>
               </div>
             </section>
