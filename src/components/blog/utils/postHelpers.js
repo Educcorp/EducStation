@@ -3,19 +3,30 @@
  * Este archivo contiene funciones auxiliares reutilizables para el manejo de publicaciones
  */
 
+// Cache para evitar procesar múltiples veces el mismo contenido
+const summaryCache = new Map();
+const imageCache = new Map();
+
 /**
  * Formatea una fecha al formato español legible
  * @param {string} dateString - Fecha en formato ISO string
  * @returns {string} Fecha formateada en español
  */
 export const formatDate = (dateString) => {
-  const options = { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric',
-    timeZone: 'America/Mexico_City' // Ajustar según la zona horaria del proyecto
-  };
-  return new Date(dateString).toLocaleDateString('es-ES', options);
+  if (!dateString) return 'Fecha no disponible';
+  
+  try {
+    const options = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      timeZone: 'America/Mexico_City' // Ajustar según la zona horaria del proyecto
+    };
+    return new Date(dateString).toLocaleDateString('es-ES', options);
+  } catch (error) {
+    console.error('Error al formatear fecha:', error);
+    return 'Fecha no disponible';
+  }
 };
 
 /**
@@ -24,25 +35,38 @@ export const formatDate = (dateString) => {
  * @returns {string} Fecha y hora formateada
  */
 export const formatDateTime = (dateString) => {
-  const options = { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    timeZone: 'America/Mexico_City'
-  };
-  return new Date(dateString).toLocaleDateString('es-ES', options);
+  if (!dateString) return 'Fecha no disponible';
+  
+  try {
+    const options = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'America/Mexico_City'
+    };
+    return new Date(dateString).toLocaleDateString('es-ES', options);
+  } catch (error) {
+    console.error('Error al formatear fecha y hora:', error);
+    return 'Fecha no disponible';
+  }
 };
 
 /**
- * Extrae un resumen del contenido HTML
+ * Extrae un resumen del contenido HTML con caché
  * @param {string} content - Contenido HTML del post
  * @param {number} maxLength - Longitud máxima del resumen (default: 150)
  * @returns {string} Resumen del contenido sin etiquetas HTML
  */
 export const extractSummary = (content, maxLength = 150) => {
   if (!content) return '';
+  
+  // Verificar si ya existe en caché
+  const cacheKey = `${content.substring(0, 100)}_${maxLength}`;
+  if (summaryCache.has(cacheKey)) {
+    return summaryCache.get(cacheKey);
+  }
   
   // Crear un elemento temporal para decodificar HTML
   const tempDiv = document.createElement('div');
@@ -89,39 +113,56 @@ export const extractSummary = (content, maxLength = 150) => {
   }
   
   // Truncar manteniendo palabras completas
+  let result;
   if (plainText.length <= maxLength) {
-    return plainText;
+    result = plainText;
+  } else {
+    // Encontrar el último espacio antes del límite
+    let truncated = plainText.substring(0, maxLength);
+    const lastSpace = truncated.lastIndexOf(' ');
+    
+    // Si encontramos un espacio y no está muy cerca del inicio
+    if (lastSpace > maxLength * 0.6) {
+      truncated = truncated.substring(0, lastSpace);
+    }
+    
+    // Asegurar que no termine con signos de puntuación problemáticos
+    truncated = truncated.replace(/[,;:\-–—]$/, '');
+    
+    result = truncated + '...';
   }
   
-  // Encontrar el último espacio antes del límite
-  let truncated = plainText.substring(0, maxLength);
-  const lastSpace = truncated.lastIndexOf(' ');
+  // Guardar en caché
+  summaryCache.set(cacheKey, result);
   
-  // Si encontramos un espacio y no está muy cerca del inicio
-  if (lastSpace > maxLength * 0.6) {
-    truncated = truncated.substring(0, lastSpace);
-  }
-  
-  // Asegurar que no termine con signos de puntuación problemáticos
-  truncated = truncated.replace(/[,;:\-–—]$/, '');
-  
-  return truncated + '...';
+  return result;
 };
 
 /**
- * Renderiza HTML de imagen de forma segura
+ * Renderiza HTML de imagen de forma segura y optimizada
  * @param {string} html - HTML de la imagen
  * @returns {Object} Objeto con propiedades para dangerouslySetInnerHTML
  */
 export const renderImageHTML = (html) => {
   if (!html) return null;
   
-  // Modificar el HTML para aplicar estilos a la imagen
-  const modifiedHTML = html.replace('<img', '<img style="width:100%;height:100%;object-fit:cover;"');
+  // Verificar caché
+  if (imageCache.has(html)) {
+    return imageCache.get(html);
+  }
   
-  return {
-    __html: modifiedHTML
-  };
+  // Modificar el HTML para aplicar estilos a la imagen y optimizar carga
+  const modifiedHTML = html
+    .replace('<img', '<img loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;"')
+    // Añadir atributos para mejorar rendimiento
+    .replace(/(<img[^>]*)>/, '$1 fetchpriority="low">');
+  
+  const result = { __html: modifiedHTML };
+  
+  // Guardar en caché
+  imageCache.set(html, result);
+  
+  return result;
 };
 
 /**
@@ -249,81 +290,67 @@ export const calculateReadingTime = (content, wordsPerMinute = 200) => {
 };
 
 /**
- * Procesa el contenido HTML para corregir problemas de layout y imágenes
+ * Procesa el HTML del post para optimizar imágenes y mejorar rendimiento
  * @param {string} htmlContent - Contenido HTML del post
- * @returns {string} Contenido HTML procesado y corregido
+ * @returns {string} HTML optimizado
  */
 export const processPostHTML = (htmlContent) => {
   if (!htmlContent) return '';
   
-  let processedContent = htmlContent;
+  return htmlContent
+    // Optimizar carga de imágenes
+    .replace(/<img/g, '<img loading="lazy" decoding="async"')
+    // Añadir atributos para mejorar rendimiento
+    .replace(/(<img[^>]*)>/g, '$1 fetchpriority="low">')
+    // Añadir width y height a iframes si no los tienen
+    .replace(/<iframe([^>]*)(?!width|height)>/g, '<iframe$1 width="100%" height="315">')
+    // Añadir loading lazy a iframes
+    .replace(/<iframe/g, '<iframe loading="lazy"');
+};
+
+/**
+ * Verifica si el contenido es un documento HTML completo
+ * @param {string} content - Contenido a verificar
+ * @returns {boolean} True si es un documento HTML completo
+ */
+export const isFullHTML = (content) => {
+  if (!content) return false;
+  return content.includes('<!DOCTYPE') || 
+         (content.includes('<html') && content.includes('</html>'));
+};
+
+/**
+ * Limpia la caché de imágenes y resúmenes
+ * Útil para liberar memoria cuando ya no se necesitan
+ */
+export const clearCaches = () => {
+  summaryCache.clear();
+  imageCache.clear();
+};
+
+/**
+ * Optimiza imágenes en el DOM para mejorar rendimiento
+ * @param {HTMLElement} container - Contenedor donde buscar imágenes
+ */
+export const optimizeImages = (container) => {
+  if (!container) return;
   
-  // Corregir contenedor principal para evitar restricciones de ancho
-  processedContent = processedContent.replace(
-    /<div class="post-container"([^>]*)>/g,
-    '<div class="post-container"$1 style="max-width: none !important; width: 100% !important; margin: 0 auto !important; box-sizing: border-box !important;">'
-  );
+  const images = container.querySelectorAll('img');
   
-  // Mejorar el manejo de imágenes preservando estilos originales
-  processedContent = processedContent.replace(
-    /<img([^>]*?)>/g,
-    (match, attributes) => {
-      const hasStyle = attributes.includes('style=');
-      const hasMaxWidth = attributes.includes('max-width');
-      
-      if (hasStyle) {
-        const styleMatch = attributes.match(/style="([^"]*)"/);
-        if (styleMatch) {
-          let existingStyle = styleMatch[1];
-          
-          // Solo agregar max-width si no está presente
-          if (!hasMaxWidth) {
-            existingStyle = existingStyle.endsWith(';') ? existingStyle : existingStyle + ';';
-            existingStyle += ' max-width: 100%; height: auto; display: block; margin: 0 auto;';
-          }
-          
-          // Mejorar calidad de imagen
-          existingStyle += ' image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; object-fit: contain; vertical-align: middle;';
-          
-          return match.replace(styleMatch[0], `style="${existingStyle}"`);
-        }
-      } else {
-        return `<img${attributes} style="max-width: 100%; height: auto; display: block; margin: 0 auto; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; object-fit: contain; vertical-align: middle;">`;
-      }
-      
-      return match;
+  images.forEach(img => {
+    // Añadir atributos para carga optimizada
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    
+    // Añadir manejo de errores
+    img.onerror = () => {
+      img.style.display = 'none';
+    };
+    
+    // Establecer dimensiones si no las tiene
+    if (!img.width && !img.height) {
+      img.style.maxWidth = '100%';
+      img.style.height = 'auto';
     }
-  );
-  
-  // Corregir contenedores de imagen centrada
-  processedContent = processedContent.replace(
-    /<div([^>]*?)style="([^"]*?text-align:\s*center[^"]*?)"([^>]*)>/g,
-    '<div$1style="$2; width: 100%; box-sizing: border-box; margin: 25px auto; clear: both;"$3>'
-  );
-  
-  // Mejorar contenedores flex para múltiples imágenes
-  processedContent = processedContent.replace(
-    /<div([^>]*?)style="([^"]*?display:\s*flex[^"]*?)"([^>]*)>/g,
-    '<div$1style="$2; width: 100% !important; max-width: none !important; box-sizing: border-box !important; margin: 30px auto !important; flex-wrap: wrap !important;"$3>'
-  );
-  
-  // Corregir elementos con ancho del 48% para layout flex
-  processedContent = processedContent.replace(
-    /style="([^"]*?)width:\s*48%([^"]*?)"/g,
-    'style="$1width: calc(48% - 10px); min-width: 250px; flex: 0 0 calc(48% - 10px); box-sizing: border-box; margin-bottom: 20px;$2"'
-  );
-  
-  // Asegurar que elementos como stat-box, highlight-box, etc. mantengan su estructura
-  processedContent = processedContent.replace(
-    /<div class="(stat-box|highlight-box|news-card)"([^>]*)>/g,
-    '<div class="$1"$2 style="max-width: none !important; width: 100% !important; box-sizing: border-box !important;">'
-  );
-  
-  // Corregir contenedores con posición relativa
-  processedContent = processedContent.replace(
-    /<div([^>]*?)style="([^"]*?position:\s*relative[^"]*?)"([^>]*)>/g,
-    '<div$1style="$2; width: 100% !important; box-sizing: border-box !important;"$3>'
-  );
-  
-  return processedContent;
+  });
 }; 
