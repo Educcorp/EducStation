@@ -11,14 +11,19 @@ const PostSidebar = ({ currentPost }) => {
     const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
  
-    // Mapeo de IDs de categoría a colores
+    // Colores específicos para cada categoría (igual que CategoryPage)
     const categoryColors = {
         1: '#FF6B6B', // Noticias
         2: '#4ECDC4', // Técnicas de Estudio
         3: '#FFD166', // Problemáticas en el Estudio
         4: '#6A0572', // Educación de Calidad
         5: '#1A936F', // Herramientas Tecnológicas
-        6: '#3D5A80'  // Desarrollo Profesional Docente
+        6: '#3D5A80', // Desarrollo Profesional Docente
+        7: '#F18F01', // Comunidad y Colaboración
+        'todos': '#6b7280',
+        'problematicas': '#FFD166',
+        'tecnicas': '#4ECDC4',
+        'default': '#6b7280'
     };
 
     // Función para obtener el color de una categoría (igual que CategoryPage)

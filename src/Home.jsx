@@ -47,28 +47,32 @@ const EducStation = () => {
       title: 'Cómo Optimizar el Uso de Tecnología en el Aula',
       image: '/api/placeholder/150/100',
       category: 'herramientas',
-      time: '4 horas atrás'
+      time: '4 horas atrás',
+      likes: 124
     },
     {
       id: 2,
       title: 'Entendiendo la Psicología del Aprendizaje Visual',
       image: '/api/placeholder/150/100',
       category: 'técnicas de estudio',
-      time: '4 horas atrás'
+      time: '4 horas atrás',
+      likes: 89
     },
     {
       id: 3,
       title: 'El Poder de la Colaboración en Entornos Educativos',
       image: '/api/placeholder/150/100',
       category: 'técnicas de estudio',
-      time: '4 horas atrás'
+      time: '4 horas atrás',
+      likes: 76
     },
     {
       id: 4,
       title: 'Construyendo un Sistema Educativo Inclusivo',
       image: '/api/placeholder/150/100',
       category: 'educación de calidad',
-      time: '4 horas atrás'
+      time: '4 horas atrás',
+      likes: 112
     }
   ];
 

@@ -10,7 +10,7 @@ import { deletePublicacion, getAllPublicaciones } from '../services/publicacione
 import { getAllCategorias, getPublicacionesByCategoria } from '../services/categoriasServices';
 import { toast } from 'react-toastify';
 import AnimatedButton from '../components/utils/AnimatedButton';
-//test 
+
 // Estilo keyframes para la animación de brillo
 const shineAnimation = `
   @keyframes shine {
@@ -60,7 +60,7 @@ const AdminPanel = () => {
   
   // Estados para filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('published'); // Solo 'published' disponible
+  const [filter, setFilter] = useState('all'); // 'all', 'published', 'draft'
   const [sortOrder, setSortOrder] = useState('recientes'); // 'recientes', 'antiguos', 'alfabetico'
   
   // Estados para UI
@@ -73,14 +73,16 @@ const AdminPanel = () => {
   const [loadingCategories, setLoadingCategories] = useState(true);
   const chartRef = useRef(null);
 
-  // Mapeo de IDs de categoría a colores
+  // Colores de categorías
   const categoryColors = {
     1: '#FF6B6B', // Noticias
     2: '#4ECDC4', // Técnicas de Estudio
     3: '#FFD166', // Problemáticas en el Estudio
     4: '#6A0572', // Educación de Calidad
     5: '#1A936F', // Herramientas Tecnológicas
-    6: '#3D5A80'  // Desarrollo Profesional Docente
+    6: '#3D5A80', // Desarrollo Profesional Docente
+    7: '#F18F01', // Comunidad y Colaboración
+    'default': '#6b7280'
   };
 
   // Añadir los keyframes al montar el componente
@@ -218,8 +220,10 @@ const AdminPanel = () => {
     }
     
     // Filtrar por estado
-    // Solo mostrar publicaciones publicadas
-    result = result.filter(post => post.Estado === 'publicado');
+    if (statusFilter !== 'all') {
+      const estado = statusFilter === 'published' ? 'publicado' : 'borrador';
+      result = result.filter(post => post.Estado === estado);
+    }
     
     // Ordenar
     switch (order) {
@@ -1139,7 +1143,9 @@ const AdminPanel = () => {
               onChange={(e) => setFilter(e.target.value)}
               style={styles.select}
             >
+              <option value="all">Todos los estados</option>
               <option value="published">Publicadas</option>
+              <option value="draft">Borradores</option>
             </select>
             
             <select
@@ -1175,11 +1181,11 @@ const AdminPanel = () => {
               <div style={styles.emptyState}>
                 <h3 style={styles.emptyStateTitle}>No se encontraron publicaciones</h3>
                 <p style={styles.emptyStateText}>
-                  {searchTerm || filter !== 'published' 
+                  {searchTerm || filter !== 'all' 
                     ? 'No hay publicaciones que coincidan con los criterios de búsqueda. Intenta ajustar los filtros.'
                     : 'No hay publicaciones en el sistema. ¡Crea tu primera publicación!'}
                 </p>
-                {(!searchTerm && filter === 'published') && (
+                {(!searchTerm && filter === 'all') && (
                   <AnimatedButton
                     to="/admin/post/new"
                     backgroundColor={colors.secondary}

@@ -525,16 +525,23 @@
 }
 
 .comentario-btn-edit:hover {
-  background: rgba(40, 167, 69, 0.3);
+  background-color: rgba(8, 44, 44, 0.1);
 }
 
 .comentario-btn-delete {
   color: #dc3545;
-  background: rgba(220, 53, 69, 0.1);
 }
 
 .comentario-btn-delete:hover {
-  background: rgba(220, 53, 69, 0.3);
+  background-color: rgba(220, 53, 69, 0.1);
+}
+
+.comentario-btn-like {
+  color: #082c2c;
+}
+
+.comentario-btn-like:hover {
+  background-color: rgba(8, 44, 44, 0.1);
 }
 
 .comentario-btn-refresh {

@@ -1,3 +1,5 @@
+
+
 Este es el componente de otra rama PostEditor:
  Hace que funcione la logica de publicar post desde modo avanzado, 
  pero en diseño no hay nada que quiera cambiar respecto a mi desño actual, 
@@ -190,6 +192,7 @@ const PostEditor = () => {
           { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
           { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
           { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
+          { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
         ]);
       }
     } catch (error) {
@@ -202,6 +205,7 @@ const PostEditor = () => {
         { ID_categoria: 4, Nombre_categoria: 'Educación de Calidad' },
         { ID_categoria: 5, Nombre_categoria: 'Herramientas Tecnológicas' },
         { ID_categoria: 6, Nombre_categoria: 'Desarrollo Profesional Docente' },
+        { ID_categoria: 7, Nombre_categoria: 'Comunidad y Colaboración' }
       ]);
     }
   };
