@@ -76,11 +76,37 @@ export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null
 // Obtener una publicación por ID
 export const getPublicacionById = async (id) => {
     try {
+        console.log(`getPublicacionById: Obteniendo publicación con ID ${id}`);
         const response = await fetch(`${API_URL}/api/publicaciones/${id}`);
+        
         if (!response.ok) {
+            console.error(`getPublicacionById: Error en la respuesta - ${response.status} ${response.statusText}`);
             throw new Error('Error al obtener la publicación');
         }
-        return await response.json();
+        
+        const data = await response.json();
+        console.log(`getPublicacionById: Publicación obtenida con éxito, propiedades:`, Object.keys(data));
+        
+        // Verificar si el contenido está presente
+        if (!data.contenido) {
+            console.warn(`getPublicacionById: El campo 'contenido' no está presente en la respuesta`);
+            
+            // Intentar encontrar el contenido en otras propiedades
+            if (data.Contenido) {
+                console.log('getPublicacionById: Usando campo Contenido (mayúscula)');
+                data.contenido = data.Contenido;
+            } else if (data.content) {
+                console.log('getPublicacionById: Usando campo content (inglés)');
+                data.contenido = data.content;
+            } else if (data.htmlContent) {
+                console.log('getPublicacionById: Usando campo htmlContent');
+                data.contenido = data.htmlContent;
+            }
+        } else {
+            console.log(`getPublicacionById: Contenido encontrado, longitud: ${data.contenido.length}`);
+        }
+        
+        return data;
     } catch (error) {
         console.error('Error en getPublicacionById:', error);
         throw error;

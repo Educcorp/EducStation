@@ -256,6 +256,26 @@ const PostEditor = () => {
         
         console.log('Datos de la publicación cargados:', postData);
         
+        // Verificar si el contenido está presente
+        if (!postData.contenido) {
+          console.error('ERROR: El contenido de la publicación está vacío o indefinido');
+          console.log('Propiedades disponibles en postData:', Object.keys(postData));
+          
+          // Buscar propiedades alternativas que puedan contener el contenido
+          let contenidoAlternativo = null;
+          if (postData.Contenido) contenidoAlternativo = postData.Contenido;
+          else if (postData.content) contenidoAlternativo = postData.content;
+          else if (postData.htmlContent) contenidoAlternativo = postData.htmlContent;
+          
+          if (contenidoAlternativo) {
+            console.log('Se encontró contenido alternativo en otra propiedad:', 
+                        contenidoAlternativo.substring(0, 50) + '...');
+            postData.contenido = contenidoAlternativo;
+          } else {
+            console.warn('No se pudo encontrar el contenido en ninguna propiedad alternativa');
+          }
+        }
+        
         const categoriaObj = categories.find(cat => 
           cat.ID_categoria === (postData.categorias && postData.categorias[0]?.ID_categoria)
         );
@@ -273,12 +293,14 @@ const PostEditor = () => {
         
         console.log('¿El contenido tiene HTML?', contentHasHTML);
         console.log('¿Es un documento HTML completo?', isHTMLDocument);
+        console.log('Contenido del post:', postData.contenido ? postData.contenido.substring(0, 100) + '...' : 'vacío');
         
         // Determinar el modo de editor basado en el contenido
         const editorMode = isHTMLDocument ? 'html' : (contentHasHTML ? 'html' : 'simple');
         console.log('Modo de editor seleccionado:', editorMode);
         
-        setPost({
+        // Crear el objeto post con los datos cargados
+        const postObj = {
           title: postData.titulo || '',
           content: postData.contenido || '',
           category: categoria,
@@ -288,7 +310,17 @@ const PostEditor = () => {
           publishDate: postData.fecha_publicacion ? new Date(postData.fecha_publicacion).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
           editorMode: editorMode,
           resumen: postData.resumen || ''
+        };
+        
+        console.log('Objeto post creado:', {
+          title: postObj.title,
+          contentLength: postObj.content ? postObj.content.length : 0,
+          contentPreview: postObj.content ? postObj.content.substring(0, 50) + '...' : 'vacío',
+          editorMode: postObj.editorMode
         });
+        
+        // Actualizar el estado
+        setPost(postObj);
         
         // Asegurarse de que el contenido se cargue correctamente en el editor
         console.log('Contenido cargado en el editor:', postData.contenido ? postData.contenido.substring(0, 50) + '...' : 'vacío');
@@ -310,11 +342,28 @@ const PostEditor = () => {
   // Manejador para cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Changing ${name} to ${value}`);
-    setPost(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Log más detallado para el contenido
+    if (name === 'content') {
+      console.log(`Changing ${name}, length: ${value ? value.length : 0}`);
+      console.log(`Content preview: ${value ? value.substring(0, 50) + '...' : 'vacío'}`);
+    } else {
+      console.log(`Changing ${name} to ${value}`);
+    }
+    
+    setPost(prev => {
+      const updatedPost = {
+        ...prev,
+        [name]: value
+      };
+      
+      // Log adicional para verificar que el contenido se actualiza correctamente
+      if (name === 'content') {
+        console.log(`Post content updated, new length: ${updatedPost.content ? updatedPost.content.length : 0}`);
+      }
+      
+      return updatedPost;
+    });
   };
 
   // Manejador para cambios en la imagen de portada

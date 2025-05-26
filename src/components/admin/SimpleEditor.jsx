@@ -34,8 +34,13 @@ const SimpleEditor = ({ content, onChange }) => {
       
       // Set initial content
       if (content && content !== internalContent) {
+        console.log('SimpleEditor - Inicializando con contenido:', content.substring(0, 50) + '...');
+        console.log('SimpleEditor - Longitud del contenido:', content.length);
+        
         editorRef.current.innerHTML = content;
         setInternalContent(content);
+      } else {
+        console.log('SimpleEditor - No hay contenido nuevo para inicializar o ya está actualizado');
       }
       
       // Focus if empty
@@ -55,6 +60,18 @@ const SimpleEditor = ({ content, onChange }) => {
       return () => {
         document.removeEventListener('selectionchange', checkActiveFormats);
       };
+    }
+  }, [content]);
+  
+  // Efecto adicional para verificar que el contenido se ha cargado correctamente
+  useEffect(() => {
+    if (editorRef.current && content && content.trim() !== '') {
+      // Verificar si el contenido está vacío cuando no debería estarlo
+      if (editorRef.current.innerHTML.trim() === '' && content.trim() !== '') {
+        console.log('SimpleEditor - Corrigiendo contenido que no se cargó correctamente');
+        editorRef.current.innerHTML = content;
+        setInternalContent(content);
+      }
     }
   }, [content]);
 

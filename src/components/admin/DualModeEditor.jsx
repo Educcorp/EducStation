@@ -127,19 +127,22 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   // Actualizar contenido cuando cambia externamente
   useEffect(() => {
     console.log('DualModeEditor - Contenido externo actualizado:', content ? content.substring(0, 50) + '...' : 'vacío');
+    console.log('DualModeEditor - Longitud del contenido:', content ? content.length : 0);
+    
     if (content !== undefined && content !== null) {
       setInternalContent(content);
       setSimpleContent(content);
       
       // Si estamos en modo desarrollador, asegurarse de que el textarea tenga el contenido
       if (mode === 'developer' && textAreaRef.current) {
+        console.log('DualModeEditor - Actualizando textarea directamente');
         textAreaRef.current.value = content;
       }
       
       // Log adicional para depuración
       console.log('DualModeEditor - Contenido actualizado en modo:', mode);
     }
-  }, [content]);
+  }, [content, mode]);
 
   // Manejar acciones de la barra de herramientas para el modo desarrollador
   const handleToolbarAction = async (actionType, placeholder) => {
@@ -276,8 +279,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
       
       // Asegurarse de que el textarea tenga el contenido
       if (textAreaRef.current) {
+        console.log('DualModeEditor - Sincronizando contenido en textarea al cambiar a modo developer');
+        console.log('DualModeEditor - Contenido a sincronizar:', content ? content.substring(0, 50) + '...' : 'vacío');
+        
         setTimeout(() => {
-          textAreaRef.current.value = content || '';
+          if (textAreaRef.current) {
+            textAreaRef.current.value = content || '';
+            console.log('DualModeEditor - Contenido sincronizado en textarea');
+          }
         }, 50);
       }
     } else {
@@ -299,17 +308,27 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   // Confirmar cambio al modo desarrollador
   const confirmDeveloperMode = () => {
     console.log('DualModeEditor - confirmDeveloperMode: Confirmando cambio a modo HTML');
+    console.log('DualModeEditor - confirmDeveloperMode: Contenido actual:', content ? content.substring(0, 50) + '...' : 'vacío');
+    console.log('DualModeEditor - confirmDeveloperMode: Longitud del contenido:', content ? content.length : 0);
+    
     setShowDeveloperModal(false);
     setMode('developer');
     
     // Asegurar que el contenido esté sincronizado
-    setInternalContent(content || '');
+    const contentToUse = content || '';
+    setInternalContent(contentToUse);
     
     // Asegurarse de que el textarea tenga el contenido actualizado
     setTimeout(() => {
       if (textAreaRef.current) {
-        textAreaRef.current.value = content || '';
+        textAreaRef.current.value = contentToUse;
         console.log('DualModeEditor - confirmDeveloperMode: Contenido sincronizado en textarea');
+        
+        // Verificación adicional
+        if (textAreaRef.current.value !== contentToUse) {
+          console.warn('DualModeEditor - confirmDeveloperMode: El contenido no se sincronizó correctamente');
+          textAreaRef.current.value = contentToUse;
+        }
       }
     }, 50);
     
@@ -322,6 +341,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     };
     console.log('DualModeEditor - confirmDeveloperMode: Notificando cambio de modo al padre:', event.target.value);
     onChange(event);
+    
+    // Verificación adicional después de un tiempo
+    setTimeout(() => {
+      if (textAreaRef.current && textAreaRef.current.value !== contentToUse) {
+        console.log('DualModeEditor - confirmDeveloperMode: Corrección tardía de contenido');
+        textAreaRef.current.value = contentToUse;
+      }
+    }, 500);
   };
 
   // Cancelar cambio al modo desarrollador
@@ -333,6 +360,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
   const handleTextAreaChange = (e) => {
     console.log('DualModeEditor - handleTextAreaChange llamado con valor:', 
       e.target.value ? `"${e.target.value.substring(0, 50)}..."` : 'vacío');
+    console.log('DualModeEditor - handleTextAreaChange longitud del contenido:', e.target.value ? e.target.value.length : 0);
     
     // Asegurar que no estamos estableciendo a null o undefined
     const newContent = e.target.value || '';
@@ -348,6 +376,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     
     console.log('DualModeEditor - notificando al padre con contenido de longitud:', newContent.length);
     onChange(cleanEvent);
+    
+    // Verificación adicional para asegurar que el textarea tenga el contenido actualizado
+    setTimeout(() => {
+      if (textAreaRef.current && textAreaRef.current.value !== newContent) {
+        console.log('DualModeEditor - Corrigiendo desincronización en textarea');
+        textAreaRef.current.value = newContent;
+      }
+    }, 0);
   };
 
   // Manejar cambios en el contenido del editor simple
@@ -797,7 +833,7 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
               }}>
                 <textarea
                   ref={textAreaRef}
-                  defaultValue={internalContent}
+                  value={internalContent || ''}
                   onChange={handleTextAreaChange}
                   onPaste={handlePaste}
                   style={{
