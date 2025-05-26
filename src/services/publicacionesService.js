@@ -86,6 +86,7 @@ export const getPublicacionById = async (id) => {
         
         const data = await response.json();
         console.log(`getPublicacionById: Publicación obtenida con éxito, propiedades:`, Object.keys(data));
+        console.log(`getPublicacionById: Datos completos recibidos:`, data);
         
         // Verificar si el contenido está presente
         if (!data.contenido) {
@@ -101,6 +102,35 @@ export const getPublicacionById = async (id) => {
             } else if (data.htmlContent) {
                 console.log('getPublicacionById: Usando campo htmlContent');
                 data.contenido = data.htmlContent;
+            } else {
+                // Buscar en cualquier campo que pueda contener el contenido
+                console.log('getPublicacionById: Buscando contenido en otros campos...');
+                
+                // Buscar campos que puedan contener el contenido basado en su longitud
+                const possibleContentFields = Object.entries(data)
+                    .filter(([key, value]) => 
+                        typeof value === 'string' && 
+                        value.length > 100 &&
+                        !key.toLowerCase().includes('image') &&
+                        !key.toLowerCase().includes('imagen') &&
+                        !key.toLowerCase().includes('url')
+                    );
+                
+                if (possibleContentFields.length > 0) {
+                    console.log('getPublicacionById: Posibles campos con contenido:', 
+                        possibleContentFields.map(([key]) => key));
+                    
+                    // Usar el campo con el contenido más largo
+                    const [fieldName, fieldValue] = possibleContentFields
+                        .sort(([,a], [,b]) => b.length - a.length)[0];
+                    
+                    console.log(`getPublicacionById: Usando campo "${fieldName}" como contenido (longitud: ${fieldValue.length})`);
+                    data.contenido = fieldValue;
+                } else {
+                    console.error('getPublicacionById: No se encontró ningún campo que pueda contener el contenido');
+                    // Crear un contenido vacío para evitar errores
+                    data.contenido = '';
+                }
             }
         } else {
             console.log(`getPublicacionById: Contenido encontrado, longitud: ${data.contenido.length}`);
@@ -117,6 +147,32 @@ export const getPublicacionById = async (id) => {
             } else if (data.title) {
                 console.log('getPublicacionById: Usando campo title (inglés)');
                 data.titulo = data.title;
+            } else {
+                // Buscar en cualquier campo que pueda contener el título
+                const possibleTitleFields = Object.entries(data)
+                    .filter(([key, value]) => 
+                        typeof value === 'string' && 
+                        value.length < 200 &&
+                        value.length > 3 &&
+                        !key.toLowerCase().includes('image') &&
+                        !key.toLowerCase().includes('imagen') &&
+                        !key.toLowerCase().includes('url') &&
+                        !key.toLowerCase().includes('content') &&
+                        !key.toLowerCase().includes('contenido')
+                    );
+                
+                if (possibleTitleFields.length > 0) {
+                    console.log('getPublicacionById: Posibles campos con título:', 
+                        possibleTitleFields.map(([key]) => key));
+                    
+                    // Usar el primer campo que parezca un título
+                    const [fieldName, fieldValue] = possibleTitleFields[0];
+                    console.log(`getPublicacionById: Usando campo "${fieldName}" como título: "${fieldValue}"`);
+                    data.titulo = fieldValue;
+                } else {
+                    console.warn('getPublicacionById: No se pudo encontrar el título en ninguna propiedad alternativa');
+                    data.titulo = 'Sin título';
+                }
             }
         } else {
             console.log(`getPublicacionById: Título encontrado: "${data.titulo}"`);
@@ -162,6 +218,30 @@ export const getPublicacionById = async (id) => {
             } else if (data.coverImage) {
                 console.log('getPublicacionById: Usando campo coverImage');
                 data.imagen_url = data.coverImage;
+            } else {
+                // Buscar cualquier campo que parezca contener una URL de imagen
+                const possibleImageFields = Object.entries(data)
+                    .filter(([key, value]) => 
+                        typeof value === 'string' && 
+                        (
+                            value.startsWith('http') || 
+                            value.startsWith('https') || 
+                            value.startsWith('data:image') || 
+                            value.startsWith('/') ||
+                            key.toLowerCase().includes('image') ||
+                            key.toLowerCase().includes('imagen')
+                        )
+                    );
+                
+                if (possibleImageFields.length > 0) {
+                    console.log('getPublicacionById: Posibles campos con imagen:', 
+                        possibleImageFields.map(([key]) => key));
+                    
+                    // Usar el primer campo que parezca una imagen
+                    const [fieldName, fieldValue] = possibleImageFields[0];
+                    console.log(`getPublicacionById: Usando campo "${fieldName}" como imagen`);
+                    data.imagen_url = fieldValue;
+                }
             }
             
             // Si tenemos Imagen_portada pero no imagen_url
@@ -435,31 +515,55 @@ export const updatePublicacion = async (id, publicacionData) => {
         
         console.log("updatePublicacion: Campos finales a enviar:", Object.keys(formattedData));
         
+        // Intentar realizar la actualización
+        console.log(`updatePublicacion: Enviando petición PUT a ${API_URL}/api/publicaciones/${id}`);
+        const token = localStorage.getItem('userToken');
+        console.log("updatePublicacion: Token disponible:", !!token);
+        
         const response = await fetch(`${API_URL}/api/publicaciones/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(formattedData)
         });
         
+        console.log(`updatePublicacion: Respuesta del servidor - Status: ${response.status}`);
+        
         if (!response.ok) {
             let errorMessage = `Error del servidor: ${response.status}`;
+            let responseText = '';
+            
             try {
-                const errorData = await response.json();
-                console.error("updatePublicacion: Error del servidor:", response.status, errorData);
+                // Intentar obtener el cuerpo de la respuesta como texto primero
+                responseText = await response.text();
+                console.log("updatePublicacion: Respuesta de error (texto):", responseText);
                 
-                if (errorData.message) {
-                    errorMessage = errorData.message;
-                } else if (errorData.error) {
-                    errorMessage = errorData.error;
-                } else if (errorData.detail) {
-                    errorMessage = errorData.detail;
+                // Intentar parsear como JSON si es posible
+                try {
+                    const errorData = JSON.parse(responseText);
+                    console.error("updatePublicacion: Error del servidor (JSON):", errorData);
+                    
+                    if (errorData.message) {
+                        errorMessage = errorData.message;
+                    } else if (errorData.error) {
+                        errorMessage = errorData.error;
+                    } else if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    }
+                } catch (jsonError) {
+                    console.log("updatePublicacion: La respuesta no es JSON válido");
                 }
                 
                 // Verificar si el error está relacionado con la imagen
-                if (errorMessage.toLowerCase().includes('image') || 
+                if (responseText.toLowerCase().includes('image') || 
+                    responseText.toLowerCase().includes('imagen') ||
+                    responseText.toLowerCase().includes('large') ||
+                    responseText.toLowerCase().includes('grande') ||
+                    responseText.toLowerCase().includes('size') ||
+                    responseText.toLowerCase().includes('tamaño') ||
+                    errorMessage.toLowerCase().includes('image') || 
                     errorMessage.toLowerCase().includes('imagen') ||
                     errorMessage.toLowerCase().includes('large') ||
                     errorMessage.toLowerCase().includes('grande') ||
@@ -470,16 +574,19 @@ export const updatePublicacion = async (id, publicacionData) => {
                     
                     // Intentar nuevamente sin la imagen
                     console.log("updatePublicacion: Intentando actualizar sin la imagen");
-                    delete formattedData.Imagen_portada;
+                    const formattedDataWithoutImage = { ...formattedData };
+                    delete formattedDataWithoutImage.Imagen_portada;
                     
                     const retryResponse = await fetch(`${API_URL}/api/publicaciones/${id}`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('userToken')}`
+                            'Authorization': `Bearer ${token}`
                         },
-                        body: JSON.stringify(formattedData)
+                        body: JSON.stringify(formattedDataWithoutImage)
                     });
+                    
+                    console.log(`updatePublicacion: Respuesta del reintento - Status: ${retryResponse.status}`);
                     
                     if (retryResponse.ok) {
                         console.log("updatePublicacion: Actualización exitosa sin la imagen");
@@ -488,10 +595,14 @@ export const updatePublicacion = async (id, publicacionData) => {
                             ...responseData,
                             warning: "La publicación se actualizó correctamente, pero no se pudo guardar la imagen debido a restricciones de tamaño."
                         };
+                    } else {
+                        console.error("updatePublicacion: Falló también el reintento sin imagen");
+                        const retryText = await retryResponse.text();
+                        console.log("updatePublicacion: Respuesta del reintento:", retryText);
                     }
                 }
-            } catch (jsonError) {
-                console.error("updatePublicacion: Error al procesar la respuesta de error:", jsonError);
+            } catch (textError) {
+                console.error("updatePublicacion: Error al procesar la respuesta de error:", textError);
             }
             
             throw new Error(`No se pudo actualizar la publicación: ${errorMessage}`);
