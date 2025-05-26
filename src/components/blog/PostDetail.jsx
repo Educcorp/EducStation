@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
@@ -19,6 +19,7 @@ const PostDetail = ({ post }) => {
   const [iframeKey, setIframeKey] = useState(Date.now());
   const [likes, setLikes] = useState(post?.contador_likes || 0);
   const [liked, setLiked] = useState(false);
+  const likeBtnRef = useRef(null);
 
   // Asegurarse de que tenemos un ID válido, sea del objeto post o de la URL
   const postId = post?.ID_publicaciones || urlId;
@@ -624,6 +625,7 @@ const PostDetail = ({ post }) => {
             {/* Botón de Like y contador */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
               <button
+                ref={likeBtnRef}
                 onClick={handleLike}
                 aria-label={liked ? 'Ya diste like' : 'Dar like a la publicación'}
                 style={{
@@ -646,15 +648,15 @@ const PostDetail = ({ post }) => {
                 }}
                 title={liked ? 'Ya diste like' : 'Me gusta'}
                 disabled={liked}
-                onMouseDown={e => {
-                  if (!liked) e.currentTarget.style.transform = 'scale(0.92)';
+                onMouseDown={() => {
+                  if (!liked && likeBtnRef.current) likeBtnRef.current.style.transform = 'scale(0.92)';
                 }}
-                onMouseUp={e => {
-                  if (!liked) e.currentTarget.style.transform = 'scale(1.08)';
-                  setTimeout(() => { if (!liked) e.currentTarget.style.transform = 'scale(1)'; }, 120);
+                onMouseUp={() => {
+                  if (!liked && likeBtnRef.current) likeBtnRef.current.style.transform = 'scale(1.08)';
+                  setTimeout(() => { if (!liked && likeBtnRef.current) likeBtnRef.current.style.transform = 'scale(1)'; }, 120);
                 }}
-                onMouseLeave={e => {
-                  if (!liked) e.currentTarget.style.transform = 'scale(1)';
+                onMouseLeave={() => {
+                  if (!liked && likeBtnRef.current) likeBtnRef.current.style.transform = 'scale(1)';
                 }}
               >
                 <FaThumbsUp />
