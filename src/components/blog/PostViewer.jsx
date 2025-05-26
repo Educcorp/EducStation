@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
 import Header from '../layout/Header';
@@ -8,8 +8,9 @@ import ComentariosList from '../comentarios/ComentariosList';
 import { colors, spacing, typography, shadows, borderRadius } from '../../styles/theme';
 
 /**
- * Componente PostViewer rediseñado desde cero
+ * Componente PostViewer optimizado
  * Utiliza un iframe con aislamiento total para mostrar el contenido HTML de los posts
+ * Implementa técnicas de optimización para mejorar el rendimiento
  */
 const PostViewer = () => {
   const { id: postId } = useParams();
@@ -20,6 +21,12 @@ const PostViewer = () => {
   const [iframeHeight, setIframeHeight] = useState(500); // Altura inicial
   const [postHTML, setPostHTML] = useState('');
   const [iframeKey, setIframeKey] = useState(Date.now()); // Clave para forzar re-render
+  
+  // Referencia al iframe
+  const iframeRef = useRef(null);
+  
+  // AbortController para cancelar peticiones
+  const abortControllerRef = useRef(null);
 
   // Escuchar mensajes desde el iframe
   useEffect(() => {
@@ -40,10 +47,19 @@ const PostViewer = () => {
     setIframeKey(Date.now());
   }, [isDarkMode]);
 
-  // Cargar el contenido del post
+  // Cargar el contenido del post con optimizaciones
   useEffect(() => {
     const fetchPostContent = async () => {
       try {
+        // Cancelar peticiones previas si existen
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+        
+        // Crear nuevo AbortController para esta petición
+        abortControllerRef.current = new AbortController();
+        const signal = abortControllerRef.current.signal;
+        
         setLoading(true);
         setError(null);
         
@@ -51,29 +67,43 @@ const PostViewer = () => {
           ? `/post/postfeature.html` 
           : `/post/post${postId}.html`;
         
-        const response = await fetch(postPath);
+        const response = await fetch(postPath, { signal });
         
         if (!response.ok) {
           throw new Error(`Error al cargar el post: ${response.status}`);
         }
         
         const htmlContent = await response.text();
-        setPostHTML(htmlContent);
-        setLoading(false);
+        
+        // Verificar si la petición fue cancelada antes de actualizar el estado
+        if (!signal.aborted) {
+          setPostHTML(htmlContent);
+          setLoading(false);
+        }
       } catch (err) {
-        console.error('Error al cargar el post:', err);
-        setError(err.message);
-        setLoading(false);
+        // Solo mostrar error si no fue por cancelación
+        if (err.name !== 'AbortError') {
+          console.error('Error al cargar el post:', err);
+          setError(err.message);
+          setLoading(false);
+        }
       }
     };
 
     if (postId) {
       fetchPostContent();
     }
+    
+    // Limpiar al desmontar
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [postId]);
 
-  // Generar el documento HTML completo para el iframe
-  const generateIframeContent = () => {
+  // Generar el documento HTML completo para el iframe (memoizado)
+  const iframeContent = useMemo(() => {
     if (!postHTML) return '';
 
     // Extraer el título del post, si existe
@@ -121,6 +151,7 @@ const PostViewer = () => {
             overflow-x: hidden;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
+            scroll-behavior: smooth;
           }
           
           /* Contenedor principal - Con margen y padding controlados */
@@ -173,6 +204,8 @@ const PostViewer = () => {
             margin: 1.5em auto;
             border-radius: 8px;
             object-fit: contain;
+            will-change: transform; /* Optimización para GPU */
+            transform: translateZ(0); /* Forzar aceleración GPU */
           }
           
           /* Sobreescribir cualquier estilo inline de imágenes */
@@ -189,6 +222,8 @@ const PostViewer = () => {
             display: block;
             border-radius: 8px;
             border: none;
+            will-change: transform; /* Optimización para GPU */
+            transform: translateZ(0); /* Forzar aceleración GPU */
           }
           
           /* Listas */
@@ -198,9 +233,33 @@ const PostViewer = () => {
             margin-bottom: 1.2em;
           }
           
-          li {
-            margin-bottom: 0.5em;
-            width: 100%;
+          /* Bloques de código */
+          pre, code {
+            background-color: var(--code-bg);
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 0.2em 0.4em;
+            overflow-x: auto;
+          }
+          
+          pre {
+            padding: 1em;
+            margin: 1.5em 0;
+            white-space: pre-wrap;
+          }
+          
+          pre code {
+            padding: 0;
+            background: none;
+          }
+          
+          /* Citas */
+          blockquote {
+            border-left: 4px solid var(--link-color);
+            padding: 0.5em 1em;
+            margin: 1.5em 0;
+            background-color: var(--blockquote-bg);
+            font-style: italic;
           }
           
           /* Tablas */
@@ -212,371 +271,210 @@ const PostViewer = () => {
             display: block;
           }
           
-          table, th, td {
-            border: 1px solid var(--border-color);
-          }
-          
           th, td {
-            padding: 12px;
+            border: 1px solid var(--border-color);
+            padding: 0.5em;
             text-align: left;
           }
           
           th {
-            background-color: ${isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
-            font-weight: 600;
-          }
-          
-          /* Bloques de código */
-          pre, code {
-            font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-            background-color: var(--code-bg);
-            border-radius: 4px;
-          }
-          
-          code {
-            padding: 0.2em 0.4em;
-            font-size: 0.9em;
-          }
-          
-          pre {
-            padding: 1em;
-            margin: 1.5em 0;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-          }
-          
-          pre code {
-            background-color: transparent;
-            padding: 0;
-            font-size: 0.95em;
-            color: inherit;
-          }
-          
-          /* Citas */
-          blockquote {
-            margin: 1.5em 0;
-            padding: 1em 1.5em;
-            border-left: 4px solid var(--link-color);
             background-color: var(--blockquote-bg);
-            font-style: italic;
-            position: relative;
           }
           
-          blockquote p:last-child {
-            margin-bottom: 0;
+          /* Optimizaciones de rendimiento */
+          * {
+            text-rendering: optimizeSpeed;
           }
           
-          /* Separadores */
-          hr {
-            margin: 2em 0;
-            border: 0;
-            height: 1px;
-            background-color: var(--border-color);
-          }
-          
-          /* Estilos adicionales para elementos flex */
-          div[style*="display: flex"],
-          div[style*="display:flex"] {
-            display: flex !important;
-            flex-wrap: wrap !important;
-            gap: 20px !important;
-            justify-content: center !important;
-            width: 100% !important;
-          }
-          
-          /* Corrección para elementos en flex containers */
-          div[style*="display: flex"] > *,
-          div[style*="display:flex"] > * {
-            flex: 1 1 300px !important;
-            min-width: 0 !important;
-            max-width: 100% !important;
-          }
-          
-          /* Estilos para divs con width específico */
-          div[style*="width:"],
-          div[style*="width: "] {
-            max-width: 100% !important;
-          }
-          
-          /* Anotaciones y figcaption */
-          figcaption, .caption, .annotation {
-            font-size: 0.9em;
-            color: ${isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
-            text-align: center;
-            margin-top: 0.5em;
-            font-style: italic;
-          }
-          
-          /* Media queries para responsividad */
-          @media (max-width: 768px) {
-            .post-container {
-              padding: 15px;
+          /* Animaciones optimizadas */
+          @media (prefers-reduced-motion: no-preference) {
+            a {
+              transition: color 0.3s ease;
             }
             
-            h1 { font-size: 1.8em; }
-            h2 { font-size: 1.6em; }
-            h3 { font-size: 1.4em; }
-            
-            div[style*="display: flex"],
-            div[style*="display:flex"] {
-              flex-direction: column !important;
-              align-items: center !important;
-            }
-            
-            div[style*="display: flex"] > *,
-            div[style*="display:flex"] > * {
-              flex: 1 1 100% !important;
-            }
-            
-            blockquote {
-              padding: 0.8em 1em;
+            img, iframe, video {
+              transition: transform 0.3s ease;
             }
           }
+          
+          /* Script para calcular la altura del contenido y enviarla al padre */
+          window.addEventListener('load', function() {
+            const sendHeight = () => {
+              const height = document.body.scrollHeight;
+              window.parent.postMessage({ type: 'post-height', height: height }, '*');
+            };
+            
+            // Enviar altura inicial
+            sendHeight();
+            
+            // Observar cambios en el DOM para recalcular altura
+            const observer = new MutationObserver(sendHeight);
+            observer.observe(document.body, { 
+              childList: true, 
+              subtree: true,
+              attributes: true,
+              characterData: true
+            });
+            
+            // Recalcular cuando se carguen imágenes
+            document.querySelectorAll('img').forEach(img => {
+              if (!img.complete) {
+                img.addEventListener('load', sendHeight);
+              }
+            });
+          });
         </style>
       </head>
       <body>
         <div class="post-container">
           ${postHTML}
         </div>
-        <script>
-          // Función para notificar la altura al padre
-          function notifyHeight() {
-            const height = document.body.scrollHeight;
-            window.parent.postMessage({ 
-              type: 'post-height',
-              height: height
-            }, '*');
-          }
-          
-          // Observar cambios en el DOM para detectar cuando se cargan imágenes o cambia el contenido
-          const observer = new MutationObserver(notifyHeight);
-          observer.observe(document.body, { 
-            childList: true, 
-            subtree: true,
-            attributes: true,
-            characterData: true
-          });
-          
-          // Notificar altura cuando se carga la página
-          document.addEventListener('DOMContentLoaded', notifyHeight);
-          
-          // Notificar altura cuando se cargan las imágenes
-          document.querySelectorAll('img').forEach(img => {
-            if (img.complete) {
-              notifyHeight();
-            } else {
-              img.addEventListener('load', notifyHeight);
-              img.addEventListener('error', notifyHeight);
-            }
-          });
-          
-          // Notificar altura cuando se cargan iframes o videos
-          document.querySelectorAll('iframe, video').forEach(media => {
-            media.addEventListener('load', notifyHeight);
-          });
-          
-          // Ejecutar inmediatamente y también después de un pequeño retraso
-          notifyHeight();
-          setTimeout(notifyHeight, 100);
-          setTimeout(notifyHeight, 500);
-          setTimeout(notifyHeight, 1000);
-          
-          // Ajustar ancho de elementos con ancho fijo en inline styles
-          document.querySelectorAll('[style*="width"]').forEach(el => {
-            if (el.style.width && el.style.width.includes('px')) {
-              const width = parseInt(el.style.width);
-              if (width > window.innerWidth - 40) {
-                el.style.width = '100%';
-              }
-            }
-          });
-        </script>
       </body>
       </html>
     `;
+  }, [postHTML, isDarkMode]);
+
+  // Navegar de vuelta al blog
+  const navigateToBlog = () => {
+    navigate('/blog');
   };
 
-  // Navegación al blog
-  const navigateToBlog = () => {
-    navigate('/blog', { state: { forceReload: true } });
-  };
-  
-  // Estilos del componente principal
+  // Estilos del componente
   const styles = {
-    pageWrapper: {
-      width: "100%",
-      fontFamily: typography.fontFamily,
-      backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
-      display: "flex",
-      flexDirection: "column",
-      minHeight: "100vh",
-    },
-    mainContainer: {
-      width: "100%",
-      flex: "1 0 auto",
-      display: "flex",
-      flexDirection: "column",
+    container: {
+      maxWidth: '1200px',
+      margin: '0 auto',
+      padding: `0 ${spacing.md}`,
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column'
     },
     contentContainer: {
-      width: "100%",
-      flex: "1",
-      paddingTop: "100px",
-    },
-    postWrapper: {
-      width: "100%",
-      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-    },
-    postContainer: {
-      width: "100%",
-      maxWidth: "1200px",
-      margin: "0 auto",
-      padding: `${spacing.xl} ${spacing.md}`,
-      boxSizing: "border-box",
+      flex: 1,
+      marginTop: spacing.xl,
+      marginBottom: spacing.xl
     },
     iframeContainer: {
-      width: "100%",
-      height: `${iframeHeight}px`,
-      border: "none",
-      transition: "height 0.3s ease",
-      backgroundColor: "transparent",
-      overflow: "hidden",
-      display: "block",
-    },
-    commentsWrapper: {
-      width: "100%",
-      backgroundColor: isDarkMode ? colors.backgroundDark : colors.background,
-      padding: `${spacing.xl} 0`,
-    },
-    commentsContainer: {
-      backgroundColor: isDarkMode ? colors.backgroundDarkSecondary : colors.white,
-      borderRadius: borderRadius.lg,
-      padding: spacing.xl,
-      boxShadow: shadows.md,
-      width: "100%",
-      maxWidth: "1200px",
-      margin: "0 auto",
-      boxSizing: "border-box",
-      border: isDarkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.05)',
-    },
-    loadingMessage: {
-      textAlign: "center",
-      padding: `${spacing.xxl} 0`,
-      color: isDarkMode ? colors.textLight : colors.primary,
-      fontSize: typography.fontSize.lg,
-    },
-    errorMessage: {
-      textAlign: "center",
-      padding: `${spacing.xl} 0`,
-      color: colors.error,
-      fontSize: typography.fontSize.md,
-      backgroundColor: isDarkMode ? 'rgba(181, 61, 0, 0.2)' : 'rgba(181, 61, 0, 0.1)',
-      borderRadius: borderRadius.md,
-      margin: `${spacing.xl} auto`,
-      maxWidth: "800px",
-    },
-    breadcrumb: {
-      padding: `${spacing.lg} 0`,
-      color: isDarkMode ? colors.textLight : colors.textSecondary,
-      fontSize: typography.fontSize.sm,
-      display: "flex",
-      alignItems: "center",
-      gap: spacing.sm,
-      maxWidth: "1200px",
-      margin: "0 auto",
-      paddingLeft: spacing.md,
-      paddingRight: spacing.md,
-    },
-    breadcrumbLink: {
-      color: isDarkMode ? colors.textLight : colors.textSecondary,
-      textDecoration: "none",
-      transition: "all 0.3s ease",
-      cursor: "pointer",
-      background: "none",
-      border: "none",
-      fontFamily: "inherit",
-      fontSize: "inherit",
-      padding: 0,
-    },
-    reactionWrapper: {
-      width: "100%",
-      maxWidth: "1200px",
-      margin: "0 auto",
-      padding: `${spacing.xl} ${spacing.md} 0`,
-    },
-    separator: {
-      borderTop: `1.5px solid ${isDarkMode ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)'}`,
-      margin: `${spacing.xxl} auto`,
       width: '100%',
-      maxWidth: "1200px",
+      height: `${iframeHeight}px`,
+      border: `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+      borderRadius: borderRadius.md,
+      overflow: 'hidden',
+      backgroundColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+      transition: 'height 0.3s ease',
+      marginBottom: spacing.xl,
+      boxShadow: shadows.md
+    },
+    iframe: {
+      width: '100%',
+      height: '100%',
+      border: 'none',
+      backgroundColor: 'transparent'
+    },
+    backButton: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: spacing.sm,
+      backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+      color: isDarkMode ? '#e1e1e1' : '#333',
+      padding: `${spacing.sm} ${spacing.md}`,
+      borderRadius: borderRadius.sm,
+      marginBottom: spacing.lg,
+      cursor: 'pointer',
+      transition: 'all 0.3s ease',
+      border: 'none',
+      fontSize: typography.fontSize.md
+    },
+    loadingContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '400px',
+      width: '100%',
+      backgroundColor: isDarkMode ? '#1a1a1a' : '#f9f9f9',
+      borderRadius: borderRadius.md,
+      color: isDarkMode ? '#e1e1e1' : '#333',
+      fontSize: typography.fontSize.lg
+    },
+    errorContainer: {
+      padding: spacing.lg,
+      backgroundColor: colors.error,
+      color: colors.white,
+      borderRadius: borderRadius.md,
+      marginBottom: spacing.xl
     }
   };
 
   return (
-    <div style={styles.pageWrapper}>
+    <>
       <Header />
-      
-      <div style={styles.mainContainer}>
-        <main style={styles.contentContainer}>
-          {/* Breadcrumb */}
-          <div style={styles.breadcrumb}>
-            <Link to="/" style={styles.breadcrumbLink}>Inicio</Link>
-            <span>►</span>
-            <button onClick={navigateToBlog} style={styles.breadcrumbLink}>
-              Blog
-            </button>
-            <span>►</span>
-            <span>Post {postId}</span>
-          </div>
+      <main style={styles.container}>
+        <div style={styles.contentContainer}>
+          {/* Botón para volver */}
+          <button 
+            onClick={navigateToBlog}
+            style={styles.backButton}
+          >
+            ← Volver al blog
+          </button>
           
-          {/* Post Content */}
-          <div style={styles.postWrapper}>
-          <div style={styles.postContainer}>
-            {loading ? (
-              <div style={styles.loadingMessage}>
-                Cargando contenido del post...
+          {/* Contenido del post */}
+          {loading ? (
+            <div style={styles.loadingContainer}>
+              <div>
+                <div style={{
+                  width: '40px',
+                  height: '40px',
+                  margin: '0 auto',
+                  border: '3px solid transparent',
+                  borderTop: `3px solid ${isDarkMode ? '#e1e1e1' : '#333'}`,
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+                <p style={{ marginTop: spacing.md }}>Cargando contenido...</p>
               </div>
-            ) : error ? (
-              <div style={styles.errorMessage}>
-                  Error: {error}
-              </div>
-            ) : (
-              <>
-                  {/* Contenido del post en un iframe para aislamiento total */}
-                  <iframe 
-                    key={iframeKey}
-                    title={`Post ${postId}`}
-                    style={styles.iframeContainer}
-                    srcDoc={generateIframeContent()}
-                    sandbox="allow-same-origin allow-scripts"
-                    frameBorder="0"
-                    scrolling="no"
-                  />
-                  
-                  {/* Sección de reacciones */}
-                  <div style={styles.reactionWrapper}>
-                <ReactionSection postId={postId} />
-                  </div>
-              </>
-            )}
             </div>
-          </div>
-
-          {/* Separador */}
-          <div style={styles.separator} />
-
+          ) : error ? (
+            <div style={styles.errorContainer}>
+              <h3>Error al cargar el post</h3>
+              <p>{error}</p>
+            </div>
+          ) : (
+            <div style={styles.iframeContainer}>
+              <iframe
+                ref={iframeRef}
+                key={iframeKey}
+                style={styles.iframe}
+                srcDoc={iframeContent}
+                title="Post Content"
+                sandbox="allow-same-origin allow-scripts"
+                loading="lazy"
+              />
+            </div>
+          )}
+          
+          {/* Sección de reacciones */}
+          {!loading && !error && postId && (
+            <ReactionSection postId={postId} />
+          )}
+          
           {/* Comentarios */}
-          <div style={styles.commentsWrapper}>
-            <div style={styles.commentsContainer}>
+          {!loading && !error && postId && (
             <ComentariosList postId={postId} />
-            </div>
-          </div>
-        </main>
-      </div>
-      
+          )}
+        </div>
+      </main>
       <Footer />
-    </div>
+      
+      {/* Estilos para animaciones */}
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+    </>
   );
 };
 
-export default PostViewer;
+export default React.memo(PostViewer);
