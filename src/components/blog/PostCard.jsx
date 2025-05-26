@@ -1,4 +1,4 @@
-import React, { useState, useEffect, memo } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
@@ -31,16 +31,12 @@ const shineAnimation = `
   }
 `;
 
-// Añadir los estilos keyframes al documento (solo una vez)
-let stylesInjected = false;
+// Añadir los estilos keyframes al documento
 const addKeyframeStyles = () => {
-  if (stylesInjected) return;
-  
   const styleSheet = document.createElement("style");
   styleSheet.type = "text/css";
   styleSheet.innerText = shineAnimation;
   document.head.appendChild(styleSheet);
-  stylesInjected = true;
 };
 
 /**
@@ -169,14 +165,14 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
   };
 
   // Función para obtener el nombre de la categoría
-  const getCategoryName = () => {
+  const getCategoryName = (post) => {
     if (post.categorias && Array.isArray(post.categorias) && post.categorias.length > 0) {
       return post.categorias[0].Nombre_categoria || post.categorias[0].Nombre || post.categoria;
     }
     return post.categoria || 'Sin categoría';
   };
   
-  // Función para renderizar la imagen de portada con lazy loading y optimizaciones
+  // Función para renderizar la imagen de portada
   const renderPortadaImage = () => {
     if (!post.Imagen_portada) {
       return (
@@ -191,13 +187,8 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
     if (isHTMLImage(post.Imagen_portada)) {
       return (
         <div 
-          style={{
-            ...styles.htmlImageContainer,
-            opacity: imageLoaded ? 1 : 0,
-            transition: 'opacity 0.3s ease-in'
-          }}
+          style={styles.htmlImageContainer}
           dangerouslySetInnerHTML={renderImageHTML(post.Imagen_portada)}
-          ref={() => setImageLoaded(true)}
         />
       );
     }
@@ -207,13 +198,8 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
         <img 
           src={post.Imagen_portada}
           alt={post.Titulo}
-          style={{
-            ...styles.cardImage,
-            opacity: imageLoaded ? 1 : 0,
-            transition: 'opacity 0.3s ease-in'
-          }}
+          style={styles.cardImage}
           loading="lazy"
-          onLoad={() => setImageLoaded(true)}
         />
       );
     }
@@ -224,17 +210,11 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
         <img 
           src={`${process.env.PUBLIC_URL}${post.Imagen_portada}`}
           alt={post.Titulo}
-          style={{
-            ...styles.cardImage,
-            opacity: imageLoaded ? 1 : 0,
-            transition: 'opacity 0.3s ease-in'
-          }}
+          style={styles.cardImage}
           loading="lazy"
-          onLoad={() => setImageLoaded(true)}
           onError={(e) => {
             e.target.onerror = null;
             e.target.src = 'https://via.placeholder.com/350x200?text=Error+al+cargar+imagen';
-            setImageLoaded(true);
           }}
         />
       );
@@ -245,17 +225,11 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       <img 
         src={post.Imagen_portada}
         alt={post.Titulo}
-        style={{
-          ...styles.cardImage,
-          opacity: imageLoaded ? 1 : 0,
-          transition: 'opacity 0.3s ease-in'
-        }}
+        style={styles.cardImage}
         loading="lazy"
-        onLoad={() => setImageLoaded(true)}
         onError={(e) => {
           e.target.onerror = null;
           e.target.src = 'https://via.placeholder.com/350x200?text=Error+al+cargar+imagen';
-          setImageLoaded(true);
         }}
       />
     );
@@ -440,12 +414,9 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           
           {/* Badge de categoría */}
           {showCategory && (
-            <div style={{
-              ...styles.categoryBadge,
-              backgroundColor: categoryColor
-            }}>
-              <FaTag size={12} style={{ marginRight: '4px' }} />
-              {categoryName}
+            <div style={styles.categoryBadge}>
+              <FaTag size={10} />
+              <span>{getCategoryName(post)}</span>
             </div>
           )}
         </div>
@@ -457,7 +428,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
           </h3>
           
           <p style={styles.postSummary}>
-            {summary}
+            {post.Resumen || post.resumen || cleanSummary(post.contenido || post.Contenido, 120)}
           </p>
 
           {/* Botón Leer más con animación */}
@@ -496,7 +467,7 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
               {/* Fecha */}
               <div style={styles.metaItem}>
                 <FaCalendarAlt size={12} />
-                <span>{formattedDate}</span>
+                <span>{formatDate(post.Fecha_creacion)}</span>
               </div>
             </div>
           </div>
@@ -504,15 +475,6 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
       </article>
     </Link>
   );
-}; (prevProps, nextProps) => {
-  // Función de comparación personalizada para memo
-  // Solo re-renderizar si cambian propiedades importantes
-  return (
-    prevProps.post.ID_publicaciones === nextProps.post.ID_publicaciones &&
-    prevProps.post.contador_likes === nextProps.post.contador_likes &&
-    prevProps.showCategory === nextProps.showCategory &&
-    prevProps.showViews === nextProps.showViews
-  );
-}
+};
 
 export default PostCard; 

@@ -1,40 +1,12 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius, shadows } from '../../styles/theme';
 import { FaPlus, FaBookOpen } from 'react-icons/fa';
 import { AnimatedButton } from '../utils';
-import { FixedSizeGrid } from 'react-window';
-import AutoSizer from 'react-virtualized-auto-sizer';
 
 // Importar el hook personalizado y componentes
 import { usePosts } from './hooks/usePosts';
 import PostCard from './PostCard';
-
-// Componente para renderizar cada ítem de la grid virtualizada
-const GridItem = ({ data, columnIndex, rowIndex, style }) => {
-  const { posts, columns } = data;
-  const index = rowIndex * columns + columnIndex;
-  
-  if (index >= posts.length) {
-    return null;
-  }
-  
-  const post = posts[index];
-  
-  return (
-    <div 
-      className="post-card-animation" 
-      style={{
-        ...style,
-        padding: '10px',
-        "--animation-order": index,
-        background: "transparent"
-      }}
-    >
-      <PostCard post={post} />
-    </div>
-  );
-};
 
 const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'recientes' }) => {
   const { colors, isDarkMode } = useTheme();
@@ -49,30 +21,17 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
     loadMorePosts
   } = usePosts({ limit, categoryFilter, searchTerm, sortOrder });
 
-  // Función para calcular el número de columnas basado en el ancho disponible
-  const getColumnCount = (width) => {
-    if (width < 600) return 1;
-    if (width < 900) return 2;
-    if (width < 1200) return 3;
-    return 4;
-  };
-
-  // Función para calcular el número de filas
-  const getRowCount = useCallback((columnCount, itemCount) => {
-    return Math.ceil(itemCount / columnCount);
-  }, []);
-
   // Estilos siguiendo la estructura de CategoryPage
   const styles = {
     container: {
       maxWidth: '1200px',
       margin: '0 auto',
       padding: `0 ${spacing.md}`,
-      height: '100%',
     },
-    gridContainer: {
-      height: displayPosts?.length > 0 ? '800px' : 'auto',
-      width: '100%',
+    postsGrid: {
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+      gap: spacing.lg,
       marginBottom: spacing.xl
     },
     loadMoreContainer: {
@@ -146,35 +105,20 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
 
   return (
     <div style={styles.container} className={className}>
-      {/* Grid virtualizado de posts */}
-      <div style={styles.gridContainer}>
-        <AutoSizer>
-          {({ height, width }) => {
-            const columnCount = getColumnCount(width);
-            const rowCount = getRowCount(columnCount, displayPosts.length);
-            const columnWidth = width / columnCount;
-            const rowHeight = 400; // Altura estimada de cada tarjeta
-            
-            return (
-              <FixedSizeGrid
-                columnCount={columnCount}
-                columnWidth={columnWidth}
-                height={Math.min(height, rowCount * rowHeight)}
-                rowCount={rowCount}
-                rowHeight={rowHeight}
-                width={width}
-                itemData={{
-                  posts: displayPosts,
-                  columns: columnCount
-                }}
-                overscanRowCount={1}
-                className="posts-grid"
-              >
-                {GridItem}
-              </FixedSizeGrid>
-            );
-          }}
-        </AutoSizer>
+      {/* Grid de posts usando la misma estructura que CategoryPage */}
+      <div style={styles.postsGrid}>
+        {displayPosts.map((post, index) => (
+          <div 
+            className="post-card-animation" 
+            key={post.ID_publicaciones}
+            style={{
+              "--animation-order": index,
+              background: "transparent"
+            }}
+          >
+            <PostCard post={post} />
+          </div>
+        ))}
       </div>
 
       {/* Botón para cargar más posts */}
@@ -248,28 +192,9 @@ const PostList = ({ limit, categoryFilter, searchTerm, className, sortOrder = 'r
         .post-card-animation > a > div {
           transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        
-        .posts-grid::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        
-        .posts-grid::-webkit-scrollbar-track {
-          background: ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)'};
-          border-radius: 4px;
-        }
-        
-        .posts-grid::-webkit-scrollbar-thumb {
-          background: ${isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
-          border-radius: 4px;
-        }
-        
-        .posts-grid::-webkit-scrollbar-thumb:hover {
-          background: ${isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
-        }
       `}</style>
     </div>
   );
 };
 
-export default React.memo(PostList); 
+export default PostList; 

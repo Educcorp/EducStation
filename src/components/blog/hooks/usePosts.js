@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAllPublicaciones } from '../../../services/publicacionesService';
 import { searchPublicaciones, searchByTags } from '../../../services/searchService';
 import { getAllCategorias } from '../../../services/categoriasServices';
@@ -30,48 +30,29 @@ export const usePosts = ({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   
-  // Referencia para cancelar peticiones previas
-  const abortControllerRef = useRef(null);
-  
   // Determinar el número de posts por página
   const POSTS_PER_PAGE = initialDisplayCount || DEFAULT_POSTS_PER_PAGE;
 
   /**
    * Función para ordenar posts según el criterio seleccionado
-   * Optimizada para mejor rendimiento
    */
   const sortPosts = useCallback((postsToSort, order) => {
-    if (!postsToSort || postsToSort.length === 0) return [];
-    
-    // Crear una copia superficial para no mutar el original
     const sortedPosts = [...postsToSort];
     
     switch (order) {
       case 'recientes':
-        return sortedPosts.sort((a, b) => {
-          const dateA = new Date(a.Fecha_creacion || a.fecha_creacion || a.created_at || 0);
-          const dateB = new Date(b.Fecha_creacion || b.fecha_creacion || b.created_at || 0);
-          return dateB - dateA;
-        });
+        return sortedPosts.sort((a, b) => new Date(b.Fecha_creacion) - new Date(a.Fecha_creacion));
       case 'antiguos':
-        return sortedPosts.sort((a, b) => {
-          const dateA = new Date(a.Fecha_creacion || a.fecha_creacion || a.created_at || 0);
-          const dateB = new Date(b.Fecha_creacion || b.fecha_creacion || b.created_at || 0);
-          return dateA - dateB;
-        });
+        return sortedPosts.sort((a, b) => new Date(a.Fecha_creacion) - new Date(b.Fecha_creacion));
       case 'alfabetico':
-        return sortedPosts.sort((a, b) => {
-          const titleA = (a.Titulo || a.titulo || '').toLowerCase();
-          const titleB = (b.Titulo || b.titulo || '').toLowerCase();
-          return titleA.localeCompare(titleB);
-        });
+        return sortedPosts.sort((a, b) => a.Titulo.localeCompare(b.Titulo));
       default:
         return sortedPosts;
     }
   }, []);
 
   /**
-   * Función principal para cargar posts - Optimizada con AbortController
+   * Función principal para cargar posts
    */
   const fetchPosts = useCallback(async () => {
     try {
@@ -79,96 +60,80 @@ export const usePosts = ({
       setError(null);
       setPage(1);
       
-      // Cancelar peticiones previas si existen
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      
-      // Crear nuevo AbortController para esta petición
-      abortControllerRef.current = new AbortController();
-      const signal = abortControllerRef.current.signal;
-      
       let data = [];
       const pageName = window.location.pathname.includes('/blog') ? 'BlogPage' : 'HomePage';
-      
+      console.log(`[${pageName}] Iniciando carga de posts...`);
+
       // Lógica de carga según los filtros
       if (searchTerm && searchTerm.trim() !== '') {
-        data = await searchPublicaciones(searchTerm, limit || 30, 0, signal);
+        console.log(`[${pageName}] Buscando posts con término: "${searchTerm}"`);
+        data = await searchPublicaciones(searchTerm, limit || 30, 0);
       } else if (categoryFilter && categoryFilter !== '') {
-        data = await searchByTags(categoryFilter, limit || 30, 0, signal);
+        console.log(`[${pageName}] Filtrando por categoría: "${categoryFilter}"`);
+        data = await searchByTags(categoryFilter, limit || 30, 0);
       } else {
-        // Optimización: Usar Promise.allSettled en lugar de Promise.all para manejar errores individuales
+        console.log(`[${pageName}] Cargando todas las categorías`);
+        // Cargar por categorías de manera independiente
         try {
-          const categorias = await getAllCategorias(signal);
+          const categorias = await getAllCategorias();
+          console.log(`[${pageName}] Obtenidas ${categorias.length} categorías`);
           
           if (categorias && categorias.length > 0) {
             const promesas = categorias.map(categoria => 
-              searchByTags(categoria.ID_categoria, Math.min(limit || 10, 10), 0, signal)
-                .catch(() => [])
+              searchByTags(categoria.ID_categoria, limit || 30, 0)
+                .catch(error => {
+                  console.error(`[${pageName}] Error al cargar categoría ${categoria.Nombre_categoria}:`, error);
+                  return [];
+                })
             );
             
-            const resultados = await Promise.allSettled(promesas);
+            const resultados = await Promise.all(promesas);
             
-            // Optimización: Usar Map para eliminar duplicados más eficientemente
+            // Combinar resultados y eliminar duplicados
             const postMap = new Map();
-            
-            resultados.forEach(result => {
-              if (result.status === 'fulfilled') {
-                result.value.forEach(post => {
-                  if (!postMap.has(post.ID_publicaciones)) {
-                    // Optimización: Almacenar solo los campos necesarios para mejorar rendimiento
-                    const { ID_publicaciones, Titulo, Fecha_creacion, Imagen_portada, Resumen } = post;
-                    postMap.set(post.ID_publicaciones, { 
-                      ID_publicaciones, 
-                      Titulo, 
-                      Fecha_creacion, 
-                      Imagen_portada,
-                      Resumen,
-                      categorias: post.categorias
-                    });
-                  }
-                });
-              }
+            resultados.forEach(publicacionesCategoria => {
+              publicacionesCategoria.forEach(post => {
+                if (!postMap.has(post.ID_publicaciones)) {
+                  postMap.set(post.ID_publicaciones, post);
+                }
+              });
             });
             
             data = Array.from(postMap.values());
+            console.log(`[${pageName}] Combinadas ${data.length} publicaciones únicas`);
           } else {
-            data = await getAllPublicaciones(limit || 30, 0, 'publicado', signal);
+            // Fallback al método general
+            console.log(`[${pageName}] No hay categorías, usando método alternativo`);
+            data = await getAllPublicaciones(limit || 30, 0, 'publicado');
           }
         } catch (categoryError) {
-          if (!signal.aborted) {
-            data = await getAllPublicaciones(limit || 30, 0, 'publicado', signal);
-          }
+          console.error(`[${pageName}] Error al cargar por categorías:`, categoryError);
+          console.log(`[${pageName}] Intentando método alternativo de carga`);
+          data = await getAllPublicaciones(limit || 30, 0, 'publicado');
         }
       }
 
-      // Solo continuar si la petición no fue cancelada
-      if (!signal.aborted) {
-        // Ordenar posts
-        const sortedData = sortPosts(data, sortOrder);
-        
-        setPosts(sortedData);
-        setDisplayPosts(sortedData.slice(0, POSTS_PER_PAGE));
-        setHasMore(sortedData.length > POSTS_PER_PAGE);
-      }
+      // Ordenar posts
+      const sortedData = sortPosts(data, sortOrder);
+      
+      console.log(`[${pageName}] Posts cargados y ordenados: ${sortedData.length}`);
+      
+      setPosts(sortedData);
+      setDisplayPosts(sortedData.slice(0, POSTS_PER_PAGE));
+      setHasMore(sortedData.length > POSTS_PER_PAGE);
       
     } catch (error) {
-      // Solo mostrar error si no fue por cancelación
-      if (error.name !== 'AbortError') {
-        console.error('Error al cargar publicaciones:', error);
-        setError('No se pudieron cargar las publicaciones. Por favor, intenta de nuevo más tarde.');
-        setPosts([]);
-        setDisplayPosts([]);
-      }
+      console.error('Error al cargar publicaciones:', error);
+      setError('No se pudieron cargar las publicaciones. Por favor, intenta de nuevo más tarde.');
+      setPosts([]);
+      setDisplayPosts([]);
     } finally {
-      if (abortControllerRef.current?.signal?.aborted === false) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   }, [limit, categoryFilter, searchTerm, sortOrder, sortPosts, POSTS_PER_PAGE]);
 
   /**
-   * Función para cargar más posts (paginación) - Optimizada
+   * Función para cargar más posts (paginación)
    */
   const loadMorePosts = useCallback(() => {
     if (loadingMore || !hasMore) return;
@@ -178,8 +143,7 @@ export const usePosts = ({
     const startIndex = (nextPage - 1) * POSTS_PER_PAGE;
     const endIndex = nextPage * POSTS_PER_PAGE;
     
-    // Usar requestAnimationFrame para mejorar el rendimiento visual
-    requestAnimationFrame(() => {
+    setTimeout(() => {
       setDisplayPosts(prevPosts => [
         ...prevPosts, 
         ...posts.slice(startIndex, endIndex)
@@ -187,7 +151,7 @@ export const usePosts = ({
       setPage(nextPage);
       setHasMore(endIndex < posts.length);
       setLoadingMore(false);
-    });
+    }, 500);
   }, [page, posts, loadingMore, hasMore, POSTS_PER_PAGE]);
 
   /**
@@ -200,13 +164,6 @@ export const usePosts = ({
   // Efecto para cargar posts cuando cambian los filtros
   useEffect(() => {
     fetchPosts();
-    
-    // Limpiar al desmontar
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
   }, [fetchPosts]);
 
   return {
