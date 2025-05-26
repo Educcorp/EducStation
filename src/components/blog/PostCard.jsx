@@ -490,33 +490,6 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
                 <span>{formatDate(post.Fecha_creacion)}</span>
               </div>
             </div>
-            {/* Botón de Like y contador */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <button
-                onClick={handleLike}
-                style={{
-                  background: liked ? colors.primary : 'rgba(8,44,44,0.08)',
-                  color: liked ? '#fff' : colors.primary,
-                  border: 'none',
-                  borderRadius: '50%',
-                  width: 36,
-                  height: 36,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  cursor: liked ? 'not-allowed' : 'pointer',
-                  fontSize: '1.1rem',
-                  boxShadow: liked ? '0 2px 8px rgba(8,44,44,0.15)' : 'none',
-                  transition: 'all 0.2s',
-                  outline: 'none',
-                }}
-                title={liked ? 'Ya diste like' : 'Me gusta'}
-                disabled={liked}
-              >
-                <FaThumbsUp />
-              </button>
-              <span style={{ fontWeight: 600, color: colors.primary }}>{likes}</span>
-            </div>
           </div>
         </div>
       </article>

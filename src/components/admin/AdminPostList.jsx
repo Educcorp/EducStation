@@ -63,11 +63,6 @@ const AdminPostList = ({
       );
     }
     
-    // Filtrar por estado
-    if (filter !== 'all') {
-      const estado = filter === 'published' ? 'publicado' : 'borrador';
-      result = result.filter(post => post.Estado === estado);
-    }
     
     // Ordenar
     switch (sortOrder) {
