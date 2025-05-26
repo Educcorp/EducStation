@@ -60,7 +60,7 @@ const AdminPanel = () => {
   
   // Estados para filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all'); // 'all', 'published', 'draft'
+  const [filter, setFilter] = useState('published'); // Solo 'published' disponible
   const [sortOrder, setSortOrder] = useState('recientes'); // 'recientes', 'antiguos', 'alfabetico'
   
   // Estados para UI
@@ -220,10 +220,8 @@ const AdminPanel = () => {
     }
     
     // Filtrar por estado
-    if (statusFilter !== 'all') {
-      const estado = statusFilter === 'published' ? 'publicado' : 'borrador';
-      result = result.filter(post => post.Estado === estado);
-    }
+    // Solo mostrar publicaciones publicadas
+    result = result.filter(post => post.Estado === 'publicado');
     
     // Ordenar
     switch (order) {
@@ -1143,9 +1141,7 @@ const AdminPanel = () => {
               onChange={(e) => setFilter(e.target.value)}
               style={styles.select}
             >
-              <option value="all">Todos los estados</option>
               <option value="published">Publicadas</option>
-              <option value="draft">Borradores</option>
             </select>
             
             <select
@@ -1181,11 +1177,11 @@ const AdminPanel = () => {
               <div style={styles.emptyState}>
                 <h3 style={styles.emptyStateTitle}>No se encontraron publicaciones</h3>
                 <p style={styles.emptyStateText}>
-                  {searchTerm || filter !== 'all' 
+                  {searchTerm || filter !== 'published' 
                     ? 'No hay publicaciones que coincidan con los criterios de búsqueda. Intenta ajustar los filtros.'
                     : 'No hay publicaciones en el sistema. ¡Crea tu primera publicación!'}
                 </p>
-                {(!searchTerm && filter === 'all') && (
+                {(!searchTerm && filter === 'published') && (
                   <AnimatedButton
                     to="/admin/post/new"
                     backgroundColor={colors.secondary}
