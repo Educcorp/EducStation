@@ -256,6 +256,65 @@ const PostEditor = () => {
         
         console.log('Datos de la publicación cargados:', postData);
         
+        // Verificar si el título está presente
+        if (!postData.titulo) {
+          console.error('ERROR: El título de la publicación está vacío o indefinido');
+          console.log('Propiedades disponibles en postData:', Object.keys(postData));
+          
+          // Buscar propiedades alternativas que puedan contener el título
+          let tituloAlternativo = null;
+          if (postData.Titulo) tituloAlternativo = postData.Titulo;
+          else if (postData.title) tituloAlternativo = postData.title;
+          
+          if (tituloAlternativo) {
+            console.log('Se encontró título alternativo:', tituloAlternativo);
+            postData.titulo = tituloAlternativo;
+          } else {
+            console.warn('No se pudo encontrar el título en ninguna propiedad alternativa');
+            postData.titulo = 'Sin título';
+          }
+        }
+        
+        // Verificar si el resumen está presente
+        if (!postData.resumen) {
+          console.warn('El resumen de la publicación está vacío o indefinido');
+          
+          // Buscar propiedades alternativas que puedan contener el resumen
+          let resumenAlternativo = null;
+          if (postData.Resumen) resumenAlternativo = postData.Resumen;
+          else if (postData.summary) resumenAlternativo = postData.summary;
+          else if (postData.descripcion) resumenAlternativo = postData.descripcion;
+          else if (postData.Descripcion) resumenAlternativo = postData.Descripcion;
+          
+          if (resumenAlternativo) {
+            console.log('Se encontró resumen alternativo:', 
+                        resumenAlternativo.substring(0, 50) + '...');
+            postData.resumen = resumenAlternativo;
+          } else {
+            console.log('Creando resumen a partir del título');
+            postData.resumen = postData.titulo ? postData.titulo.substring(0, 150) : '';
+          }
+        }
+        
+        // Verificar si la imagen de portada está presente
+        let imagenPortada = postData.imagen_url || postData.Imagen_portada || null;
+        if (!imagenPortada) {
+          console.warn('La imagen de portada está vacía o indefinida');
+          
+          // Buscar propiedades alternativas que puedan contener la imagen
+          if (postData.imagen) imagenPortada = postData.imagen;
+          else if (postData.Imagen) imagenPortada = postData.Imagen;
+          else if (postData.image_url) imagenPortada = postData.image_url;
+          else if (postData.imageUrl) imagenPortada = postData.imageUrl;
+          else if (postData.coverImage) imagenPortada = postData.coverImage;
+          
+          if (imagenPortada) {
+            console.log('Se encontró imagen de portada alternativa');
+          } else {
+            console.warn('No se pudo encontrar la imagen de portada en ninguna propiedad alternativa');
+          }
+        }
+        
         // Verificar si el contenido está presente
         if (!postData.contenido) {
           console.error('ERROR: El contenido de la publicación está vacío o indefinido');
@@ -305,18 +364,21 @@ const PostEditor = () => {
           content: postData.contenido || '',
           category: categoria,
           tags: postData.tags || '',
-          coverImagePreview: postData.imagen_url || null,
+          coverImagePreview: imagenPortada,
           status: postData.estado || 'draft',
           publishDate: postData.fecha_publicacion ? new Date(postData.fecha_publicacion).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
           editorMode: editorMode,
-          resumen: postData.resumen || ''
+          resumen: postData.resumen || '',
+          Imagen_portada: imagenPortada
         };
         
         console.log('Objeto post creado:', {
           title: postObj.title,
           contentLength: postObj.content ? postObj.content.length : 0,
           contentPreview: postObj.content ? postObj.content.substring(0, 50) + '...' : 'vacío',
-          editorMode: postObj.editorMode
+          editorMode: postObj.editorMode,
+          resumen: postObj.resumen ? postObj.resumen.substring(0, 50) + '...' : 'vacío',
+          imagenPortada: postObj.coverImagePreview ? 'presente' : 'no presente'
         });
         
         // Actualizar el estado

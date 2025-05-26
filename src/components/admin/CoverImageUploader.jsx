@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -12,9 +12,19 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
   const [conversionStatus, setConversionStatus] = useState(null);
   // Estado para mostrar información del tamaño
   const [imageInfo, setImageInfo] = useState(null);
+  // Estado para almacenar la imagen actual
+  const [currentImage, setCurrentImage] = useState(coverImagePreview);
 
   // Usar el hook useTheme para obtener los colores según el tema actual
   const { colors } = useTheme();
+
+  // Efecto para actualizar la imagen cuando cambia coverImagePreview
+  useEffect(() => {
+    console.log('CoverImageUploader - coverImagePreview actualizado:', coverImagePreview ? 'presente' : 'no presente');
+    if (coverImagePreview !== undefined) {
+      setCurrentImage(coverImagePreview);
+    }
+  }, [coverImagePreview]);
 
   // Función para comprimir imagen si es necesario
   const compressImageIfNeeded = (file, maxSize = MAX_IMAGE_SIZE) => {
@@ -226,14 +236,31 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
 
   // Función para validar URLs de imagen
   const getValidImageSrc = (src) => {
-    if (!src) return null;
+    if (!src) {
+      console.log('CoverImageUploader - getValidImageSrc: src es null o undefined');
+      return null;
+    }
+    
+    console.log('CoverImageUploader - getValidImageSrc: Validando URL de imagen:', 
+                typeof src === 'string' ? src.substring(0, 50) + '...' : 'no es string');
+    
+    if (typeof src !== 'string') {
+      console.warn('CoverImageUploader - URL de imagen no es un string:', typeof src);
+      return null;
+    }
     
     if (src.startsWith('data:')) {
+      console.log('CoverImageUploader - URL de imagen es data URL');
       return src;
     } else if (src.startsWith('http') || src.startsWith('https')) {
+      console.log('CoverImageUploader - URL de imagen es URL HTTP/HTTPS');
+      return src;
+    } else if (src.startsWith('/')) {
+      console.log('CoverImageUploader - URL de imagen es ruta relativa');
+      // Es una ruta relativa, asumimos que es válida
       return src;
     } else {
-      console.warn('URL de imagen no válida:', src);
+      console.warn('CoverImageUploader - URL de imagen no válida:', src);
       return null;
     }
   };
@@ -436,16 +463,23 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
             e.currentTarget.style.boxShadow = shadows.sm;
           }}
         >
-          {coverImagePreview ? (
+          {currentImage ? (
             <div style={{ position: 'relative', width: '100%', height: '100%' }}>
               <img 
-                src={getValidImageSrc(coverImagePreview)} 
+                src={getValidImageSrc(currentImage)} 
                 alt="Vista previa de la portada" 
                 style={styles.coverImage}
                 onError={(e) => {
-                  console.warn('Error cargando imagen preview:', coverImagePreview);
+                  console.error('Error cargando imagen preview:', currentImage);
+                  console.log('Tipo de imagen:', typeof currentImage);
+                  console.log('Primeros 100 caracteres de la imagen:', 
+                    typeof currentImage === 'string' ? currentImage.substring(0, 100) + '...' : 'no es string');
+                  
                   e.target.style.display = 'none';
                   e.target.parentNode.innerHTML = '<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; color: #888; text-align: center;"><span style="font-size: 28px; margin-bottom: 8px;">❌</span><span>Error al cargar imagen</span></div>';
+                }}
+                onLoad={() => {
+                  console.log('CoverImageUploader - Imagen cargada correctamente');
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'scale(1.05)';
@@ -456,7 +490,11 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
               />
               <button
                 type="button"
-                onClick={handleRemoveImage}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleRemoveImage();
+                }}
                 style={styles.removeButton}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = 'rgba(255, 82, 82, 1)';
@@ -472,19 +510,26 @@ const CoverImageUploader = ({ coverImagePreview, onChange }) => {
               </button>
             </div>
           ) : (
-            <div style={styles.imageUploadText}>
+            <div 
+              style={styles.imageUploadText}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
+            >
               <span style={styles.imageIcon}>🖼️</span>
-              <span>Subir imagen de portada</span>
+              <span>Haz clic para subir una imagen</span>
             </div>
           )}
         </label>
-        {/* Solo mostrar mensajes de estado y información si hay imagen seleccionada */}
-        {coverImagePreview && renderStatusMessage()}
-        {coverImagePreview && renderImageInfo()}
-        <p style={styles.helperText}>
-          <span style={{color: colors.primary}}>💡</span>
-          Para mejores resultados, usa imágenes de hasta 4MB. Las imágenes más grandes serán comprimidas automáticamente.
-        </p>
+        <div style={styles.helperText}>
+          <span>💡</span>
+          <span>Para mejores resultados, usa imágenes de hasta 4MB. Las imágenes más grandes serán comprimidas automáticamente.</span>
+        </div>
+        {renderStatusMessage()}
+        {renderImageInfo()}
       </div>
     </div>
   );
