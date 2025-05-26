@@ -180,8 +180,6 @@ const SearchComponent = () => {
                                 onChange={(e) => setStatus(e.target.value)}
                             >
                                 <option value="publicado">Publicado</option>
-                                <option value="borrador">Borrador</option>
-                                <option value="archivado">Archivado</option>
                             </select>
                         </div>
 

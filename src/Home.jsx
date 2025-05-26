@@ -438,14 +438,6 @@ const EducStation = () => {
       alignItems: "center",
       gap: "5px"
     },
-    postLikes: {
-      color: "#64748b",
-      fontSize: "12px",
-      display: "flex",
-      alignItems: "center",
-      gap: "4px",
-      marginLeft: "auto"
-    },
     postTitle: {
       fontSize: "18px",
       color: "#1e293b",
@@ -742,9 +734,6 @@ const EducStation = () => {
                     <div style={styles.postCategory}>{post.category}</div>
                     <div style={styles.postTime}>
                       <span style={{fontSize: '10px', marginRight: '2px'}}>⏱</span> {post.time}
-                    </div>
-                    <div style={styles.postLikes}>
-                      <span style={{fontSize: '10px', marginRight: '2px', color: '#ef4444'}}>♥</span> {post.likes}
                     </div>
                   </div>
                   <h3 
