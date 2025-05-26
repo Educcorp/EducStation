@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { spacing, typography, shadows, borderRadius } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
-import { createPublicacion, createPublicacionFromHTML, getPublicacionById, updatePublicacion } from '../../services/publicacionesService';
+import { createPublicacion, createPublicacionFromHTML, getPublicacionById, updatePublicacion, deletePublicacion } from '../../services/publicacionesService';
 import { getAllCategorias } from '../../services/categoriasServices';
 import { Calendar } from 'lucide-react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -106,7 +106,8 @@ const ContentLabel = ({ isVisible = false }) => {
 
 const PostEditor = () => {
   const { colors, isDarkMode } = useTheme();
-  const { postId } = useParams();
+  const { postId: initialPostId } = useParams();
+  const [postId, setPostId] = useState(initialPostId);
   const navigate = useNavigate();
 
   // Estados para animaciones moderadas
@@ -503,8 +504,41 @@ const PostEditor = () => {
       let result;
       
       if (isEditing) {
-        console.log(`Actualizando borrador existente con ID: ${postId}`);
-        result = await updatePublicacion(postId, postData);
+        console.log(`Editando borrador con ID: ${postId}. Se eliminará el post actual y se creará uno nuevo`);
+        
+        // CAMBIO: En lugar de actualizar, eliminar el post existente y crear uno nuevo
+        try {
+          // Primero, eliminar el post existente
+          const deleteResult = await deletePublicacion(postId);
+          console.log('Post existente eliminado:', deleteResult);
+          
+          // Luego, crear un nuevo post con los datos actualizados
+          const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
+          const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
+          
+          if (shouldUseHTMLEndpoint) {
+            console.log("Guardando borrador usando endpoint HTML - Modo:", post.editorMode, "- Tiene imágenes:", hasHTMLImages);
+            result = await createPublicacionFromHTML({
+              titulo: postData.titulo,
+              htmlContent: post.content,
+              resumen: postData.resumen,
+              estado: postData.estado,
+              categorias: postData.categorias,
+              Imagen_portada: postData.Imagen_portada
+            });
+          } else {
+            console.log("Guardando borrador usando endpoint estándar");
+            result = await createPublicacion(postData);
+          }
+          
+          // Actualizar postId con el nuevo ID
+          if (result && result.id) {
+            setPostId(result.id);
+          }
+        } catch (error) {
+          console.error('Error al eliminar/crear borrador:', error);
+          throw new Error(`Error al actualizar borrador: ${error.message}`);
+        }
       } else {
         const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
         const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
@@ -528,7 +562,7 @@ const PostEditor = () => {
       setIsSaving(false);
       setSaveMessage({
         type: 'success',
-        text: 'Borrador guardado correctamente',
+        text: isEditing ? 'Borrador actualizado correctamente (Se creó un nuevo post)' : 'Borrador guardado correctamente',
         icon: '✓'
       });
       
@@ -594,13 +628,47 @@ const PostEditor = () => {
       let result;
       
       if (isEditing) {
-        console.log(`Actualizando post existente con ID: ${postId}`);
-        result = await updatePublicacion(postId, postData);
-        setSaveMessage({
-          type: 'success',
-          text: '¡Post actualizado correctamente!',
-          icon: '🎉'
-        });
+        console.log(`Editando post con ID: ${postId}. Se eliminará el post actual y se creará uno nuevo`);
+        
+        // CAMBIO: En lugar de actualizar, eliminar el post existente y crear uno nuevo
+        try {
+          // Primero, eliminar el post existente
+          const deleteResult = await deletePublicacion(postId);
+          console.log('Post existente eliminado:', deleteResult);
+          
+          // Luego, crear un nuevo post con los datos actualizados
+          const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
+          const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
+          
+          if (shouldUseHTMLEndpoint) {
+            console.log("Usando endpoint HTML para crear nuevo post - Modo:", post.editorMode, "- Tiene imágenes:", hasHTMLImages);
+            result = await createPublicacionFromHTML({
+              titulo: postData.titulo,
+              htmlContent: post.content,
+              resumen: post.resumen || postData.resumen,
+              estado: postData.estado,
+              categorias: postData.categorias,
+              Imagen_portada: postData.Imagen_portada
+            });
+          } else {
+            console.log("Usando endpoint estándar para crear nuevo post");
+            result = await createPublicacion(postData);
+          }
+          
+          // Actualizar postId con el nuevo ID
+          if (result && result.id) {
+            setPostId(result.id);
+          }
+          
+          setSaveMessage({
+            type: 'success',
+            text: '¡Post actualizado correctamente! (Se creó un nuevo post)',
+            icon: '🎉'
+          });
+        } catch (error) {
+          console.error('Error al eliminar/crear post:', error);
+          throw new Error(`Error al actualizar: ${error.message}`);
+        }
       } else {
         const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
         const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
