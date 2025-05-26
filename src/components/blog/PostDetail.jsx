@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { spacing, typography, borderRadius } from '../../styles/theme';
 import ComentariosList from '../comentarios/ComentariosList';
 import PostSidebar from './PostSidebar';
+import { FaThumbsUp } from 'react-icons/fa';
 
 /**
  * Componente rediseñado para mostrar el detalle de un post
@@ -16,6 +17,8 @@ const PostDetail = ({ post }) => {
   const { id: urlId } = useParams();
   const [iframeHeight, setIframeHeight] = useState(500);
   const [iframeKey, setIframeKey] = useState(Date.now());
+  const [likes, setLikes] = useState(post?.contador_likes || 0);
+  const [liked, setLiked] = useState(false);
 
   // Asegurarse de que tenemos un ID válido, sea del objeto post o de la URL
   const postId = post?.ID_publicaciones || urlId;
@@ -36,6 +39,12 @@ const PostDetail = ({ post }) => {
   useEffect(() => {
     setIframeKey(Date.now());
   }, [isDarkMode]);
+
+  // Si el post cambia, actualizar likes
+  useEffect(() => {
+    setLikes(post?.contador_likes || 0);
+    setLiked(false);
+  }, [post?.ID_publicaciones]);
 
   // Función para formatear la fecha
   const formatDate = (dateString) => {
@@ -564,6 +573,22 @@ const PostDetail = ({ post }) => {
     backLink: styles.backLink,
   };
 
+  const handleLike = async () => {
+    if (liked) return;
+    try {
+      const response = await fetch(`/api/publicaciones/${post.ID_publicaciones}/like`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (response.ok) {
+        setLikes(likes + 1);
+        setLiked(true);
+      }
+    } catch (err) {
+      // Manejar error si se desea
+    }
+  };
+
   if (!post) {
     return null;
   }
@@ -578,6 +603,33 @@ const PostDetail = ({ post }) => {
             <div style={dynamicStyles.meta}>
               <span>Por {post.NombreAdmin || 'Admin'}</span>
               <span>{formatDate(post.Fecha_creacion)}</span>
+            </div>
+            {/* Botón de Like y contador */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <button
+                onClick={handleLike}
+                style={{
+                  background: liked ? colors.primary : 'rgba(8,44,44,0.08)',
+                  color: liked ? '#fff' : colors.primary,
+                  border: 'none',
+                  borderRadius: '50%',
+                  width: 40,
+                  height: 40,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: liked ? 'not-allowed' : 'pointer',
+                  fontSize: '1.2rem',
+                  boxShadow: liked ? '0 2px 8px rgba(8,44,44,0.15)' : 'none',
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                }}
+                title={liked ? 'Ya diste like' : 'Me gusta'}
+                disabled={liked}
+              >
+                <FaThumbsUp />
+              </button>
+              <span style={{ fontWeight: 600, color: colors.primary, fontSize: 18 }}>{likes}</span>
             </div>
             {renderFeaturedImage()}
           </header>
