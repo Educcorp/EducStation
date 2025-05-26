@@ -5,7 +5,7 @@ import { colors, spacing, typography, shadows, borderRadius, transitions } from 
 import ThemeToggle from '../common/ThemeToggle'; // Importa el componente ThemeToggle
 import { useTheme } from '../../context/ThemeContext'; // Importa el contexto del tema
 import { useAuth } from '../../context/AuthContext.jsx'; // Importa el contexto de autenticación
-import { FaHome, FaInfo, FaGlobe,  FaPhone, FaFileAlt, FaUser, FaCog, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope, FaUserShield, FaUserCog } from 'react-icons/fa';
+import { FaHome, FaInfo, FaGlobe, FaPhone, FaFileAlt, FaUser, FaSignOutAlt, FaLock, FaPenSquare, FaBell, FaExclamationTriangle, FaTags, FaEnvelope, FaUserShield, FaUserCog } from 'react-icons/fa';
 import { updateSuperUserStatus } from '../../services/authService'; // Importar función para actualizar estado de superusuario
 
 const Header = () => {
@@ -164,7 +164,7 @@ const Header = () => {
     // Solo si está autenticado, ir a la página de perfil
     if (isAuth && localStorage.getItem('userToken')) {
       // Si ya estamos en la página de perfil, recargar inmediatamente
-      if(location.pathname === path) {
+      if (location.pathname === path) {
         window.location.reload();
       } else {
         // Si estamos en otra página, navegar directamente con recarga instantánea
@@ -304,8 +304,8 @@ const Header = () => {
       gap: spacing.xl
     },
     navLink: (isActivePath) => ({
-      color: isDarkMode 
-        ? (isActivePath ? '#d8d0a9' : 'rgba(255, 255, 255, 0.85)') 
+      color: isDarkMode
+        ? (isActivePath ? '#d8d0a9' : 'rgba(255, 255, 255, 0.85)')
         : (isActivePath ? '#1F4E4E' : 'rgba(0, 0, 0, 0.75)'),
       textDecoration: 'none',
       fontWeight: isActivePath ? typography.fontWeight.bold : typography.fontWeight.medium,
@@ -315,7 +315,7 @@ const Header = () => {
       transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
       display: 'flex',
       alignItems: 'center',
-      background: isActivePath 
+      background: isActivePath
         ? (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(31, 78, 78, 0.08)')
         : 'transparent',
       overflow: 'hidden',
@@ -372,7 +372,7 @@ const Header = () => {
     },
     logoutButton: {
       padding: `${spacing.sm} ${spacing.md}`,
-      background: isDarkMode 
+      background: isDarkMode
         ? 'linear-gradient(135deg, rgba(255, 82, 82, 0.8) 0%, rgba(255, 105, 105, 0.8) 100%)'
         : 'linear-gradient(135deg, rgba(255, 82, 82, 0.9) 0%, rgba(255, 105, 105, 0.9) 100%)',
       color: colors.white,
@@ -392,13 +392,13 @@ const Header = () => {
     },
     userProfileSection: {
       padding: spacing.md,
-      borderBottom: isDarkMode 
-        ? '1px solid rgba(255, 255, 255, 0.1)' 
+      borderBottom: isDarkMode
+        ? '1px solid rgba(255, 255, 255, 0.1)'
         : `1px solid rgba(31, 78, 78, 0.1)`,
       marginBottom: spacing.sm,
       textAlign: 'center',
-      background: isDarkMode 
-        ? 'linear-gradient(135deg, rgba(40, 60, 60, 0.4) 0%, rgba(25, 35, 35, 0.4) 100%)' 
+      background: isDarkMode
+        ? 'linear-gradient(135deg, rgba(40, 60, 60, 0.4) 0%, rgba(25, 35, 35, 0.4) 100%)'
         : 'linear-gradient(135deg, rgba(240, 248, 255, 0.5) 0%, rgba(220, 237, 240, 0.5) 100%)',
       borderRadius: '8px',
       backdropFilter: 'blur(5px)',
@@ -410,8 +410,8 @@ const Header = () => {
       borderRadius: '50%',
       margin: '0 auto',
       marginBottom: spacing.sm,
-      border: isDarkMode 
-        ? '2px solid rgba(216, 208, 169, 0.4)' 
+      border: isDarkMode
+        ? '2px solid rgba(216, 208, 169, 0.4)'
         : `2px solid ${colors.primary}`,
       padding: '2px',
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : colors.white,
@@ -433,8 +433,8 @@ const Header = () => {
       fontSize: typography.fontSize.sm,
       color: isDarkMode ? 'rgba(255, 255, 255, 0.7)' : colors.textSecondary,
       marginBottom: spacing.sm,
-      background: isDarkMode 
-        ? 'rgba(216, 208, 169, 0.2)' 
+      background: isDarkMode
+        ? 'rgba(216, 208, 169, 0.2)'
         : 'rgba(31, 78, 78, 0.1)',
       padding: '4px 12px',
       borderRadius: '100px',
@@ -442,8 +442,8 @@ const Header = () => {
     },
     menuSeparator: {
       height: "1px",
-      background: isDarkMode 
-        ? 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%)' 
+      background: isDarkMode
+        ? 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%)'
         : 'linear-gradient(90deg, transparent 0%, rgba(31, 78, 78, 0.1) 50%, transparent 100%)',
       margin: `${spacing.sm} 0`,
       width: "100%",
@@ -470,8 +470,8 @@ const Header = () => {
       transform: 'translateX(-50%)',
       minWidth: '300px',
       maxWidth: '90%',
-      backgroundColor: notification.type === 'success' 
-        ? 'rgba(31, 78, 78, 0.9)' 
+      backgroundColor: notification.type === 'success'
+        ? 'rgba(31, 78, 78, 0.9)'
         : (notification.type === 'error' ? 'rgba(255, 82, 82, 0.9)' : 'rgba(31, 78, 78, 0.8)'),
       color: colors.white,
       padding: `${spacing.md} ${spacing.xl}`,
@@ -511,30 +511,30 @@ const Header = () => {
     modalContent: {
       backgroundColor: isDarkMode ? 'rgba(40, 40, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)',
       borderRadius: '16px',
-      boxShadow: isDarkMode 
-        ? '0 15px 40px rgba(0, 0, 0, 0.4)' 
+      boxShadow: isDarkMode
+        ? '0 15px 40px rgba(0, 0, 0, 0.4)'
         : '0 15px 40px rgba(0, 0, 0, 0.2)',
       width: '90%',
       maxWidth: '450px',
       padding: 0,
       overflow: 'hidden',
       animation: 'modalFadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
-      border: isDarkMode 
-        ? '1px solid rgba(255, 255, 255, 0.1)' 
+      border: isDarkMode
+        ? '1px solid rgba(255, 255, 255, 0.1)'
         : '1px solid rgba(31, 78, 78, 0.1)',
       backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
     },
     modalHeader: {
-      background: isDarkMode 
+      background: isDarkMode
         ? 'linear-gradient(135deg, rgba(31, 78, 78, 0.8) 0%, rgba(25, 60, 60, 0.8) 100%)'
         : 'linear-gradient(135deg, rgba(31, 78, 78, 0.9) 0%, rgba(31, 78, 78, 0.8) 100%)',
       color: colors.white,
       padding: `${spacing.md} ${spacing.xl}`,
       display: 'flex',
       alignItems: 'center',
-      borderBottom: isDarkMode 
-        ? '1px solid rgba(255, 255, 255, 0.1)' 
+      borderBottom: isDarkMode
+        ? '1px solid rgba(255, 255, 255, 0.1)'
         : '1px solid rgba(31, 78, 78, 0.2)',
     },
     modalBody: {
@@ -610,15 +610,15 @@ const Header = () => {
 
   const getMenuItemStyle = (index) => ({
     ...styles.menuItem,
-    backgroundColor: hoveredItem === `menu-${index}` 
-      ? (isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(31, 78, 78, 0.08)") 
+    backgroundColor: hoveredItem === `menu-${index}`
+      ? (isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(31, 78, 78, 0.08)")
       : "transparent",
-    color: isDarkMode 
-      ? (hoveredItem === `menu-${index}` ? "#d8d0a9" : "rgba(255, 255, 255, 0.85)") 
+    color: isDarkMode
+      ? (hoveredItem === `menu-${index}` ? "#d8d0a9" : "rgba(255, 255, 255, 0.85)")
       : (hoveredItem === `menu-${index}` ? colors.primary : colors.textPrimary),
     transform: hoveredItem === `menu-${index}` ? 'translateX(5px)' : 'translateX(0)',
-    boxShadow: hoveredItem === `menu-${index}` 
-      ? (isDarkMode ? '0 0 15px rgba(216, 208, 169, 0.1)' : '0 0 15px rgba(31, 78, 78, 0.1)') 
+    boxShadow: hoveredItem === `menu-${index}`
+      ? (isDarkMode ? '0 0 15px rgba(216, 208, 169, 0.1)' : '0 0 15px rgba(31, 78, 78, 0.1)')
       : 'none',
   });
 
@@ -683,7 +683,7 @@ const Header = () => {
   // Render particles for background decoration
   const renderParticles = () => {
     const particles = [];
-    const particleColors = isDarkMode 
+    const particleColors = isDarkMode
       ? ['rgba(216, 208, 169, 0.3)', 'rgba(31, 78, 78, 0.3)', 'rgba(145, 168, 169, 0.3)', 'rgba(255, 255, 255, 0.2)']
       : ['rgba(31, 78, 78, 0.2)', 'rgba(145, 168, 169, 0.2)', 'rgba(210, 185, 154, 0.2)', 'rgba(31, 78, 78, 0.1)'];
 
@@ -722,7 +722,7 @@ const Header = () => {
               e.preventDefault();
               const homePath = isAuth ? '/dashboard' : '/home';
               // Si ya estamos en home, recargar inmediatamente
-              if(location.pathname === homePath) {
+              if (location.pathname === homePath) {
                 window.location.reload();
               } else {
                 // Si estamos en otra página, navegar directamente con recarga instantánea
@@ -733,8 +733,8 @@ const Header = () => {
             <div style={{
               ...styles.logoIcon,
               transform: hoveredItem === 'logo' ? 'scale(1.1) rotate(5deg)' : 'scale(1)',
-              boxShadow: hoveredItem === 'logo' 
-                ? (isDarkMode ? '0 0 20px rgba(216, 208, 169, 0.3)' : '0 0 20px rgba(31, 78, 78, 0.3)') 
+              boxShadow: hoveredItem === 'logo'
+                ? (isDarkMode ? '0 0 20px rgba(216, 208, 169, 0.3)' : '0 0 20px rgba(31, 78, 78, 0.3)')
                 : (isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(31, 78, 78, 0.15)'),
             }}>
               <img
@@ -752,8 +752,8 @@ const Header = () => {
             <span style={{
               color: isDarkMode ? '#d8d0a9' : colors.primary,
               fontWeight: typography.fontWeight.bold,
-              textShadow: hoveredItem === 'logo' 
-                ? (isDarkMode ? '0 0 8px rgba(216, 208, 169, 0.5)' : '0 0 8px rgba(31, 78, 78, 0.3)') 
+              textShadow: hoveredItem === 'logo'
+                ? (isDarkMode ? '0 0 8px rgba(216, 208, 169, 0.5)' : '0 0 8px rgba(31, 78, 78, 0.3)')
                 : 'none',
               transform: hoveredItem === 'logo' ? 'translateY(-2px)' : 'translateY(0)',
               transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
@@ -775,13 +775,13 @@ const Header = () => {
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
-                    
+
                     // Para páginas con recarga forzada instantánea
-                    if(item.path === '/' || item.path === '/blog' || item.path === '/categorias') {
+                    if (item.path === '/' || item.path === '/blog' || item.path === '/categorias') {
                       // Si ya estamos en la página, recargar inmediatamente
-                      if(location.pathname === item.path || 
-                         (item.path === '/blog' && (location.pathname.startsWith('/blog') || 
-                          location.pathname.includes('/post/') || 
+                      if (location.pathname === item.path ||
+                        (item.path === '/blog' && (location.pathname.startsWith('/blog') ||
+                          location.pathname.includes('/post/') ||
                           location.pathname.includes('/category/')))) {
                         window.location.reload();
                       } else {
@@ -797,13 +797,13 @@ const Header = () => {
                     }
                   }}
                 >
-                  <span style={{ 
-                    marginRight: 10, 
-                    display: 'inline-flex', 
-                    alignItems: 'center', 
+                  <span style={{
+                    marginRight: 10,
+                    display: 'inline-flex',
+                    alignItems: 'center',
                     verticalAlign: 'middle',
-                    color: isActive(item.path) 
-                      ? (isDarkMode ? '#d8d0a9' : colors.primary) 
+                    color: isActive(item.path)
+                      ? (isDarkMode ? '#d8d0a9' : colors.primary)
                       : (isDarkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(31, 78, 78, 0.7)'),
                     transform: hoveredItem === `nav-${index}` ? 'scale(1.2) translateY(-1px)' : 'scale(1)',
                     transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
@@ -825,8 +825,8 @@ const Header = () => {
                         left: 0,
                         width: '100%',
                         height: '100%',
-                        background: isDarkMode 
-                          ? 'rgba(255, 255, 255, 0.05)' 
+                        background: isDarkMode
+                          ? 'rgba(255, 255, 255, 0.05)'
                           : 'rgba(31, 78, 78, 0.05)',
                         zIndex: -1,
                         transform: 'translateY(100%)',
@@ -842,8 +842,8 @@ const Header = () => {
                         height: '2px',
                         bottom: '0',
                         left: '0',
-                        background: isDarkMode 
-                          ? 'linear-gradient(90deg, transparent 0%, rgba(216, 208, 169, 0.5) 50%, transparent 100%)' 
+                        background: isDarkMode
+                          ? 'linear-gradient(90deg, transparent 0%, rgba(216, 208, 169, 0.5) 50%, transparent 100%)'
                           : 'linear-gradient(90deg, transparent 0%, rgba(31, 78, 78, 0.5) 50%, transparent 100%)',
                         animation: 'fadeIn 0.3s forwards',
                       }}
@@ -859,8 +859,8 @@ const Header = () => {
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-3px) scale(1.05)' : 'translateY(0) scale(1)',
-              boxShadow: hoveredItem === 'profile' 
-                ? (isDarkMode ? '0 8px 25px rgba(216, 208, 169, 0.3)' : '0 8px 25px rgba(31, 78, 78, 0.3)') 
+              boxShadow: hoveredItem === 'profile'
+                ? (isDarkMode ? '0 8px 25px rgba(216, 208, 169, 0.3)' : '0 8px 25px rgba(31, 78, 78, 0.3)')
                 : (isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(31, 78, 78, 0.15)'),
               marginLeft: spacing.md,
               border: hoveredItem === 'profile'
@@ -905,28 +905,6 @@ const Header = () => {
                     <FaUser size={24} />
                   </span> Mi Perfil
                 </Link>
-                
-                <a
-                  href="/settings"
-                  style={getMenuItemStyle(1)}
-                  onMouseEnter={() => setHoveredItem('menu-1')}
-                  onMouseLeave={() => setHoveredItem(null)}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setIsMenuOpen(false);
-                    // Si ya estamos en settings, recargar inmediatamente
-                    if(location.pathname === '/settings') {
-                      window.location.reload();
-                    } else {
-                      // Si estamos en otra página, navegar directamente con recarga instantánea
-                      window.location.href = '/settings';
-                    }
-                  }}
-                >
-                  <span style={styles.menuItemIcon}>
-                    <FaCog size={24} />
-                  </span> Configuración
-                </a>
 
                 <div style={styles.menuSeparator}></div>
 
@@ -935,14 +913,14 @@ const Header = () => {
                   <>
                     <Link
                       to="/about"
-                      style={getMenuItemStyle(2)}
-                      onMouseEnter={() => setHoveredItem('menu-2')}
+                      style={getMenuItemStyle(1)}
+                      onMouseEnter={() => setHoveredItem('menu-1')}
                       onMouseLeave={() => setHoveredItem(null)}
                       onClick={(e) => {
                         e.preventDefault();
                         setIsMenuOpen(false);
                         // Si ya estamos en about, recargar inmediatamente
-                        if(location.pathname === '/about') {
+                        if (location.pathname === '/about') {
                           window.location.reload();
                         } else {
                           // Si estamos en otra página, navegar directamente con recarga instantánea
@@ -956,14 +934,14 @@ const Header = () => {
                     </Link>
                     <Link
                       to="/contact"
-                      style={getMenuItemStyle(3)}
-                      onMouseEnter={() => setHoveredItem('menu-3')}
+                      style={getMenuItemStyle(2)}
+                      onMouseEnter={() => setHoveredItem('menu-2')}
                       onMouseLeave={() => setHoveredItem(null)}
                       onClick={(e) => {
                         e.preventDefault();
                         setIsMenuOpen(false);
                         // Si ya estamos en contact, recargar inmediatamente
-                        if(location.pathname === '/contact') {
+                        if (location.pathname === '/contact') {
                           window.location.reload();
                         } else {
                           // Si estamos en otra página, navegar directamente con recarga instantánea
@@ -981,8 +959,8 @@ const Header = () => {
 
                 <a
                   href="#"
-                  style={getMenuItemStyle(isSuperUser ? 4 : 2)}
-                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-4' : 'menu-2')}
+                  style={getMenuItemStyle(isSuperUser ? 3 : 1)}
+                  onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-3' : 'menu-1')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
@@ -1004,9 +982,9 @@ const Header = () => {
                 <Link to="/categorias" style={getMenuItemStyle(1)} onMouseEnter={() => setHoveredItem('menu-1')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}><FaTags size={20} /></span> Categorías
                 </Link>
-                
+
                 <div style={styles.menuSeparator}></div>
-                
+
                 <div style={styles.menuHeader}>Información</div>
                 <Link to="/about" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}><FaInfo size={20} /></span> Acerca de
