@@ -581,7 +581,24 @@ const PostDetail = ({ post }) => {
         headers: { 'Content-Type': 'application/json' },
       });
       if (response.ok) {
-        setLikes(likes + 1);
+        // Intentar obtener el nuevo contador del backend
+        const data = await response.json().catch(() => null);
+        if (data && typeof data.contador_likes === 'number') {
+          setLikes(data.contador_likes);
+        } else {
+          // Si el backend no devuelve el contador, hacer fetch al post
+          try {
+            const postResp = await fetch(`/api/publicaciones/${post.ID_publicaciones}`);
+            if (postResp.ok) {
+              const postData = await postResp.json();
+              setLikes(postData.contador_likes || likes + 1);
+            } else {
+              setLikes(likes + 1); // fallback
+            }
+          } catch {
+            setLikes(likes + 1); // fallback
+          }
+        }
         setLiked(true);
       }
     } catch (err) {
