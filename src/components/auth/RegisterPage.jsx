@@ -1036,10 +1036,622 @@ const RegisterPage = () => {
         return particles;
     };
 
+    // Agregar estilos responsivos COMPLETOS
+    const responsiveStyles = `
+      /* Estilos base - mantener diseño original */
+      .register-form-container {
+        width: 100%;
+        max-width: 1100px;
+        display: flex;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 25px 50px rgba(11, 68, 68, 0.25);
+        backgroundColor: white;
+        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      /* Estilos para el contenido de la imagen */
+      .register-image-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(31, 78, 78, 0.85) 0%, rgba(31, 78, 78, 0.7) 100%);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 48px;
+        color: white;
+        animation: fadeIn 1s ease-in-out;
+      }
+      
+      .register-raccoon-logo-row {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 32px;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease-out forwards;
+        animation-delay: 0.3s;
+      }
+      
+      .register-raccoon-image {
+        width: 64px;
+        height: 64px;
+        border-radius: 12px;
+        margin-right: 16px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        transform: rotate(-5deg);
+        transition: transform 0.3s ease;
+      }
+      
+      .register-logo-text {
+        font-size: 32px;
+        font-weight: 700;
+        color: #ffffff;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      }
+      
+      .register-logo-text2 {
+        font-size: 32px;
+        font-weight: 700;
+        color: #d2b99a;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+      }
+      
+      .register-image-text {
+        font-size: 18px;
+        line-height: 1.6;
+        margin-bottom: 32px;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease-out forwards;
+        animation-delay: 0.6s;
+      }
+      
+      .register-image-quote {
+        font-style: italic;
+        font-size: 16px;
+        position: relative;
+        padding: 24px;
+        border-left: 3px solid #d2b99a;
+        border-radius: 0 8px 8px 0;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(5px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        opacity: 0;
+        animation: fadeInUp 0.8s ease-out forwards;
+        animation-delay: 0.9s;
+      }
+
+      /* Media queries para responsive - TABLETS */
+      @media (max-width: 768px) {
+        .register-form-container {
+          flex-direction: column !important;
+          max-width: 96% !important;
+          margin: 15px auto !important;
+          min-height: auto !important;
+          height: auto !important;
+        }
+        
+        .register-image-section {
+          min-height: 180px !important;
+          border-radius: 16px 16px 0 0 !important;
+          flex: none !important;
+        }
+        
+        /* Contenido de la imagen responsive */
+        .register-image-overlay {
+          padding: 20px !important;
+          justify-content: center !important;
+        }
+        
+        .register-raccoon-logo-row {
+          margin-bottom: 16px !important;
+          justify-content: center !important;
+        }
+        
+        .register-raccoon-image {
+          width: 40px !important;
+          height: 40px !important;
+          margin-right: 12px !important;
+        }
+        
+        .register-logo-text {
+          font-size: 20px !important;
+        }
+        
+        .register-logo-text2 {
+          font-size: 20px !important;
+        }
+        
+        .register-image-text {
+          font-size: 13px !important;
+          line-height: 1.4 !important;
+          margin-bottom: 16px !important;
+          text-align: center !important;
+        }
+        
+        .register-image-quote {
+          font-size: 12px !important;
+          padding: 12px !important;
+          line-height: 1.3 !important;
+          text-align: center !important;
+        }
+        
+        .register-form-content {
+          padding: 28px 24px !important;
+          max-height: none !important;
+          flex: none !important;
+        }
+        
+        .register-title {
+          font-size: 26px !important;
+          margin-bottom: 6px !important;
+        }
+        
+        .register-subtitle {
+          font-size: 14px !important;
+          margin-bottom: 24px !important;
+        }
+        
+        /* MANTENER nombre y apellido lado a lado en tablets */
+        .register-form-row {
+          flex-direction: row !important;
+          gap: 12px !important;
+        }
+        
+        .register-form-group {
+          margin-bottom: 18px !important;
+        }
+        
+        .register-input-field {
+          padding: 14px 16px 14px 45px !important;
+          font-size: 16px !important;
+          min-height: 50px !important;
+        }
+        
+        .register-password-input {
+          padding: 14px 45px 14px 45px !important;
+          font-size: 16px !important;
+          min-height: 50px !important;
+        }
+        
+        .register-input-icon {
+          left: 15px !important;
+          font-size: 16px !important;
+        }
+        
+        .register-eye-icon {
+          right: 15px !important;
+          padding: 10px !important;
+        }
+        
+        .register-status-icon {
+          right: 15px !important;
+        }
+        
+        .register-button {
+          padding: 15px !important;
+          font-size: 16px !important;
+          min-height: 50px !important;
+          margin-bottom: 12px !important;
+        }
+        
+        /* Términos y condiciones LADO A LADO */
+        .register-terms-container {
+          flex-direction: row !important;
+          align-items: flex-start !important;
+          gap: 8px !important;
+          margin-bottom: 20px !important;
+        }
+        
+        .register-login-link {
+          font-size: 14px !important;
+          margin-top: 18px !important;
+          text-align: center !important;
+        }
+        
+        .register-background-elements {
+          display: none !important;
+        }
+        
+        .register-error-message {
+          padding: 12px 16px !important;
+          font-size: 14px !important;
+          margin-bottom: 18px !important;
+        }
+        
+        .register-password-requirements {
+          font-size: 12px !important;
+        }
+      }
+      
+      @media (max-width: 480px) {
+        .register-form-container {
+          max-width: 98% !important;
+          margin: 8px auto !important;
+        }
+        
+        .register-image-section {
+          min-height: 160px !important;
+        }
+        
+        /* Contenido imagen más compacto */
+        .register-image-overlay {
+          padding: 16px !important;
+        }
+        
+        .register-raccoon-logo-row {
+          margin-bottom: 12px !important;
+        }
+        
+        .register-raccoon-image {
+          width: 32px !important;
+          height: 32px !important;
+          margin-right: 8px !important;
+        }
+        
+        .register-logo-text {
+          font-size: 18px !important;
+        }
+        
+        .register-logo-text2 {
+          font-size: 18px !important;
+        }
+        
+        .register-image-text {
+          font-size: 12px !important;
+          margin-bottom: 12px !important;
+        }
+        
+        .register-image-quote {
+          font-size: 11px !important;
+          padding: 10px !important;
+        }
+        
+        .register-form-content {
+          padding: 24px 20px !important;
+        }
+        
+        .register-title {
+          font-size: 24px !important;
+          margin-bottom: 4px !important;
+        }
+        
+        .register-subtitle {
+          font-size: 13px !important;
+          margin-bottom: 20px !important;
+        }
+        
+        .register-form-row {
+          flex-direction: row !important;
+          gap: 10px !important;
+        }
+        
+        .register-form-group {
+          margin-bottom: 16px !important;
+        }
+        
+        .register-input-field {
+          padding: 13px 14px 13px 42px !important;
+          font-size: 16px !important;
+          min-height: 48px !important;
+        }
+        
+        .register-password-input {
+          padding: 13px 42px 13px 42px !important;
+          font-size: 16px !important;
+          min-height: 48px !important;
+        }
+        
+        .register-input-icon {
+          left: 14px !important;
+          font-size: 15px !important;
+        }
+        
+        .register-eye-icon {
+          right: 12px !important;
+          padding: 8px !important;
+        }
+        
+        .register-status-icon {
+          right: 12px !important;
+        }
+        
+        .register-button {
+          padding: 14px !important;
+          font-size: 15px !important;
+          min-height: 48px !important;
+          margin-bottom: 10px !important;
+        }
+        
+        /* Términos y condiciones LADO A LADO más compacto */
+        .register-terms-container {
+          flex-direction: row !important;
+          align-items: flex-start !important;
+          gap: 6px !important;
+          margin-bottom: 18px !important;
+        }
+        
+        .register-login-link {
+          font-size: 13px !important;
+          margin-top: 16px !important;
+        }
+        
+        .register-password-requirements {
+          font-size: 11px !important;
+        }
+        
+        .register-error-text {
+          font-size: 12px !important;
+        }
+      }
+      
+      @media (max-width: 360px) {
+        .register-form-container {
+          max-width: 100% !important;
+          margin: 5px auto !important;
+          border-radius: 12px !important;
+        }
+        
+        .register-image-section {
+          min-height: 140px !important;
+        }
+        
+        /* Imagen súper compacta */
+        .register-image-overlay {
+          padding: 12px !important;
+        }
+        
+        .register-raccoon-logo-row {
+          margin-bottom: 8px !important;
+        }
+        
+        .register-raccoon-image {
+          width: 28px !important;
+          height: 28px !important;
+          margin-right: 6px !important;
+        }
+        
+        .register-logo-text {
+          font-size: 16px !important;
+        }
+        
+        .register-logo-text2 {
+          font-size: 16px !important;
+        }
+        
+        .register-image-text {
+          font-size: 10px !important;
+          margin-bottom: 8px !important;
+          line-height: 1.2 !important;
+        }
+        
+        .register-image-quote {
+          font-size: 9px !important;
+          padding: 8px !important;
+          line-height: 1.2 !important;
+        }
+        
+        .register-form-content {
+          padding: 20px 16px !important;
+        }
+        
+        .register-title {
+          font-size: 22px !important;
+          margin-bottom: 4px !important;
+        }
+        
+        .register-subtitle {
+          font-size: 12px !important;
+          margin-bottom: 18px !important;
+        }
+        
+        .register-form-group {
+          margin-bottom: 14px !important;
+        }
+        
+        /* MANTENER nombre y apellido lado a lado incluso en pantallas muy pequeñas */
+        .register-form-row {
+          flex-direction: row !important;
+          gap: 8px !important;
+        }
+        
+        .register-input-field {
+          padding: 12px 12px 12px 40px !important;
+          min-height: 46px !important;
+        }
+        
+        .register-password-input {
+          padding: 12px 40px 12px 40px !important;
+          min-height: 46px !important;
+        }
+        
+        .register-input-icon {
+          left: 12px !important;
+        }
+        
+        .register-eye-icon {
+          right: 10px !important;
+        }
+        
+        .register-status-icon {
+          right: 10px !important;
+        }
+        
+        .register-button {
+          min-height: 46px !important;
+          padding: 13px !important;
+        }
+        
+        /* Términos y condiciones LADO A LADO súper compacto */
+        .register-terms-container {
+          flex-direction: row !important;
+          align-items: flex-start !important;
+          gap: 4px !important;
+          margin-bottom: 16px !important;
+        }
+        
+        .register-login-link {
+          margin-top: 14px !important;
+        }
+        
+        .register-password-requirements {
+          font-size: 10px !important;
+        }
+        
+        .register-error-text {
+          font-size: 11px !important;
+        }
+      }
+    `;
+
     return (
         <div style={styles.registerContainer}>
+            <style>{`
+              ${responsiveStyles}
+              
+              @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+              }
+              
+              @keyframes fadeInUp {
+                from { 
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to { 
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+              }
+              
+              @keyframes float {
+                0% {
+                    transform: translateY(0) translateX(0);
+                }
+                25% {
+                    transform: translateY(-20px) translateX(10px);
+                }
+                50% {
+                    transform: translateY(0) translateX(20px);
+                }
+                75% {
+                    transform: translateY(20px) translateX(10px);
+                }
+                100% {
+                    transform: translateY(0) translateX(0);
+                }
+              }
+              
+              @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(44, 113, 113, 0.7);
+                }
+                70% {
+                    transform: scale(1.05);
+                    box-shadow: 0 0 0 10px rgba(44, 113, 113, 0);
+                }
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(44, 113, 113, 0);
+                }
+              }
+              
+              @keyframes shakeX {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+              }
+              
+              @keyframes typing {
+                from { width: 150% }
+                to { width: 0% }
+              }
+              
+              .typing-animation::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                height: 100%;
+                width: 100%;
+                background-color: white;
+                border-left: 2px solid #1F4E4E;
+                animation: typing 1.5s steps(30) forwards;
+              }
+              
+              @keyframes buttonPress {
+                0% { transform: scale(1); }
+                50% { transform: scale(0.95); }
+                100% { transform: scale(1); }
+              }
+              
+              .button-press {
+                animation: buttonPress 0.3s forwards;
+              }
+              
+              .form-error {
+                animation: shakeX 0.5s;
+              }
+              
+              .pulse-animation {
+                animation: pulse 2s infinite;
+              }
+              
+              .link-hover-effect {
+                position: relative;
+                transition: color 0.3s ease;
+              }
+              
+              .link-hover-effect::after {
+                content: '';
+                position: absolute;
+                width: 0;
+                height: 2px;
+                bottom: -2px;
+                left: 0;
+                background-color: #2C7171;
+                transition: width 0.3s ease;
+              }
+              
+              .link-hover-effect:hover::after {
+                width: 100%;
+              }
+              
+              .input-animation:focus {
+                transform: translateY(-2px);
+              }
+              
+              .eye-icon-animation:hover {
+                background-color: rgba(44, 113, 113, 0.2);
+                transform: translateY(-50%) scale(1.1);
+              }
+              
+              .login-button-animation:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(31, 78, 78, 0.4);
+                background-color: #2C7171;
+              }
+              
+              .login-button-animation:active {
+                transform: translateY(0);
+                box-shadow: 0 4px 15px rgba(31, 78, 78, 0.3);
+              }
+              
+              .info-fade-in {
+                animation: fadeIn 0.5s ease-out forwards;
+                animation-delay: 0.2s;
+                opacity: 0;
+              }
+            `}</style>
+            
             {/* Background Elements */}
-            <div style={styles.backgroundElements}>
+            <div style={styles.backgroundElements} className="register-background-elements">
                 <div style={styles.circle1}></div>
                 <div style={styles.circle2}></div>
                 <div style={styles.circle3}></div>
@@ -1054,39 +1666,39 @@ const RegisterPage = () => {
                     ref={formRef}
                     className="register-form-container"
                 >
-                    <div style={styles.registerImage}>
-                        <div style={styles.imageOverlay}>
-                            <div style={styles.raccoonLogoRow}>
+                    <div style={styles.registerImage} className="register-image-section">
+                        <div style={styles.imageOverlay} className="register-image-overlay">
+                            <div style={styles.raccoonLogoRow} className="register-raccoon-logo-row">
                                 <img
                                     src="/assets/images/educstation-logo.png"
                                     alt="logo"
                                     style={styles.raccoonImage}
-                                    className="pulse-animation"
+                                    className="register-raccoon-image pulse-animation"
                                 />
-                                <span style={styles.logoText}>Educ</span>
-                                <span style={styles.logoText2}>Station</span>
+                                <span style={styles.logoText} className="register-logo-text">Educ</span>
+                                <span style={styles.logoText2} className="register-logo-text2">Station</span>
                             </div>
-                            <p style={styles.imageText}>
+                            <p style={styles.imageText} className="register-image-text">
                                 Únete a nuestra comunidad educativa y descubre un mundo de
                                 oportunidades para tu crecimiento profesional y personal.
                             </p>
-                            <div style={styles.imageQuote}>
+                            <div style={styles.imageQuote} className="register-image-quote">
                                 "La educación es el pasaporte hacia el futuro, el mañana pertenece a aquellos que se preparan hoy."
                             </div>
                         </div>
                     </div>
 
-                    <div style={styles.formContent}>
+                    <div style={styles.formContent} className="register-form-content">
                         <div style={styles.formContentInner}>
                             <div style={styles.registerHeader}>
                                 <h1
                                     style={styles.registerTitle}
                                     ref={titleRef}
-                                    className="welcome-text"
+                                    className="register-title welcome-text"
                                 >
                                     Crea tu cuenta
                                 </h1>
-                                <p style={styles.registerSubtitle}>
+                                <p style={styles.registerSubtitle} className="register-subtitle">
                                     Completa el formulario para unirte a nuestra plataforma
                                 </p>
 
@@ -1110,7 +1722,7 @@ const RegisterPage = () => {
                             </div>
 
                             {errors.general && (
-                                <div style={styles.generalError}>
+                                <div style={styles.generalError} className="register-error-message">
                                     <i className="fas fa-exclamation-circle" style={styles.errorAlertIcon}></i>
                                     {errors.general}
 
@@ -1136,13 +1748,13 @@ const RegisterPage = () => {
                             )}
 
                             <form onSubmit={handleSubmit}>
-                                <div style={styles.formRow}>
+                                <div style={styles.formRow} className="register-form-row">
                                     <div
                                         style={{
                                             ...styles.formGroup,
                                             ...(activeField === 'firstName' ? styles.activeFormGroup : {})
                                         }}
-                                        className="form-group-animation"
+                                        className="register-form-group form-group-animation"
                                     >
                                         <label
                                             style={{
@@ -1155,7 +1767,7 @@ const RegisterPage = () => {
                                         </label>
                                         <div style={{ position: 'relative' }}>
                                             <i
-                                                className="fas fa-user"
+                                                className="fas fa-user register-input-icon"
                                                 style={{
                                                     ...styles.inputIcon,
                                                     ...(activeField === 'firstName' ? styles.activeInputIcon : {})
@@ -1172,11 +1784,11 @@ const RegisterPage = () => {
                                                 onBlur={handleBlur}
                                                 placeholder="Tu nombre"
                                                 style={getInputStyle('firstName')}
-                                                className="input-animation"
+                                                className="register-input-field input-animation"
                                             />
                                         </div>
                                         {errors.firstName && (
-                                            <div style={styles.errorText}>
+                                            <div style={styles.errorText} className="register-error-text">
                                                 <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
                                                 {errors.firstName}
                                             </div>
@@ -1188,7 +1800,7 @@ const RegisterPage = () => {
                                             ...styles.formGroup,
                                             ...(activeField === 'lastName' ? styles.activeFormGroup : {})
                                         }}
-                                        className="form-group-animation"
+                                        className="register-form-group form-group-animation"
                                     >
                                         <label
                                             style={{
@@ -1201,7 +1813,7 @@ const RegisterPage = () => {
                                         </label>
                                         <div style={{ position: 'relative' }}>
                                             <i
-                                                className="fas fa-user"
+                                                className="fas fa-user register-input-icon"
                                                 style={{
                                                     ...styles.inputIcon,
                                                     ...(activeField === 'lastName' ? styles.activeInputIcon : {})
@@ -1218,11 +1830,11 @@ const RegisterPage = () => {
                                                 onBlur={handleBlur}
                                                 placeholder="Tu apellido"
                                                 style={getInputStyle('lastName')}
-                                                className="input-animation"
+                                                className="register-input-field input-animation"
                                             />
                                         </div>
                                         {errors.lastName && (
-                                            <div style={styles.errorText}>
+                                            <div style={styles.errorText} className="register-error-text">
                                                 <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
                                                 {errors.lastName}
                                             </div>
@@ -1235,7 +1847,7 @@ const RegisterPage = () => {
                                         ...styles.formGroup,
                                         ...(activeField === 'username' ? styles.activeFormGroup : {})
                                     }}
-                                    className="form-group-animation"
+                                    className="register-form-group form-group-animation"
                                 >
                                     <label
                                         style={{
@@ -1248,7 +1860,7 @@ const RegisterPage = () => {
                                     </label>
                                     <div style={{ position: 'relative' }}>
                                         <i
-                                            className="fas fa-at"
+                                            className="fas fa-at register-input-icon"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'username' ? styles.activeInputIcon : {})
@@ -1265,13 +1877,13 @@ const RegisterPage = () => {
                                             onBlur={handleBlur}
                                             placeholder="usuario123"
                                             style={getInputStyle('username')}
-                                            className="input-animation"
+                                            className="register-input-field input-animation"
                                         />
                                         {isCheckingUsername && (
                                             <div style={{
                                                 ...styles.statusIcon,
                                                 color: '#91a8a9'
-                                            }}>
+                                            }} className="register-status-icon">
                                                 <i className="fas fa-circle-notch fa-spin"></i>
                                             </div>
                                         )}
@@ -1279,7 +1891,7 @@ const RegisterPage = () => {
                                             <div style={{
                                                 ...styles.statusIcon,
                                                 color: colors.success
-                                            }}>
+                                            }} className="register-status-icon">
                                                 <i className="fas fa-check-circle"></i>
                                             </div>
                                         )}
@@ -1287,18 +1899,18 @@ const RegisterPage = () => {
                                             <div style={{
                                                 ...styles.statusIcon,
                                                 color: colors.error
-                                            }}>
+                                            }} className="register-status-icon">
                                                 <i className="fas fa-times-circle"></i>
                                             </div>
                                         )}
                                     </div>
                                     {errors.username && (
-                                        <div style={styles.errorText}>
+                                        <div style={styles.errorText} className="register-error-text">
                                             <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
                                             {errors.username}
                                         </div>
                                     )}
-                                    <div style={styles.passwordRequirements} className="info-fade-in">
+                                    <div style={styles.passwordRequirements} className="register-password-requirements info-fade-in">
                                         Usa solo letras minúsculas, números, punto y guion bajo
                                     </div>
                                 </div>
@@ -1308,7 +1920,7 @@ const RegisterPage = () => {
                                         ...styles.formGroup,
                                         ...(activeField === 'email' ? styles.activeFormGroup : {})
                                     }}
-                                    className="form-group-animation"
+                                    className="register-form-group form-group-animation"
                                 >
                                     <label
                                         style={{
@@ -1321,7 +1933,7 @@ const RegisterPage = () => {
                                     </label>
                                     <div style={{ position: 'relative' }}>
                                         <i
-                                            className="fas fa-envelope"
+                                            className="fas fa-envelope register-input-icon"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'email' ? styles.activeInputIcon : {})
@@ -1343,13 +1955,13 @@ const RegisterPage = () => {
                                             }}
                                             placeholder="correo@ejemplo.com"
                                             style={getInputStyle('email')}
-                                            className="input-animation"
+                                            className="register-input-field input-animation"
                                         />
                                         {isCheckingEmail && (
                                             <div style={{
                                                 ...styles.statusIcon,
                                                 color: '#91a8a9'
-                                            }}>
+                                            }} className="register-status-icon">
                                                 <i className="fas fa-circle-notch fa-spin"></i>
                                             </div>
                                         )}
@@ -1357,7 +1969,7 @@ const RegisterPage = () => {
                                             <div style={{
                                                 ...styles.statusIcon,
                                                 color: colors.success
-                                            }}>
+                                            }} className="register-status-icon">
                                                 <i className="fas fa-check-circle"></i>
                                             </div>
                                         )}
@@ -1365,13 +1977,13 @@ const RegisterPage = () => {
                                             <div style={{
                                                 ...styles.statusIcon,
                                                 color: colors.error
-                                            }}>
+                                            }} className="register-status-icon">
                                                 <i className="fas fa-times-circle"></i>
                                             </div>
                                         )}
                                     </div>
                                     {errors.email && (
-                                        <div style={styles.errorText}>
+                                        <div style={styles.errorText} className="register-error-text">
                                             <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
                                             {errors.email}
                                         </div>
@@ -1383,7 +1995,7 @@ const RegisterPage = () => {
                                         ...styles.formGroup,
                                         ...(activeField === 'password' ? styles.activeFormGroup : {})
                                     }}
-                                    className="form-group-animation"
+                                    className="register-form-group form-group-animation"
                                 >
                                     <label
                                         style={{
@@ -1396,7 +2008,7 @@ const RegisterPage = () => {
                                     </label>
                                     <div style={styles.passwordWrapper}>
                                         <i
-                                            className="fas fa-lock"
+                                            className="fas fa-lock register-input-icon"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'password' ? styles.activeInputIcon : {})
@@ -1413,7 +2025,7 @@ const RegisterPage = () => {
                                             onBlur={handleBlur}
                                             placeholder="Crea una contraseña segura"
                                             style={getPasswordInputStyle('password')}
-                                            className="input-animation"
+                                            className="register-password-input input-animation"
                                         />
                                         <button
                                             type="button"
@@ -1423,7 +2035,7 @@ const RegisterPage = () => {
                                                 ...(activeField === 'password' ? styles.activeEyeIcon : {})
                                             }}
                                             aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                                            className="eye-icon-animation"
+                                            className="register-eye-icon eye-icon-animation"
                                         >
                                             {showPassword ?
                                                 <i className="fa-solid fa-eye-slash"></i> :
@@ -1432,12 +2044,12 @@ const RegisterPage = () => {
                                         </button>
                                     </div>
                                     {errors.password && (
-                                        <div style={styles.errorText}>
+                                        <div style={styles.errorText} className="register-error-text">
                                             <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
                                             {errors.password}
                                         </div>
                                     )}
-                                    <div style={styles.passwordRequirements} className="info-fade-in">
+                                    <div style={styles.passwordRequirements} className="register-password-requirements info-fade-in">
                                         La contraseña debe tener al menos 8 caracteres, incluir una letra mayúscula,
                                         una minúscula y un número.
                                     </div>
@@ -1448,7 +2060,7 @@ const RegisterPage = () => {
                                         ...styles.formGroup,
                                         ...(activeField === 'confirmPassword' ? styles.activeFormGroup : {})
                                     }}
-                                    className="form-group-animation"
+                                    className="register-form-group form-group-animation"
                                 >
                                     <label
                                         style={{
@@ -1461,7 +2073,7 @@ const RegisterPage = () => {
                                     </label>
                                     <div style={styles.passwordWrapper}>
                                         <i
-                                            className="fas fa-lock"
+                                            className="fas fa-lock register-input-icon"
                                             style={{
                                                 ...styles.inputIcon,
                                                 ...(activeField === 'confirmPassword' ? styles.activeInputIcon : {})
@@ -1478,7 +2090,7 @@ const RegisterPage = () => {
                                             onBlur={handleBlur}
                                             placeholder="Repite tu contraseña"
                                             style={getPasswordInputStyle('confirmPassword')}
-                                            className="input-animation"
+                                            className="register-password-input input-animation"
                                         />
                                         <button
                                             type="button"
@@ -1488,7 +2100,7 @@ const RegisterPage = () => {
                                                 ...(activeField === 'confirmPassword' ? styles.activeEyeIcon : {})
                                             }}
                                             aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
-                                            className="eye-icon-animation"
+                                            className="register-eye-icon eye-icon-animation"
                                         >
                                             {showConfirmPassword ?
                                                 <i className="fa-solid fa-eye-slash"></i> :
@@ -1497,14 +2109,14 @@ const RegisterPage = () => {
                                         </button>
                                     </div>
                                     {errors.confirmPassword && (
-                                        <div style={styles.errorText}>
+                                        <div style={styles.errorText} className="register-error-text">
                                             <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
                                             {errors.confirmPassword}
                                         </div>
                                     )}
                                 </div>
 
-                                <div style={styles.termsContainer}>
+                                <div style={styles.termsContainer} className="register-terms-container">
                                     <div
                                         style={{
                                             ...styles.checkmark,
@@ -1567,7 +2179,7 @@ const RegisterPage = () => {
                                     </label>
                                 </div>
                                 {errors.termsAccepted && (
-                                    <div style={styles.errorText}>
+                                    <div style={styles.errorText} className="register-error-text">
                                         <i className="fas fa-exclamation-triangle" style={styles.errorIcon}></i>
                                         {errors.termsAccepted}
                                     </div>
@@ -1578,7 +2190,7 @@ const RegisterPage = () => {
                                     style={styles.registerButton}
                                     ref={buttonRef}
                                     disabled={isSubmitting}
-                                    className="login-button-animation"
+                                    className="register-button login-button-animation"
                                 >
                                     <span style={styles.buttonRipple}></span>
                                     {isSubmitting ? (
@@ -1589,7 +2201,7 @@ const RegisterPage = () => {
                                     ) : 'Crear cuenta'}
                                 </button>
 
-                                <div style={styles.loginLink}>
+                                <div style={styles.loginLink} className="register-login-link">
                                     ¿Ya tienes una cuenta?
                                     <Link
                                         to="/login"
@@ -1603,190 +2215,6 @@ const RegisterPage = () => {
                     </div>
                 </div>
             </main>
-
-            <style jsx="true">{`
-                @keyframes fadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                
-                @keyframes fadeInUp {
-                    from { 
-                        opacity: 0;
-                        transform: translateY(20px);
-                    }
-                    to { 
-                        opacity: 1;
-                        transform: translateY(0);
-                    }
-                }
-                
-                @keyframes float {
-                    0% {
-                        transform: translateY(0) translateX(0);
-                    }
-                    25% {
-                        transform: translateY(-20px) translateX(10px);
-                    }
-                    50% {
-                        transform: translateY(0) translateX(20px);
-                    }
-                    75% {
-                        transform: translateY(20px) translateX(10px);
-                    }
-                    100% {
-                        transform: translateY(0) translateX(0);
-                    }
-                }
-                
-                @keyframes pulse {
-                    0% {
-                        transform: scale(1);
-                        box-shadow: 0 0 0 0 rgba(44, 113, 113, 0.7);
-                    }
-                    70% {
-                        transform: scale(1.05);
-                        box-shadow: 0 0 0 10px rgba(44, 113, 113, 0);
-                    }
-                    100% {
-                        transform: scale(1);
-                        box-shadow: 0 0 0 0 rgba(44, 113, 113, 0);
-                    }
-                }
-                
-                @keyframes shakeX {
-                    0%, 100% { transform: translateX(0); }
-                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                    20%, 40%, 60%, 80% { transform: translateX(5px); }
-                }
-                
-                @keyframes typing {
-                    from { width: 150% }
-                    to { width: 0% }
-                }
-                
-                .typing-animation::after {
-                    content: '';
-                    position: absolute;
-                    top: 0;
-                    right: 0;
-                    height: 100%;
-                    width: 100%;
-                    background-color: white;
-                    border-left: 2px solid #1F4E4E;
-                    animation: typing 1.5s steps(30) forwards;
-                }
-                
-                .welcome-text {
-                    position: relative;
-                    display: inline-block;
-                }
-                
-                .form-group-animation {
-                    animation: fadeInUp 0.5s ease-out forwards;
-                    opacity: 0;
-                }
-                
-                .form-group-animation:nth-child(1) {
-                    animation-delay: 0.9s;
-                }
-                
-                .form-group-animation:nth-child(2) {
-                    animation-delay: 1s;
-                }
-                
-                .form-group-animation:nth-child(3) {
-                    animation-delay: 1.1s;
-                }
-                
-                .form-group-animation:nth-child(4) {
-                    animation-delay: 1.2s;
-                }
-                
-                .form-group-animation:nth-child(5) {
-                    animation-delay: 1.3s;
-                }
-                
-                .form-group-animation:nth-child(6) {
-                    animation-delay: 1.4s;
-                }
-                
-                .pulse-animation {
-                    animation: pulse 2s infinite;
-                }
-                
-                .login-button-animation:hover {
-                    transform: translateY(-3px);
-                    box-shadow: 0 8px 25px rgba(31, 78, 78, 0.4);
-                    background-color: #2C7171;
-                }
-                
-                .login-button-animation:active {
-                    transform: translateY(0);
-                    box-shadow: 0 4px 15px rgba(31, 78, 78, 0.3);
-                }
-                
-                .button-press {
-                    animation: buttonPress 0.3s forwards;
-                }
-                
-                @keyframes buttonPress {
-                    0% { transform: scale(1); }
-                    50% { transform: scale(0.95); }
-                    100% { transform: scale(1); }
-                }
-                
-                .link-hover-effect {
-                    position: relative;
-                    color: #1F4E4E;
-                    text-decoration: none;
-                    transition: color 0.3s ease;
-                }
-                
-                .link-hover-effect::after {
-                    content: '';
-                    position: absolute;
-                    width: 0;
-                    height: 2px;
-                    bottom: -2px;
-                    left: 0;
-                    background-color: #2C7171;
-                    transition: width 0.3s ease;
-                }
-                
-                .link-hover-effect:hover {
-                    color: #2C7171;
-                }
-                
-                .link-hover-effect:hover::after {
-                    width: 100%;
-                }
-                
-                .input-animation:focus {
-                    transform: translateY(-2px);
-                }
-                
-                .eye-icon-animation:hover {
-                    background-color: rgba(44, 113, 113, 0.2);
-                    transform: translateY(-50%) scale(1.1);
-                }
-                
-                .form-error {
-                    animation: shakeX 0.5s;
-                }
-                
-                .info-fade-in {
-                    animation: fadeIn 0.5s ease-out forwards;
-                    animation-delay: 0.2s;
-                    opacity: 0;
-                }
-                
-                @media (max-width: 768px) {
-                    .form-container {
-                        max-width: 90%;
-                    }
-                }
-            `}</style>
         </div>
     );
 };

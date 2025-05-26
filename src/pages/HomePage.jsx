@@ -7,8 +7,7 @@ import PostCard from '../components/blog/PostCard';
 import { spacing, typography, transitions, applyHoverStyles } from '../styles/theme';
 // Importamos el hook useTheme
 import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { getAllCategorias } from '../services/categoriasServices';
 // Importamos el hook usePosts
 import { usePosts } from '../components/blog/hooks/usePosts';
@@ -272,23 +271,51 @@ const NewsCarousel = ({ notes }) => {
       <div style={styles.carouselInner}>
         {notes.map((slide, index) => (
           <div key={slide.id} style={styles.carouselItem}>
-            <img
-              src={slide.image}
-              alt={slide.title}
-              style={styles.carouselImage}
-              onError={(e) => {
-                e.target.src = '/assets/images/tecnologia.jpg'; // Imagen de fallback
+            {/* Envolver toda la slide en un Link */}
+            <Link
+              to={`/blog/${slide.id}`}
+              state={{ forceReload: true }}
+              style={{
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                textDecoration: 'none',
+                color: 'inherit',
+                cursor: 'pointer'
               }}
-            />
-            <div style={{
-              ...styles.carouselContent,
-              opacity: currentSlide === index ? 1 : 0,
-              transform: currentSlide === index ? 'translateY(0)' : 'translateY(20px)'
-            }}>
-              <div style={styles.carouselCategory}>{slide.category}</div>
-              <h2 style={styles.carouselTitle}>{slide.title}</h2>
-              <p style={styles.carouselExcerpt}>{slide.excerpt}</p>
-            </div>
+            >
+              <img
+                src={slide.image}
+                alt={slide.title}
+                style={styles.carouselImage}
+                onError={(e) => {
+                  e.target.src = '/assets/images/tecnologia.jpg'; // Imagen de fallback
+                }}
+              />
+              <div style={{
+                ...styles.carouselContent,
+                opacity: currentSlide === index ? 1 : 0,
+                transform: currentSlide === index ? 'translateY(0)' : 'translateY(20px)'
+              }}>
+                <div style={styles.carouselCategory}>{slide.category}</div>
+                <h2 style={styles.carouselTitle}>{slide.title}</h2>
+                <p style={styles.carouselExcerpt}>{slide.excerpt}</p>
+                
+                {/* Indicador visual de que es clicable */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: spacing.xs,
+                  marginTop: spacing.md,
+                  fontSize: typography.fontSize.sm,
+                  color: 'rgba(255,255,255,0.9)',
+                  fontWeight: typography.fontWeight.medium
+                }}>
+                  <span>Leer artículo completo</span>
+                  <FaArrowRight size={12} />
+                </div>
+              </div>
+            </Link>
           </div>
         ))}
       </div>
@@ -299,7 +326,11 @@ const NewsCarousel = ({ notes }) => {
           style={hoveredElement === 'prev-btn'
             ? { ...styles.carouselButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.15)", opacity: 1 }
             : styles.carouselButton}
-          onClick={prevSlide}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            prevSlide();
+          }}
           onMouseEnter={() => setHoveredElement('prev-btn')}
           onMouseLeave={() => setHoveredElement(null)}
         >
@@ -309,7 +340,11 @@ const NewsCarousel = ({ notes }) => {
           style={hoveredElement === 'next-btn'
             ? { ...styles.carouselButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.15)", opacity: 1 }
             : styles.carouselButton}
-          onClick={nextSlide}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            nextSlide();
+          }}
           onMouseEnter={() => setHoveredElement('next-btn')}
           onMouseLeave={() => setHoveredElement(null)}
         >
@@ -329,7 +364,11 @@ const NewsCarousel = ({ notes }) => {
                 transform: "scale(1.2)"
               } : {})
             }}
-            onClick={() => goToSlide(index)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              goToSlide(index);
+            }}
             onMouseEnter={() => setHoveredElement(`dot-${index}`)}
             onMouseLeave={() => setHoveredElement(null)}
           ></span>
@@ -341,7 +380,11 @@ const NewsCarousel = ({ notes }) => {
         style={hoveredElement === 'pause-play'
           ? { ...styles.pausePlayButton, backgroundColor: "rgba(255,255,255,0.3)", transform: "scale(1.1)" }
           : styles.pausePlayButton}
-        onClick={() => setIsPaused(!isPaused)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsPaused(!isPaused);
+        }}
         onMouseEnter={() => setHoveredElement('pause-play')}
         onMouseLeave={() => setHoveredElement(null)}
       >
@@ -352,10 +395,8 @@ const NewsCarousel = ({ notes }) => {
 };
 
 const HomePage = () => {
-  // Añadimos el hook useTheme en el componente principal
-  const { colors } = useTheme();
-  
-  // Estado para la categoría activa
+  const { isDarkMode, colors, lightColors } = useTheme();
+  const location = useLocation();
   const [activeCategory, setActiveCategory] = useState('Todos');
   const [categories, setCategories] = useState(['Todos']);
   const [notes, setNotes] = useState([]); // Para el carrusel
@@ -985,14 +1026,44 @@ const HomePage = () => {
         </div>
 
         {/* Hero Section */}
-        <div style={styles.hero}>
+        <div 
+          style={hoveredElement === 'hero' ? 
+            { ...styles.hero, ...styles.hero['&:hover'] } : 
+            styles.hero
+          }
+          onMouseEnter={() => setHoveredElement('hero')}
+          onMouseLeave={() => setHoveredElement(null)}
+        >
+          <div style={styles.heroDecoration}></div>
           <h1 style={styles.heroTitle}>Tu Destino para Educación, Innovación y Crecimiento</h1>
           <p style={styles.heroText}>Descubre consejos, tendencias y técnicas para mejorar tu experiencia educativa y desarrollo profesional. Únete a nuestra comunidad de aprendices y educadores comprometidos.</p>
+          
+          <div style={styles.heroIconsContainer}>
+            <div style={styles.heroIcon}>
+              <FaBookmark size={16} color={colors.primary} />
+              <span>Artículos de calidad</span>
+            </div>
+            <div style={styles.heroIcon}>
+              <FaLightbulb size={16} color={colors.primary} />
+              <span>Ideas innovadoras</span>
+            </div>
+            <div style={styles.heroIcon}>
+              <FaGraduationCap size={16} color={colors.primary} />
+              <span>Recursos educativos</span>
+            </div>
+            <div style={styles.heroIcon}>
+              <FaChalkboardTeacher size={16} color={colors.primary} />
+              
+            </div>
+          </div>
 
           <div
-            style={hoveredCategory === 'circle' ? applyHoverStyles(styles.circleLink) : styles.circleLink}
-            onMouseEnter={() => setHoveredCategory('circle')}
-            onMouseLeave={() => setHoveredCategory(null)}
+            style={hoveredElement === 'circle' ? 
+              { ...styles.circleLink, ...styles.circleLink['&:hover'] } : 
+              styles.circleLink
+            }
+            onMouseEnter={() => setHoveredElement('circle')}
+            onMouseLeave={() => setHoveredElement(null)}
           >
             <div style={{
               ...styles.circleText,
@@ -1013,7 +1084,335 @@ const HomePage = () => {
         </div>
 
         {/* NUEVO: Carrusel de Noticias */}
-        <NewsCarousel notes={carouselNotes} />
+        <NewsCarousel notes={notes} />
+
+        {/* Sección de categorías destacadas */}
+        <div style={{
+          marginTop: spacing.xxl,
+          marginBottom: spacing.xxl,
+          textAlign: 'center',
+          position: 'relative',
+          padding: `${spacing.xl} 0`,
+          overflow: 'hidden',
+          backgroundColor: '#c4d1ce',
+          borderRadius: '24px' // Agregamos bordes redondeados
+        }}>
+
+          <div style={{
+            position: 'absolute',
+            top: '10%',
+            left: '-5%',
+            width: '200px',
+            height: '200px',
+            background: `radial-gradient(circle, ${colors.primary}15, ${colors.primary}05)`,
+            borderRadius: '50%',
+            zIndex: 0,
+            animation: 'floatingAnimation 8s ease-in-out infinite'
+          }}></div>
+          
+          <div style={{
+            position: 'absolute',
+            bottom: '15%',
+            right: '-3%',
+            width: '150px',
+            height: '150px',
+            background: `radial-gradient(circle, ${colors.secondary}20, ${colors.secondary}05)`,
+            borderRadius: '50%',
+            zIndex: 0,
+            animation: 'floatingAnimation 6s ease-in-out infinite reverse'
+          }}></div>
+          
+          <h2 style={{
+            ...styles.sectionTitle,
+            textAlign: 'center',
+            fontSize: typography.fontSize.xxl,
+            marginBottom: spacing.xl,
+            position: 'relative',
+            display: 'inline-block',
+            paddingBottom: spacing.md,
+            '&:after': {
+              ...styles.sectionTitle['&:after'],
+              left: '50%',
+              transform: 'translateX(-50%)'
+            },
+            animation: 'fadeInUp 0.6s ease-out'
+          }}>Categorías Destacadas</h2>
+          
+          <p style={{
+            color: colors.textSecondary,
+            maxWidth: '700px',
+            margin: '0 auto',
+            marginBottom: spacing.xl,
+            fontSize: typography.fontSize.md,
+            lineHeight: "1.6",
+            animation: 'fadeInUp 0.8s ease-out',
+            position: 'relative',
+            zIndex: 1
+          }}>
+            Explora nuestras áreas temáticas principales y encuentra contenido que te inspire, motive y ayude en tu desarrollo educativo.
+          </p>
+
+          
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gap: spacing.xl,
+            marginTop: spacing.xl,
+            position: 'relative',
+            zIndex: 1,
+            maxWidth: '1000px',
+            margin: `${spacing.xl} auto 0 auto`
+          }}>
+            {/* Categoría 1 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
+              borderRadius: '18px',
+              padding: spacing.xl,
+              boxShadow: hoveredElement === 'cat-1' 
+                ? '0 15px 30px rgba(11, 68, 68, 0.12)' 
+                : '0 8px 20px rgba(11, 68, 68, 0.06)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredElement === 'cat-1' ? 'translateY(-10px)' : 'translateY(0)',
+              cursor: 'pointer',
+              border: hoveredElement === 'cat-1' ? `2px solid ${colors.primary}15` : '2px solid transparent',
+              animation: 'fadeInUp 0.6s ease-out'
+            }}
+              onMouseEnter={() => setHoveredElement('cat-1')}
+              onMouseLeave={() => setHoveredElement(null)}
+              onClick={() => setActiveCategory('Técnicas de Estudio')}
+            >
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '18px',
+                background: hoveredElement === 'cat-1'
+                  ? `linear-gradient(135deg, ${colors.primary}, ${colors.primary}90)`
+                  : `linear-gradient(135deg, ${colors.primary}80, ${colors.primary}60)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                marginBottom: spacing.lg,
+                boxShadow: hoveredElement === 'cat-1' 
+                  ? '0 8px 20px rgba(11, 68, 68, 0.15)' 
+                  : '0 6px 12px rgba(11, 68, 68, 0.08)',
+                transition: 'all 0.3s ease',
+                transform: hoveredElement === 'cat-1' ? 'scale(1.05) rotate(3deg)' : 'scale(1) rotate(0)',
+              }}>
+                <FaLightbulb size={32} color="#fff" style={{
+                  animation: hoveredElement === 'cat-1' ? 'pulse 1.5s infinite' : 'none'
+                }} />
+              </div>
+              <h3 style={{
+                fontSize: typography.fontSize.xl,
+                color: hoveredElement === 'cat-1' ? colors.primary : colors.textPrimary,
+                marginBottom: spacing.md,
+                transition: 'color 0.3s ease',
+                fontWeight: typography.fontWeight.semiBold
+              }}>
+                Técnicas de Estudio
+              </h3>
+              <div style={{
+                width: '60px',
+                height: '4px',
+                background: hoveredElement === 'cat-1'
+                  ? `linear-gradient(90deg, ${colors.primary}, ${colors.primary}60)`
+                  : `linear-gradient(90deg, ${colors.primary}60, ${colors.primary}30)`,
+                borderRadius: '2px',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                transition: 'all 0.3s ease',
+                transform: hoveredElement === 'cat-1' ? 'scaleX(1.3)' : 'scaleX(1)',
+              }}></div>
+              <p style={{
+                fontSize: typography.fontSize.md,
+                color: colors.textSecondary,
+                lineHeight: '1.6',
+                transition: 'color 0.3s ease'
+              }}>
+                Metodologías efectivas para optimizar el aprendizaje.
+              </p>
+            </div>
+
+            {/* Categoría 2 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
+              borderRadius: '18px',
+              padding: spacing.xl,
+              boxShadow: hoveredElement === 'cat-2' 
+                ? '0 15px 30px rgba(11, 68, 68, 0.12)' 
+                : '0 8px 20px rgba(11, 68, 68, 0.06)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredElement === 'cat-2' ? 'translateY(-10px)' : 'translateY(0)',
+              cursor: 'pointer',
+              border: hoveredElement === 'cat-2' ? `2px solid ${colors.secondary}15` : '2px solid transparent',
+              animation: 'fadeInUp 0.8s ease-out'
+            }}
+              onMouseEnter={() => setHoveredElement('cat-2')}
+              onMouseLeave={() => setHoveredElement(null)}
+              onClick={() => setActiveCategory('Herramientas Tecnológicas')}
+            >
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '18px',
+                background: hoveredElement === 'cat-2'
+                  ? `linear-gradient(135deg, ${colors.secondary}, ${colors.secondary}90)`
+                  : `linear-gradient(135deg, ${colors.secondary}80, ${colors.secondary}60)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                marginBottom: spacing.lg,
+                boxShadow: hoveredElement === 'cat-2' 
+                  ? '0 8px 20px rgba(11, 68, 68, 0.15)' 
+                  : '0 6px 12px rgba(11, 68, 68, 0.08)',
+                transition: 'all 0.3s ease',
+                transform: hoveredElement === 'cat-2' ? 'scale(1.05) rotate(3deg)' : 'scale(1) rotate(0)',
+              }}>
+                <FaGraduationCap size={32} color="#fff" style={{
+                  animation: hoveredElement === 'cat-2' ? 'pulse 1.5s infinite' : 'none'
+                }} />
+              </div>
+              <h3 style={{
+                fontSize: typography.fontSize.xl,
+                color: hoveredElement === 'cat-2' ? colors.secondary : colors.textPrimary,
+                marginBottom: spacing.md,
+                transition: 'color 0.3s ease',
+                fontWeight: typography.fontWeight.semiBold
+              }}>
+                Herramientas Tecnológicas
+              </h3>
+              <div style={{
+                width: '60px',
+                height: '4px',
+                background: hoveredElement === 'cat-2'
+                  ? `linear-gradient(90deg, ${colors.secondary}, ${colors.secondary}60)`
+                  : `linear-gradient(90deg, ${colors.secondary}60, ${colors.secondary}30)`,
+                borderRadius: '2px',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                transition: 'all 0.3s ease',
+                transform: hoveredElement === 'cat-2' ? 'scaleX(1.3)' : 'scaleX(1)',
+              }}></div>
+              <p style={{
+                fontSize: typography.fontSize.md,
+                color: colors.textSecondary,
+                lineHeight: '1.6',
+                transition: 'color 0.3s ease'
+              }}>
+                Recursos digitales para la enseñanza moderna.
+              </p>
+            </div>
+
+            {/* Categoría 3 */}
+            <div style={{
+              background: 'linear-gradient(135deg, #ffffff, #f7f9fa)',
+              borderRadius: '18px',
+              padding: spacing.xl,
+              boxShadow: hoveredElement === 'cat-3' 
+                ? '0 15px 30px rgba(11, 68, 68, 0.12)' 
+                : '0 8px 20px rgba(11, 68, 68, 0.06)',
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+              transform: hoveredElement === 'cat-3' ? 'translateY(-10px)' : 'translateY(0)',
+              cursor: 'pointer',
+              border: hoveredElement === 'cat-3' ? `2px solid ${colors.primary}15` : '2px solid transparent',
+              animation: 'fadeInUp 1s ease-out'
+            }}
+              onMouseEnter={() => setHoveredElement('cat-3')}
+              onMouseLeave={() => setHoveredElement(null)}
+              onClick={() => setActiveCategory('Educación de Calidad')}
+            >
+              <div style={{
+                width: '70px',
+                height: '70px',
+                borderRadius: '18px',
+                background: hoveredElement === 'cat-3'
+                  ? `linear-gradient(135deg, ${colors.primary}90, ${colors.secondary}90)`
+                  : `linear-gradient(135deg, ${colors.primary}70, ${colors.secondary}70)`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto',
+                marginBottom: spacing.lg,
+                boxShadow: hoveredElement === 'cat-3' 
+                  ? '0 8px 20px rgba(11, 68, 68, 0.15)' 
+                  : '0 6px 12px rgba(11, 68, 68, 0.08)',
+                transition: 'all 0.3s ease',
+                transform: hoveredElement === 'cat-3' ? 'scale(1.05) rotate(3deg)' : 'scale(1) rotate(0)',
+              }}>
+                <FaChalkboardTeacher size={32} color="#fff" style={{
+                  animation: hoveredElement === 'cat-3' ? 'pulse 1.5s infinite' : 'none'
+                }} />
+              </div>
+              <h3 style={{
+                fontSize: typography.fontSize.xl,
+                color: hoveredElement === 'cat-3' ? colors.primary : colors.textPrimary,
+                marginBottom: spacing.md,
+                transition: 'color 0.3s ease',
+                fontWeight: typography.fontWeight.semiBold
+              }}>
+                Educación de Calidad
+              </h3>
+              <div style={{
+                width: '60px',
+                height: '4px',
+                background: hoveredElement === 'cat-3'
+                  ? `linear-gradient(90deg, ${colors.primary}, ${colors.secondary})`
+                  : `linear-gradient(90deg, ${colors.primary}60, ${colors.secondary}60)`,
+                borderRadius: '2px',
+                margin: '0 auto',
+                marginBottom: spacing.md,
+                transition: 'all 0.3s ease',
+                transform: hoveredElement === 'cat-3' ? 'scaleX(1.3)' : 'scaleX(1)',
+              }}></div>
+              <p style={{
+                fontSize: typography.fontSize.md,
+                color: colors.textSecondary,
+                lineHeight: '1.6',
+                transition: 'color 0.3s ease'
+              }}>
+                Estándares para una experiencia educativa de excelencia.
+              </p>
+            </div>
+          </div>
+
+          {/* Banner de exploración - Movido aquí, después de las categorías */}
+          <div 
+            style={{
+              ...(hoveredElement === 'explore-banner' ? 
+                { ...styles.exploreBanner, ...styles.exploreBanner['&:hover'] } : 
+                styles.exploreBanner),
+              maxWidth: '1000px', // Mismo ancho que el grid de categorías
+              margin: `${spacing.xl} auto ${spacing.lg} auto`, // Margen top más grande para separar de las categorías
+              padding: `${spacing.xl} ${spacing.lg}` // Padding más pequeño para que encaje mejor
+            }}
+            onMouseEnter={() => setHoveredElement('explore-banner')}
+            onMouseLeave={() => setHoveredElement(null)}
+          >
+            <div style={styles.exploreBannerDecoration1}></div>
+            <div style={styles.exploreBannerDecoration2}></div>
+            <h2 style={styles.exploreBannerTitle}>Descubre todas nuestras categorías</h2>
+            <p style={styles.exploreBannerText}>
+              Explora nuestra biblioteca completa de artículos educativos, recursos didácticos, 
+              técnicas innovadoras y mucho más. Encuentra soluciones a problemas comunes y 
+              herramientas para mejorar tu experiencia educativa.
+            </p>
+            <Link 
+              to="/categorias"
+              style={hoveredElement === 'explore-btn' ? 
+                { ...styles.exploreBannerBtn, ...styles.exploreBannerBtn['&:hover'] } : 
+                styles.exploreBannerBtn
+              }
+              onMouseEnter={() => setHoveredElement('explore-btn')}
+              onMouseLeave={() => setHoveredElement('explore-banner')}
+            >
+              <span>Explorar categorías</span>
+              <FaArrowRight size={12} />
+            </Link>
+          </div>
+        </div>
 
         {/* Categories */}
         <div style={styles.categories}>
@@ -1087,8 +1486,8 @@ const HomePage = () => {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'center', marginTop: spacing.xl }}>
-              <a 
-                href="/blog" 
+              <Link 
+                to="/blog" 
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1112,7 +1511,7 @@ const HomePage = () => {
               >
                 <span>Explora el blog</span>
                 <FaArrowRight />
-              </a>
+              </Link>
             </div>
           </section>
 
@@ -1122,7 +1521,7 @@ const HomePage = () => {
             position: 'relative',
             background: `linear-gradient(135deg, ${colors.white}, ${colors.gray50})`,
             borderRadius: '24px',
-            padding: 0, // Cambiar de spacing.lg a 0
+            padding: 0,
             boxShadow: `0 25px 60px ${colors.primary}20, 0 0 0 3px ${colors.primary}15`,
             border: `2px solid ${colors.primary}30`,
             overflow: 'hidden',
@@ -1132,68 +1531,106 @@ const HomePage = () => {
             onMouseEnter={() => setHoveredElement('featured-post')}
             onMouseLeave={() => setHoveredElement(null)}
           >
-            {/* Efecto de brillo animado */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: '-100%',
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
-              animation: 'shine 3s ease-in-out infinite',
-              zIndex: 1,
-              pointerEvents: 'none'
-            }}></div>
-            
-            {/* Badge "POST DESTACADO" */}
-            <div style={{
-              position: 'absolute',
-              top: spacing.lg,
-              right: spacing.lg,
-              zIndex: 2,
-              background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
-              color: colors.white,
-              padding: `${spacing.xs} ${spacing.md}`,
-              borderRadius: '50px',
-              fontSize: typography.fontSize.xs,
-              fontWeight: typography.fontWeight.bold,
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: spacing.xs,
-              animation: 'pulse 2s infinite'
-            }}>
-              <span style={{ fontSize: '14px' }}>⭐</span>
-              <span>POST DESTACADO</span>
-            </div>
+            {/* Envolver todo el contenido en un Link */}
+            <Link
+              to={`/blog/${featuredPost?.id}`}
+              state={{ forceReload: true }}
+              style={{
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                textDecoration: 'none',
+                color: 'inherit',
+                cursor: 'pointer',
+                position: 'relative'
+              }}
+            >
+              {/* Efecto de brillo animado */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: '-100%',
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent)',
+                animation: 'shine 3s ease-in-out infinite',
+                zIndex: 1,
+                pointerEvents: 'none'
+              }}></div>
+              
+              {/* Badge "POST DESTACADO" */}
+              <div style={{
+                position: 'absolute',
+                top: spacing.lg,
+                right: spacing.lg,
+                zIndex: 2,
+                background: `linear-gradient(135deg, ${colors.primary}, ${colors.secondary})`,
+                color: colors.white,
+                padding: `${spacing.xs} ${spacing.md}`,
+                borderRadius: '50px',
+                fontSize: typography.fontSize.xs,
+                fontWeight: typography.fontWeight.bold,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs,
+                animation: 'pulse 2s infinite'
+              }}>
+                <span style={{ fontSize: '14px' }}>⭐</span>
+                <span>POST DESTACADO</span>
+              </div>
 
-            {/* Decoración superior izquierda */}
-            <div style={{
-              position: 'absolute',
-              top: '-20px',
-              left: '-20px',
-              width: '80px',
-              height: '80px',
-              background: `radial-gradient(circle, ${colors.primary}15, transparent)`,
-              borderRadius: '50%',
-              zIndex: 0
-            }}></div>
+              {/* Decoración superior izquierda */}
+              <div style={{
+                position: 'absolute',
+                top: '-20px',
+                left: '-20px',
+                width: '80px',
+                height: '80px',
+                background: `radial-gradient(circle, ${colors.primary}15, transparent)`,
+                borderRadius: '50%',
+                zIndex: 0
+              }}></div>
 
-            {/* Decoración inferior derecha */}
-            <div style={{
-              position: 'absolute',
-              bottom: '-30px',
-              right: '-30px',
-              width: '100px',
-              height: '100px',
-              background: `radial-gradient(circle, ${colors.secondary}10, transparent)`,
-              borderRadius: '50%',
-              zIndex: 0
-            }}></div>
+              {/* Decoración inferior derecha */}
+              <div style={{
+                position: 'absolute',
+                bottom: '-30px',
+                right: '-30px',
+                width: '100px',
+                height: '100px',
+                background: `radial-gradient(circle, ${colors.secondary}10, transparent)`,
+                borderRadius: '50%',
+                zIndex: 0
+              }}></div>
 
-            {featuredPost && <FeaturedPost post={featuredPost} />}
+              {/* Indicador visual de que es clicable */}
+              <div style={{
+                position: 'absolute',
+                bottom: spacing.lg,
+                left: spacing.lg,
+                zIndex: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: spacing.xs,
+                backgroundColor: 'rgba(255,255,255,0.9)',
+                color: colors.primary,
+                padding: `${spacing.xs} ${spacing.sm}`,
+                borderRadius: '20px',
+                fontSize: typography.fontSize.xs,
+                fontWeight: typography.fontWeight.medium,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                transition: 'all 0.3s ease',
+                transform: hoveredElement === 'featured-post' ? 'translateY(-3px)' : 'translateY(0)'
+              }}>
+                <span>Leer artículo completo</span>
+                <FaArrowRight size={10} />
+              </div>
+
+              {featuredPost && <FeaturedPost post={featuredPost} />}
+            </Link>
           </div>
         </div>
       </main>
