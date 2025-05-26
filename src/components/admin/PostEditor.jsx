@@ -434,12 +434,16 @@ const PostEditor = () => {
     
     if (file && base64Image) {
       console.log("Imagen Base64 recibida:", base64Image ? base64Image.substring(0, 50) + "..." : "No hay imagen Base64");
+      
+      // Almacenar la imagen en los mismos campos que usa la base de datos
       setPost(prev => ({
         ...prev,
         coverImage: file,
         coverImagePreview: base64Image,
-        Imagen_portada: base64Image
+        Imagen_portada: base64Image // Campo usado por la base de datos
       }));
+      
+      console.log("Imagen almacenada en campos: coverImage, coverImagePreview y Imagen_portada");
     } 
     else if (!file && base64Image === null) {
       console.log("Eliminando imagen seleccionada");
@@ -447,7 +451,7 @@ const PostEditor = () => {
         ...prev,
         coverImage: null,
         coverImagePreview: null,
-        Imagen_portada: null
+        Imagen_portada: null // Limpiar también este campo
       }));
     }
   };
@@ -489,16 +493,33 @@ const PostEditor = () => {
         }
       }
       
+      // Asegurar que la imagen de portada esté en el campo correcto
+      let imagenPortada = post.Imagen_portada || post.coverImagePreview || null;
+      
       const postData = {
         titulo: post.title,
         contenido: post.content,
         resumen: post.resumen || post.title.substring(0, 150),
         estado: 'borrador',
         categorias: categorias,
-        Imagen_portada: post.Imagen_portada || null
+        Imagen_portada: imagenPortada
       };
       
-      console.log("Guardando borrador con datos:", postData);
+      console.log("Guardando borrador con datos:", {
+        titulo: postData.titulo,
+        resumen: postData.resumen,
+        categorias: postData.categorias,
+        imagenPresente: postData.Imagen_portada ? 'Sí' : 'No'
+      });
+      
+      if (postData.Imagen_portada) {
+        console.log("Imagen incluida en el borrador (primeros 50 caracteres):", 
+          typeof postData.Imagen_portada === 'string' ? 
+          postData.Imagen_portada.substring(0, 50) + "..." : "No es una cadena");
+        console.log("Longitud de la imagen Base64:", 
+          typeof postData.Imagen_portada === 'string' ? 
+          postData.Imagen_portada.length : "No es una cadena");
+      }
       
       let result;
       
@@ -573,20 +594,32 @@ const PostEditor = () => {
         categoriaId = 1;
       }
       
+      // Asegurar que la imagen de portada esté en el campo correcto
+      let imagenPortada = post.Imagen_portada || post.coverImagePreview || null;
+      
       const postData = {
         titulo: post.title,
         contenido: post.content,
         resumen: post.resumen || post.title.substring(0, 150),
         estado: 'publicado',
         categorias: [categoriaId],
-        Imagen_portada: post.Imagen_portada || null
+        Imagen_portada: imagenPortada
       };
       
-      console.log("Enviando publicación con datos:", postData);
+      console.log("Enviando publicación con datos:", {
+        titulo: postData.titulo,
+        resumen: postData.resumen,
+        categorias: postData.categorias,
+        imagenPresente: postData.Imagen_portada ? 'Sí' : 'No'
+      });
       
-      if (post.Imagen_portada) {
-        console.log("Imagen incluida en la publicación (primeros 50 caracteres):", post.Imagen_portada.substring(0, 50) + "...");
-        console.log("Longitud de la imagen Base64:", post.Imagen_portada.length);
+      if (postData.Imagen_portada) {
+        console.log("Imagen incluida en la publicación (primeros 50 caracteres):", 
+          typeof postData.Imagen_portada === 'string' ? 
+          postData.Imagen_portada.substring(0, 50) + "..." : "No es una cadena");
+        console.log("Longitud de la imagen Base64:", 
+          typeof postData.Imagen_portada === 'string' ? 
+          postData.Imagen_portada.length : "No es una cadena");
       } else {
         console.log("No se incluyó imagen en la publicación");
       }

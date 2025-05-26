@@ -189,31 +189,53 @@ export const createPublicacion = async (publicacionData) => {
         // Clonar los datos para no modificar el objeto original
         const formattedData = { ...publicacionData };
         
-        // Si el campo Imagen_portada existe, moverlo a Imagen_portada
-        if ('Imagen_portada' in formattedData) {
-            // Ya está con el nombre correcto, no necesitamos renombrarlo
+        console.log("createPublicacion: Creando nueva publicación");
+        console.log("createPublicacion: Campos disponibles:", Object.keys(formattedData));
+        
+        // Verificar si tenemos la imagen de portada y asegurar que esté en el campo correcto
+        if (!formattedData.Imagen_portada) {
+            console.log("createPublicacion: No hay imagen de portada explícita, buscando alternativas");
+            
+            // Buscar en otros campos posibles
+            if (formattedData.coverImagePreview) {
+                console.log("createPublicacion: Usando imagen desde coverImagePreview");
+                formattedData.Imagen_portada = formattedData.coverImagePreview;
+            } else if (formattedData.imagen_url) {
+                console.log("createPublicacion: Usando imagen desde imagen_url");
+                formattedData.Imagen_portada = formattedData.imagen_url;
+            }
         }
         
-        console.log("Datos enviados al backend:", JSON.stringify(formattedData, null, 2));
-        console.log("URL de la API:", `${API_URL}/api/publicaciones`);
+        // Si el campo Imagen_portada existe, verificar que sea válido
+        if ('Imagen_portada' in formattedData) {
+            if (formattedData.Imagen_portada) {
+                console.log("createPublicacion: Imagen de portada presente, longitud:", 
+                    typeof formattedData.Imagen_portada === 'string' ? 
+                    formattedData.Imagen_portada.length : 'no es string');
+            } else {
+                console.log("createPublicacion: Campo Imagen_portada existe pero está vacío");
+            }
+        }
         
         // Si no se proporcionó una imagen, intentar extraerla del contenido HTML
-        if (!formattedData.Imagen_portada) {
+        if (!formattedData.Imagen_portada && formattedData.contenido) {
             // Extraer la primera imagen del contenido HTML para la portada si existe
             const imgRegex = /<img[^>]+src="([^">]+)"[^>]*>/i;
             const match = formattedData.contenido.match(imgRegex);
             
             if (match && match.length > 0) {
                 formattedData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
-                console.log("Imagen portada detectada del contenido HTML:", formattedData.Imagen_portada);
+                console.log("createPublicacion: Imagen portada detectada del contenido HTML:", 
+                    formattedData.Imagen_portada.substring(0, 100) + "...");
             }
-        } else {
-            console.log("Usando imagen portada proporcionada");
+        } else if (formattedData.Imagen_portada) {
+            console.log("createPublicacion: Usando imagen portada proporcionada");
         }
         
         const token = localStorage.getItem('userToken');
-        console.log("Token de autenticación disponible:", !!token);
+        console.log("createPublicacion: Token de autenticación disponible:", !!token);
         
+        console.log("createPublicacion: Enviando datos al backend");
         const response = await fetch(`${API_URL}/api/publicaciones`, {
             method: 'POST',
             headers: {
@@ -225,7 +247,7 @@ export const createPublicacion = async (publicacionData) => {
         
         if (!response.ok) {
             const errorData = await response.json().catch(e => ({ detail: 'Error al procesar la respuesta' }));
-            console.error("Respuesta del servidor:", response.status, errorData);
+            console.error("createPublicacion: Error del servidor:", response.status, errorData);
             
             // Detectar error específico de tamaño de imagen
             if (errorData.sqlMessage && errorData.sqlMessage.includes('Data too long for column')) {
@@ -240,7 +262,9 @@ export const createPublicacion = async (publicacionData) => {
             throw new Error(errorData.detail || `Error del servidor: ${response.status}`);
         }
         
-        return await response.json();
+        const responseData = await response.json();
+        console.log("createPublicacion: Publicación creada con éxito");
+        return responseData;
     } catch (error) {
         console.error('Error en createPublicacion:', error);
         throw error;
@@ -253,9 +277,32 @@ export const createPublicacionFromHTML = async (publicacionData) => {
         // Clonar los datos para no modificar el objeto original
         const formattedData = { ...publicacionData };
         
-        // Si el campo Imagen_portada existe, moverlo a Imagen_portada
+        console.log("createPublicacionFromHTML: Creando publicación desde HTML");
+        console.log("createPublicacionFromHTML: Campos disponibles:", Object.keys(formattedData));
+        
+        // Verificar si tenemos la imagen de portada y asegurar que esté en el campo correcto
+        if (!formattedData.Imagen_portada) {
+            console.log("createPublicacionFromHTML: No hay imagen de portada explícita, buscando alternativas");
+            
+            // Buscar en otros campos posibles
+            if (formattedData.coverImagePreview) {
+                console.log("createPublicacionFromHTML: Usando imagen desde coverImagePreview");
+                formattedData.Imagen_portada = formattedData.coverImagePreview;
+            } else if (formattedData.imagen_url) {
+                console.log("createPublicacionFromHTML: Usando imagen desde imagen_url");
+                formattedData.Imagen_portada = formattedData.imagen_url;
+            }
+        }
+        
+        // Si el campo Imagen_portada existe, verificar que sea válido
         if ('Imagen_portada' in formattedData) {
-            // Ya está con el nombre correcto, no necesitamos renombrarlo
+            if (formattedData.Imagen_portada) {
+                console.log("createPublicacionFromHTML: Imagen de portada presente, longitud:", 
+                    typeof formattedData.Imagen_portada === 'string' ? 
+                    formattedData.Imagen_portada.length : 'no es string');
+            } else {
+                console.log("createPublicacionFromHTML: Campo Imagen_portada existe pero está vacío");
+            }
         }
         
         // Validación básica del contenido HTML
@@ -281,13 +328,14 @@ export const createPublicacionFromHTML = async (publicacionData) => {
             
             if (match && match.length > 0) {
                 formattedData.Imagen_portada = match[0]; // Guardar la etiqueta img completa
-                console.log("Imagen portada detectada desde HTML:", formattedData.Imagen_portada);
+                console.log("createPublicacionFromHTML: Imagen portada detectada desde HTML:", formattedData.Imagen_portada.substring(0, 100) + "...");
             }
         } else {
-            console.log("Usando imagen portada proporcionada");
+            console.log("createPublicacionFromHTML: Usando imagen portada proporcionada");
         }
 
         // Enviamos los datos al backend
+        console.log("createPublicacionFromHTML: Enviando datos al backend");
         const response = await fetch(`${API_URL}/api/publicaciones/from-html`, {
             method: 'POST',
             headers: {
@@ -299,7 +347,7 @@ export const createPublicacionFromHTML = async (publicacionData) => {
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('Error response:', errorData);
+            console.error('createPublicacionFromHTML: Error response:', errorData);
             
             // Detectar error específico de tamaño de imagen
             if (errorData.sqlMessage && errorData.sqlMessage.includes('Data too long for column')) {
@@ -314,7 +362,9 @@ export const createPublicacionFromHTML = async (publicacionData) => {
             throw new Error(errorData.detail || 'Error al crear la publicación desde HTML');
         }
 
-        return await response.json();
+        const responseData = await response.json();
+        console.log("createPublicacionFromHTML: Publicación creada con éxito");
+        return responseData;
     } catch (error) {
         console.error('Error en createPublicacionFromHTML:', error);
         throw error;
@@ -324,21 +374,45 @@ export const createPublicacionFromHTML = async (publicacionData) => {
 // Actualizar una publicación existente
 export const updatePublicacion = async (id, publicacionData) => {
     try {
+        // Clonar los datos para no modificar el objeto original
+        const formattedData = { ...publicacionData };
+        
+        console.log("updatePublicacion: Actualizando publicación con ID", id);
+        console.log("updatePublicacion: Campos disponibles:", Object.keys(formattedData));
+        
+        // Verificar si tenemos la imagen de portada y asegurar que esté en el campo correcto
+        if (formattedData.coverImagePreview && !formattedData.Imagen_portada) {
+            console.log("updatePublicacion: Copiando imagen desde coverImagePreview a Imagen_portada");
+            formattedData.Imagen_portada = formattedData.coverImagePreview;
+        }
+        
+        // Si tenemos Imagen_portada, asegurarnos de que se envíe correctamente
+        if (formattedData.Imagen_portada) {
+            console.log("updatePublicacion: Imagen de portada presente, longitud:", 
+                typeof formattedData.Imagen_portada === 'string' ? 
+                formattedData.Imagen_portada.length : 'no es string');
+        } else {
+            console.log("updatePublicacion: No hay imagen de portada para enviar");
+        }
+        
         const response = await fetch(`${API_URL}/api/publicaciones/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('userToken')}`
             },
-            body: JSON.stringify(publicacionData)
+            body: JSON.stringify(formattedData)
         });
         
         if (!response.ok) {
             const errorData = await response.json();
+            console.error("updatePublicacion: Error del servidor:", response.status, errorData);
             throw new Error(errorData.detail || 'Error al actualizar la publicación');
         }
         
-        return await response.json();
+        const responseData = await response.json();
+        console.log("updatePublicacion: Publicación actualizada con éxito");
+        return responseData;
     } catch (error) {
         console.error('Error en updatePublicacion:', error);
         throw error;
