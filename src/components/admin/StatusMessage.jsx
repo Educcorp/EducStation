@@ -7,30 +7,13 @@ const StatusMessage = ({ type, text, icon }) => {
   useEffect(() => {
     // Aplicar animación cuando el componente se monta
     if (messageRef.current) {
-      if (type === 'error') {
-        messageRef.current.style.animation = 'fadeIn 0.3s ease-in-out, shake 0.5s ease-in-out';
-      } else if (type === 'warning') {
-        messageRef.current.style.animation = 'fadeIn 0.3s ease-in-out, pulse 0.8s ease-in-out 2';
-      } else if (text.includes('publicado')) {
-        messageRef.current.style.animation = 'fadeIn 0.3s ease-in-out, pulse 1s ease-in-out';
-      } else {
-        messageRef.current.style.animation = 'fadeIn 0.3s ease-in-out';
-      }
+      messageRef.current.style.animation = type === 'error' 
+        ? 'fadeIn 0.3s ease-in-out, shake 0.5s ease-in-out' 
+        : (text.includes('publicado') 
+          ? 'fadeIn 0.3s ease-in-out, pulse 1s ease-in-out'
+          : 'fadeIn 0.3s ease-in-out');
     }
   }, [type, text]);
-
-  const getMessageStyle = () => {
-    switch (type) {
-      case 'success':
-        return styles.successMessage;
-      case 'warning':
-        return styles.warningMessage;
-      case 'error':
-        return styles.errorMessage;
-      default:
-        return styles.successMessage;
-    }
-  };
 
   const styles = {
     successMessage: {
@@ -54,18 +37,6 @@ const StatusMessage = ({ type, text, icon }) => {
       display: 'flex',
       alignItems: 'center',
       gap: spacing.sm
-    },
-    warningMessage: {
-      backgroundColor: "rgba(255, 193, 7, 0.1)",
-      color: '#856404',
-      padding: spacing.md,
-      borderRadius: "4px",
-      fontSize: "14px",
-      marginTop: spacing.md,
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.sm,
-      borderLeft: '3px solid #ffc107'
     }
   };
 
@@ -73,7 +44,7 @@ const StatusMessage = ({ type, text, icon }) => {
     <div 
       ref={messageRef}
       id="save-message"
-      style={getMessageStyle()}
+      style={type === 'success' ? styles.successMessage : styles.errorMessage}
     >
       <span style={{ fontSize: '1.2em' }}>{icon}</span>
       {text}

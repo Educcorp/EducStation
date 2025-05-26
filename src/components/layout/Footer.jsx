@@ -503,7 +503,7 @@ const Footer = () => {
     },
     {
       icon: <SiX />,
-      url: 'https://twitter.com/EducStation',
+      url: 'https://x.com/Educcorp',
       label: 'X (Twitter)',
       colors: {
         primary: '#000000',

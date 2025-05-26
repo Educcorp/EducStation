@@ -434,16 +434,12 @@ const PostEditor = () => {
     
     if (file && base64Image) {
       console.log("Imagen Base64 recibida:", base64Image ? base64Image.substring(0, 50) + "..." : "No hay imagen Base64");
-      
-      // Almacenar la imagen en los mismos campos que usa la base de datos
       setPost(prev => ({
         ...prev,
         coverImage: file,
         coverImagePreview: base64Image,
-        Imagen_portada: base64Image // Campo usado por la base de datos
+        Imagen_portada: base64Image
       }));
-      
-      console.log("Imagen almacenada en campos: coverImage, coverImagePreview y Imagen_portada");
     } 
     else if (!file && base64Image === null) {
       console.log("Eliminando imagen seleccionada");
@@ -451,7 +447,7 @@ const PostEditor = () => {
         ...prev,
         coverImage: null,
         coverImagePreview: null,
-        Imagen_portada: null // Limpiar también este campo
+        Imagen_portada: null
       }));
     }
   };
@@ -493,33 +489,16 @@ const PostEditor = () => {
         }
       }
       
-      // Asegurar que la imagen de portada esté en el campo correcto
-      let imagenPortada = post.Imagen_portada || post.coverImagePreview || null;
-      
       const postData = {
         titulo: post.title,
         contenido: post.content,
         resumen: post.resumen || post.title.substring(0, 150),
         estado: 'borrador',
         categorias: categorias,
-        Imagen_portada: imagenPortada
+        Imagen_portada: post.Imagen_portada || null
       };
       
-      console.log("Guardando borrador con datos:", {
-        titulo: postData.titulo,
-        resumen: postData.resumen,
-        categorias: postData.categorias,
-        imagenPresente: postData.Imagen_portada ? 'Sí' : 'No'
-      });
-      
-      if (postData.Imagen_portada) {
-        console.log("Imagen incluida en el borrador (primeros 50 caracteres):", 
-          typeof postData.Imagen_portada === 'string' ? 
-          postData.Imagen_portada.substring(0, 50) + "..." : "No es una cadena");
-        console.log("Longitud de la imagen Base64:", 
-          typeof postData.Imagen_portada === 'string' ? 
-          postData.Imagen_portada.length : "No es una cadena");
-      }
+      console.log("Guardando borrador con datos:", postData);
       
       let result;
       
@@ -594,51 +573,20 @@ const PostEditor = () => {
         categoriaId = 1;
       }
       
-      // Asegurar que la imagen de portada esté en el campo correcto
-      let imagenPortada = post.Imagen_portada || post.coverImagePreview || null;
-      
-      // Verificar el tamaño de la imagen si existe
-      if (imagenPortada && typeof imagenPortada === 'string') {
-        const sizeInMB = (imagenPortada.length * 0.75) / (1024 * 1024);
-        console.log(`Tamaño aproximado de la imagen: ${sizeInMB.toFixed(2)}MB`);
-        
-        if (sizeInMB > 2) {
-          console.warn(`La imagen es grande (${sizeInMB.toFixed(2)}MB), podría causar problemas`);
-          
-          // Mostrar advertencia al usuario
-          setSaveMessage({
-            type: 'warning',
-            text: `La imagen es grande (${sizeInMB.toFixed(2)}MB). Si hay problemas al guardar, intenta con una imagen más pequeña.`,
-            icon: '⚠️'
-          });
-          
-          setTimeout(() => setSaveMessage(null), 5000);
-        }
-      }
-      
       const postData = {
         titulo: post.title,
         contenido: post.content,
         resumen: post.resumen || post.title.substring(0, 150),
         estado: 'publicado',
         categorias: [categoriaId],
-        Imagen_portada: imagenPortada
+        Imagen_portada: post.Imagen_portada || null
       };
       
-      console.log("Enviando publicación con datos:", {
-        titulo: postData.titulo,
-        resumen: postData.resumen,
-        categorias: postData.categorias,
-        imagenPresente: postData.Imagen_portada ? 'Sí' : 'No'
-      });
+      console.log("Enviando publicación con datos:", postData);
       
-      if (postData.Imagen_portada) {
-        console.log("Imagen incluida en la publicación (primeros 50 caracteres):", 
-          typeof postData.Imagen_portada === 'string' ? 
-          postData.Imagen_portada.substring(0, 50) + "..." : "No es una cadena");
-        console.log("Longitud de la imagen Base64:", 
-          typeof postData.Imagen_portada === 'string' ? 
-          postData.Imagen_portada.length : "No es una cadena");
+      if (post.Imagen_portada) {
+        console.log("Imagen incluida en la publicación (primeros 50 caracteres):", post.Imagen_portada.substring(0, 50) + "...");
+        console.log("Longitud de la imagen Base64:", post.Imagen_portada.length);
       } else {
         console.log("No se incluyó imagen en la publicación");
       }
@@ -647,74 +595,12 @@ const PostEditor = () => {
       
       if (isEditing) {
         console.log(`Actualizando post existente con ID: ${postId}`);
-        try {
-          result = await updatePublicacion(postId, postData);
-          
-          // Verificar si hay advertencia sobre la imagen
-          if (result && result.warning) {
-            setSaveMessage({
-              type: 'warning',
-              text: result.warning,
-              icon: '⚠️'
-            });
-            
-            setTimeout(() => {
-              setSaveMessage({
-                type: 'success',
-                text: '¡Post actualizado correctamente!',
-                icon: '🎉'
-              });
-              
-              setTimeout(() => setSaveMessage(null), 3000);
-            }, 4000);
-          } else {
-            setSaveMessage({
-              type: 'success',
-              text: '¡Post actualizado correctamente!',
-              icon: '🎉'
-            });
-            
-            setTimeout(() => setSaveMessage(null), 3000);
-          }
-        } catch (updateError) {
-          console.error('Error al actualizar post:', updateError);
-          
-          // Si el error parece estar relacionado con la imagen, intentar sin ella
-          if (updateError.message.toLowerCase().includes('imagen') || 
-              updateError.message.toLowerCase().includes('image') ||
-              updateError.message.toLowerCase().includes('large') ||
-              updateError.message.toLowerCase().includes('grande') ||
-              updateError.message.toLowerCase().includes('size') ||
-              updateError.message.toLowerCase().includes('tamaño')) {
-            
-            setSaveMessage({
-              type: 'warning',
-              text: 'Error con la imagen. Intentando actualizar sin la imagen...',
-              icon: '⚠️'
-            });
-            
-            try {
-              // Intentar nuevamente sin la imagen
-              const postDataWithoutImage = { ...postData };
-              delete postDataWithoutImage.Imagen_portada;
-              
-              result = await updatePublicacion(postId, postDataWithoutImage);
-              
-              setSaveMessage({
-                type: 'warning',
-                text: 'Post actualizado sin la imagen. La imagen era demasiado grande.',
-                icon: '⚠️'
-              });
-              
-              setTimeout(() => setSaveMessage(null), 5000);
-            } catch (retryError) {
-              console.error('Error al reintentar sin imagen:', retryError);
-              throw retryError; // Propagar el error para que sea manejado por el catch principal
-            }
-          } else {
-            throw updateError; // Propagar el error para que sea manejado por el catch principal
-          }
-        }
+        result = await updatePublicacion(postId, postData);
+        setSaveMessage({
+          type: 'success',
+          text: '¡Post actualizado correctamente!',
+          icon: '🎉'
+        });
       } else {
         const hasHTMLImages = post.content.includes('<img') && post.content.includes('src="data:image');
         const shouldUseHTMLEndpoint = post.editorMode === 'html' || hasHTMLImages;
@@ -765,7 +651,7 @@ const PostEditor = () => {
         icon: '✖'
       });
       
-      setTimeout(() => setSaveMessage(null), 5000);
+      setTimeout(() => setSaveMessage(null), 3000);
     }
   };
 
