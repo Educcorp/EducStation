@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { spacing, typography, shadows, borderRadius, transitions } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
-import { FaUser, FaCalendarAlt, FaTag, FaEye, FaBookOpen, FaArrowRight, FaThumbsUp } from 'react-icons/fa';
+import { FaUser, FaCalendarAlt, FaTag, FaEye, FaBookOpen, FaArrowRight } from 'react-icons/fa';
 
 // Importar utilidades
 import { 
@@ -130,8 +130,6 @@ const cleanSummary = (content, maxLength = 120) => {
 const PostCard = ({ post, showCategory = true, showViews = true }) => {
   const [isHovered, setIsHovered] = useState(false);
   const { colors, isDarkMode } = useTheme();
-  const [likes, setLikes] = useState(post.contador_likes || 0);
-  const [liked, setLiked] = useState(false);
   
   // Añadir los keyframes al montar el componente
   React.useEffect(() => {
@@ -235,24 +233,6 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
         }}
       />
     );
-  };
-
-  const handleLike = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (liked) return; // Evitar múltiples likes
-    try {
-      const response = await fetch(`/api/publicaciones/${post.ID_publicaciones}/like`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (response.ok) {
-        setLikes(likes + 1);
-        setLiked(true);
-      }
-    } catch (err) {
-      // Manejar error si se desea
-    }
   };
 
   const styles = {
@@ -467,7 +447,6 @@ const PostCard = ({ post, showCategory = true, showViews = true }) => {
                 fontSize: typography.fontSize.sm,
                 fontWeight: typography.fontWeight.medium,
               }}
-              onClick={(e) => e.stopPropagation()}
             >
               <span>Leer más</span>
               <FaArrowRight size={12} />

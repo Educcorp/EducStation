@@ -489,8 +489,6 @@ const HomePage = () => {
               ? post.categorias[0].Nombre_categoria 
               : 'Sin categoría',
             time: '4 horas atrás',
-            likes: Math.floor(Math.random() * 200),
-            // Agregamos el post original para usar en PostCard
             originalPost: post
           }));
           
@@ -556,7 +554,15 @@ const HomePage = () => {
               image: '/assets/images/tecnologia.jpg',
               category: 'Herramientas Tecnológicas',
               time: '4 horas atrás',
-              likes: 124
+              originalPost: {
+                ID_publicaciones: 1,
+                Titulo: 'Herramientas Tecnológicas para la Educación',
+                Imagen_portada: '/assets/images/tecnologia.jpg',
+                categorias: [
+                  { Nombre_categoria: 'Herramientas Tecnológicas' }
+                ],
+                Resumen: 'Descubre las mejores herramientas digitales que están transformando la educación moderna y cómo implementarlas en tu aula.'
+              }
             },
             {
               id: 2,
@@ -564,7 +570,15 @@ const HomePage = () => {
               image: '/assets/images/humanos.jpg',
               category: 'Técnicas de Estudio',
               time: '4 horas atrás',
-              likes: 89
+              originalPost: {
+                ID_publicaciones: 2,
+                Titulo: 'Comunidad y Colaboración en la Educación',
+                Imagen_portada: '/assets/images/humanos.jpg',
+                categorias: [
+                  { Nombre_categoria: 'Técnicas de Estudio' }
+                ],
+                Resumen: 'Conecta con otros estudiantes y educadores, comparte experiencias y aprende juntos'
+              }
             },
             {
               id: 3,
@@ -572,7 +586,15 @@ const HomePage = () => {
               image: '/assets/images/desafio.jpg',
               category: 'Problemáticas en el Estudio',
               time: '4 horas atrás',
-              likes: 76
+              originalPost: {
+                ID_publicaciones: 3,
+                Titulo: 'Problemas a enfrentar en la actualidad',
+                Imagen_portada: '/assets/images/desafio.jpg',
+                categorias: [
+                  { Nombre_categoria: 'Problemáticas en el Estudio' }
+                ],
+                Resumen: 'Explora las tendencias emergentes en educación digital y su impacto en el aprendizaje del siglo XXI.'
+              }
             },
             {
               id: 4,
@@ -580,7 +602,15 @@ const HomePage = () => {
               image: '/assets/images/tecnologia.jpg',
               category: 'Herramientas Tecnológicas',
               time: '5 horas atrás',
-              likes: 105
+              originalPost: {
+                ID_publicaciones: 4,
+                Titulo: 'La gamificación en el aula moderna',
+                Imagen_portada: '/assets/images/tecnologia.jpg',
+                categorias: [
+                  { Nombre_categoria: 'Herramientas Tecnológicas' }
+                ],
+                Resumen: 'Descubre cómo implementar la gamificación en tu aula moderna para motivar a los estudiantes.'
+              }
             },
             {
               id: 5,
@@ -588,7 +618,15 @@ const HomePage = () => {
               image: '/assets/images/humanos.jpg',
               category: 'Educación de Calidad',
               time: '6 horas atrás',
-              likes: 92
+              originalPost: {
+                ID_publicaciones: 5,
+                Titulo: 'Educación inclusiva: Estrategias prácticas',
+                Imagen_portada: '/assets/images/humanos.jpg',
+                categorias: [
+                  { Nombre_categoria: 'Educación de Calidad' }
+                ],
+                Resumen: 'Descubre cómo implementar la educación inclusiva en tu aula moderna para todos los estudiantes.'
+              }
             },
             {
               id: 6,
@@ -596,7 +634,15 @@ const HomePage = () => {
               image: '/assets/images/maestro.jpg',
               category: 'Técnicas de Estudio',
               time: '8 horas atrás',
-              likes: 67
+              originalPost: {
+                ID_publicaciones: 6,
+                Titulo: 'Evaluación formativa vs sumativa',
+                Imagen_portada: '/assets/images/maestro.jpg',
+                categorias: [
+                  { Nombre_categoria: 'Técnicas de Estudio' }
+                ],
+                Resumen: 'Descubre las diferencias entre evaluación formativa y sumativa y cómo implementar ambas en tu aula.'
+              }
             }
           ]);
         }
