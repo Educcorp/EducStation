@@ -99,12 +99,40 @@ const PublicRoute = ({ children }) => {
     return <LoadingSpinner />;
   }
   
-  // Redirigir a home si ya está autenticado
+  // Redirigir a dashboard si ya está autenticado
   if (isAuth) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
   
   return children;
+};
+
+// Componente para rutas del blog (accesibles públicamente pero con funciones limitadas)
+const PublicBlogRoute = ({ children }) => {
+  const { loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  
+  // Permitir acceso independientemente del estado de autenticación
+  return children;
+};
+
+// Componente para redirección inteligente según autenticación
+const SmartRedirect = () => {
+  const { isAuth, loading } = useAuth();
+  
+  if (loading) {
+    return <LoadingSpinner />;
+  }
+  
+  // Redirigir según el estado de autenticación
+  if (isAuth) {
+    return <Navigate to="/dashboard" replace />;
+  } else {
+    return <Navigate to="/home" replace />;
+  }
 };
 
 const App = () => {
@@ -180,29 +208,63 @@ const App = () => {
                   <CookiesPage />
                 } 
               />
-
-              {/* Rutas protegidas (requieren autenticación) */}
+              
+              {/* Página de inicio (accesible públicamente) */}
               <Route 
-                path="/" 
+                path="/home" 
                 element={
-                  <PrivateRoute>
+                  <PublicBlogRoute>
                     <HomePage />
-                  </PrivateRoute>
+                  </PublicBlogRoute>
                 } 
               />
+
+              {/* Rutas del blog (accesibles públicamente) */}
               <Route 
                 path="/blog" 
                 element={
-                  <PrivateRoute>
+                  <PublicBlogRoute>
                     <BlogPage />
-                  </PrivateRoute>
+                  </PublicBlogRoute>
                 } 
               />
               <Route 
                 path="/blog/:id" 
                 element={
-                  <PrivateRoute>
+                  <PublicBlogRoute>
                     <BlogDetailPage />
+                  </PublicBlogRoute>
+                } 
+              />
+              <Route 
+                path="/categoria/:id" 
+                element={
+                  <PublicBlogRoute>
+                    <CategoryPage />
+                  </PublicBlogRoute>
+                } 
+              />
+              <Route 
+                path="/categorias" 
+                element={
+                  <PublicBlogRoute>
+                    <CategoriesListPage />
+                  </PublicBlogRoute>
+                } 
+              />
+
+              {/* Ruta raíz - redirección inteligente */}
+              <Route 
+                path="/" 
+                element={<SmartRedirect />} 
+              />
+
+              {/* Rutas protegidas (requieren autenticación) */}
+              <Route 
+                path="/dashboard" 
+                element={
+                  <PrivateRoute>
+                    <HomePage />
                   </PrivateRoute>
                 } 
               />
@@ -255,22 +317,6 @@ const App = () => {
                 } 
               />
               <Route 
-                path="/categoria/:id" 
-                element={
-                  <PrivateRoute>
-                    <CategoryPage />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/categorias" 
-                element={
-                  <PrivateRoute>
-                    <CategoriesListPage />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
                 path="/settings" 
                 element={
                   <PrivateRoute>
@@ -295,12 +341,10 @@ const App = () => {
                 } 
               />
               
-              {/* Ruta por defecto, redirige a login o home dependiendo de la autenticación */}
+              {/* Ruta por defecto, redirige según el estado de autenticación */}
               <Route 
                 path="*" 
-                element={
-                  <Navigate to="/login" replace />
-                } 
+                element={<SmartRedirect />} 
               />
             </Routes>
           </div>

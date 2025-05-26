@@ -632,7 +632,7 @@ const Header = () => {
 
   const menuItems = [
     {
-      path: '/',
+      path: isAuth ? '/dashboard' : '/home',
       label: 'Inicio',
       icon: <FaHome size={20} />
     },
@@ -716,12 +716,13 @@ const Header = () => {
             onMouseLeave={() => setHoveredItem(null)}
             onClick={e => {
               e.preventDefault();
+              const homePath = isAuth ? '/dashboard' : '/home';
               // Si ya estamos en home, recargar inmediatamente
-              if(location.pathname === '/') {
+              if(location.pathname === homePath) {
                 window.location.reload();
               } else {
                 // Si estamos en otra página, navegar directamente con recarga instantánea
-                window.location.href = '/';
+                window.location.href = homePath;
               }
             }}
           >
@@ -1004,23 +1005,31 @@ const Header = () => {
             ) : (
               <>
                 {/* Menú para usuarios no autenticados */}
-                <div style={styles.menuHeader}>Menú</div>
-                <Link to="/" style={getMenuItemStyle(0)} onMouseEnter={() => setHoveredItem('menu-0')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span style={styles.menuItemIcon}><FaHome size={20} /></span> Inicio
+                <div style={styles.menuHeader}>Explorar</div>
+                <Link to="/blog" style={getMenuItemStyle(0)} onMouseEnter={() => setHoveredItem('menu-0')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}><FaGlobe size={20} /></span> Blog
                 </Link>
-                <Link to="/about" style={getMenuItemStyle(1)} onMouseEnter={() => setHoveredItem('menu-1')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                <Link to="/categorias" style={getMenuItemStyle(1)} onMouseEnter={() => setHoveredItem('menu-1')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}><FaTags size={20} /></span> Categorías
+                </Link>
+                
+                <div style={styles.menuSeparator}></div>
+                
+                <div style={styles.menuHeader}>Información</div>
+                <Link to="/about" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}><FaInfo size={20} /></span> Acerca de
                 </Link>
-                <Link to="/contact" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                <Link to="/contact" style={getMenuItemStyle(3)} onMouseEnter={() => setHoveredItem('menu-3')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}><FaEnvelope size={20} /></span> Contacto
                 </Link>
 
                 <div style={styles.menuSeparator}></div>
 
-                <Link to="/login" style={getMenuItemStyle(3)} onMouseEnter={() => setHoveredItem('menu-3')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                <div style={styles.menuHeader}>Cuenta</div>
+                <Link to="/login" style={getMenuItemStyle(4)} onMouseEnter={() => setHoveredItem('menu-4')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}><FaLock size={20} /></span> Iniciar Sesión
                 </Link>
-                <Link to="/register" style={getMenuItemStyle(4)} onMouseEnter={() => setHoveredItem('menu-4')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                <Link to="/register" style={getMenuItemStyle(5)} onMouseEnter={() => setHoveredItem('menu-5')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
                   <span style={styles.menuItemIcon}><FaPenSquare size={20} /></span> Registrarse
                 </Link>
 

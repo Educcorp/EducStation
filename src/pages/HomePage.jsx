@@ -7,6 +7,7 @@ import PostCard from '../components/blog/PostCard';
 import { spacing, typography, transitions, applyHoverStyles } from '../styles/theme';
 // Importamos el hook useTheme
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { useLocation } from 'react-router-dom';
 
 // Componente para el carrusel
@@ -241,6 +242,7 @@ const NewsCarousel = ({ notes }) => {
 const HomePage = () => {
   // Añadimos el hook useTheme en el componente principal
   const { colors } = useTheme();
+  const { isAuth } = useAuth();
   
   // Estado para la categoría activa
   const [activeCategory, setActiveCategory] = useState('Todos');
@@ -611,8 +613,18 @@ const HomePage = () => {
 
         {/* Hero Section */}
         <div style={styles.hero}>
-          <h1 style={styles.heroTitle}>Tu Destino para Educación, Innovación y Crecimiento</h1>
-          <p style={styles.heroText}>Descubre consejos, tendencias y técnicas para mejorar tu experiencia educativa y desarrollo profesional. Únete a nuestra comunidad de aprendices y educadores comprometidos.</p>
+          <h1 style={styles.heroTitle}>
+            {isAuth 
+              ? 'Tu Destino para Educación, Innovación y Crecimiento'
+              : 'Bienvenido a EducStation - Tu Plataforma Educativa'
+            }
+          </h1>
+          <p style={styles.heroText}>
+            {isAuth 
+              ? 'Descubre consejos, tendencias y técnicas para mejorar tu experiencia educativa y desarrollo profesional. Únete a nuestra comunidad de aprendices y educadores comprometidos.'
+              : 'Explora contenido educativo de calidad, lee artículos especializados y descubre recursos para tu crecimiento académico. Regístrate para acceder a funciones exclusivas como comentarios y personalización.'
+            }
+          </p>
 
           <div
             style={hoveredCategory === 'circle' ? applyHoverStyles(styles.circleLink) : styles.circleLink}
@@ -639,6 +651,90 @@ const HomePage = () => {
 
         {/* NUEVO: Carrusel de Noticias */}
         <NewsCarousel notes={carouselNotes} />
+
+        {/* Sección de invitación para usuarios no autenticados */}
+        {!isAuth && (
+          <div style={{
+            background: `linear-gradient(135deg, ${colors.primary}15 0%, ${colors.secondary}15 100%)`,
+            padding: `${spacing.xl} ${spacing.lg}`,
+            borderRadius: '16px',
+            textAlign: 'center',
+            marginBottom: spacing.xxl,
+            border: `1px solid ${colors.primary}20`
+          }}>
+            <h3 style={{
+              fontSize: typography.fontSize.xl,
+              color: colors.primary,
+              marginBottom: spacing.md,
+              fontWeight: typography.fontWeight.semiBold
+            }}>
+              ¡Únete a la Comunidad EducStation!
+            </h3>
+            <p style={{
+              fontSize: typography.fontSize.md,
+              color: colors.textSecondary,
+              marginBottom: spacing.lg,
+              maxWidth: '600px',
+              margin: `0 auto ${spacing.lg} auto`,
+              lineHeight: 1.6
+            }}>
+              Regístrate para acceder a funciones exclusivas como comentarios, personalización de contenido y participación en discusiones educativas.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: spacing.md,
+              justifyContent: 'center',
+              flexWrap: 'wrap'
+            }}>
+              <a
+                href="/register"
+                style={{
+                  padding: `${spacing.sm} ${spacing.xl}`,
+                  backgroundColor: colors.primary,
+                  color: colors.white,
+                  textDecoration: 'none',
+                  borderRadius: '8px',
+                  fontWeight: typography.fontWeight.semiBold,
+                  transition: transitions.default,
+                  boxShadow: '0 4px 12px rgba(31, 78, 78, 0.25)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.primaryDark;
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.primary;
+                  e.currentTarget.style.transform = 'translateY(0)';
+                }}
+              >
+                Registrarse Gratis
+              </a>
+              <a
+                href="/login"
+                style={{
+                  padding: `${spacing.sm} ${spacing.xl}`,
+                  backgroundColor: 'transparent',
+                  color: colors.primary,
+                  textDecoration: 'none',
+                  borderRadius: '8px',
+                  fontWeight: typography.fontWeight.medium,
+                  border: `2px solid ${colors.primary}`,
+                  transition: transitions.default
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = colors.primary;
+                  e.currentTarget.style.color = colors.white;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                  e.currentTarget.style.color = colors.primary;
+                }}
+              >
+                Iniciar Sesión
+              </a>
+            </div>
+          </div>
+        )}
 
         {/* Categories */}
         <div style={styles.categories}>
