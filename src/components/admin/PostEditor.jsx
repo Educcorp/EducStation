@@ -504,7 +504,7 @@ const PostEditor = () => {
       let result;
       
       if (isEditing) {
-        console.log(`Editando borrador con ID: ${postId}. Se eliminará el post actual y se creará uno nuevo`);
+        console.log(`Editando borrador con ID: ${postId}. Se editará el post actual`);
         
         // CAMBIO: En lugar de actualizar, eliminar el post existente y crear uno nuevo
         try {
@@ -562,7 +562,7 @@ const PostEditor = () => {
       setIsSaving(false);
       setSaveMessage({
         type: 'success',
-        text: isEditing ? 'Borrador actualizado correctamente (Se creó un nuevo post)' : 'Borrador guardado correctamente',
+        text: isEditing ? '¡Post actualizado correctamente :)!' : '',
         icon: '✓'
       });
       
@@ -628,8 +628,8 @@ const PostEditor = () => {
       let result;
       
       if (isEditing) {
-        console.log(`Editando post con ID: ${postId}. Se eliminará el post actual y se creará uno nuevo`);
-        
+        console.log(`Editando post con ID: ${postId}. Se editará el post actual`);
+      
         // CAMBIO: En lugar de actualizar, eliminar el post existente y crear uno nuevo
         try {
           // Primero, eliminar el post existente
