@@ -18,9 +18,10 @@ import ImportExportActions from './ImportExportActions';
 const isFullHTML = (content) => {
   if (!content) return false;
   // Verifica si el contenido comienza con DOCTYPE html
-  return content.trim().startsWith('<!DOCTYPE html>') || 
-         content.trim().startsWith('<!doctype html>') ||
-         content.trim().startsWith('<html');
+  const trimmedContent = content.trim().toLowerCase();
+  return trimmedContent.startsWith('<!doctype html>') || 
+         trimmedContent.startsWith('<!DOCTYPE html>') || 
+         trimmedContent.startsWith('<html');
 };
 
 // Componente para la etiqueta de Contenido animada
@@ -273,6 +274,10 @@ const PostEditor = () => {
         console.log('¿El contenido tiene HTML?', contentHasHTML);
         console.log('¿Es un documento HTML completo?', isHTMLDocument);
         
+        // Determinar el modo de editor basado en el contenido
+        const editorMode = isHTMLDocument ? 'html' : (contentHasHTML ? 'html' : 'simple');
+        console.log('Modo de editor seleccionado:', editorMode);
+        
         setPost({
           title: postData.titulo || '',
           content: postData.contenido || '',
@@ -281,9 +286,12 @@ const PostEditor = () => {
           coverImagePreview: postData.imagen_url || null,
           status: postData.estado || 'draft',
           publishDate: postData.fecha_publicacion ? new Date(postData.fecha_publicacion).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
-          editorMode: isHTMLDocument ? 'html' : (contentHasHTML ? 'html' : 'simple'),
+          editorMode: editorMode,
           resumen: postData.resumen || ''
         });
+        
+        // Asegurarse de que el contenido se cargue correctamente en el editor
+        console.log('Contenido cargado en el editor:', postData.contenido ? postData.contenido.substring(0, 50) + '...' : 'vacío');
         
         setIsEditing(true);
         setIsInitialized(true);

@@ -130,6 +130,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     if (content !== undefined && content !== null) {
       setInternalContent(content);
       setSimpleContent(content);
+      
+      // Si estamos en modo desarrollador, asegurarse de que el textarea tenga el contenido
+      if (mode === 'developer' && textAreaRef.current) {
+        textAreaRef.current.value = content;
+      }
+      
+      // Log adicional para depuración
+      console.log('DualModeEditor - Contenido actualizado en modo:', mode);
     }
   }, [content]);
 
@@ -265,6 +273,13 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
       setActiveTab('code');
       // Asegurar que el contenido esté sincronizado
       setInternalContent(content || '');
+      
+      // Asegurarse de que el textarea tenga el contenido
+      if (textAreaRef.current) {
+        setTimeout(() => {
+          textAreaRef.current.value = content || '';
+        }, 50);
+      }
     } else {
       // Si pasamos a modo simple, sincronizamos el contenido
       setSimpleContent(internalContent || '');
@@ -289,6 +304,14 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
     
     // Asegurar que el contenido esté sincronizado
     setInternalContent(content || '');
+    
+    // Asegurarse de que el textarea tenga el contenido actualizado
+    setTimeout(() => {
+      if (textAreaRef.current) {
+        textAreaRef.current.value = content || '';
+        console.log('DualModeEditor - confirmDeveloperMode: Contenido sincronizado en textarea');
+      }
+    }, 50);
     
     // Notificar al componente padre sobre el cambio de modo
     const event = {
@@ -765,46 +788,54 @@ const DualModeEditor = ({ content, onChange, initialMode = 'simple', onExport, o
         {mode === 'developer' && (
           <>
             {activeTab === 'code' && (
-              <>
-                <EditorToolbar 
-                  onInsertMarkdown={handleToolbarAction} 
-                  mode="html"
+              <div style={{
+                position: 'relative',
+                height: '600px',
+                backgroundColor: '#1E1E1E',
+                borderRadius: `0 0 ${borderRadius.md} ${borderRadius.md}`,
+                overflow: 'hidden'
+              }}>
+                <textarea
+                  ref={textAreaRef}
+                  defaultValue={internalContent}
+                  onChange={handleTextAreaChange}
+                  onPaste={handlePaste}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    padding: spacing.md,
+                    backgroundColor: '#1E1E1E',
+                    color: '#D4D4D4',
+                    border: 'none',
+                    outline: 'none',
+                    resize: 'none',
+                    fontFamily: 'Consolas, Monaco, "Andale Mono", "Ubuntu Mono", monospace',
+                    fontSize: '14px',
+                    lineHeight: '1.5',
+                    tabSize: '2',
+                    whiteSpace: 'pre',
+                    overflowX: 'auto',
+                    overflowY: 'auto'
+                  }}
+                  spellCheck={false}
                 />
-                
-                {isHighlightingEnabled ? (
-                  <SyntaxHighlighter
-                    content={internalContent}
-                    onChange={handleTextAreaChange}
-                    textAreaRef={textAreaRef}
-                  />
-                ) : (
-                  <textarea
-                    ref={textAreaRef}
-                    value={internalContent}
-                    onChange={handleTextAreaChange}
-                    onPaste={handlePaste}
-                    style={{
-                      width: '100%',
-                      height: '600px',
-                      padding: spacing.md,
-                      backgroundColor: '#272822',
-                      color: '#F8F8F2',
-                      fontFamily: "'Cascadia Code', 'Consolas', 'Monaco', 'Courier New', monospace",
-                      fontSize: '14px',
-                      lineHeight: 1.5,
-                      border: `1px solid ${colors.gray200}`,
-                      borderRadius: borderRadius.md,
-                      resize: 'vertical',
-                      outline: 'none',
-                      overflowWrap: 'normal',
-                      whiteSpace: 'pre',
-                      boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.05)'
-                    }}
-                    placeholder="Escribe o pega tu código HTML aquí..."
-                    spellCheck="false"
-                  />
+                {imageError && (
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '20px',
+                    left: '20px',
+                    right: '20px',
+                    backgroundColor: '#E34C26',
+                    color: '#FFFFFF',
+                    padding: spacing.md,
+                    borderRadius: borderRadius.md,
+                    boxShadow: shadows.md,
+                    animation: 'fadeIn 0.3s ease-out'
+                  }}>
+                    {imageError}
+                  </div>
                 )}
-              </>
+              </div>
             )}
 
             {activeTab === 'preview' && (
