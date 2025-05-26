@@ -10,7 +10,7 @@ import { deletePublicacion, getAllPublicaciones } from '../services/publicacione
 import { getAllCategorias, getPublicacionesByCategoria } from '../services/categoriasServices';
 import { toast } from 'react-toastify';
 import AnimatedButton from '../components/utils/AnimatedButton';
-
+//test 
 // Estilo keyframes para la animación de brillo
 const shineAnimation = `
   @keyframes shine {
