@@ -5,7 +5,6 @@ import { BsChatDots, BsArrowUp, BsQuestionCircle, BsLightbulb } from 'react-icon
 import { MdSend, MdClose, MdSchool } from 'react-icons/md';
 
 const API_URL = 'https://educstation-backend-production.up.railway.app/api/chatbot/message';
-const PROMO_INTERVAL = 2 * 60 * 60 * 1000; // 2 horas en milisegundos
 
 const Chatbot = () => {
   const { colors, isDarkMode } = useTheme();
@@ -23,45 +22,13 @@ const Chatbot = () => {
   const inputRef = useRef(null);
   const promoTimeoutRef = useRef(null);
 
-  // Verificar si se debe mostrar el mensaje promocional basado en el tiempo
-  const shouldShowPromo = () => {
-    const lastShownTime = localStorage.getItem('chatbotPromoLastShown');
-    
-    if (!lastShownTime) {
-      console.log('Chatbot: Primera vez que se muestra el mensaje promocional');
-      return true; // Primera vez, mostrar el mensaje
-    }
-    
-    const lastTime = parseInt(lastShownTime, 10);
-    const currentTime = Date.now();
-    const timeDiff = currentTime - lastTime;
-    const timeRemaining = PROMO_INTERVAL - timeDiff;
-    
-    if (timeRemaining <= 0) {
-      console.log('Chatbot: Ha pasado el intervalo de tiempo, mostrando mensaje promocional');
-      return true;
-    } else {
-      const minutesRemaining = Math.floor(timeRemaining / (60 * 1000));
-      console.log(`Chatbot: Próximo mensaje promocional en ${minutesRemaining} minutos`);
-      return false;
-    }
-  };
-
-  // Función para reiniciar manualmente el temporizador (útil para pruebas)
-  const resetPromoTimer = () => {
-    localStorage.removeItem('chatbotPromoLastShown');
-    console.log('Chatbot: Temporizador de promoción reiniciado');
-  };
-
   // Mostrar mensaje promocional después de unos segundos si el chat está cerrado
   useEffect(() => {
-    if (!open && shouldShowPromo()) {
+    if (!open && !sessionStorage.getItem('chatbotHelpDismissed')) {
       // Mostrar mensaje promocional después de un tiempo
       promoTimeoutRef.current = setTimeout(() => {
         setShowPromo(true);
         setPromoAnimation('slideIn');
-        // Guardar el momento actual como la última vez que se mostró
-        localStorage.setItem('chatbotPromoLastShown', Date.now().toString());
       }, 3000); // Mostrar después de 3 segundos
       
       // Ocultar mensaje promocional después de un tiempo si el usuario no interactúa
@@ -85,6 +52,7 @@ const Chatbot = () => {
 
   // Cerrar el mensaje promocional con animación
   const handleClosePromo = () => {
+    sessionStorage.setItem('chatbotHelpDismissed', 'true');
     setPromoAnimation('slideOut');
     setTimeout(() => {
       setShowPromo(false);
@@ -94,6 +62,7 @@ const Chatbot = () => {
 
   // Abrir el chat desde el mensaje promocional
   const handleOpenChatFromPromo = () => {
+    sessionStorage.setItem('chatbotHelpDismissed', 'true');
     handleClosePromo();
     setOpen(true);
   };
@@ -687,21 +656,7 @@ const Chatbot = () => {
           
           <button 
             style={styles.toggle} 
-            onClick={() => setOpen(true)}
-            onDoubleClick={(e) => {
-              // No hacer nada en doble clic para evitar conflictos
-              e.preventDefault();
-            }}
-            onMouseDown={(e) => {
-              // Detectar triple clic para reiniciar el temporizador (solo para desarrolladores)
-              if (e.detail === 3) {
-                resetPromoTimer();
-                setTimeout(() => {
-                  setShowPromo(true);
-                  setPromoAnimation('slideIn');
-                }, 500);
-              }
-            }}
+            onClick={() => setOpen(true)} 
             title="Abrir asistente de educación"
           >
             <BsChatDots className="chatbot-toggle-icon" style={styles.toggleIcon} />
