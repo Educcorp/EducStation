@@ -84,38 +84,17 @@ const Header = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
-      // Si el scroll es menor a 100px, siempre mostrar el header
-      if (currentScrollY < 100) {
-        setIsVisible(true);
+      if (currentScrollY > lastScrollY) {
+        setIsVisible(false);
       } else {
-        // Si hacemos scroll hacia abajo, ocultar header
-        if (currentScrollY > lastScrollY && currentScrollY > 100) {
-          setIsVisible(false);
-        } else {
-          // Si hacemos scroll hacia arriba, mostrar header
-          setIsVisible(true);
-        }
+        setIsVisible(true);
       }
-      
       setLastScrollY(currentScrollY);
       setIsScrolled(currentScrollY > 50);
     };
 
-    // Usar throttle para mejor performance
-    let ticking = false;
-    const throttledHandleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          handleScroll();
-          ticking = false;
-        });
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', throttledHandleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', throttledHandleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
 
   // Ocultar notificación después de 3 segundos
@@ -264,49 +243,46 @@ const Header = () => {
   // Estilos del header
   const styles = {
     header: {
-      backgroundColor: isDarkMode ? 'rgba(25, 34, 34, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      backgroundColor: isDarkMode ? 'rgba(25, 34, 34, 0.85)' : 'rgba(255, 255, 255, 0.85)',
       color: isDarkMode ? '#fff' : '#000',
-      padding: '8px 0', // Reducido aún más para ser más compacto
+      padding: '16px',
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       width: '100%',
       zIndex: 1000,
-      // Transición más suave para el scroll
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      backdropFilter: 'blur(15px)',
-      WebkitBackdropFilter: 'blur(15px)',
-      boxShadow: isScrolled ? (isDarkMode ? '0 4px 30px rgba(0, 0, 0, 0.3)' : '0 4px 20px rgba(0, 0, 0, 0.15)') : 'none',
-      borderBottom: isScrolled ? (isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)') : 'none',
-      // Mejorar la animación de aparecer/desaparecer
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
+      boxShadow: isScrolled ? (isDarkMode ? '0 4px 30px rgba(0, 0, 0, 0.2)' : '0 4px 20px rgba(0, 0, 0, 0.1)') : 'none',
+      borderBottom: isScrolled ? (isDarkMode ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid rgba(0, 0, 0, 0.05)') : 'none',
       transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
       boxSizing: 'border-box',
     },
     headerSpacer: {
-      height: "50px", // Reducido aún más de 60px a 50px
+      height: "80px",
       width: "100%"
     },
     container: {
       maxWidth: "1200px",
       margin: "0 auto",
-      padding: `0 ${spacing.sm}`,
+      padding: `0 ${spacing.md}`,
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
       position: "relative",
       width: "100%",
-      boxSizing: "border-box",
-      minHeight: "50px", // Altura mínima del contenedor
+      boxSizing: "border-box"
     },
     logo: {
       display: "flex",
       alignItems: "center",
       color: colors.primary,
       textDecoration: "none",
-      fontSize: typography.fontSize.md, // Reducido de lg a md
+      fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.bold,
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
       position: 'relative',
       overflow: 'hidden',
     },
@@ -316,16 +292,16 @@ const Header = () => {
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      marginRight: spacing.xs,
-      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-      width: "32px", // Reducido de 36px a 32px
-      height: "32px", // Reducido de 36px a 32px
+      marginRight: spacing.sm,
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      width: "42px",
+      height: "42px",
       overflow: "hidden",
       boxShadow: isDarkMode ? '0 4px 12px rgba(0, 0, 0, 0.3)' : '0 4px 12px rgba(31, 78, 78, 0.15)',
     },
     navLinks: {
       display: "flex",
-      gap: spacing.sm // Reducido de md a sm
+      gap: spacing.xl
     },
     navLink: (isActivePath) => ({
       color: isDarkMode 
@@ -334,20 +310,19 @@ const Header = () => {
       textDecoration: 'none',
       fontWeight: isActivePath ? typography.fontWeight.bold : typography.fontWeight.medium,
       position: 'relative',
-      padding: `6px 8px`, // Padding fijo más pequeño
-      borderRadius: '6px',
-      transition: 'all 0.3s cubic-bezier(0.25, 0, 0.2, 1)',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: '8px',
+      transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
       display: 'flex',
       alignItems: 'center',
       background: isActivePath 
         ? (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(31, 78, 78, 0.08)')
         : 'transparent',
       overflow: 'hidden',
-      fontSize: typography.fontSize.xs, // Reducido de sm a xs
     }),
     profileIcon: {
-      width: "32px", // Reducido de 36px a 32px
-      height: "32px", // Reducido de 36px a 32px
+      width: "40px",
+      height: "40px",
       borderRadius: borderRadius.circle,
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(31, 78, 78, 0.08)',
       overflow: "hidden",
@@ -359,21 +334,27 @@ const Header = () => {
       justifyContent: "center",
       alignItems: "center"
     },
+    profileImg: {
+      width: "85%",
+      height: "85%",
+      objectFit: "contain",
+      borderRadius: borderRadius.circle
+    },
     menu: {
       position: "absolute",
-      top: "40px", // Reducido de 45px a 40px
+      top: "50px",
       right: "0",
-      backgroundColor: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      backgroundColor: isDarkMode ? 'rgba(40, 40, 40, 0.85)' : 'rgba(255, 255, 255, 0.85)',
       color: isDarkMode ? "#fff" : colors.textPrimary,
       boxShadow: isDarkMode ? '0 10px 30px rgba(0, 0, 0, 0.25)' : '0 10px 30px rgba(0, 0, 0, 0.15)',
       borderRadius: borderRadius.md,
-      padding: spacing.xs, // Reducido de sm a xs
+      padding: spacing.md,
       display: isMenuOpen ? "block" : "none",
       zIndex: 200,
-      minWidth: "160px", // Reducido de 180px a 160px
+      minWidth: "200px",
       transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-      backdropFilter: 'blur(15px)',
-      WebkitBackdropFilter: 'blur(15px)',
+      backdropFilter: 'blur(10px)',
+      WebkitBackdropFilter: 'blur(10px)',
       border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
       animation: isMenuOpen ? 'fadeInDown 0.3s forwards' : 'none',
       transformOrigin: 'top center',
@@ -424,11 +405,11 @@ const Header = () => {
       WebkitBackdropFilter: 'blur(5px)',
     },
     userAvatar: {
-      width: '50px', // Reducido de 60px a 50px
-      height: '50px', // Reducido de 60px a 50px
+      width: '60px',
+      height: '60px',
       borderRadius: '50%',
       margin: '0 auto',
-      marginBottom: spacing.xs, // Reducido de sm a xs
+      marginBottom: spacing.sm,
       border: isDarkMode 
         ? '2px solid rgba(216, 208, 169, 0.4)' 
         : `2px solid ${colors.primary}`,
@@ -625,55 +606,6 @@ const Header = () => {
       transition: 'opacity 0.5s ease',
       zIndex: 1,
     },
-  
-    // Agregar media queries responsive al final del objeto styles
-    '@media (max-width: 768px)': {
-      header: {
-        padding: `0 ${spacing.sm}`,
-        height: '60px',
-      },
-      headerContainer: {
-        padding: `0 ${spacing.sm}`,
-      },
-      logo: {
-        fontSize: typography.fontSize.lg,
-      },
-      logoImage: {
-        width: '32px',
-        height: '32px',
-      },
-      nav: {
-        display: 'none', // Ocultar navegación en móvil
-      },
-      menuButton: {
-        display: 'block',
-      },
-      userMenu: {
-        position: 'fixed',
-        top: '60px',
-        right: '0',
-        width: '100%',
-        maxWidth: '300px',
-        maxHeight: 'calc(100vh - 60px)',
-        overflow: 'auto',
-      }
-    },
-    
-    '@media (max-width: 480px)': {
-      logo: {
-        fontSize: typography.fontSize.md,
-      },
-      logoImage: {
-        width: '28px',
-        height: '28px',
-      },
-      userMenu: {
-        maxWidth: '100%',
-        right: '10px',
-        left: '10px',
-        width: 'calc(100% - 20px)',
-      }
-    }
   };
 
   const getMenuItemStyle = (index) => ({
@@ -773,325 +705,26 @@ const Header = () => {
     return particles;
   };
 
-  // Reemplazar todo el responsiveStyles con esta versión súper compacta
-  const responsiveStyles = `
-    /* TABLETS - 768px y menos */
-    @media (max-width: 768px) {
-      .header-container {
-        padding: 0 6px !important;
-        gap: 6px !important;
-        min-height: 42px !important;
-      }
-      
-      .header-logo {
-        font-size: 13px !important;
-      }
-      
-      .header-logo img {
-        width: 26px !important;
-        height: 26px !important;
-      }
-      
-      .header-nav {
-        gap: 8px !important;
-      }
-      
-      .header-nav a {
-        font-size: 11px !important;
-        padding: 4px 6px !important;
-      }
-      
-      .header-nav a span:first-child {
-        font-size: 12px !important;
-        margin-right: 3px !important;
-      }
-      
-      .header-profile-icon {
-        width: 30px !important;
-        height: 30px !important;
-        margin-left: 6px !important;
-      }
-      
-      .header-user-menu {
-        min-width: 150px !important;
-        right: -5px !important;
-        top: 35px !important;
-        padding: 6px !important;
-      }
-      
-      .header-user-menu .user-avatar {
-        width: 40px !important;
-        height: 40px !important;
-      }
-      
-      .header-user-menu .user-name {
-        font-size: 12px !important;
-      }
-      
-      .header-user-menu .user-role {
-        font-size: 9px !important;
-        padding: 1px 5px !important;
-      }
-      
-      .header-user-menu .menu-item {
-        padding: 5px 6px !important;
-        font-size: 10px !important;
-      }
-      
-      .header-user-menu .menu-item-icon {
-        font-size: 12px !important;
-        margin-right: 4px !important;
-      }
-      
-      .header-user-menu .menu-header {
-        font-size: 8px !important;
-        padding: 2px 6px !important;
-      }
-    }
-    
-    /* MÓVILES - 480px y menos */
-    @media (max-width: 480px) {
-      .header-container {
-        padding: 0 4px !important;
-        gap: 4px !important;
-        min-height: 40px !important;
-      }
-      
-      .header-logo {
-        font-size: 12px !important;
-      }
-      
-      .header-logo img {
-        width: 24px !important;
-        height: 24px !important;
-      }
-      
-      .header-nav {
-        gap: 6px !important;
-      }
-      
-      .header-nav a {
-        font-size: 10px !important;
-        padding: 3px 5px !important;
-      }
-      
-      .header-nav a span:first-child {
-        font-size: 11px !important;
-        margin-right: 2px !important;
-      }
-      
-      .header-profile-icon {
-        width: 28px !important;
-        height: 28px !important;
-        margin-left: 4px !important;
-      }
-      
-      .header-user-menu {
-        min-width: 130px !important;
-        right: 0px !important;
-        top: 32px !important;
-        padding: 4px !important;
-      }
-      
-      .header-user-menu .user-avatar {
-        width: 35px !important;
-        height: 35px !important;
-      }
-      
-      .header-user-menu .user-name {
-        font-size: 11px !important;
-      }
-      
-      .header-user-menu .user-role {
-        font-size: 8px !important;
-        padding: 1px 4px !important;
-      }
-      
-      .header-user-menu .menu-item {
-        padding: 4px 5px !important;
-        font-size: 9px !important;
-      }
-      
-      .header-user-menu .menu-item-icon {
-        font-size: 11px !important;
-        margin-right: 3px !important;
-      }
-      
-      .header-user-menu .menu-header {
-        font-size: 7px !important;
-        padding: 2px 5px !important;
-      }
-    }
-    
-    /* MÓVILES PEQUEÑOS - 360px y menos */
-    @media (max-width: 360px) {
-      .header-container {
-        padding: 0 3px !important;
-        gap: 3px !important;
-        min-height: 38px !important;
-      }
-      
-      .header-logo {
-        font-size: 11px !important;
-      }
-      
-      .header-logo img {
-        width: 22px !important;
-        height: 22px !important;
-      }
-      
-      .header-nav {
-        gap: 4px !important;
-      }
-      
-      .header-nav a {
-        font-size: 9px !important;
-        padding: 2px 4px !important;
-      }
-      
-      .header-nav a span:first-child {
-        font-size: 10px !important;
-        margin-right: 2px !important;
-      }
-      
-      .header-profile-icon {
-        width: 26px !important;
-        height: 26px !important;
-        margin-left: 3px !important;
-      }
-      
-      .header-user-menu {
-        min-width: 120px !important;
-        right: 0px !important;
-        top: 30px !important;
-        padding: 3px !important;
-      }
-      
-      .header-user-menu .user-avatar {
-        width: 32px !important;
-        height: 32px !important;
-      }
-      
-      .header-user-menu .user-name {
-        font-size: 10px !important;
-      }
-      
-      .header-user-menu .user-role {
-        font-size: 7px !important;
-        padding: 1px 3px !important;
-      }
-      
-      .header-user-menu .menu-item {
-        padding: 3px 4px !important;
-        font-size: 8px !important;
-      }
-      
-      .header-user-menu .menu-item-icon {
-        font-size: 10px !important;
-        margin-right: 2px !important;
-      }
-      
-      .header-user-menu .menu-header {
-        font-size: 6px !important;
-        padding: 1px 4px !important;
-      }
-    }
-    
-    /* MÓVILES EXTRA PEQUEÑOS - 320px y menos */
-    @media (max-width: 320px) {
-      .header-container {
-        padding: 0 3px !important;
-        gap: 3px !important;
-        min-height: 36px !important;
-      }
-      
-      .header-logo {
-        font-size: 10px !important;
-      }
-      
-      .header-logo img {
-        width: 20px !important;
-        height: 20px !important;
-      }
-      
-      .header-nav {
-        gap: 5px !important;
-      }
-      
-      .header-nav a {
-        font-size: 8px !important;
-        padding: 2px 3px !important;
-      }
-      
-      .header-nav a span:first-child {
-        font-size: 9px !important;
-        margin-right: 2px !important;
-      }
-      
-      .header-profile-icon {
-        width: 24px !important;
-        height: 24px !important;
-        margin-left: 3px !important;
-      }
-      
-      .header-user-menu {
-        min-width: 120px !important;
-        right: 0px !important;
-        top: 30px !important;
-        padding: 4px !important;
-      }
-      
-      .header-user-menu .user-avatar {
-        width: 32px !important;
-        height: 32px !important;
-      }
-      
-      .header-user-menu .user-name {
-        font-size: 9px !important;
-      }
-      
-      .header-user-menu .user-role {
-        font-size: 7px !important;
-        padding: 1px 3px !important;
-      }
-      
-      .header-user-menu .menu-item {
-        padding: 3px 4px !important;
-        font-size: 7px !important;
-      }
-      
-      .header-user-menu .menu-item-icon {
-        font-size: 9px !important;
-        margin-right: 3px !important;
-      }
-      
-      .header-user-menu .menu-header {
-        font-size: 6px !important;
-        padding: 1px 4px !important;
-      }
-    }
-  `;
-
   return (
     <>
-      <style>{responsiveStyles}</style>
       <header style={styles.header}>
         <div style={styles.backgroundParticles}>
           {renderParticles()}
         </div>
         <div style={styles.decorativeLine}></div>
-        <div className="header-container" style={styles.container}>
+        <div style={styles.container}>
           <Link
             to="/"
-            className="header-logo"
             style={styles.logo}
             onMouseEnter={() => setHoveredItem('logo')}
             onMouseLeave={() => setHoveredItem(null)}
             onClick={e => {
               e.preventDefault();
+              // Si ya estamos en home, recargar inmediatamente
               if(location.pathname === '/') {
                 window.location.reload();
               } else {
+                // Si estamos en otra página, navegar directamente con recarga instantánea
                 window.location.href = '/';
               }
             }}
@@ -1128,7 +761,7 @@ const Header = () => {
             </span>
           </Link>
 
-          <nav className="header-nav" style={styles.navLinks}>
+          <nav style={styles.navLinks}>
             {menuItems.map((item, index) => (
               // Mostrar elemento si no requiere ser superusuario o el usuario es superusuario
               // Y ocultar si hideForSuperUser es true y el usuario es superusuario
@@ -1177,7 +810,7 @@ const Header = () => {
                     {item.icon}
                   </span>
                   <span style={{
-                    transition: 'all 0.4s cubic-bezier(0.25, 0, 0.2, 1)',
+                    transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
                     transform: hoveredItem === `nav-${index}` ? 'translateX(3px)' : 'translateX(0)',
                   }}>
                     {item.label}
@@ -1218,12 +851,10 @@ const Header = () => {
                 </a>
               )
             ))}
-
           </nav>
 
           <div
             data-profile-button
-            className="header-profile-icon"
             style={{
               ...styles.profileIcon,
               transform: hoveredItem === 'profile' ? 'translateY(-3px) scale(1.05)' : 'translateY(0) scale(1)',
@@ -1238,28 +869,28 @@ const Header = () => {
             onMouseEnter={() => setHoveredItem('profile')}
             onMouseLeave={() => setHoveredItem(null)}
             onClick={toggleMenu}
+            className={isMenuOpen ? 'pulse-animation' : ''}
           >
             <img src={getAvatarSrc(userAvatar)} alt="Profile" style={styles.profileImg} />
           </div>
 
           {/* Menú desplegable con perfil del usuario */}
-          <div ref={menuRef} className="header-user-menu" style={styles.menu}>
+          <div ref={menuRef} style={styles.menu}>
             {isAuth ? (
               <>
                 {/* Sección de perfil del usuario */}
                 <div style={styles.userProfileSection}>
-                  <div className="user-avatar" style={styles.userAvatar}>
+                  <div style={styles.userAvatar}>
                     <img src={getAvatarSrc(userAvatar)} alt="Avatar" style={styles.profileImg} />
                   </div>
-                  <div className="user-name" style={styles.userName}>{userName}</div>
-                  <div className="user-role" style={styles.userRole}>{isSuperUser ? 'Administrador' : 'Usuario'}</div>
+                  <div style={styles.userName}>{userName}</div>
+                  <div style={styles.userRole}>{isSuperUser ? 'Administrador' : 'Usuario'}</div>
                 </div>
 
                 {/* Opciones del menú para usuario autenticado */}
-                <div className="menu-header" style={styles.menuHeader}>Cuenta</div>
+                <div style={styles.menuHeader}>Cuenta</div>
                 <Link
                   to="/profile"
-                  className="menu-item"
                   style={getMenuItemStyle(0)}
                   onMouseEnter={() => setHoveredItem('menu-0')}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -1269,74 +900,77 @@ const Header = () => {
                     handleProfileNavigation('/profile');
                   }}
                 >
-                  <span className="menu-item-icon" style={styles.menuItemIcon}>
+                  <span style={styles.menuItemIcon}>
                     <FaUser size={24} />
                   </span> Mi Perfil
                 </Link>
                 
                 <a
                   href="/settings"
-                  className="menu-item"
                   style={getMenuItemStyle(1)}
                   onMouseEnter={() => setHoveredItem('menu-1')}
                   onMouseLeave={() => setHoveredItem(null)}
                   onClick={(e) => {
                     e.preventDefault();
                     setIsMenuOpen(false);
+                    // Si ya estamos en settings, recargar inmediatamente
                     if(location.pathname === '/settings') {
                       window.location.reload();
                     } else {
+                      // Si estamos en otra página, navegar directamente con recarga instantánea
                       window.location.href = '/settings';
                     }
                   }}
                 >
-                  <span className="menu-item-icon" style={styles.menuItemIcon}>
+                  <span style={styles.menuItemIcon}>
                     <FaCog size={24} />
                   </span> Configuración
                 </a>
 
                 <div style={styles.menuSeparator}></div>
 
-                {/* Enlaces de Acerca de y Contacto para superusuarios */}
+                {/* Enlaces de Acerca de y Contacto (eliminados del menú desplegable para usuarios normales) */}
                 {isSuperUser && (
                   <>
                     <Link
                       to="/about"
-                      className="menu-item"
                       style={getMenuItemStyle(2)}
                       onMouseEnter={() => setHoveredItem('menu-2')}
                       onMouseLeave={() => setHoveredItem(null)}
                       onClick={(e) => {
                         e.preventDefault();
                         setIsMenuOpen(false);
+                        // Si ya estamos en about, recargar inmediatamente
                         if(location.pathname === '/about') {
                           window.location.reload();
                         } else {
+                          // Si estamos en otra página, navegar directamente con recarga instantánea
                           window.location.href = '/about';
                         }
                       }}
                     >
-                      <span className="menu-item-icon" style={styles.menuItemIcon}>
+                      <span style={styles.menuItemIcon}>
                         <FaInfo size={24} />
                       </span> Acerca de
                     </Link>
                     <Link
                       to="/contact"
-                      className="menu-item"
                       style={getMenuItemStyle(3)}
                       onMouseEnter={() => setHoveredItem('menu-3')}
                       onMouseLeave={() => setHoveredItem(null)}
                       onClick={(e) => {
                         e.preventDefault();
                         setIsMenuOpen(false);
+                        // Si ya estamos en contact, recargar inmediatamente
                         if(location.pathname === '/contact') {
                           window.location.reload();
                         } else {
+                          // Si estamos en otra página, navegar directamente con recarga instantánea
                           window.location.href = '/contact';
                         }
                       }}
                     >
-                      <span className="menu-item-icon" style={styles.menuItemIcon}>
+                      <span style={styles.menuItemIcon}>
                         <FaEnvelope size={24} />
                       </span> Contacto
                     </Link>
@@ -1346,7 +980,6 @@ const Header = () => {
 
                 <a
                   href="#"
-                  className="menu-item"
                   style={getMenuItemStyle(isSuperUser ? 4 : 2)}
                   onMouseEnter={() => setHoveredItem(isSuperUser ? 'menu-4' : 'menu-2')}
                   onMouseLeave={() => setHoveredItem(null)}
@@ -1355,7 +988,7 @@ const Header = () => {
                     initiateLogout();
                   }}
                 >
-                  <span className="menu-item-icon" style={styles.menuItemIcon}>
+                  <span style={styles.menuItemIcon}>
                     <FaSignOutAlt size={24} />
                   </span> Cerrar Sesión
                 </a>
@@ -1363,27 +996,36 @@ const Header = () => {
             ) : (
               <>
                 {/* Menú para usuarios no autenticados */}
-                <div className="menu-header" style={styles.menuHeader}>Menú</div>
-                <Link to="/" className="menu-item" style={getMenuItemStyle(0)} onMouseEnter={() => setHoveredItem('menu-0')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span className="menu-item-icon" style={styles.menuItemIcon}><FaHome size={20} /></span> Inicio
+                <div style={styles.menuHeader}>Menú</div>
+                <Link to="/" style={getMenuItemStyle(0)} onMouseEnter={() => setHoveredItem('menu-0')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}><FaHome size={20} /></span> Inicio
                 </Link>
-                <Link to="/about" className="menu-item" style={getMenuItemStyle(1)} onMouseEnter={() => setHoveredItem('menu-1')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span className="menu-item-icon" style={styles.menuItemIcon}><FaInfo size={20} /></span> Acerca de
+                <Link to="/about" style={getMenuItemStyle(1)} onMouseEnter={() => setHoveredItem('menu-1')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}><FaInfo size={20} /></span> Acerca de
                 </Link>
-                <Link to="/contact" className="menu-item" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span className="menu-item-icon" style={styles.menuItemIcon}><FaEnvelope size={20} /></span> Contacto
+                <Link to="/contact" style={getMenuItemStyle(2)} onMouseEnter={() => setHoveredItem('menu-2')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}><FaEnvelope size={20} /></span> Contacto
+                </Link>
+
+                <div style={styles.menuSeparator}></div>
+
+                <Link to="/login" style={getMenuItemStyle(3)} onMouseEnter={() => setHoveredItem('menu-3')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}><FaLock size={20} /></span> Iniciar Sesión
+                </Link>
+                <Link to="/register" style={getMenuItemStyle(4)} onMouseEnter={() => setHoveredItem('menu-4')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
+                  <span style={styles.menuItemIcon}><FaPenSquare size={20} /></span> Registrarse
                 </Link>
 
                 <div style={styles.menuSeparator}></div>
 
-                <Link to="/login" className="menu-item" style={getMenuItemStyle(3)} onMouseEnter={() => setHoveredItem('menu-3')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span className="menu-item-icon" style={styles.menuItemIcon}><FaLock size={20} /></span> Iniciar Sesión
-                </Link>
-                <Link to="/register" className="menu-item" style={getMenuItemStyle(4)} onMouseEnter={() => setHoveredItem('menu-4')} onMouseLeave={() => setHoveredItem(null)} onClick={() => setIsMenuOpen(false)}>
-                  <span className="menu-item-icon" style={styles.menuItemIcon}><FaPenSquare size={20} /></span> Registrarse
-                </Link>
+                {/* Botón de modo oscuro dentro del menú
+                <div style={{ padding: '8px 12px' }}>
+                  <ThemeToggle inMenu={true} />
+                </div> */}
 
-                <div style={styles.menuSeparator}></div>
+                {/* <div style={styles.menuSeparator}></div> */}
+
+                {/* Enlaces de Acerca de y Contacto (movidos desde el footer) */}
               </>
             )}
           </div>
