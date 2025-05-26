@@ -419,13 +419,28 @@ const CategoryPage = () => {
 
   // Function to get very light transparent background for selections
   const getSoftBackground = (color, opacity = 0.08) => {
-    // Convert hex to rgb
-    let hex = color.replace('#', '');
-    let r = parseInt(hex.substring(0, 2), 16);
-    let g = parseInt(hex.substring(2, 4), 16);
-    let b = parseInt(hex.substring(4, 6), 16);
-
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    // Check if color is undefined or null
+    if (!color) {
+      return `rgba(11, 68, 68, ${opacity})`; // Default color
+    }
+    
+    try {
+      // Convert hex to rgb
+      let hex = color.replace('#', '');
+      let r = parseInt(hex.substring(0, 2), 16);
+      let g = parseInt(hex.substring(2, 4), 16);
+      let b = parseInt(hex.substring(4, 6), 16);
+      
+      // Check if conversion was successful
+      if (isNaN(r) || isNaN(g) || isNaN(b)) {
+        return `rgba(11, 68, 68, ${opacity})`; // Default color
+      }
+      
+      return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+    } catch (error) {
+      console.error('Error in getSoftBackground:', error);
+      return `rgba(11, 68, 68, ${opacity})`; // Default color
+    }
   };
 
   // Close dropdowns when clicking outside
@@ -594,9 +609,6 @@ const CategoryPage = () => {
       gridTemplateColumns: "1fr",
       gap: spacing.xl,
       marginBottom: spacing.xxl,
-      '@media (max-width: 768px)': {
-        gridTemplateColumns: "1fr"
-      },
       transform: contentVisible ? 'translateY(0)' : 'translateY(20px)',
       opacity: contentVisible ? 1 : 0,
       transition: 'transform 0.6s ease, opacity 0.6s ease',
