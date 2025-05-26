@@ -1,6 +1,5 @@
 // src/components/blog/FeaturedPost.jsx
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { spacing, typography, shadows, borderRadius, transitions, applyHoverStyles } from '../../styles/theme';
 import { useTheme } from '../../context/ThemeContext';
 import { FaArrowRight } from 'react-icons/fa';
@@ -14,10 +13,10 @@ const FeaturedPost = ({ post }) => {
   
   // Usamos lightColors (colores del tema claro) en lugar de colors
   const styles = {
-    featuredImage: {
+    container: {
       position: "relative",
-      overflow: "hidden",
       borderRadius: borderRadius.xl,
+      overflow: "hidden",
       boxShadow: shadows.lg,
       transition: transitions.default,
       width: "100%",
@@ -26,12 +25,12 @@ const FeaturedPost = ({ post }) => {
         boxShadow: "0 15px 40px rgba(11, 68, 68, 0.15)"
       }
     },
-    featuredImgWrapper: {
+    imageContainer: {
       width: "100%",
       height: "350px",
       overflow: "hidden"
     },
-    featuredImg: {
+    image: {
       width: "100%",
       height: "100%",
       objectFit: "cover",
@@ -40,7 +39,7 @@ const FeaturedPost = ({ post }) => {
         transform: "scale(1.03)"
       }
     },
-    featuredContent: {
+    content: {
       position: "absolute",
       bottom: "0",
       left: "0",
@@ -49,21 +48,21 @@ const FeaturedPost = ({ post }) => {
       padding: `${spacing.xl} ${spacing.lg} ${spacing.lg}`,
       color: lightColors.white // Usar colores claros
     },
-    featuredTitle: {
+    title: {
       fontSize: typography.fontSize.xl,
       fontWeight: typography.fontWeight.semiBold,
       marginBottom: spacing.md,
       lineHeight: "1.3",
       color: "#fff" // Asegurar que el título sea siempre blanco
     },
-    featuredExcerpt: {
+    excerpt: {
       fontSize: typography.fontSize.sm,
       opacity: "0.9",
       marginBottom: spacing.lg,
       lineHeight: "1.5",
       color: "#f0f8f7" // Asegurar que el extracto sea siempre claro
     },
-    featuredNumber: {
+    category: {
       position: "absolute",
       left: spacing.lg,
       top: spacing.lg,
@@ -76,86 +75,49 @@ const FeaturedPost = ({ post }) => {
       boxShadow: shadows.sm,
       zIndex: 1
     },
-    featuredNumberSpan: {
-      color: lightColors.primary, // Usar colores claros
-      marginRight: spacing.xs,
-      fontWeight: typography.fontWeight.bold
-    },
-    featuredMeta: {
+    meta: {
       display: "flex",
       alignItems: "center",
       gap: spacing.md,
       marginBottom: spacing.sm
     },
-    metaItem: {
+    time: {
       display: "flex",
       alignItems: "center",
       gap: spacing.xs,
       fontSize: typography.fontSize.sm,
       color: "#fff" // Asegurar que el meta sea siempre blanco o claro
-    },
-    button: {
-      backgroundColor: lightColors.secondary, // Usar colores claros
-      color: lightColors.primary, // Usar colores claros
-      border: "none",
-      borderRadius: borderRadius.round,
-      padding: `${spacing.sm} ${spacing.md}`,
-      fontSize: typography.fontSize.sm,
-      fontWeight: typography.fontWeight.medium,
-      cursor: "pointer",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: spacing.xs,
-      boxShadow: "0 4px 12px rgba(210, 185, 154, 0.3)",
-      transition: transitions.default,
-      textDecoration: "none",
-      '&:hover': {
-        backgroundColor: "#fff", // Siempre blanco en hover
-        transform: "translateY(-2px)",
-        boxShadow: "0 6px 15px rgba(210, 185, 154, 0.4)"
-      }
     }
   };
 
   return (
     <div 
-      style={isHovered ? applyHoverStyles(styles.featuredImage) : styles.featuredImage}
+      style={styles.container}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div style={styles.featuredImgWrapper}>
+      <div style={styles.imageContainer}>
         <img
           src={post.image}
           alt={post.title}
-          style={isHovered ? applyHoverStyles(styles.featuredImg) : styles.featuredImg}
+          style={styles.image}
+          onError={(e) => {
+            e.target.src = '/assets/images/tecnologia.jpg';
+          }}
         />
       </div>
-      <div style={styles.featuredContent}>
-        <div style={styles.featuredMeta}>
-          <div style={styles.metaItem}>
+      
+      <div style={styles.content}>
+        <div style={styles.meta}>
+          <div style={styles.time}>
             <span style={{color: lightColors.secondary}}>◆</span> {post.category}
           </div>
-          <div style={styles.metaItem}>
+          <div style={styles.time}>
             <span style={{color: "#ccc"}}>⏱</span> {post.time}
           </div>
         </div>
-        <h2 style={styles.featuredTitle}>{post.title}</h2>
-        <p style={styles.featuredExcerpt}>{post.excerpt}</p>
-        
-        <AnimatedButton 
-          to={`/blog/${post.id}`}
-          state={{ forceReload: true }}
-          backgroundColor="rgba(8, 44, 44, 0.8)"
-          hoverBackgroundColor="#082c2c"
-          padding="8px 20px"
-          borderRadius="20px"
-          style={{ marginTop: spacing.sm }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>Leer más</span>
-            <FaArrowRight size={12} />
-          </div>
-        </AnimatedButton>
+        <h2 style={styles.title}>{post.title}</h2>
+        <p style={styles.excerpt}>{post.excerpt}</p>
       </div>
     </div>
   );

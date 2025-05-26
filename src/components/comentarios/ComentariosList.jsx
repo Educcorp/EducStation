@@ -171,19 +171,33 @@ const ComentariosList = ({ postId: propPostId, publicacionId: propPublicacionId 
         </form>
       ) : (
         <div className="comentarios-login-message">
-          <p>Inicia sesión para dejar un comentario</p>
-          <AnimatedButton
-            to="/login"
-            backgroundColor="rgba(8, 44, 44, 0.8)"
-            hoverBackgroundColor="#082c2c"
-            padding="10px 20px"
-            borderRadius="8px"
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FaSignInAlt />
-              <span>Iniciar sesión</span>
-            </div>
-          </AnimatedButton>
+          <p>¡Únete a la conversación! Inicia sesión para dejar un comentario y participar en la discusión.</p>
+          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <AnimatedButton
+              to="/login"
+              backgroundColor="rgba(8, 44, 44, 0.8)"
+              hoverBackgroundColor="#082c2c"
+              padding="10px 20px"
+              borderRadius="8px"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaSignInAlt />
+                <span>Iniciar sesión</span>
+              </div>
+            </AnimatedButton>
+            <AnimatedButton
+              to="/register"
+              backgroundColor="rgba(31, 78, 78, 0.8)"
+              hoverBackgroundColor="#1F4E4E"
+              padding="10px 20px"
+              borderRadius="8px"
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FaPaperPlane />
+                <span>Registrarse</span>
+              </div>
+            </AnimatedButton>
+          </div>
         </div>
       )}
       

@@ -128,3 +128,106 @@ a:hover {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
 }
+
+/* Media queries globales para responsive */
+@media (max-width: 768px) {
+  .container, .postContainer {
+    padding: 0 16px;
+    max-width: 100%;
+  }
+  
+  .post-content {
+    padding: 20px 16px;
+    margin-bottom: 20px;
+  }
+  
+  /* Ajustes para formularios */
+  .form-container {
+    max-width: 95% !important;
+    margin: 20px auto !important;
+  }
+  
+  /* Ajustes para botones */
+  button {
+    min-height: 44px; /* Tamaño mínimo para touch */
+  }
+  
+  /* Ajustes para inputs */
+  input, textarea, select {
+    min-height: 44px;
+    font-size: 16px; /* Prevenir zoom en iOS */
+  }
+  
+  .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  /* Header responsive */
+  header {
+    height: 60px !important;
+  }
+  
+  /* Footer responsive */
+  footer {
+    padding: 24px 16px !important;
+  }
+  
+  /* General text scaling */
+  h1 { font-size: 24px !important; }
+  h2 { font-size: 20px !important; }
+  h3 { font-size: 18px !important; }
+  
+  /* Button sizing for touch */
+  button, .btn {
+    min-height: 44px !important;
+    min-width: 44px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .container, .postContainer {
+    padding: 0 12px;
+  }
+  
+  .post-content {
+    padding: 16px 12px;
+    margin-bottom: 16px;
+  }
+  
+  /* Texto más pequeño en móviles */
+  h1 { font-size: 24px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 18px; }
+  h4 { font-size: 16px; }
+  
+  /* Espaciado reducido */
+  .form-container {
+    max-width: 98% !important;
+    margin: 10px auto !important;
+  }
+  
+  .container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  
+  /* Even smaller text on mobile */
+  h1 { font-size: 22px !important; }
+  h2 { font-size: 18px !important; }
+  h3 { font-size: 16px !important; }
+}
+
+/* Asegurar que elementos no se desborden */
+* {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Mejoras para touch devices */
+@media (hover: none) and (pointer: coarse) {
+  button, .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

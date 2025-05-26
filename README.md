@@ -37,7 +37,7 @@ EducStation is born from EducCorp's vision to transform education through collab
 ### <p align="center">Backend</p>
 <p align="center">
   <a href="">
-    <img src="https://skillicons.dev/icons?i=python,django,nodejs" />
+    <img src="https://skillicons.dev/icons?i=js,express,nodejs" />
   </a>
 </p>
 
@@ -67,12 +67,12 @@ EducStation is born from EducCorp's vision to transform education through collab
 
 <table>
   <tr>
-    <td align="center"><img src="https://github.com/Educcorp/EducStation/blob/main/public/assets/images/screenshot1.png" alt="Homepage" width="300"/><br /><b>Homepage</b></td>
-    <td align="center"><img src="https://github.com/Educcorp/EducStation/blob/main/public/assets/images/screenshot2.png" alt="Blog" width="300"/><br /><b>Blog Section</b></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/abbd2d4b-1da8-4537-b14f-bda9560f8280" alt="Homepage" width="300"/><br /><b>Homepage</b></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/43be7191-b08d-4ee0-9b88-7e2f5c7e93fb" alt="Blog" width="300"/><br /><b>Blog Section</b></td>
   </tr>
   <tr>
-    <td align="center"><img src="https://github.com/Educcorp/EducStation/blob/main/public/assets/images/screenshot3.png" alt="Profile" width="300"/><br /><b>Educator Profile</b></td>
-    <td align="center"><img src="https://github.com/Educcorp/EducStation/blob/main/public/assets/images/screenshot4.png" alt="Article" width="300"/><br /><b>Detailed Article</b></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/b4f28b72-d6b7-49a7-af9d-6915402b6943" alt="Profile" width="300"/><br /><b>Educator Profile</b></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/72f6d2e1-931c-40fb-a6dc-b9a29f187d53" alt="Article" width="300"/><br /><b>Detailed Article</b></td>
   </tr>
 </table>
 
@@ -122,9 +122,9 @@ npm start
     </td>
     <td align="center">
       <a href="https://github.com/Gregorio-Yahir">
-        <img src="https://github.com/Gregorio-Yahir.png" width="100px;" alt="Gregorio Yahir"/>
+        <img src="https://www.educstation.com/assets/images/faces/Grego.png" width="100px;" alt="Gregorio Yahir"/>
         <br />
-        <sub><b>Gregorio Yahir</b></sub>
+        <sub><b>Gregorio Sánchez</b></sub>
       </a>
       <br />
       <a href="#" title="Code">💻</a>
@@ -132,7 +132,7 @@ npm start
     </td>
     <td align="center">
       <a href="https://github.com/Emma-Pal">
-        <img src="https://github.com/Emma-Pal.png" width="100px;" alt="Emmanuel Palacios"/>
+        <img src="https://www.educstation.com/assets/images/faces/Emma.png" width="100px;" alt="Emmanuel Palacios"/>
         <br />
         <sub><b>Emmanuel Palacios</b></sub>
       </a>
@@ -142,9 +142,9 @@ npm start
     </td>
     <td align="center">
       <a href="https://github.com/YoselinRs">
-        <img src="https://github.com/YoselinRs.png" width="100px;" alt="Pichirilla"/>
+        <img src="https://github.com/YoselinRs.png" width="100px;" alt="Yoselin"/>
         <br />
-        <sub><b>Pichirilla</b></sub>
+        <sub><b>Yoselin Reynaga </b></sub>
       </a>
       <br />
       <a href="#" title="Code">💻</a>
@@ -152,9 +152,19 @@ npm start
     </td>
     <td align="center">
       <a href="https://github.com/Fer463-web">
-        <img src="https://github.com/Fer465-web.png" width="100px;" alt="Fernanda"/>
+        <img src="https://www.educstation.com/assets/images/faces/fer.png" width="100px;" alt="Fernanda"/>
         <br />
-        <sub><b>Fernanda</b></sub>
+        <sub><b>Fernanda Zepeda </b></sub>
+      </a>
+      <br />
+      <a href="#" title="Code">💻</a>
+      <a href="#" title="Design">🎨</a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/pjusto930">
+        <img src="https://www.educstation.com/assets/images/faces/Priscila.png" width="100px;" alt="Priscila Justo"/>
+        <br />
+        <sub><b>Priscila Justo</b></sub>
       </a>
       <br />
       <a href="#" title="Code">💻</a>
