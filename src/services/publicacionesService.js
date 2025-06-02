@@ -1,83 +1,8 @@
 const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app';
 
-// Cache y throttling para optimizar rendimiento
-const cache = new Map();
-const pendingRequests = new Map();
-const CACHE_DURATION = 3 * 60 * 1000; // 3 minutos
-const REQUEST_TIMEOUT = 10000; // 10 segundos
-
-// Función para crear clave de cache
-const createCacheKey = (endpoint, params = {}) => {
-  const paramsString = Object.keys(params)
-    .sort()
-    .map(key => `${key}=${params[key]}`)
-    .join('&');
-  return `${endpoint}?${paramsString}`;
-};
-
-// Función para verificar si el cache es válido
-const isCacheValid = (cacheEntry) => {
-  return cacheEntry && (Date.now() - cacheEntry.timestamp) < CACHE_DURATION;
-};
-
-// Función optimizada para hacer requests con cache y throttling
-const fetchWithOptimizations = async (url, options = {}) => {
-  const cacheKey = url;
-  
-  // Verificar cache primero
-  const cachedData = cache.get(cacheKey);
-  if (isCacheValid(cachedData)) {
-    console.log(`📦 Cache hit: ${cacheKey}`);
-    return cachedData.data;
-  }
-  
-  // Verificar si ya hay una request pendiente para esta URL
-  if (pendingRequests.has(cacheKey)) {
-    console.log(`⏳ Request pendiente: ${cacheKey}`);
-    return pendingRequests.get(cacheKey);
-  }
-  
-  // Crear nueva request con timeout
-  const requestPromise = Promise.race([
-    fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-      }
-    }),
-    new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Request timeout')), REQUEST_TIMEOUT)
-    )
-  ]).then(async response => {
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-    const data = await response.json();
-    
-    // Guardar en cache
-    cache.set(cacheKey, {
-      data,
-      timestamp: Date.now()
-    });
-    
-    return data;
-  }).finally(() => {
-    // Limpiar request pendiente
-    pendingRequests.delete(cacheKey);
-  });
-  
-  // Guardar request pendiente
-  pendingRequests.set(cacheKey, requestPromise);
-  
-  return requestPromise;
-};
-
-// Obtener todas las publicaciones (OPTIMIZADO)
-export const getAllPublicaciones = async (limite = 20, offset = 0, estado = null) => {
+// Obtener todas las publicaciones
+export const getAllPublicaciones = async (limite = 10, offset = 0, estado = null) => {
     try {
-        console.log(`🚀 getAllPublicaciones: limite=${limite}, offset=${offset}, estado=${estado}`);
-        
         // Obtener el token de autenticación
         const token = localStorage.getItem('userToken');
         const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
@@ -89,84 +14,173 @@ export const getAllPublicaciones = async (limite = 20, offset = 0, estado = null
             // Para administradores, usar la ruta /all que incluye todas las publicaciones
             try {
                 const adminUrl = `${API_URL}/api/publicaciones/all?limite=${limite}&offset=${offset}`;
-                console.log("🔒 Admin cargando con endpoint /all");
+                console.log("Admin cargando con endpoint /all:", adminUrl);
                 
-                const data = await fetchWithOptimizations(adminUrl, { headers });
-                console.log(`✅ Obtenidas ${data.length} publicaciones como administrador`);
-                return data;
+                const adminResponse = await fetch(adminUrl, { headers });
+                if (adminResponse.ok) {
+                    const adminData = await adminResponse.json();
+                    console.log(`Obtenidas ${adminData.length} publicaciones como administrador`);
+                    return adminData;
+                } else {
+                    console.log(`Error en endpoint admin: ${adminResponse.status}. Intentando alternativas...`);
+                    throw new Error(`Error en endpoint admin: ${adminResponse.status}`);
+                }
             } catch (adminError) {
-                console.error("❌ Error en endpoint admin:", adminError);
+                console.error("Error en endpoint admin:", adminError);
                 // Continuar con métodos alternativos
             }
         }
         
-        // Método optimizado para usuarios normales
+        // Método estándar para usuarios normales o fallback para administradores
         try {
             let url = `${API_URL}/api/publicaciones?limite=${limite}&offset=${offset}`;
             if (estado) {
                 url += `&estado=${estado}`;
             }
             
-            console.log("📊 Cargando con endpoint principal optimizado");
+            console.log("Cargando con endpoint principal:", url);
             
-            const data = await fetchWithOptimizations(url, { headers });
-            console.log(`✅ Obtenidas ${data.length} publicaciones correctamente`);
+            const response = await fetch(url, { headers });
+            if (!response.ok) {
+                console.error(`Error al obtener publicaciones: ${response.status} ${response.statusText}`);
+                throw new Error(`Error al obtener las publicaciones: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`Obtenidas ${data.length} publicaciones correctamente`);
             return data;
         } catch (fetchError) {
-            console.error("❌ Error en la petición principal:", fetchError);
+            console.error("Error en la petición principal:", fetchError);
             
-            // Método alternativo: endpoint latest (más rápido)
-            console.log("🔄 Intentando método alternativo latest...");
+            // Método alternativo: endpoint latest
+            console.log("Intentando método alternativo para cargar publicaciones...");
             const fallbackUrl = `${API_URL}/api/publicaciones/latest?limite=${limite}`;
+            console.log("URL alternativa:", fallbackUrl);
             
-            const fallbackData = await fetchWithOptimizations(fallbackUrl, { headers });
-            console.log(`🆘 Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
+            const fallbackResponse = await fetch(fallbackUrl, { headers });
+            if (!fallbackResponse.ok) {
+                throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
+            }
+            
+            const fallbackData = await fallbackResponse.json();
+            console.log(`Obtenidas ${fallbackData.length} publicaciones mediante método alternativo`);
             return fallbackData;
         }
     } catch (error) {
-        console.error('❌ Error final en getAllPublicaciones:', error);
-        // Limpiar cache en caso de error
-        cache.clear();
+        console.error('Error final en getAllPublicaciones:', error);
+        // Devolver array vacío en lugar de lanzar error
         return [];
     }
 };
 
-// Función para limpiar cache manualmente
-export const clearCache = () => {
-    cache.clear();
-    pendingRequests.clear();
-    console.log('🧹 Cache y requests pendientes limpiados');
-};
-
-// Obtener publicación por ID (OPTIMIZADO)
+// Obtener una publicación por ID
 export const getPublicacionById = async (id) => {
-  try {
-    const cacheKey = `publicacion_${id}`;
-    const cachedData = cache.get(cacheKey);
-    
-    if (isCacheValid(cachedData)) {
-      console.log(`📦 Cache hit: publicación ${id}`);
-      return cachedData.data;
+    try {
+        console.log(`getPublicacionById: Obteniendo publicación con ID ${id}`);
+        const response = await fetch(`${API_URL}/api/publicaciones/${id}`);
+        
+        if (!response.ok) {
+            console.error(`getPublicacionById: Error en la respuesta - ${response.status} ${response.statusText}`);
+            throw new Error('Error al obtener la publicación');
+        }
+        
+        const data = await response.json();
+        console.log(`getPublicacionById: Publicación obtenida con éxito, propiedades:`, Object.keys(data));
+        
+        // Verificar si el contenido está presente
+        if (!data.contenido) {
+            console.warn(`getPublicacionById: El campo 'contenido' no está presente en la respuesta`);
+            
+            // Intentar encontrar el contenido en otras propiedades
+            if (data.Contenido) {
+                console.log('getPublicacionById: Usando campo Contenido (mayúscula)');
+                data.contenido = data.Contenido;
+            } else if (data.content) {
+                console.log('getPublicacionById: Usando campo content (inglés)');
+                data.contenido = data.content;
+            } else if (data.htmlContent) {
+                console.log('getPublicacionById: Usando campo htmlContent');
+                data.contenido = data.htmlContent;
+            }
+        } else {
+            console.log(`getPublicacionById: Contenido encontrado, longitud: ${data.contenido.length}`);
+        }
+        
+        // Verificar si el título está presente
+        if (!data.titulo) {
+            console.warn(`getPublicacionById: El campo 'titulo' no está presente en la respuesta`);
+            
+            // Intentar encontrar el título en otras propiedades
+            if (data.Titulo) {
+                console.log('getPublicacionById: Usando campo Titulo (mayúscula)');
+                data.titulo = data.Titulo;
+            } else if (data.title) {
+                console.log('getPublicacionById: Usando campo title (inglés)');
+                data.titulo = data.title;
+            }
+        } else {
+            console.log(`getPublicacionById: Título encontrado: "${data.titulo}"`);
+        }
+        
+        // Verificar si el resumen está presente
+        if (!data.resumen) {
+            console.warn(`getPublicacionById: El campo 'resumen' no está presente en la respuesta`);
+            
+            // Intentar encontrar el resumen en otras propiedades
+            if (data.Resumen) {
+                console.log('getPublicacionById: Usando campo Resumen (mayúscula)');
+                data.resumen = data.Resumen;
+            } else if (data.summary) {
+                console.log('getPublicacionById: Usando campo summary (inglés)');
+                data.resumen = data.summary;
+            } else if (data.descripcion || data.Descripcion) {
+                console.log('getPublicacionById: Usando campo descripcion');
+                data.resumen = data.descripcion || data.Descripcion;
+            } else {
+                // Si no hay resumen, crear uno a partir del título
+                console.log('getPublicacionById: Creando resumen a partir del título');
+                data.resumen = data.titulo ? data.titulo.substring(0, 150) : '';
+            }
+        } else {
+            console.log(`getPublicacionById: Resumen encontrado, longitud: ${data.resumen.length}`);
+        }
+        
+        // Verificar si la imagen de portada está presente
+        if (!data.imagen_url && !data.Imagen_portada) {
+            console.warn(`getPublicacionById: No se encontró imagen de portada`);
+            
+            // Intentar encontrar la imagen en otras propiedades
+            if (data.imagen) {
+                console.log('getPublicacionById: Usando campo imagen');
+                data.imagen_url = data.imagen;
+            } else if (data.Imagen) {
+                console.log('getPublicacionById: Usando campo Imagen (mayúscula)');
+                data.imagen_url = data.Imagen;
+            } else if (data.image_url || data.imageUrl) {
+                console.log('getPublicacionById: Usando campo image_url/imageUrl (inglés)');
+                data.imagen_url = data.image_url || data.imageUrl;
+            } else if (data.coverImage) {
+                console.log('getPublicacionById: Usando campo coverImage');
+                data.imagen_url = data.coverImage;
+            }
+            
+            // Si tenemos Imagen_portada pero no imagen_url
+            if (data.Imagen_portada && !data.imagen_url) {
+                data.imagen_url = data.Imagen_portada;
+            }
+        } else {
+            console.log(`getPublicacionById: Imagen de portada encontrada`);
+            // Asegurar que imagen_url esté definido si solo tenemos Imagen_portada
+            if (!data.imagen_url && data.Imagen_portada) {
+                data.imagen_url = data.Imagen_portada;
+            }
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Error en getPublicacionById:', error);
+        throw error;
     }
-    
-    const response = await fetch(`${API_URL}/api/publicaciones/${id}`);
-    if (!response.ok) {
-      throw new Error('Error al obtener la publicación');
-    }
-    
-    const data = await response.json();
-    
-    // Guardar en cache
-    cache.set(cacheKey, {
-      data,
-      timestamp: Date.now()
-    });
-    
-    return data;
-  } catch (error) {
-    console.error('Error en getPublicacionById:', error);
-    return null;
-  }
 };
 
 // Crear una nueva publicación
