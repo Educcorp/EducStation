@@ -83,4 +83,4 @@ yarn-error.log*
 # !*/migrations/__init__.py
 envs.txt
 
-.env
+
