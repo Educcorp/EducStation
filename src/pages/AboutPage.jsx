@@ -215,7 +215,6 @@ const AboutPage = () => {
             borderRadius: borderRadius.sm,
             cursor: 'pointer',
             fontSize: typography.fontSize.sm,
-            
             background: 'none',
           }}>  'Se ocupa de de metodologías y estrategias para manejar el aprendizaje y los hábitos de estudio.'
         </button>
