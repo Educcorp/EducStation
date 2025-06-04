@@ -1047,40 +1047,6 @@ const AdminPanel = () => {
             <div style={styles.statNumber}>{totalPosts}</div>
             <div style={styles.statLabel}>Total de Publicaciones</div>
           </div>
-          
-          {/* Gráfico de categorías */}
-          <div style={styles.chartContainer}>
-            <div style={styles.chartTitle}>
-              <FaChartPie style={{ color: colors.secondary }} /> Distribución por Categoría
-            </div>
-            
-            {loadingCategories ? (
-              <div style={{ textAlign: 'center', padding: spacing.lg }}>Cargando datos...</div>
-            ) : (
-              <>
-                <canvas 
-                  ref={chartRef} 
-                  style={styles.chartCanvas}
-                  width="400"
-                  height="400"
-                ></canvas>
-                
-                <div style={styles.categoryLegend}>
-                  {categories.map(category => (
-                    <div key={category.ID_categoria} style={styles.legendItem}>
-                      <div 
-                        style={{
-                          ...styles.legendColor, 
-                          backgroundColor: categoryColors[category.ID_categoria] || categoryColors.default
-                        }}
-                      ></div>
-                      <span>{category.Nombre_categoria} ({categoryPostCounts[category.ID_categoria]?.count || 0})</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
         </div>
 
         {/* Header con título y botón de crear */}
@@ -1156,20 +1122,6 @@ const AdminPanel = () => {
             </select>
           </div>
         </div>
-
-        {/* Mensaje de error */}
-        {error && (
-          <div style={styles.errorMessage}>
-            {error}
-          </div>
-        )}
-
-        {/* Loading */}
-        {loading && (
-          <div style={styles.loadingSpinner}>
-            Cargando publicaciones...
-          </div>
-        )}
 
         {/* Lista de publicaciones */}
         {!loading && !error && (
