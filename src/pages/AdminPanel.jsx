@@ -968,7 +968,7 @@ const AdminPanel = () => {
 
         {/* Estadísticas y Gráfica */}
         <div style={styles.statsContainer}>
-          {/* Estadísticas de publicaciones */}
+          {/* Estadísticas de publicaciones - Solo mantener la de Total */}
           <div style={styles.statCard}>
             <div style={styles.statNumber}>{totalPosts}</div>
             <div style={styles.statLabel}>Total de Publicaciones</div>
