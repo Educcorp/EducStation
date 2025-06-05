@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaEdit, FaTrash, FaEye, FaPlus, FaSearch, FaFilter, FaSort, FaSync, FaFolder, FaChartPie } from 'react-icons/fa';
 import Header from '../components/layout/Header';
@@ -10,6 +10,11 @@ import { deletePublicacion, getAllPublicaciones } from '../services/publicacione
 import { getAllCategorias, getPublicacionesByCategoria } from '../services/categoriasServices';
 import { toast } from 'react-toastify';
 import AnimatedButton from '../components/utils/AnimatedButton';
+import { Chart, registerables } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+
+// Registrar Chart.js y el plugin de datalabels
+Chart.register(...registerables, ChartDataLabels);
 
 // Estilo keyframes para la animación de brillo
 const shineAnimation = `
@@ -846,7 +851,21 @@ const AdminPanel = () => {
             datasets: [{
                 data: chartData,
                 backgroundColor: chartBackgroundColors,
-                hoverOffset: 4
+                hoverOffset: 4,
+                // Configuración para mostrar datalabels en las rebanadas
+                datalabels: {
+                    color: isDarkMode ? '#000' : '#fff', // Color del texto (negro en modo oscuro, blanco en claro)
+                    anchor: 'end', // Posición del label (al final de la rebanada)
+                    align: 'start', // Alineación del label
+                    offset: 10, // Separación del borde de la rebanada
+                    font: {
+                        weight: 'bold'
+                    },
+                    formatter: function(value, context) {
+                        // Muestra solo el valor (conteo)
+                        return value; 
+                    }
+                }
             }]
         },
         options: {
