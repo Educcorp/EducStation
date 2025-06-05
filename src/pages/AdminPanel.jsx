@@ -515,7 +515,8 @@ const AdminPanel = () => {
       display: 'flex',
       gap: spacing.xl,
       marginBottom: spacing.xl,
-      flexWrap: 'wrap'
+      flexWrap: 'wrap',
+      alignItems: 'flex-start'
     },
     statCard: {
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
@@ -553,7 +554,8 @@ const AdminPanel = () => {
       flex: '2',
       minWidth: '350px',
       display: 'flex',
-      flexDirection: 'column'
+      flexDirection: 'column',
+      alignItems: 'center'
     },
     chartTitle: {
       fontSize: typography.fontSize.md,
@@ -566,7 +568,7 @@ const AdminPanel = () => {
     },
     chartCanvas: {
       width: '100%',
-      aspectRatio: '1/1', // Asegurar relación de aspecto 1:1
+      aspectRatio: '1/1',
       maxWidth: '400px',
       margin: '0 auto',
       display: 'block'
@@ -595,46 +597,6 @@ const AdminPanel = () => {
       height: '12px',
       borderRadius: '50%',
       boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-    },
-    categoriesContainer: {
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
-      borderRadius: borderRadius.lg,
-      padding: spacing.lg,
-      boxShadow: shadows.sm,
-      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
-      flex: '1',
-      minWidth: '300px',
-      position: 'relative',
-      overflow: 'hidden'
-    },
-    categoryTitle: {
-      fontSize: typography.fontSize.md,
-      fontWeight: typography.fontWeight.bold,
-      color: isDarkMode ? colors.white : colors.primary,
-      marginBottom: spacing.md,
-      display: 'flex',
-      alignItems: 'center',
-      gap: spacing.xs
-    },
-    categoryList: {
-      display: 'flex',
-      flexDirection: 'column',
-      gap: spacing.xs,
-      maxHeight: '150px',
-      overflowY: 'auto'
-    },
-    categoryItem: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      padding: `${spacing.xs} ${spacing.sm}`,
-      borderRadius: borderRadius.sm,
-      fontSize: typography.fontSize.sm,
-      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.03)',
-      color: isDarkMode ? colors.white : colors.textPrimary
-    },
-    categoryCount: {
-      fontWeight: typography.fontWeight.bold,
-      color: isDarkMode ? colors.secondary : colors.secondary
     },
     postsGrid: {
       display: 'grid',
@@ -854,64 +816,91 @@ const AdminPanel = () => {
 
   // Calcular estadísticas
   const totalPosts = posts.length;
-  const publishedPosts = posts.filter(post => post.Estado === 'publicado').length;
 
-  // Renderizar gráfica de categorías (placeholder por ahora)
-  // Deberías integrar Chart.js aquí usando categoryPostCounts
-  const renderCategoryChart = () => {
-    if (!chartRef.current || !categoryPostCounts || Object.keys(categoryPostCounts).length === 0) {
-        return <p style={{ color: isDarkMode ? colors.white : colors.textSecondary }}>Cargando gráfica...</p>;
+  // Función para dibujar el gráfico de categorías con Chart.js
+  const drawCategoryChart = () => {
+    if (!chartRef.current || categories.length === 0 || loadingCategories) return;
+
+    const canvas = chartRef.current;
+    const ctx = canvas.getContext('2d');
+
+    // Asegurarse de que Chart.js está disponible
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js no está cargado. Asegúrate de incluir la biblioteca.');
+        return;
+    }
+    
+    // Destruir gráfica anterior si existe
+    if (chartRef.current.chart) {
+        chartRef.current.chart.destroy();
     }
 
     const chartLabels = Object.values(categoryPostCounts).map(cat => cat.name);
     const chartData = Object.values(categoryPostCounts).map(cat => cat.count);
     const chartBackgroundColors = Object.keys(categoryPostCounts).map(categoryId => categoryColors[categoryId] || categoryColors.default);
 
-    // Aquí iría la lógica de Chart.js para crear la gráfica de pastel
-    // Ejemplo (requiere Chart.js instalado y configurado):
-    // if (chartRef.current.chart) {
-    //     chartRef.current.chart.destroy(); // Destruir gráfica anterior si existe
-    // }
-    // chartRef.current.chart = new Chart(chartRef.current, {
-    //     type: 'pie',
-    //     data: {
-    //         labels: chartLabels,
-    //         datasets: [{
-    //             data: chartData,
-    //             backgroundColor: chartBackgroundColors,
-    //             hoverOffset: 4
-    //         }]
-    //     },
-    //     options: {
-    //         responsive: true,
-    //         maintainAspectRatio: false,
-    //         plugins: {
-    //             legend: {
-    //                 display: false // Ocultar leyenda predeterminada de Chart.js
-    //             }
-    //         }
-    //     }
-    // });
-
-    // Placeholder visual de la gráfica
-     return (
-        <div style={{ 
-            width: '100%', 
-            aspectRatio: '1/1', 
-            maxWidth: '400px', 
-            margin: '0 auto', 
-            backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#eee', 
-            borderRadius: '50%',
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center',
-            fontSize: '24px',
-            color: isDarkMode ? colors.white : colors.textSecondary
-        }}>
-            Gráfica de Pastel (Placeholder)
-        </div>
-     );
+    chartRef.current.chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: chartLabels,
+            datasets: [{
+                data: chartData,
+                backgroundColor: chartBackgroundColors,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false // Ocultar leyenda predeterminada de Chart.js
+                },
+                tooltip: {
+                     callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed !== null) {
+                                label += context.parsed + ' publicaciones';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            }
+        }
+    });
   };
+
+   // Dibujar el gráfico cuando cambian las categorías o los conteos
+  useEffect(() => {
+    if (chartRef.current) { // Solo intentar dibujar si la referencia existe
+      drawCategoryChart();
+    }
+  }, [categories, categoryPostCounts, loadingCategories, isDarkMode]); // Dependencias actualizadas
+
+  // Redimensionar el canvas cuando cambie el tamaño de la ventana
+  useEffect(() => {
+    const handleResize = () => {
+      if (chartRef.current && chartRef.current.chart) { // Solo redimensionar si la gráfica existe
+         chartRef.current.chart.resize();
+      } else if (chartRef.current) { // Si el canvas existe pero la gráfica no, intentar dibujarla
+          drawCategoryChart();
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    // Limpiar el evento al desmontar el componente y destruir la gráfica
+    return () => {
+      window.removeEventListener('resize', handleResize);
+       if (chartRef.current && chartRef.current.chart) {
+         chartRef.current.chart.destroy();
+       }
+    };
+  }, [categories, categoryPostCounts, isDarkMode]); // Dependencias actualizadas
 
   return (
     <div style={styles.container}>
@@ -984,15 +973,11 @@ const AdminPanel = () => {
             <div style={styles.statNumber}>{totalPosts}</div>
             <div style={styles.statLabel}>Total de Publicaciones</div>
           </div>
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{publishedPosts}</div>
-            <div style={styles.statLabel}>Publicaciones Publicadas</div>
-          </div>
           
           {/* Gráfica de Categorías */}
           <div style={styles.chartContainer}>
-            <h3 style={styles.chartTitle}><FaChartPie /> Publicaciones por Categoría</h3>
-            {!loadingCategories && categories.length > 0 ? (
+            <h3 style={styles.chartTitle}><FaChartPie /> Distribución por Categoría</h3>
+            {!loadingCategories && categories.length > 0 && Object.keys(categoryPostCounts).length > 0 ? (
                 <canvas ref={chartRef} style={styles.chartCanvas}></canvas>
             ) : loadingCategories ? (
                  <div style={styles.loadingSpinner}>Cargando categorías...</div>
@@ -1002,12 +987,12 @@ const AdminPanel = () => {
                     color: isDarkMode ? colors.white : colors.textSecondary,
                     marginTop: spacing.md
                     }}>
-                    No hay categorías disponibles o publicaciones en ellas.
+                    No hay categorías disponibles o publicaciones en ellas para mostrar la gráfica.
                  </p>
             )}
            
             {/* Leyenda de Categorías */}
-            {!loadingCategories && categories.length > 0 && (
+            {!loadingCategories && categories.length > 0 && Object.keys(categoryPostCounts).length > 0 && (
                 <div style={styles.categoryLegend}>
                     {categories.map(cat => (
                         categoryPostCounts[cat.ID_categoria] && categoryPostCounts[cat.ID_categoria].count > 0 && (
