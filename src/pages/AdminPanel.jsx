@@ -295,7 +295,7 @@ const AdminPanel = () => {
           </div>
         </div>
 
-        {/* Estadísticas simplificadas */}
+        {/* Estadísticas */}
         <div style={styles.statsContainer}>
           <div style={styles.statCard}>
             <div style={styles.statNumber}>{totalPosts}</div>
