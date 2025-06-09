@@ -162,26 +162,19 @@ const AboutPage = () => {
       borderRadius: borderRadius.lg,
       overflow: "hidden",
       boxShadow: shadows.sm,
-      transition: "all 0.3s ease",
-      position: "relative",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      transform: "translateY(0)",
+      transition: "transform 0.3s ease, box-shadow 0.3s ease",
       '&:hover': {
         transform: "translateY(-10px)",
-        boxShadow: shadows.lg,
-        zIndex: 1
-      }
+        boxShadow: shadows.lg
+      },
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center"
     },
     teamImage: {
       width: "100%",
       height: "250px",
-      objectFit: "cover",
-      transition: "transform 0.3s ease",
-      '&:hover': {
-        transform: "scale(1.05)"
-      }
+      objectFit: "cover"
     },
     teamInfo: {
       padding: spacing.lg,
@@ -410,21 +403,14 @@ const AboutPage = () => {
               {teamMembers.map((member, index) => (
                 <div 
                   key={index} 
-                  style={{
-                    ...styles.teamMember,
-                    marginBottom: spacing.xl,
-                    transform: "translateY(0)",
-                    transition: "all 0.3s ease"
-                  }}
+                  style={styles.teamMember}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-10px)";
                     e.currentTarget.style.boxShadow = shadows.lg;
-                    e.currentTarget.style.zIndex = "1";
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = "translateY(0)";
                     e.currentTarget.style.boxShadow = shadows.sm;
-                    e.currentTarget.style.zIndex = "0";
                   }}
                 >
                   <img 
@@ -509,22 +495,6 @@ const AboutPage = () => {
         </div>
       </main>
       
-      {/* Estilos globales para Canvas - Soluciona el bug de desplazamiento */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          canvas {
-            max-width: 100% !important;
-            height: auto !important;
-            display: block !important;
-          }
-          /* Asegurar que los contenedores no fuercen ancho */
-          div:has(canvas) {
-            max-width: 100% !important;
-            overflow-x: hidden !important;
-          }
-        `
-      }} />
-
       <Footer />
     </div>
   );
