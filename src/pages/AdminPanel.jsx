@@ -109,17 +109,30 @@ const AdminPanel = () => {
 
   // Verificar si el usuario es administrador
   useEffect(() => {
-    if (!isAuth) {
-      navigate('/login');
-      return;
-    }
+    const verifyAdminAccess = async () => {
+      if (!isAuth) {
+        navigate('/login', { state: { from: location } });
+        return;
+      }
 
-    if (!isSuperUser) {
-      navigate('/');
-      toast.error('Acceso denegado. Se requieren privilegios de administrador.');
-      return;
-    }
-  }, [isAuth, isSuperUser, navigate]);
+      try {
+        // Verificar el estado de superusuario con el servidor
+        const isSuperUserFromServer = await updateSuperUserStatus();
+        
+        if (!isSuperUserFromServer) {
+          navigate('/');
+          toast.error('Acceso denegado. Se requieren privilegios de administrador.');
+          return;
+        }
+      } catch (error) {
+        console.error('Error al verificar permisos de administrador:', error);
+        navigate('/');
+        toast.error('Error al verificar permisos de administrador.');
+      }
+    };
+
+    verifyAdminAccess();
+  }, [isAuth, isSuperUser, navigate, location]);
 
   // Función para cargar todas las publicaciones
   const fetchAllPosts = async () => {

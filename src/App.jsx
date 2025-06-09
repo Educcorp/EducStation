@@ -1,6 +1,6 @@
 // src/App.jsx (updated)
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ScrollToTop from './components/utils/ScrollToTop';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
@@ -71,6 +71,7 @@ const PrivateRoute = ({ children }) => {
 // Componente para rutas de administrador (solo accesibles para superusers)
 const SuperUserRoute = ({ children }) => {
   const { isAuth, isSuperUser, loading } = useAuth();
+  const location = useLocation();
 
   // Mostrar loader mientras se verifica la autenticación
   if (loading) {
@@ -79,7 +80,7 @@ const SuperUserRoute = ({ children }) => {
 
   // Redirigir a login si no está autenticado
   if (!isAuth) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Redirigir a home si está autenticado pero no es superuser
