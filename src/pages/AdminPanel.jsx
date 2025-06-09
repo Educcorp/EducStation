@@ -76,19 +76,145 @@ const AdminPanel = () => {
   const [categories, setCategories] = useState([]);
   const [categoryPostCounts, setCategoryPostCounts] = useState({});
   const [loadingCategories, setLoadingCategories] = useState(true);
+
+  // Ref para el canvas de la gráfica
   const chartRef = useRef(null);
 
-  // Colores de categorías
+  // Colores para las categorías
   const categoryColors = {
-    1: '#FF6B6B', // Noticias
-    2: '#4ECDC4', // Técnicas de Estudio
-    3: '#FFD166', // Problemáticas en el Estudio
-    4: '#6A0572', // Educación de Calidad
-    5: '#1A936F', // Herramientas Tecnológicas
-    6: '#3D5A80', // Desarrollo Profesional Docente
-    7: '#F18F01', // Comunidad y Colaboración
-    'default': '#6b7280'
+    default: isDarkMode ? '#6b7280' : '#cccccc',
+    1: isDarkMode ? '#4ECDC4' : '#1A936F',
+    2: isDarkMode ? '#FF6384' : '#FF6B6B',
+    3: isDarkMode ? '#FFCE56' : '#FFD166',
+    4: isDarkMode ? '#6A0572' : '#9966FF',
+    5: isDarkMode ? '#1A936F' : '#4BC0C0',
+    6: isDarkMode ? '#3D5A80' : '#3D5A80',
+    7: isDarkMode ? '#F18F01' : '#FF9F40',
   };
+
+  // Función para dibujar el gráfico de categorías
+  const drawCategoryChart = () => {
+    if (!chartRef.current || categories.length === 0 || loadingCategories || Object.keys(categoryPostCounts).length === 0) {
+      if (chartRef.current?.chart) {
+        chartRef.current.chart.destroy();
+      }
+      return;
+    }
+
+    const canvas = chartRef.current;
+    const ctx = canvas.getContext('2d');
+    const container = canvas.parentElement;
+
+    if (!container) {
+      console.error("Contenedor del canvas no encontrado.");
+      if (chartRef.current?.chart) {
+        chartRef.current.chart.destroy();
+      }
+      return;
+    }
+
+    const containerRect = container.getBoundingClientRect();
+    const canvasWidth = containerRect.width > 0 ? containerRect.width : 350;
+    const canvasHeight = Math.min(canvasWidth, 400);
+
+    canvas.width = canvasWidth;
+    canvas.height = canvasHeight;
+
+    if (typeof Chart === 'undefined') {
+      console.error('Chart.js no está cargado.');
+      if (chartRef.current?.chart) {
+        chartRef.current.chart.destroy();
+      }
+      return;
+    }
+
+    if (chartRef.current?.chart) {
+      chartRef.current.chart.destroy();
+    }
+
+    const chartLabels = Object.values(categoryPostCounts).map(cat => cat.name);
+    const chartData = Object.values(categoryPostCounts).map(cat => cat.count);
+    const chartBackgroundColors = Object.keys(categoryPostCounts).map(categoryId => 
+      categoryColors[categoryId] || categoryColors.default
+    );
+
+    chartRef.current.chart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: chartLabels,
+        datasets: [{
+          data: chartData,
+          backgroundColor: chartBackgroundColors,
+          hoverOffset: 4,
+          borderWidth: 1,
+          borderColor: isDarkMode ? '#1a1a1a' : '#ffffff',
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            enabled: true,
+            callbacks: {
+              label: function(context) {
+                let label = context.label || '';
+                if (label) {
+                  label += ': ';
+                }
+                if (context.parsed !== null) {
+                  label += context.parsed + ' publicaciones';
+                }
+                return label;
+              }
+            }
+          }
+        }
+      }
+    });
+  };
+
+  // Efecto para dibujar el gráfico cuando cambian los datos
+  useEffect(() => {
+    drawCategoryChart();
+  }, [categories, categoryPostCounts, loadingCategories, isDarkMode]);
+
+  // Efecto para manejar el redimensionamiento
+  useEffect(() => {
+    const handleResize = () => {
+      if (chartRef.current) {
+        const canvas = chartRef.current;
+        const container = canvas.parentElement;
+        if (!container) return;
+
+        const containerRect = container.getBoundingClientRect();
+        const canvasWidth = containerRect.width > 0 ? containerRect.width : 350;
+        const canvasHeight = Math.min(canvasWidth, 400);
+
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        if (chartRef.current.chart) {
+          chartRef.current.chart.update();
+        } else {
+          drawCategoryChart();
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (chartRef.current?.chart) {
+        chartRef.current.chart.destroy();
+      }
+    };
+  }, [categories, categoryPostCounts, isDarkMode]);
 
   // Añadir los keyframes al montar el componente
   useEffect(() => {
@@ -412,6 +538,9 @@ const AdminPanel = () => {
     return 'Sin resumen disponible';
   };
 
+  // Calcular estadísticas
+  const totalPosts = posts.length;
+
   // Estilos
   const styles = {
     container: {
@@ -573,7 +702,9 @@ const AdminPanel = () => {
       minWidth: '350px',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center'
+      alignItems: 'center',
+      position: 'relative',
+      height: 'auto',
     },
     chartTitle: {
       fontSize: typography.fontSize.md,
@@ -588,8 +719,12 @@ const AdminPanel = () => {
       width: '100%',
       aspectRatio: '1/1',
       maxWidth: '400px',
+      maxHeight: '400px',
+      minHeight: '0',
       margin: '0 auto',
-      display: 'block'
+      display: 'block',
+      height: 'auto !important',
+      boxSizing: 'border-box !important',
     },
     categoryLegend: {
       display: 'flex',
@@ -832,108 +967,6 @@ const AdminPanel = () => {
     }
   };
 
-  // Calcular estadísticas
-  const totalPosts = posts.length;
-
-  // Función para dibujar el gráfico de categorías con Chart.js
-  const drawCategoryChart = () => {
-    if (!chartRef.current || categories.length === 0 || loadingCategories) return;
-
-    const canvas = chartRef.current;
-    const ctx = canvas.getContext('2d');
-
-    // Asegurarse de que Chart.js está disponible
-    if (typeof Chart === 'undefined') {
-        console.error('Chart.js no está cargado. Asegúrate de incluir la biblioteca.');
-        return;
-    }
-    
-    // Destruir gráfica anterior si existe
-    if (chartRef.current.chart) {
-        chartRef.current.chart.destroy();
-    }
-
-    const chartLabels = Object.values(categoryPostCounts).map(cat => cat.name);
-    const chartData = Object.values(categoryPostCounts).map(cat => cat.count);
-    const chartBackgroundColors = Object.keys(categoryPostCounts).map(categoryId => categoryColors[categoryId] || categoryColors.default);
-
-    chartRef.current.chart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: chartLabels,
-            datasets: [{
-                data: chartData,
-                backgroundColor: chartBackgroundColors,
-                hoverOffset: 4,
-                // Configuración para mostrar datalabels en las rebanadas
-                datalabels: {
-                    color: isDarkMode ? '#000' : '#fff', // Color del texto (negro en modo oscuro, blanco en claro)
-                    anchor: 'end', // Posición del label (al final de la rebanada)
-                    align: 'start', // Alineación del label
-                    offset: 10, // Separación del borde de la rebanada
-                    font: {
-                        weight: 'bold'
-                    },
-                    formatter: function(value, context) {
-                        // Muestra solo el valor (conteo)
-                        return value; 
-                    }
-                }
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false // Ocultar leyenda predeterminada de Chart.js
-                },
-                tooltip: {
-                     callbacks: {
-                        label: function(context) {
-                            let label = context.label || '';
-                            if (label) {
-                                label += ': ';
-                            }
-                            if (context.parsed !== null) {
-                                label += context.parsed + ' publicaciones';
-                            }
-                            return label;
-                        }
-                    }
-                }
-            }
-        }
-    });
-  };
-
-   // Dibujar el gráfico cuando cambian las categorías o los conteos
-  useEffect(() => {
-    if (chartRef.current) { // Solo intentar dibujar si la referencia existe
-      drawCategoryChart();
-    }
-  }, [categories, categoryPostCounts, loadingCategories, isDarkMode]); // Dependencias actualizadas
-
-  // Redimensionar el canvas cuando cambie el tamaño de la ventana
-  useEffect(() => {
-    const handleResize = () => {
-      if (chartRef.current && chartRef.current.chart) { // Solo redimensionar si la gráfica existe
-         chartRef.current.chart.resize();
-      } else if (chartRef.current) { // Si el canvas existe pero la gráfica no, intentar dibujarla
-          drawCategoryChart();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    // Limpiar el evento al desmontar el componente y destruir la gráfica
-    return () => {
-      window.removeEventListener('resize', handleResize);
-       if (chartRef.current && chartRef.current.chart) {
-         chartRef.current.chart.destroy();
-       }
-    };
-  }, [categories, categoryPostCounts, isDarkMode]); // Dependencias actualizadas
-
   return (
     <div style={styles.container}>
       <Header />
@@ -1009,20 +1042,22 @@ const AdminPanel = () => {
           {/* Gráfica de Categorías */}
           <div style={styles.chartContainer}>
             <h3 style={styles.chartTitle}><FaChartPie /> Distribución por Categoría</h3>
+
+            {/* Gráfica de Categorías (Canvas) */}
             {!loadingCategories && categories.length > 0 && Object.keys(categoryPostCounts).length > 0 ? (
-                <canvas ref={chartRef} style={styles.chartCanvas}></canvas>
+              <canvas ref={chartRef} style={styles.chartCanvas}></canvas>
             ) : loadingCategories ? (
-                 <div style={styles.loadingSpinner}>Cargando categorías...</div>
+              <div style={styles.loadingSpinner}>Cargando categorías...</div>
             ) : (
-                 <p style={{ 
-                    textAlign: 'center', 
-                    color: isDarkMode ? colors.white : colors.textSecondary,
-                    marginTop: spacing.md
-                    }}>
-                    No hay categorías disponibles o publicaciones en ellas para mostrar la gráfica.
-                 </p>
+              <p style={{ 
+                textAlign: 'center', 
+                color: isDarkMode ? colors.white : colors.textSecondary,
+                marginTop: spacing.md
+              }}>
+                No hay categorías disponibles o publicaciones en ellas para mostrar la gráfica.
+              </p>
             )}
-           
+
             {/* Leyenda de Categorías */}
             {!loadingCategories && categories.length > 0 && Object.keys(categoryPostCounts).length > 0 && (
                 <div style={styles.categoryLegend}>
