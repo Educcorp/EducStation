@@ -60,17 +60,6 @@ const RegisterPage = () => {
         devMode: false
     });
 
-    // Nuevo estado para controlar si cada campo es válido
-    const [fieldValidity, setFieldValidity] = useState({
-        firstName: false,
-        lastName: false,
-        username: false,
-        email: false,
-        password: false,
-        confirmPassword: false,
-        termsAccepted: false
-    });
-
     // Estados para controlar la visibilidad de las contraseñas
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -110,225 +99,10 @@ const RegisterPage = () => {
         }
     }, [isAuth, loading, navigate]);
 
-    // Función para validar el nombre
-    const validateFirstName = (value) => {
-        if (!value.trim()) {
-            setErrors(prev => ({ ...prev, firstName: 'El nombre es requerido' }));
-            setFieldValidity(prev => ({ ...prev, firstName: false }));
-            return false;
-        }
-        if (value.trim().length < 3) {
-            setErrors(prev => ({ ...prev, firstName: 'El nombre debe tener al menos 3 caracteres' }));
-            setFieldValidity(prev => ({ ...prev, firstName: false }));
-            return false;
-        }
-        setErrors(prev => ({ ...prev, firstName: '' }));
-        setFieldValidity(prev => ({ ...prev, firstName: true }));
-        return true;
-    };
-
-    // Función para validar el apellido
-    const validateLastName = (value) => {
-        if (!value.trim()) {
-            setErrors(prev => ({ ...prev, lastName: 'El apellido es requerido' }));
-            setFieldValidity(prev => ({ ...prev, lastName: false }));
-            return false;
-        }
-        if (value.trim().length < 3) {
-            setErrors(prev => ({ ...prev, lastName: 'El apellido debe tener al menos 3 caracteres' }));
-            setFieldValidity(prev => ({ ...prev, lastName: false }));
-            return false;
-        }
-        setErrors(prev => ({ ...prev, lastName: '' }));
-        setFieldValidity(prev => ({ ...prev, lastName: true }));
-        return true;
-    };
-
-    // Función para validar el username
-    const validateUsername = async (username) => {
-        if (!username) {
-            setErrors(prev => ({ ...prev, username: 'El nombre de usuario es requerido' }));
-            setFieldValidity(prev => ({ ...prev, username: false }));
-            return false;
-        }
-
-        if (!validateUsernameFormat(username)) {
-            setErrors(prev => ({
-                ...prev,
-                username: 'Solo se permiten letras minúsculas, números, punto y guion bajo'
-            }));
-            setFieldValidity(prev => ({ ...prev, username: false }));
-            return false;
-        }
-
-        if (username.length < 4) {
-            setErrors(prev => ({
-                ...prev,
-                username: 'El nombre de usuario debe tener al menos 4 caracteres'
-            }));
-            setFieldValidity(prev => ({ ...prev, username: false }));
-            return false;
-        }
-
-        setIsCheckingUsername(true);
-        try {
-            const result = await checkUsernameAvailability(username);
-            if (!result.available) {
-                setErrors(prev => ({
-                    ...prev,
-                    username: 'Este nombre de usuario ya está en uso'
-                }));
-                setFieldValidity(prev => ({ ...prev, username: false }));
-                return false;
-            }
-            setErrors(prev => ({ ...prev, username: '' }));
-            setFieldValidity(prev => ({ ...prev, username: true }));
-            return true;
-        } catch (error) {
-            setErrors(prev => ({
-                ...prev,
-                username: 'Error al verificar el nombre de usuario'
-            }));
-            setFieldValidity(prev => ({ ...prev, username: false }));
-            return false;
-        } finally {
-            setIsCheckingUsername(false);
-        }
-    };
-
-    // Función para validar el email
-    const validateEmail = async (email) => {
-        if (!email) {
-            setErrors(prev => ({ ...prev, email: 'El correo electrónico es requerido' }));
-            setFieldValidity(prev => ({ ...prev, email: false }));
-            return false;
-        }
-
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            setErrors(prev => ({ ...prev, email: 'Ingresa un correo electrónico válido' }));
-            setFieldValidity(prev => ({ ...prev, email: false }));
-            return false;
-        }
-
-        setIsCheckingEmail(true);
-        try {
-            const result = await checkEmailAvailability(email);
-            if (!result.available) {
-                setErrors(prev => ({
-                    ...prev,
-                    email: 'Este correo electrónico ya está registrado'
-                }));
-                setFieldValidity(prev => ({ ...prev, email: false }));
-                return false;
-            }
-            setErrors(prev => ({ ...prev, email: '' }));
-            setFieldValidity(prev => ({ ...prev, email: true }));
-            return true;
-        } catch (error) {
-            setErrors(prev => ({
-                ...prev,
-                email: 'Error al verificar el correo electrónico'
-            }));
-            setFieldValidity(prev => ({ ...prev, email: false }));
-            return false;
-        } finally {
-            setIsCheckingEmail(false);
-        }
-    };
-
-    // Función para validar la contraseña
-    const validatePassword = (password) => {
-        if (!password) {
-            setErrors(prev => ({ ...prev, password: 'La contraseña es requerida' }));
-            setFieldValidity(prev => ({ ...prev, password: false }));
-            return false;
-        }
-
-        if (password.length < 8) {
-            setErrors(prev => ({
-                ...prev,
-                password: 'La contraseña debe tener al menos 8 caracteres'
-            }));
-            setFieldValidity(prev => ({ ...prev, password: false }));
-            return false;
-        }
-
-        if (!/(?=.*[a-z])/.test(password)) {
-            setErrors(prev => ({
-                ...prev,
-                password: 'La contraseña debe contener al menos una letra minúscula'
-            }));
-            setFieldValidity(prev => ({ ...prev, password: false }));
-            return false;
-        }
-
-        if (!/(?=.*[A-Z])/.test(password)) {
-            setErrors(prev => ({
-                ...prev,
-                password: 'La contraseña debe contener al menos una letra mayúscula'
-            }));
-            setFieldValidity(prev => ({ ...prev, password: false }));
-            return false;
-        }
-
-        if (!/(?=.*\d)/.test(password)) {
-            setErrors(prev => ({
-                ...prev,
-                password: 'La contraseña debe contener al menos un número'
-            }));
-            setFieldValidity(prev => ({ ...prev, password: false }));
-            return false;
-        }
-
-        setErrors(prev => ({ ...prev, password: '' }));
-        setFieldValidity(prev => ({ ...prev, password: true }));
-        return true;
-    };
-
-    // Función para validar la confirmación de contraseña
-    const validateConfirmPassword = (confirmPassword) => {
-        if (!confirmPassword) {
-            setErrors(prev => ({
-                ...prev,
-                confirmPassword: 'Confirma tu contraseña'
-            }));
-            setFieldValidity(prev => ({ ...prev, confirmPassword: false }));
-            return false;
-        }
-
-        if (confirmPassword !== formData.password) {
-            setErrors(prev => ({
-                ...prev,
-                confirmPassword: 'Las contraseñas no coinciden'
-            }));
-            setFieldValidity(prev => ({ ...prev, confirmPassword: false }));
-            return false;
-        }
-
-        setErrors(prev => ({ ...prev, confirmPassword: '' }));
-        setFieldValidity(prev => ({ ...prev, confirmPassword: true }));
-        return true;
-    };
-
-    // Función para validar los términos y condiciones
-    const validateTerms = (accepted) => {
-        if (!accepted) {
-            setErrors(prev => ({
-                ...prev,
-                termsAccepted: 'Debes aceptar los términos y condiciones'
-            }));
-            setFieldValidity(prev => ({ ...prev, termsAccepted: false }));
-            return false;
-        }
-        setErrors(prev => ({ ...prev, termsAccepted: '' }));
-        setFieldValidity(prev => ({ ...prev, termsAccepted: true }));
-        return true;
-    };
-
-    // Modificar el handleChange para validar en tiempo real
-    const handleChange = async (e) => {
+    const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
+
+        // Convertir username a minúsculas automáticamente
         const processedValue = name === 'username' ? value.toLowerCase() : value;
 
         setFormData(prev => ({
@@ -336,64 +110,353 @@ const RegisterPage = () => {
             [name]: type === 'checkbox' ? checked : processedValue
         }));
 
-        // Validar el campo que cambió
-        switch (name) {
-            case 'firstName':
-                validateFirstName(processedValue);
-                break;
-            case 'lastName':
-                validateLastName(processedValue);
-                break;
-            case 'username':
-                await validateUsername(processedValue);
-                break;
-            case 'email':
-                await validateEmail(processedValue);
-                break;
-            case 'password':
-                validatePassword(processedValue);
-                // Si hay confirmación de contraseña, validarla también
-                if (formData.confirmPassword) {
-                    validateConfirmPassword(formData.confirmPassword);
+        // Limpiar error al cambiar el valor
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+
+        // Validar username en tiempo real
+        if (name === 'username') {
+            validateUsername(processedValue);
+        }
+        
+        // Validar email cuando cambia el valor y tiene formato válido
+        if (name === 'email') {
+            // Reiniciar estado de disponibilidad si se cambia el valor
+            if (emailAvailable !== null) {
+                setEmailAvailable(null);
+            }
+            
+            // Solo validar si el formato es correcto
+            if (value && /\S+@\S+\.\S+/.test(value)) {
+                // Usar un temporizador para no hacer demasiadas peticiones mientras se escribe
+                if (window.emailValidationTimer) {
+                    clearTimeout(window.emailValidationTimer);
                 }
-                break;
-            case 'confirmPassword':
-                validateConfirmPassword(processedValue);
-                break;
-            case 'termsAccepted':
-                validateTerms(checked);
-                break;
-            default:
-                break;
+                
+                window.emailValidationTimer = setTimeout(() => {
+                    validateEmail(value);
+                }, 800); // Esperar 800ms después de que el usuario deje de escribir
+            }
         }
     };
 
-    // Función para verificar si todos los campos son válidos
-    const isFormValid = () => {
-        return Object.values(fieldValidity).every(valid => valid);
+    const handleFocus = (field) => {
+        setActiveField(field);
     };
 
-    // Modificar el handleSubmit para usar las nuevas validaciones
+    const handleBlur = () => {
+        setActiveField(null);
+    };
+
+    // Funciones para alternar la visibilidad de las contraseñas
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
+    const toggleConfirmPasswordVisibility = () => {
+        setShowConfirmPassword(!showConfirmPassword);
+    };
+
+    // Función para validar el formato del username
+    const validateUsernameFormat = (username) => {
+        const usernameRegex = /^[a-z0-9._]+$/;
+        return usernameRegex.test(username);
+    };
+
+    // Función para verificar disponibilidad del username
+    const validateUsername = async (username) => {
+        if (!username) {
+            setErrors(prev => ({ ...prev, username: 'El nombre de usuario es requerido' }));
+            setUsernameAvailable(null);
+            return;
+        }
+
+        if (!validateUsernameFormat(username)) {
+            setErrors(prev => ({
+                ...prev,
+                username: 'Solo se permiten letras minúsculas, números, punto y guion bajo'
+            }));
+            setUsernameAvailable(null);
+            return;
+        }
+
+        setIsCheckingUsername(true);
+        try {
+            console.log('Iniciando verificación para:', username);
+
+            // Si el modo desarrollo está activado, asumimos que el username está disponible
+            if (devModeEnabled) {
+                console.log('Modo desarrollo activado - asumiendo username disponible');
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
+                setIsCheckingUsername(false);
+                return;
+            }
+
+            // Validación temporal - REMOVER EN PRODUCCIÓN
+            // Esta es una solución temporal hasta que se arregle el backend
+            const bypassValidation = localStorage.getItem('bypassUsernameValidation') === 'true';
+            if (bypassValidation) {
+                console.log('Bypass de validación activado - asumiendo username disponible');
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
+                setIsCheckingUsername(false);
+                return;
+            }
+
+            await checkUsernameAvailability(username);
+            console.log('Username disponible:', username);
+            setUsernameAvailable(true);
+            setErrors(prev => ({ ...prev, username: '' }));
+        } catch (error) {
+            console.error('Error en validación de username:', error.message);
+
+            // Si el error indica que el usuario ya existe
+            if (error.message && (
+                error.message.includes('ya está en uso') ||
+                error.message.includes('ya existe')
+            )) {
+                console.log('Username no disponible:', username);
+                setUsernameAvailable(false);
+                setErrors(prev => ({
+                    ...prev,
+                    username: error.message || 'Este nombre de usuario ya está en uso'
+                }));
+            }
+            // Si es un error de red y estamos en desarrollo, permitir continuar
+            else if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
+                console.log('Error de red en desarrollo - asumiendo username disponible');
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
+            } else {
+                // Para otros errores, asumimos disponible para no bloquear el registro
+                setUsernameAvailable(true);
+                setErrors(prev => ({ ...prev, username: '' }));
+            }
+        } finally {
+            setIsCheckingUsername(false);
+        }
+    };
+
+    // Función para validar el formato del email (simplificada a la versión anterior)
+    const validateEmail = async (email) => {
+        if (!email) {
+            setErrors(prev => ({ ...prev, email: 'El correo electrónico es requerido' }));
+            setEmailAvailable(null);
+            return;
+        }
+
+        // Validación de formato básica (versión anterior)
+        if (!/\S+@\S+\.\S+/.test(email)) {
+            setErrors(prev => ({
+                ...prev,
+                email: 'Ingresa un correo electrónico válido'
+            }));
+            setEmailAvailable(null);
+            return;
+        }
+
+        setIsCheckingEmail(true);
+        try {
+            console.log('Iniciando verificación de email para:', email);
+
+            // Si el modo desarrollo está activado, asumimos que el email está disponible
+            if (devModeEnabled) {
+                console.log('Modo desarrollo activado - asumiendo email disponible');
+                setEmailAvailable(true);
+                setErrors(prev => ({ ...prev, email: '' }));
+                setIsCheckingEmail(false);
+                return;
+            }
+
+            // Validación temporal - REMOVER EN PRODUCCIÓN
+            const bypassValidation = localStorage.getItem('bypassEmailValidation') === 'true';
+            if (bypassValidation) {
+                console.log('Bypass de validación activado - asumiendo email disponible');
+                setEmailAvailable(true);
+                setErrors(prev => ({ ...prev, email: '' }));
+                setIsCheckingEmail(false);
+                return;
+            }
+
+            await checkEmailAvailability(email);
+            console.log('Email disponible:', email);
+            setEmailAvailable(true);
+            setErrors(prev => ({ ...prev, email: '' }));
+        } catch (error) {
+            console.error('Error en validación de email:', error.message);
+
+            if (error.message && (
+                error.message.includes('ya está registrado') ||
+                error.message.includes('ya existe')
+            )) {
+                console.log('Email no disponible:', email);
+                setEmailAvailable(false);
+                setErrors(prev => ({
+                    ...prev,
+                    email: error.message || 'Este correo electrónico ya está registrado'
+                }));
+            }
+            else if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
+                console.log('Error de red en desarrollo - asumiendo email disponible');
+                setEmailAvailable(true);
+                setErrors(prev => ({ ...prev, email: '' }));
+            } else {
+                setEmailAvailable(true);
+                setErrors(prev => ({ ...prev, email: '' }));
+            }
+        } finally {
+            setIsCheckingEmail(false);
+        }
+    };
+
+    // Función para validar el formulario completo (versión anterior)
+    const validateForm = () => {
+        let valid = true;
+        const newErrors = {
+            firstName: '',
+            lastName: '',
+            username: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            termsAccepted: '',
+            general: '',
+            devMode: false
+        };
+
+        // Validar nombre
+        if (!formData.firstName.trim()) {
+            newErrors.firstName = 'El nombre es requerido';
+            valid = false;
+        }
+
+        // Validar apellido
+        if (!formData.lastName.trim()) {
+            newErrors.lastName = 'El apellido es requerido';
+            valid = false;
+        }
+
+        // Validar username
+        if (!formData.username) {
+            newErrors.username = 'El nombre de usuario es requerido';
+            valid = false;
+        } else if (!validateUsernameFormat(formData.username)) {
+            newErrors.username = 'Solo se permiten letras minúsculas, números, punto y guion bajo';
+            valid = false;
+        } else if (usernameAvailable === false) {
+            newErrors.username = 'Este nombre de usuario ya está en uso';
+            valid = false;
+        }
+
+        // Validar email (versión anterior)
+        if (!formData.email) {
+            newErrors.email = 'El correo electrónico es requerido';
+            valid = false;
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'Ingresa un correo electrónico válido';
+            valid = false;
+        } else if (emailAvailable === false) {
+            newErrors.email = 'Este correo electrónico ya está registrado';
+            valid = false;
+        }
+
+        // Validar contraseña
+        if (!formData.password) {
+            newErrors.password = 'La contraseña es requerida';
+            valid = false;
+        } else if (formData.password.length < 8) {
+            newErrors.password = 'La contraseña debe tener al menos 8 caracteres';
+            valid = false;
+        } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+            newErrors.password = 'La contraseña debe contener al menos una letra mayúscula, una minúscula y un número';
+            valid = false;
+        }
+
+        // Validar confirmación de contraseña
+        if (!formData.confirmPassword) {
+            newErrors.confirmPassword = 'Confirma tu contraseña';
+            valid = false;
+        } else if (formData.confirmPassword !== formData.password) {
+            newErrors.confirmPassword = 'Las contraseñas no coinciden';
+            valid = false;
+        }
+
+        // Validar términos y condiciones
+        if (!formData.termsAccepted) {
+            newErrors.termsAccepted = 'Debes aceptar los términos y condiciones';
+            valid = false;
+        }
+
+        setErrors(newErrors);
+        return valid;
+    };
+
+    // Función para manejar el envío del formulario (versión anterior con setTimeout)
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validar todos los campos antes de enviar
-        const isFirstNameValid = validateFirstName(formData.firstName);
-        const isLastNameValid = validateLastName(formData.lastName);
-        const isUsernameValid = await validateUsername(formData.username);
-        const isEmailValid = await validateEmail(formData.email);
-        const isPasswordValid = validatePassword(formData.password);
-        const isConfirmPasswordValid = validateConfirmPassword(formData.confirmPassword);
-        const isTermsValid = validateTerms(formData.termsAccepted);
+        // Validación del formulario
+        if (!validateForm()) return;
 
-        if (!isFirstNameValid || !isLastNameValid || !isUsernameValid || 
-            !isEmailValid || !isPasswordValid || !isConfirmPasswordValid || !isTermsValid) {
+        // Si hay bypass de validación de username o el username está disponible, continuar
+        if (localStorage.getItem('bypassUsernameValidation') !== 'true' &&
+            !devModeEnabled &&
+            usernameAvailable === false) {
+            setErrors(prev => ({
+                ...prev,
+                username: 'Este nombre de usuario ya está en uso. Intenta con otro.'
+            }));
+            inputRefs.username.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+
+        // Si hay bypass de validación de email o el email está disponible, continuar
+        if (localStorage.getItem('bypassEmailValidation') !== 'true' &&
+            !devModeEnabled &&
+            emailAvailable === false) {
+            setErrors(prev => ({
+                ...prev,
+                email: 'Este correo electrónico ya está registrado. Intenta con otro.'
+            }));
+            inputRefs.email.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
 
         setIsSubmitting(true);
 
+        // Añadir animación al botón
+        if (buttonRef.current) {
+            buttonRef.current.classList.add('button-press');
+            setTimeout(() => {
+                buttonRef.current?.classList.remove('button-press');
+            }, 300);
+        }
+
         try {
+            console.log('Iniciando registro con datos:', {
+                username: formData.username,
+                email: formData.email,
+                // Omitiendo contraseña por seguridad
+                first_name: formData.firstName,
+                last_name: formData.lastName
+            });
+
+            // Si el modo desarrollo está activado, simulamos un registro exitoso
+            if (devModeEnabled) {
+                console.log('Modo desarrollo - simulando registro exitoso');
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                navigate('/login', {
+                    state: { message: '¡Registro exitoso en modo desarrollo! Ahora puedes iniciar sesión.' }
+                });
+                return;
+            }
+
             await register({
                 username: formData.username,
                 email: formData.email,
@@ -403,14 +466,54 @@ const RegisterPage = () => {
                 last_name: formData.lastName
             });
 
+            console.log('Registro exitoso');
             navigate('/login', {
                 state: { message: '¡Registro exitoso! Ahora puedes iniciar sesión.' }
             });
         } catch (error) {
-            setErrors(prev => ({
-                ...prev,
-                general: error.message || 'Error al registrar. Por favor intenta nuevamente.'
-            }));
+            console.error('Error al registrar usuario:', error);
+
+            if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
+                setErrors(prev => ({
+                    ...prev,
+                    general: 'Error de conexión con el servidor. ¿Deseas activar el modo desarrollo para probar la aplicación sin backend?',
+                    devMode: true
+                }));
+            }
+            else if (error.message.toLowerCase().includes('nombre de usuario') ||
+                error.message.toLowerCase().includes('usuario ya está') ||
+                error.message.toLowerCase().includes('username')) {
+                setUsernameAvailable(false); 
+                setErrors(prev => ({
+                    ...prev,
+                    username: error.message,
+                    general: 'Error en el registro: ' + error.message
+                }));
+                inputRefs.username.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            else if (error.message.toLowerCase().includes('correo') ||
+                error.message.toLowerCase().includes('email')) {
+                setEmailAvailable(false); 
+                setErrors(prev => ({
+                    ...prev,
+                    email: error.message,
+                    general: 'Error en el registro: ' + error.message
+                }));
+                inputRefs.email.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            else {
+                setErrors(prev => ({
+                    ...prev,
+                    general: error.message || 'Error al registrar. Por favor intenta nuevamente más tarde.'
+                }));
+            }
+
+            if (formRef.current) {
+                formRef.current.classList.add('form-error');
+                setTimeout(() => {
+                    formRef.current?.classList.remove('form-error');
+                }, 500);
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -714,7 +817,7 @@ const RegisterPage = () => {
         },
         activeEyeIcon: {
             color: '#1F4E4E',
-            backgroundColor: 'rgba(44, 113, 113, 0.2)',
+            backgroundColor: 'rgba(44, 113, 113, 0.1)',
         },
         statusIcon: {
             position: 'absolute',
@@ -1632,7 +1735,7 @@ const RegisterPage = () => {
                                 </div>
                             )}
 
-                            <form onSubmit={handleSubmit} ref={formRef} style={styles.form}>
+                            <form onSubmit={handleSubmit}>
                                 <div style={styles.formRow} className="register-form-row">
                                     <div
                                         style={{
@@ -2072,13 +2175,9 @@ const RegisterPage = () => {
 
                                 <button
                                     type="submit"
-                                    style={{
-                                        ...styles.registerButton,
-                                        opacity: isFormValid() ? 1 : 0.7,
-                                        cursor: isFormValid() ? 'pointer' : 'not-allowed'
-                                    }}
+                                    style={styles.registerButton}
                                     ref={buttonRef}
-                                    disabled={isSubmitting || !isFormValid()}
+                                    disabled={isSubmitting}
                                     className="register-button login-button-animation"
                                 >
                                     <span style={styles.buttonRipple}></span>
