@@ -3,14 +3,10 @@
   "version": "1.0.0",
   "description": "A web blog application for EducStation",
   "main": "src/index.js",
-  "engines": {
-    "node": ">=16.0.0",
-    "npm": ">=8.0.0"
-  },
   "scripts": {
-    "start": "react-scripts --max_old_space_size=4096 start",
-    "build": "react-scripts --max_old_space_size=4096 build",
-    "serve": "node --max_old_space_size=4096 server/server.js",
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "serve": "node server/server.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -21,8 +17,6 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "axios": "^1.9.0",
-    "chart.js": "^4.4.9",
-    "chartjs-plugin-datalabels": "^2.2.0",
     "date-fns": "^4.1.0",
     "express": "^4.17.1",
     "lucide-react": "^0.510.0",
@@ -52,7 +46,6 @@
   },
   "devDependencies": {
     "react-scripts": "5.0.1",
-    "typescript": "^4.9.5",
     "webpack": "5.75.0",
     "webpack-dev-server": "4.9.3"
   }

@@ -10,11 +10,6 @@ import { deletePublicacion, getAllPublicaciones } from '../services/publicacione
 import { getAllCategorias, getPublicacionesByCategoria } from '../services/categoriasServices';
 import { toast } from 'react-toastify';
 import AnimatedButton from '../components/utils/AnimatedButton';
-import { Chart, registerables } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-
-// Registrar Chart.js y el plugin de datalabels
-Chart.register(...registerables, ChartDataLabels);
 
 // Estilo keyframes para la animación de brillo
 const shineAnimation = `
@@ -65,156 +60,30 @@ const AdminPanel = () => {
   
   // Estados para filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('published');
-  const [sortOrder, setSortOrder] = useState('recientes');
+  const [filter, setFilter] = useState('published'); // Solo 'published' disponible
+  const [sortOrder, setSortOrder] = useState('recientes'); // 'recientes', 'antiguos', 'alfabetico'
   
   // Estados para UI
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
-
-  // Estado para categorías y gráfica
+  
+  // Estado para categorías
   const [categories, setCategories] = useState([]);
   const [categoryPostCounts, setCategoryPostCounts] = useState({});
   const [loadingCategories, setLoadingCategories] = useState(true);
-
-  // Ref para el canvas de la gráfica
   const chartRef = useRef(null);
 
-  // Colores para las categorías
+  // Colores de categorías
   const categoryColors = {
-    default: isDarkMode ? '#6b7280' : '#cccccc',
-    1: isDarkMode ? '#4ECDC4' : '#1A936F',
-    2: isDarkMode ? '#FF6384' : '#FF6B6B',
-    3: isDarkMode ? '#FFCE56' : '#FFD166',
-    4: isDarkMode ? '#6A0572' : '#9966FF',
-    5: isDarkMode ? '#1A936F' : '#4BC0C0',
-    6: isDarkMode ? '#3D5A80' : '#3D5A80',
-    7: isDarkMode ? '#F18F01' : '#FF9F40',
+    1: '#FF6B6B', // Noticias
+    2: '#4ECDC4', // Técnicas de Estudio
+    3: '#FFD166', // Problemáticas en el Estudio
+    4: '#6A0572', // Educación de Calidad
+    5: '#1A936F', // Herramientas Tecnológicas
+    6: '#3D5A80', // Desarrollo Profesional Docente
+    7: '#F18F01', // Comunidad y Colaboración
+    'default': '#6b7280'
   };
-
-  // Función para dibujar el gráfico de categorías
-  const drawCategoryChart = () => {
-    if (!chartRef.current || categories.length === 0 || loadingCategories || Object.keys(categoryPostCounts).length === 0) {
-      if (chartRef.current?.chart) {
-        chartRef.current.chart.destroy();
-      }
-      return;
-    }
-
-    const canvas = chartRef.current;
-    const ctx = canvas.getContext('2d');
-    const container = canvas.parentElement;
-
-    if (!container) {
-      console.error("Contenedor del canvas no encontrado.");
-      if (chartRef.current?.chart) {
-        chartRef.current.chart.destroy();
-      }
-      return;
-    }
-
-    const containerRect = container.getBoundingClientRect();
-    const canvasWidth = containerRect.width > 0 ? containerRect.width : 350;
-    const canvasHeight = Math.min(canvasWidth, 400);
-
-    canvas.width = canvasWidth;
-    canvas.height = canvasHeight;
-
-    if (typeof Chart === 'undefined') {
-      console.error('Chart.js no está cargado.');
-      if (chartRef.current?.chart) {
-        chartRef.current.chart.destroy();
-      }
-      return;
-    }
-
-    if (chartRef.current?.chart) {
-      chartRef.current.chart.destroy();
-    }
-
-    const chartLabels = Object.values(categoryPostCounts).map(cat => cat.name);
-    const chartData = Object.values(categoryPostCounts).map(cat => cat.count);
-    const chartBackgroundColors = Object.keys(categoryPostCounts).map(categoryId => 
-      categoryColors[categoryId] || categoryColors.default
-    );
-
-    chartRef.current.chart = new Chart(ctx, {
-      type: 'pie',
-      data: {
-        labels: chartLabels,
-        datasets: [{
-          data: chartData,
-          backgroundColor: chartBackgroundColors,
-          hoverOffset: 4,
-          borderWidth: 1,
-          borderColor: isDarkMode ? '#1a1a1a' : '#ffffff',
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            enabled: true,
-            callbacks: {
-              label: function(context) {
-                let label = context.label || '';
-                if (label) {
-                  label += ': ';
-                }
-                if (context.parsed !== null) {
-                  label += context.parsed + ' publicaciones';
-                }
-                return label;
-              }
-            }
-          }
-        }
-      }
-    });
-  };
-
-  // Efecto para dibujar el gráfico cuando cambian los datos
-  useEffect(() => {
-    drawCategoryChart();
-  }, [categories, categoryPostCounts, loadingCategories, isDarkMode]);
-
-  // Efecto para manejar el redimensionamiento
-  useEffect(() => {
-    const handleResize = () => {
-      if (chartRef.current) {
-        const canvas = chartRef.current;
-        const container = canvas.parentElement;
-        if (!container) return;
-
-        const containerRect = container.getBoundingClientRect();
-        const canvasWidth = containerRect.width > 0 ? containerRect.width : 350;
-        const canvasHeight = Math.min(canvasWidth, 400);
-
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-
-        if (chartRef.current.chart) {
-          chartRef.current.chart.update();
-        } else {
-          drawCategoryChart();
-        }
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    handleResize();
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (chartRef.current?.chart) {
-        chartRef.current.chart.destroy();
-      }
-    };
-  }, [categories, categoryPostCounts, isDarkMode]);
 
   // Añadir los keyframes al montar el componente
   useEffect(() => {
@@ -235,30 +104,17 @@ const AdminPanel = () => {
 
   // Verificar si el usuario es administrador
   useEffect(() => {
-    const verifyAdminAccess = async () => {
-      if (!isAuth) {
-        navigate('/login', { state: { from: location } });
-        return;
-      }
+    if (!isAuth) {
+      navigate('/login');
+      return;
+    }
 
-      try {
-        // Verificar el estado de superusuario con el servidor
-        const isSuperUserFromServer = await updateSuperUserStatus();
-        
-        if (!isSuperUserFromServer) {
-          navigate('/');
-          toast.error('Acceso denegado. Se requieren privilegios de administrador.');
-          return;
-        }
-      } catch (error) {
-        console.error('Error al verificar permisos de administrador:', error);
-        navigate('/');
-        toast.error('Error al verificar permisos de administrador.');
-      }
-    };
-
-    verifyAdminAccess();
-  }, [isAuth, isSuperUser, navigate, location]);
+    if (!isSuperUser) {
+      navigate('/');
+      toast.error('Acceso denegado. Se requieren privilegios de administrador.');
+      return;
+    }
+  }, [isAuth, isSuperUser, navigate]);
 
   // Función para cargar todas las publicaciones
   const fetchAllPosts = async () => {
@@ -266,11 +122,11 @@ const AdminPanel = () => {
       setLoading(true);
       setError(null);
       console.log('Cargando todas las publicaciones para el panel de administración');
-
+      
       // Cargar todas las publicaciones sin filtrar por administrador
       const allPosts = await getAllPublicaciones(200, 0, null);
       console.log(`Obtenidas ${allPosts.length} publicaciones totales`);
-
+      
       if (!allPosts || allPosts.length === 0) {
         console.log('No se encontraron publicaciones');
         setPosts([]);
@@ -278,17 +134,17 @@ const AdminPanel = () => {
         setError('No hay publicaciones disponibles en el sistema.');
         return;
       }
-
+      
       // Ordenar por fecha de modificación o creación (más reciente primero)
       allPosts.sort((a, b) => {
         const dateA = a.Fecha_modificacion ? new Date(a.Fecha_modificacion) : new Date(a.Fecha_creacion);
         const dateB = b.Fecha_modificacion ? new Date(b.Fecha_modificacion) : new Date(b.Fecha_creacion);
         return dateB - dateA;
       });
-
+      
       setPosts(allPosts);
       applyFilters(allPosts, searchTerm, filter, sortOrder);
-
+      
     } catch (error) {
       console.error('Error al cargar publicaciones:', error);
       setError('No se pudieron cargar las publicaciones. Por favor, intenta de nuevo más tarde.');
@@ -310,10 +166,10 @@ const AdminPanel = () => {
     try {
       setLoadingCategories(true);
       const categoriesData = await getAllCategorias();
-
+      
       if (categoriesData && categoriesData.length > 0) {
         setCategories(categoriesData);
-
+        
         // Obtener el recuento de posts por categoría
         const countPromises = categoriesData.map(async (category) => {
           try {
@@ -328,9 +184,9 @@ const AdminPanel = () => {
             return { id: category.ID_categoria, name: category.Nombre_categoria, count: 0 };
           }
         });
-
+        
         const categoryCounts = await Promise.all(countPromises);
-
+        
         // Convertir a objeto para fácil acceso
         const countsObj = {};
         categoryCounts.forEach(item => {
@@ -339,7 +195,7 @@ const AdminPanel = () => {
             count: item.count
           };
         });
-
+        
         setCategoryPostCounts(countsObj);
       }
     } catch (error) {
@@ -352,7 +208,7 @@ const AdminPanel = () => {
   // Función para aplicar filtros
   const applyFilters = (postsToFilter, term, statusFilter, order) => {
     let result = [...postsToFilter];
-
+    
     // Filtrar por término de búsqueda
     if (term && term.trim() !== '') {
       const searchTermLower = term.toLowerCase();
@@ -362,12 +218,12 @@ const AdminPanel = () => {
         post.Contenido?.toLowerCase().includes(searchTermLower)
       );
     }
-
+    
     // Filtrar por estado
     if (statusFilter === 'published') {
       result = result.filter(post => post.Estado === 'publicado');
     }
-
+    
     // Ordenar
     switch (order) {
       case 'recientes':
@@ -390,7 +246,7 @@ const AdminPanel = () => {
       default:
         break;
     }
-
+    
     setFilteredPosts(result);
   };
 
@@ -538,9 +394,6 @@ const AdminPanel = () => {
     return 'Sin resumen disponible';
   };
 
-  // Calcular estadísticas
-  const totalPosts = posts.length;
-
   // Estilos
   const styles = {
     container: {
@@ -662,8 +515,7 @@ const AdminPanel = () => {
       display: 'flex',
       gap: spacing.xl,
       marginBottom: spacing.xl,
-      flexWrap: 'wrap',
-      alignItems: 'flex-start'
+      flexWrap: 'wrap'
     },
     statCard: {
       backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
@@ -701,10 +553,7 @@ const AdminPanel = () => {
       flex: '2',
       minWidth: '350px',
       display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      position: 'relative',
-      height: 'auto',
+      flexDirection: 'column'
     },
     chartTitle: {
       fontSize: typography.fontSize.md,
@@ -717,14 +566,10 @@ const AdminPanel = () => {
     },
     chartCanvas: {
       width: '100%',
-      aspectRatio: '1/1',
+      aspectRatio: '1/1', // Asegurar relación de aspecto 1:1
       maxWidth: '400px',
-      maxHeight: '400px',
-      minHeight: '0',
       margin: '0 auto',
-      display: 'block',
-      height: 'auto !important',
-      boxSizing: 'border-box !important',
+      display: 'block'
     },
     categoryLegend: {
       display: 'flex',
@@ -750,6 +595,46 @@ const AdminPanel = () => {
       height: '12px',
       borderRadius: '50%',
       boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    },
+    categoriesContainer: {
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : colors.white,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      boxShadow: shadows.sm,
+      border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)',
+      flex: '1',
+      minWidth: '300px',
+      position: 'relative',
+      overflow: 'hidden'
+    },
+    categoryTitle: {
+      fontSize: typography.fontSize.md,
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.white : colors.primary,
+      marginBottom: spacing.md,
+      display: 'flex',
+      alignItems: 'center',
+      gap: spacing.xs
+    },
+    categoryList: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: spacing.xs,
+      maxHeight: '150px',
+      overflowY: 'auto'
+    },
+    categoryItem: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: `${spacing.xs} ${spacing.sm}`,
+      borderRadius: borderRadius.sm,
+      fontSize: typography.fontSize.sm,
+      backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.03)',
+      color: isDarkMode ? colors.white : colors.textPrimary
+    },
+    categoryCount: {
+      fontWeight: typography.fontWeight.bold,
+      color: isDarkMode ? colors.secondary : colors.secondary
     },
     postsGrid: {
       display: 'grid',
@@ -967,34 +852,277 @@ const AdminPanel = () => {
     }
   };
 
+  // Calcular estadísticas
+  const totalPosts = posts.length;
+  const publishedPosts = posts.filter(post => post.Estado === 'publicado').length;
+
+  // Obtener la categoría con más posts
+  const getMostPopularCategory = () => {
+    if (!categories || categories.length === 0) return { name: 'Ninguna', count: 0 };
+    
+    let maxCount = 0;
+    let popularCategory = { name: 'Ninguna', count: 0 };
+    
+    Object.values(categoryPostCounts).forEach(category => {
+      if (category.count > maxCount) {
+        maxCount = category.count;
+        popularCategory = category;
+      }
+    });
+    
+    return popularCategory;
+  };
+
+  const popularCategory = getMostPopularCategory();
+
+  // Función para dibujar el gráfico de categorías
+  const drawCategoryChart = () => {
+    if (!chartRef.current || categories.length === 0 || loadingCategories) return;
+
+    const canvas = chartRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    // Mejora la calidad para pantallas de alta resolución
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    // Ajustar el tamaño del canvas para mantener aspecto cuadrado
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.width * dpr; // Usar width para ambos para hacerlo cuadrado
+    
+    // Escalar el contexto según el DPR para mejor calidad
+    ctx.scale(dpr, dpr);
+    
+    // Asegurar que el canvas mantiene su aspecto visual correcto
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.width + 'px';
+    
+    const size = Math.min(rect.width, rect.width);
+    const centerX = size / 2;
+    const centerY = size / 2;
+    const radius = (size / 2) * 0.8; // Reducir ligeramente para dejar margen
+    
+    // Calcular el total de posts en todas las categorías
+    let totalCategoryPosts = 0;
+    categories.forEach(category => {
+      totalCategoryPosts += categoryPostCounts[category.ID_categoria]?.count || 0;
+    });
+    
+    // Si no hay posts, mostrar un círculo gris
+    if (totalCategoryPosts === 0) {
+      ctx.clearRect(0, 0, size, size);
+      
+      // Fondo circular con gradiente
+      const bgGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+      bgGradient.addColorStop(0, isDarkMode ? '#2d3748' : '#f7fafc');
+      bgGradient.addColorStop(1, isDarkMode ? '#1a202c' : '#e2e8f0');
+      
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.fillStyle = bgGradient;
+      ctx.fill();
+      
+      // Sombra sutil
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2;
+      
+      // Texto de "No hay datos" con mejor estilo
+      ctx.font = 'bold 16px Arial, sans-serif';
+      ctx.fillStyle = isDarkMode ? '#a0aec0' : '#4a5568';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('No hay datos', centerX, centerY);
+      
+      // Resetear sombra
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      
+      return;
+    }
+    
+    // Limpiar el canvas
+    ctx.clearRect(0, 0, size, size);
+    
+    // Dibujar el gráfico de pastel con sombra
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+    ctx.shadowBlur = 15;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 5;
+    
+    let startAngle = 0;
+    categories.forEach(category => {
+      const count = categoryPostCounts[category.ID_categoria]?.count || 0;
+      if (count > 0) {
+        const sliceAngle = (count / totalCategoryPosts) * 2 * Math.PI;
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, startAngle + sliceAngle);
+        ctx.closePath();
+        
+        // Usar el color correspondiente a la categoría
+        const color = categoryColors[category.ID_categoria] || categoryColors.default;
+        ctx.fillStyle = color;
+        ctx.fill();
+        
+        // Dibujar un borde sutil entre secciones
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.7)';
+        ctx.stroke();
+        
+        startAngle += sliceAngle;
+      }
+    });
+    
+    // Resetear sombra
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    
+    // Círculo blanco en el centro para efecto donut con gradiente
+    const innerRadius = radius * 0.6;
+    const gradient = ctx.createRadialGradient(centerX, centerY, innerRadius * 0.7, centerX, centerY, innerRadius);
+    
+    if (isDarkMode) {
+      gradient.addColorStop(0, '#1a2e2d');
+      gradient.addColorStop(1, '#1a2e2d');
+    } else {
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(1, '#f8fafc');
+    }
+    
+    // Sombra interna para profundidad
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.1)';
+    ctx.shadowBlur = 5;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, innerRadius, 0, 2 * Math.PI);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // Borde sutil para el círculo interno
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)';
+    ctx.stroke();
+    
+    // Resetear sombra
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+  };
+  
+  // Dibujar el gráfico cuando cambian las categorías o los conteos
+  useEffect(() => {
+    drawCategoryChart();
+  }, [categories, categoryPostCounts, loadingCategories, isDarkMode]);
+  
+  // Redimensionar el canvas cuando cambie el tamaño de la ventana
+  useEffect(() => {
+    const handleResize = () => {
+      if (chartRef.current) {
+        drawCategoryChart();
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [categories, categoryPostCounts]);
+
   return (
     <div style={styles.container}>
       <Header />
       
       <div style={styles.content}>
+        <h1 style={styles.pageTitle}>Panel de Administración</h1>
+        
+        {/* Estadísticas simplificadas */}
+        <div style={styles.statsContainer}>
+          <div style={styles.statCard}>
+            <div style={styles.statNumber}>{totalPosts}</div>
+            <div style={styles.statLabel}>Total de Publicaciones</div>
+          </div>
+          
+          {/* Gráfico de categorías */}
+          <div style={styles.chartContainer}>
+            <div style={styles.chartTitle}>
+              <FaChartPie style={{ color: colors.secondary }} /> Distribución por Categoría
+            </div>
+            
+            {loadingCategories ? (
+              <div style={{ textAlign: 'center', padding: spacing.lg }}>Cargando datos...</div>
+            ) : (
+              <>
+                <canvas 
+                  ref={chartRef} 
+                  style={styles.chartCanvas}
+                  width="400"
+                  height="400"
+                ></canvas>
+                
+                <div style={styles.categoryLegend}>
+                  {categories.map(category => (
+                    <div key={category.ID_categoria} style={styles.legendItem}>
+                      <div 
+                        style={{
+                          ...styles.legendColor, 
+                          backgroundColor: categoryColors[category.ID_categoria] || categoryColors.default
+                        }}
+                      ></div>
+                      <span>{category.Nombre_categoria} ({categoryPostCounts[category.ID_categoria]?.count || 0})</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Header con título y botón de crear */}
         <div style={styles.header}>
-          <h1 style={styles.title}>Panel de Administración</h1>
-          <div>
-            <AnimatedButton
-              to="/admin/post/new"
-              backgroundColor={isDarkMode ? colors.primaryDark : colors.primary}
-              hoverBackgroundColor={isDarkMode ? colors.primary : colors.primaryDark}
-              style={styles.createButton}
-            >
-              <FaPlus /> Crear Nueva Publicación
-            </AnimatedButton>
+          <h2 style={styles.title}>Publicaciones</h2>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <AnimatedButton
               onClick={refreshPosts}
-              backgroundColor={isDarkMode ? '#4a5568' : '#718096'}
-              hoverBackgroundColor={isDarkMode ? '#2d3748' : '#a0a0a0'}
-              style={styles.refreshButton}
-              title="Actualizar publicaciones"
+              backgroundColor={isDarkMode ? 'rgba(255, 255, 255, 0.1)' : '#f8f9fa'}
+              hoverBackgroundColor={isDarkMode ? 'rgba(255, 255, 255, 0.2)' : '#e9ecef'}
+              textColor={isDarkMode ? '#fff' : colors.primary}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                marginRight: '10px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
             >
-              <FaSync />
+              <FaSync /> Actualizar
+            </AnimatedButton>
+            
+            <AnimatedButton
+              to="/admin/post/new"
+              backgroundColor={colors.secondary}
+              hoverBackgroundColor="#0d5353"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                boxShadow: '0 2px 12px rgba(11, 68, 68, 0.2)'
+              }}
+            >
+              <FaPlus /> Nueva Publicación
             </AnimatedButton>
           </div>
         </div>
-        
+
         {/* Filtros */}
         <div style={styles.filtersContainer}>
           <div style={styles.filtersRow}>
@@ -1015,8 +1143,6 @@ const AdminPanel = () => {
               style={styles.select}
             >
               <option value="published">Publicadas</option>
-              <option value="draft">Borradores</option>
-              <option value="all">Todas</option>
             </select>
             
             <select
@@ -1026,100 +1152,9 @@ const AdminPanel = () => {
             >
               <option value="recientes">Más recientes</option>
               <option value="antiguos">Más antiguos</option>
-              <option value="alfabetico">Alfabético (Título)</option>
+              <option value="alfabetico">Alfabético</option>
             </select>
           </div>
-        </div>
-
-        {/* Estadísticas y Gráfica */}
-        <div style={styles.statsContainer}>
-          {/* Estadísticas de publicaciones - Solo mantener la de Total */}
-          <div style={styles.statCard}>
-            <div style={styles.statNumber}>{totalPosts}</div>
-            <div style={styles.statLabel}>Total de Publicaciones</div>
-          </div>
-          
-          {/* Gráfica de Categorías */}
-          <div style={styles.chartContainer}>
-            <h3 style={styles.chartTitle}><FaChartPie /> Distribución por Categoría</h3>
-
-            {/* Gráfica de Categorías (Canvas) */}
-            {!loadingCategories && categories.length > 0 && Object.keys(categoryPostCounts).length > 0 ? (
-              <canvas ref={chartRef} style={styles.chartCanvas}></canvas>
-            ) : loadingCategories ? (
-              <div style={styles.loadingSpinner}>Cargando categorías...</div>
-            ) : (
-              <p style={{ 
-                textAlign: 'center', 
-                color: isDarkMode ? colors.white : colors.textSecondary,
-                marginTop: spacing.md
-              }}>
-                No hay categorías disponibles o publicaciones en ellas para mostrar la gráfica.
-              </p>
-            )}
-
-            {/* Leyenda de Categorías */}
-            {!loadingCategories && categories.length > 0 && Object.keys(categoryPostCounts).length > 0 && (
-                <div style={styles.categoryLegend}>
-                    {categories.map(cat => (
-                        categoryPostCounts[cat.ID_categoria] && categoryPostCounts[cat.ID_categoria].count > 0 && (
-                            <div key={cat.ID_categoria} style={styles.legendItem}>
-                                <span 
-                                    style={{
-                                        ...styles.legendColor,
-                                        backgroundColor: categoryColors[cat.ID_categoria] || categoryColors.default
-                                    }}
-                                ></span>
-                                {cat.Nombre_categoria} ({categoryPostCounts[cat.ID_categoria].count})
-                            </div>
-                        )
-                    ))}
-                     {/* Mostrar "Sin categoría" si hay posts sin categoría asignada (opcional, requiere verificar) */}
-                     {/* Se necesita lógica backend/frontend para identificar posts sin categoría */}
-                     {/* {categoryPostCounts.null && categoryPostCounts.null.count > 0 && (
-                         <div style={styles.legendItem}>
-                             <span 
-                                 style={{
-                                     ...styles.legendColor,
-                                     backgroundColor: categoryColors.default
-                                 }}
-                             ></span>
-                             Sin categoría ({categoryPostCounts.null.count})
-                         </div>
-                     )}*/}
-                </div>
-            )}
-          </div>
-
-          {/* Listado de Categorías (Opcional) */}
-          {/* Puedes descomentar si quieres mostrar una lista simple de categorías */}
-          {/*
-          <div style={styles.categoriesContainer}>
-              <h3 style={styles.categoryTitle}><FaFolder /> Listado de Categorías</h3>
-              {!loadingCategories && categories.length > 0 ? (
-                  <div style={styles.categoryList}>
-                      {categories.map(cat => (
-                          <div key={cat.ID_categoria} style={styles.categoryItem}>
-                              <span>{cat.Nombre_categoria}</span>
-                              <span style={styles.categoryCount}>
-                                  {categoryPostCounts[cat.ID_categoria] ? categoryPostCounts[cat.ID_categoria].count : 0}
-                              </span>
-                          </div>
-                      ))}
-                  </div>
-              ) : loadingCategories ? (
-                  <div style={styles.loadingSpinner}>Cargando categorías...</div>
-              ) : (
-                   <p style={{ 
-                      textAlign: 'center', 
-                      color: isDarkMode ? colors.white : colors.textSecondary,
-                      marginTop: spacing.md
-                      }}>
-                      No hay categorías disponibles.
-                   </p>
-              )}
-          </div>
-          */}
         </div>
 
         {/* Mensaje de error */}

@@ -242,7 +242,7 @@ const RegisterPage = () => {
         }
     };
 
-    // Función para validar el formato del email (simplificada a la versión anterior)
+    // Función para verificar disponibilidad del email
     const validateEmail = async (email) => {
         if (!email) {
             setErrors(prev => ({ ...prev, email: 'El correo electrónico es requerido' }));
@@ -250,7 +250,6 @@ const RegisterPage = () => {
             return;
         }
 
-        // Validación de formato básica (versión anterior)
         if (!/\S+@\S+\.\S+/.test(email)) {
             setErrors(prev => ({
                 ...prev,
@@ -274,6 +273,7 @@ const RegisterPage = () => {
             }
 
             // Validación temporal - REMOVER EN PRODUCCIÓN
+            // Esta es una solución temporal hasta que se arregle el backend
             const bypassValidation = localStorage.getItem('bypassEmailValidation') === 'true';
             if (bypassValidation) {
                 console.log('Bypass de validación activado - asumiendo email disponible');
@@ -290,6 +290,7 @@ const RegisterPage = () => {
         } catch (error) {
             console.error('Error en validación de email:', error.message);
 
+            // Si el error indica que el email ya existe
             if (error.message && (
                 error.message.includes('ya está registrado') ||
                 error.message.includes('ya existe')
@@ -301,11 +302,13 @@ const RegisterPage = () => {
                     email: error.message || 'Este correo electrónico ya está registrado'
                 }));
             }
+            // Si es un error de red y estamos en desarrollo, permitir continuar
             else if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
                 console.log('Error de red en desarrollo - asumiendo email disponible');
                 setEmailAvailable(true);
                 setErrors(prev => ({ ...prev, email: '' }));
             } else {
+                // Para otros errores, asumimos disponible para no bloquear el registro
                 setEmailAvailable(true);
                 setErrors(prev => ({ ...prev, email: '' }));
             }
@@ -314,7 +317,6 @@ const RegisterPage = () => {
         }
     };
 
-    // Función para validar el formulario completo (versión anterior)
     const validateForm = () => {
         let valid = true;
         const newErrors = {
@@ -341,19 +343,7 @@ const RegisterPage = () => {
             valid = false;
         }
 
-        // Validar username
-        if (!formData.username) {
-            newErrors.username = 'El nombre de usuario es requerido';
-            valid = false;
-        } else if (!validateUsernameFormat(formData.username)) {
-            newErrors.username = 'Solo se permiten letras minúsculas, números, punto y guion bajo';
-            valid = false;
-        } else if (usernameAvailable === false) {
-            newErrors.username = 'Este nombre de usuario ya está en uso';
-            valid = false;
-        }
-
-        // Validar email (versión anterior)
+        // Validar email
         if (!formData.email) {
             newErrors.email = 'El correo electrónico es requerido';
             valid = false;
@@ -392,11 +382,22 @@ const RegisterPage = () => {
             valid = false;
         }
 
+        // Validar nombre de usuario
+        if (!formData.username) {
+            newErrors.username = 'El nombre de usuario es requerido';
+            valid = false;
+        } else if (!validateUsernameFormat(formData.username)) {
+            newErrors.username = 'Solo se permiten letras minúsculas, números, punto y guion bajo';
+            valid = false;
+        } else if (usernameAvailable === false) {
+            newErrors.username = 'Este nombre de usuario ya está en uso';
+            valid = false;
+        }
+
         setErrors(newErrors);
         return valid;
     };
 
-    // Función para manejar el envío del formulario (versión anterior con setTimeout)
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -407,10 +408,12 @@ const RegisterPage = () => {
         if (localStorage.getItem('bypassUsernameValidation') !== 'true' &&
             !devModeEnabled &&
             usernameAvailable === false) {
+            // Mostrar mensaje específico
             setErrors(prev => ({
                 ...prev,
                 username: 'Este nombre de usuario ya está en uso. Intenta con otro.'
             }));
+            // Hacer scroll al campo con error
             inputRefs.username.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
@@ -419,10 +422,12 @@ const RegisterPage = () => {
         if (localStorage.getItem('bypassEmailValidation') !== 'true' &&
             !devModeEnabled &&
             emailAvailable === false) {
+            // Mostrar mensaje específico
             setErrors(prev => ({
                 ...prev,
                 email: 'Este correo electrónico ya está registrado. Intenta con otro.'
             }));
+            // Hacer scroll al campo con error
             inputRefs.email.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             return;
         }
@@ -449,8 +454,10 @@ const RegisterPage = () => {
             // Si el modo desarrollo está activado, simulamos un registro exitoso
             if (devModeEnabled) {
                 console.log('Modo desarrollo - simulando registro exitoso');
+                // Simulamos un pequeño retraso para dar sensación de proceso
                 await new Promise(resolve => setTimeout(resolve, 1000));
 
+                // Redirigir a login con mensaje de éxito
                 navigate('/login', {
                     state: { message: '¡Registro exitoso en modo desarrollo! Ahora puedes iniciar sesión.' }
                 });
@@ -473,6 +480,7 @@ const RegisterPage = () => {
         } catch (error) {
             console.error('Error al registrar usuario:', error);
 
+            // Si es un error de conexión en desarrollo, ofrecer modo desarrollo
             if (DEV_MODE && (error.message === 'Failed to fetch' || error.message.includes('conectar'))) {
                 setErrors(prev => ({
                     ...prev,
@@ -480,25 +488,28 @@ const RegisterPage = () => {
                     devMode: true
                 }));
             }
+            // Manejo específico de errores
             else if (error.message.toLowerCase().includes('nombre de usuario') ||
                 error.message.toLowerCase().includes('usuario ya está') ||
                 error.message.toLowerCase().includes('username')) {
-                setUsernameAvailable(false); 
+                setUsernameAvailable(false); // Actualizar estado de disponibilidad
                 setErrors(prev => ({
                     ...prev,
                     username: error.message,
                     general: 'Error en el registro: ' + error.message
                 }));
+                // Hacer scroll al campo con error
                 inputRefs.username.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             else if (error.message.toLowerCase().includes('correo') ||
                 error.message.toLowerCase().includes('email')) {
-                setEmailAvailable(false); 
+                setEmailAvailable(false); // Actualizar estado de disponibilidad
                 setErrors(prev => ({
                     ...prev,
                     email: error.message,
                     general: 'Error en el registro: ' + error.message
                 }));
+                // Hacer scroll al campo con error
                 inputRefs.email.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
             else {
@@ -508,6 +519,7 @@ const RegisterPage = () => {
                 }));
             }
 
+            // Animación de error en el formulario
             if (formRef.current) {
                 formRef.current.classList.add('form-error');
                 setTimeout(() => {

@@ -10,7 +10,7 @@ Este es el componente de otra rama PostEditor:
 PostEditor
 
 
-XD
+
 
 
 

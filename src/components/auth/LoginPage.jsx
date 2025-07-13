@@ -63,11 +63,9 @@ const LoginPage = () => {
     // Redirigir si ya está autenticado
     useEffect(() => {
         if (isAuth && !loading) {
-            // Obtener la ruta original de la ubicación o usar dashboard como predeterminado
-            const from = location.state?.from?.pathname || '/dashboard';
-            navigate(from, { replace: true });
+            navigate('/');
         }
-    }, [isAuth, loading, navigate, location]);
+    }, [isAuth, loading, navigate]);
 
     // Manejar mensajes de la página anterior
     useEffect(() => {

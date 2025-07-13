@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getAllPublicaciones } from '../../../services/publicacionesService';
 import { searchPublicaciones, searchByTags } from '../../../services/searchService';
 import { getAllCategorias } from '../../../services/categoriasServices';
 
 const POSTS_PER_PAGE = 10;
-const MAX_POSTS_LIMIT = 50; // Reduce from 100 to 50 to save memory
 
 /**
  * Hook personalizado para manejar la lógica de carga y gestión de posts del administrador
@@ -29,16 +28,10 @@ export const useAdminPosts = ({
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Refs para cleanup
-  const abortControllerRef = useRef(null);
-  const timeoutRef = useRef(null);
-
   /**
    * Función para ordenar posts según el criterio seleccionado
    */
   const sortPosts = useCallback((postsToSort, order) => {
-    if (!postsToSort || postsToSort.length === 0) return [];
-    
     const sortedPosts = [...postsToSort];
     
     switch (order) {
@@ -57,8 +50,6 @@ export const useAdminPosts = ({
    * Función para filtrar posts según criterios
    */
   const filterPosts = useCallback((allPosts, term, statusFilter) => {
-    if (!allPosts || allPosts.length === 0) return [];
-    
     // Primero filtramos por término de búsqueda
     let result = allPosts;
     
@@ -80,7 +71,7 @@ export const useAdminPosts = ({
   }, []);
 
   /**
-   * Función optimizada para cargar posts
+   * Función principal para cargar posts
    */
   const fetchPosts = useCallback(async () => {
     if (!adminId) {
@@ -91,95 +82,87 @@ export const useAdminPosts = ({
     }
     
     try {
-      // Cancelar request previo si existe
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      
-      // Crear nuevo AbortController para este request
-      abortControllerRef.current = new AbortController();
-      
       setLoading(true);
       setError(null);
       setPage(1);
-      console.log(`Cargando publicaciones para administrador ID: ${adminId} (límite: ${MAX_POSTS_LIMIT})`);
+      console.log(`Cargando publicaciones para administrador ID: ${adminId}`);
       
       let data = [];
 
-      // Optimizar lógica de carga
+      // Lógica de carga según los filtros
       if (searchTerm && searchTerm.trim() !== '') {
         console.log('Buscando posts con término:', searchTerm);
-        data = await searchPublicaciones(searchTerm, MAX_POSTS_LIMIT, 0);
+        data = await searchPublicaciones(searchTerm, 100, 0);
       } else {
-        console.log('Cargando posts del administrador');
-        // Usar método directo en lugar de cargar por categorías para evitar múltiples requests
+        console.log('Cargando todas las categorías');
+        // Cargar por categorías de manera independiente
         try {
-          data = await getAllPublicaciones(MAX_POSTS_LIMIT, 0, null);
-          console.log(`Obtenidas ${data.length} publicaciones totales`);
-        } catch (directError) {
-          console.error("Error en carga directa:", directError);
+          const categorias = await getAllCategorias();
+          console.log(`Obtenidas ${categorias.length} categorías`);
           
-          // Solo como último recurso, usar método de categorías pero con límite reducido
-          try {
-            const categorias = await getAllCategorias();
-            if (categorias && categorias.length > 0) {
-              // Limitar a las primeras 5 categorías para evitar sobrecarga
-              const limitedCategorias = categorias.slice(0, 5);
-              const promesas = limitedCategorias.map(categoria => 
-                searchByTags(categoria.ID_categoria, Math.floor(MAX_POSTS_LIMIT / limitedCategorias.length), 0)
-                  .catch(error => {
-                    console.error(`Error al cargar categoría ${categoria.Nombre_categoria}:`, error);
-                    return [];
-                  })
-              );
-              
-              const resultados = await Promise.all(promesas);
-              
-              // Combinar resultados de manera más eficiente
-              const postMap = new Map();
-              resultados.forEach(publicacionesCategoria => {
-                if (Array.isArray(publicacionesCategoria)) {
-                  publicacionesCategoria.forEach(post => {
-                    if (post && post.ID_publicaciones && !postMap.has(post.ID_publicaciones)) {
-                      postMap.set(post.ID_publicaciones, post);
-                    }
-                  });
+          if (categorias && categorias.length > 0) {
+            const promesas = categorias.map(categoria => 
+              searchByTags(categoria.ID_categoria, 100, 0)
+                .catch(error => {
+                  console.error(`Error al cargar categoría ${categoria.Nombre_categoria}:`, error);
+                  return [];
+                })
+            );
+            
+            const resultados = await Promise.all(promesas);
+            
+            // Combinar resultados y eliminar duplicados
+            const postMap = new Map();
+            resultados.forEach(publicacionesCategoria => {
+              publicacionesCategoria.forEach(post => {
+                if (!postMap.has(post.ID_publicaciones)) {
+                  postMap.set(post.ID_publicaciones, post);
                 }
               });
-              
-              data = Array.from(postMap.values());
-              console.log(`Combinadas ${data.length} publicaciones desde categorías limitadas`);
-            } else {
-              throw new Error('No se pudieron cargar publicaciones');
-            }
-          } catch (categoryError) {
-            console.error("Error al cargar por categorías:", categoryError);
+            });
             
-            // Último intento con endpoint alternativo limitado
+            data = Array.from(postMap.values());
+            console.log(`Combinadas ${data.length} publicaciones únicas`);
+          } else {
+            // Fallback al método general
+            data = await getAllPublicaciones(100, 0, null);
+          }
+        } catch (categoryError) {
+          console.error("Error al cargar por categorías:", categoryError);
+          
+          // Intentar con getAllPublicaciones
+          try {
+            data = await getAllPublicaciones(100, 0, null);
+            console.log(`Obtenidas ${data.length} publicaciones totales`);
+          } catch (error) {
+            console.error('Error al cargar todas las publicaciones:', error);
+            
+            // Intentar con endpoint alternativo
             try {
-              const API_URL = process.env.REACT_APP_API_URL || 'https://educstation-backend-production.up.railway.app/api';
-              const response = await fetch(`${API_URL}/publicaciones/latest?limite=${MAX_POSTS_LIMIT}`);
-              if (!response.ok) {
+              const response = await fetch('https://educstation-backend-production.up.railway.app/api/publicaciones/all?limite=100');
+              if (response.ok) {
+                data = await response.json();
+                console.log(`Obtenidas ${data.length} publicaciones desde endpoint alternativo`);
+              } else {
                 throw new Error(`Error en endpoint alternativo: ${response.status}`);
               }
-              
-              data = await response.json();
-              console.log(`Obtenidas ${data.length} publicaciones mediante método alternativo`);
             } catch (fallbackError) {
               console.error('Error en endpoint alternativo:', fallbackError);
-              throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
+              
+              // Último intento con latest
+              const fallbackResponse = await fetch('https://educstation-backend-production.up.railway.app/api/publicaciones/latest?limite=100');
+              if (!fallbackResponse.ok) {
+                throw new Error("No se pudieron cargar las publicaciones después de múltiples intentos");
+              }
+              
+              data = await fallbackResponse.json();
+              console.log(`Obtenidas ${data.length} publicaciones mediante método alternativo`);
             }
           }
         }
       }
 
-      // Verificar si el request fue cancelado
-      if (abortControllerRef.current && abortControllerRef.current.signal.aborted) {
-        console.log('Request cancelado');
-        return;
-      }
-
-      // Filtrar por ID de administrador de manera más eficiente
+      // Filtrar por ID de administrador si es necesario
       const adminPosts = adminId ? data.filter(post => {
         const isAdmin = post.ID_administrador == adminId; // Comparación no estricta para manejar strings/numbers
         return isAdmin;
@@ -187,21 +170,14 @@ export const useAdminPosts = ({
       
       console.log(`Filtradas ${adminPosts.length} publicaciones para el administrador ${adminId}`);
       
-      // Limitar datos en memoria
-      const limitedData = adminPosts.slice(0, MAX_POSTS_LIMIT);
-      
       // Ordenar posts
-      const sortedData = sortPosts(limitedData, sortOrder);
+      const sortedData = sortPosts(adminPosts, sortOrder);
       
       setPosts(sortedData);
       setDisplayPosts(sortedData.slice(0, POSTS_PER_PAGE));
       setHasMore(sortedData.length > POSTS_PER_PAGE);
       
     } catch (error) {
-      if (error.name === 'AbortError') {
-        console.log('Request cancelado');
-        return;
-      }
       console.error('Error al cargar publicaciones del administrador:', error);
       setError('No se pudieron cargar tus publicaciones. Por favor, intenta de nuevo más tarde.');
       setPosts([]);
@@ -224,16 +200,14 @@ export const useAdminPosts = ({
   }, [posts, searchTerm, filter, sortOrder, filterPosts, sortPosts, page]);
 
   /**
-   * Cargar posts cuando cambia el ID de administrador
+   * Cargar posts cuando cambia el ID de administrador o los criterios de búsqueda
    */
   useEffect(() => {
-    if (adminId) {
-      fetchPosts();
-    }
-  }, [adminId, fetchPosts]);
+    fetchPosts();
+  }, [fetchPosts]);
 
   /**
-   * Función optimizada para cargar más posts
+   * Función para cargar más posts (paginación)
    */
   const loadMorePosts = useCallback(() => {
     if (loadingMore || !hasMore) return;
@@ -243,21 +217,16 @@ export const useAdminPosts = ({
     const startIndex = (nextPage - 1) * POSTS_PER_PAGE;
     const endIndex = nextPage * POSTS_PER_PAGE;
     
-    // Limpiar timeout previo
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-    }
+    // Aplicar filtros a todos los posts
+    const filtered = filterPosts(posts, searchTerm, filter);
+    const sortedFiltered = sortPosts(filtered, sortOrder);
     
-    timeoutRef.current = setTimeout(() => {
-      // Aplicar filtros a todos los posts
-      const filtered = filterPosts(posts, searchTerm, filter);
-      const sortedFiltered = sortPosts(filtered, sortOrder);
-      
+    setTimeout(() => {
       setDisplayPosts(sortedFiltered.slice(0, endIndex));
       setPage(nextPage);
       setHasMore(endIndex < sortedFiltered.length);
       setLoadingMore(false);
-    }, 300); // Reducir delay de 500ms a 300ms
+    }, 500);
   }, [page, posts, loadingMore, hasMore, searchTerm, filter, sortOrder, filterPosts, sortPosts]);
 
   /**
@@ -273,20 +242,6 @@ export const useAdminPosts = ({
   const removePost = useCallback((postId) => {
     setPosts(prevPosts => prevPosts.filter(post => post.ID_publicaciones !== postId));
     setDisplayPosts(prevPosts => prevPosts.filter(post => post.ID_publicaciones !== postId));
-  }, []);
-
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      // Limpiar AbortController
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-      // Limpiar timeout
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
   }, []);
 
   return {
