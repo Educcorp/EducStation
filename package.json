@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "description": "A web blog application for EducStation",
   "main": "src/index.js",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "serve": "node server/server.js",
+    "start": "react-scripts --max_old_space_size=4096 start",
+    "build": "react-scripts --max_old_space_size=4096 build",
+    "serve": "node --max_old_space_size=4096 server/server.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
